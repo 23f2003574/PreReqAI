@@ -43,6 +43,13 @@ class PaperReference:
 
 
 @dataclass
+class Paragraph:
+    paragraph_id: int
+    section_title: str
+    content: str
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -59,3 +66,5 @@ class Paper:
     tables: list[PaperTable] = field(default_factory=list)
 
     references: list[PaperReference] = field(default_factory=list)
+
+    paragraphs: list[Paragraph] = field(default_factory=list)

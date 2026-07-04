@@ -5,4 +5,5 @@ from .paper import (
     PaperFigure,
     PaperTable,
     PaperReference,
+    Paragraph,
 )

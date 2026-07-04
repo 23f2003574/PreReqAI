@@ -4,6 +4,7 @@ from backend.parsing import EquationExtractor
 from backend.parsing import FigureExtractor
 from backend.parsing import TableExtractor
 from backend.parsing import ReferenceExtractor
+from backend.parsing import ParagraphSegmenter
 
 
 def handle_pdf_upload(file_path: str):
@@ -32,6 +33,10 @@ def handle_pdf_upload(file_path: str):
     )
 
     paper = ReferenceExtractor().extract(
+        paper,
+    )
+
+    paper = ParagraphSegmenter().segment(
         paper,
     )
 

@@ -3,3 +3,4 @@ from .equation_extractor import EquationExtractor
 from .figure_extractor import FigureExtractor
 from .table_extractor import TableExtractor
 from .reference_extractor import ReferenceExtractor
+from .paragraph_segmenter import ParagraphSegmenter
