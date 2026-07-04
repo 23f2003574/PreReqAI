@@ -8,13 +8,17 @@ from backend.parsing import ParagraphSegmenter
 from backend.concepts import (
     RuleBasedConceptDetector,
 )
+from backend.serialization import (
+    PaperSerializer,
+)
 
 
 def handle_pdf_upload(file_path: str):
     """
     Entry point used by future API endpoints.
 
-    Returns a fully populated Paper.
+    Returns the complete Paper Object Model
+    serialized as a JSON-compatible dict.
     """
 
     engine = PDFIngestionEngine()
@@ -47,4 +51,8 @@ def handle_pdf_upload(file_path: str):
         paper,
     )
 
-    return paper
+    serializer = PaperSerializer()
+
+    return serializer.serialize(
+        paper,
+    )
