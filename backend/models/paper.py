@@ -5,6 +5,7 @@ from backend.ingestion import (
     DocumentMetadata,
     RawPage,
 )
+from .concept import DetectedConcept
 
 
 @dataclass
@@ -68,3 +69,5 @@ class Paper:
     references: list[PaperReference] = field(default_factory=list)
 
     paragraphs: list[Paragraph] = field(default_factory=list)
+
+    concepts: list[DetectedConcept] = field(default_factory=list)

@@ -7,3 +7,4 @@ from .paper import (
     PaperReference,
     Paragraph,
 )
+from .concept import DetectedConcept
