@@ -1,5 +1,6 @@
 from backend.ingestion import PDFIngestionEngine
 from backend.parsing import ScientificSectionParser
+from backend.parsing import EquationExtractor
 
 
 def handle_pdf_upload(file_path: str):
@@ -14,5 +15,8 @@ def handle_pdf_upload(file_path: str):
     document = engine.ingest(file_path)
 
     parser = ScientificSectionParser()
+    parsed_paper = parser.parse(document)
 
-    return parser.parse(document)
+    equation_extractor = EquationExtractor()
+
+    return equation_extractor.extract(parsed_paper)

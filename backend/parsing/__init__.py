@@ -3,3 +3,8 @@ from .scientific_section_parser import (
     PaperSection,
     ScientificSectionParser,
 )
+from .equation_extractor import (
+    Equation,
+    ParsedPaperWithEquations,
+    EquationExtractor,
+)
