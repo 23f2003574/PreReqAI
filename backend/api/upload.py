@@ -3,6 +3,7 @@ from backend.parsing import ScientificSectionParser
 from backend.parsing import EquationExtractor
 from backend.parsing import FigureExtractor
 from backend.parsing import TableExtractor
+from backend.parsing import ReferenceExtractor
 
 
 def handle_pdf_upload(file_path: str):
@@ -27,6 +28,10 @@ def handle_pdf_upload(file_path: str):
 
     paper = TableExtractor().extract(
         file_path,
+        paper,
+    )
+
+    paper = ReferenceExtractor().extract(
         paper,
     )
 

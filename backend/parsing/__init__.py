@@ -2,3 +2,4 @@ from .scientific_section_parser import ScientificSectionParser
 from .equation_extractor import EquationExtractor
 from .figure_extractor import FigureExtractor
 from .table_extractor import TableExtractor
+from .reference_extractor import ReferenceExtractor

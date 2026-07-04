@@ -4,4 +4,5 @@ from .paper import (
     Equation,
     PaperFigure,
     PaperTable,
+    PaperReference,
 )

@@ -37,6 +37,12 @@ class PaperTable:
 
 
 @dataclass
+class PaperReference:
+    reference_number: int
+    raw_text: str
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -51,3 +57,5 @@ class Paper:
     figures: list[PaperFigure] = field(default_factory=list)
 
     tables: list[PaperTable] = field(default_factory=list)
+
+    references: list[PaperReference] = field(default_factory=list)
