@@ -3,10 +3,8 @@ from backend.pipeline import (
 )
 
 
-def handle_pdf_upload(
-    file_path: str,
-):
+def test_pipeline_initializes():
 
     pipeline = ResearchPaperPipeline()
 
-    return pipeline.run(file_path)
+    assert pipeline is not None
