@@ -5,6 +5,9 @@ from backend.parsing import FigureExtractor
 from backend.parsing import TableExtractor
 from backend.parsing import ReferenceExtractor
 from backend.parsing import ParagraphSegmenter
+from backend.concepts import (
+    RuleBasedConceptDetector,
+)
 
 
 def handle_pdf_upload(file_path: str):
@@ -37,6 +40,10 @@ def handle_pdf_upload(file_path: str):
     )
 
     paper = ParagraphSegmenter().segment(
+        paper,
+    )
+
+    paper = RuleBasedConceptDetector().detect(
         paper,
     )
 
