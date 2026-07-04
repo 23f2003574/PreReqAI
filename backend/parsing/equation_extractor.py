@@ -1,27 +1,12 @@
 import re
 
-from dataclasses import dataclass, field
-
-from .scientific_section_parser import ParsedPaper
+from backend.models import Paper, Equation
 
 
 DISPLAY_EQUATION_PATTERN = re.compile(
     r"^\s*.+?=\s*.+$",
     re.MULTILINE,
 )
-
-
-@dataclass
-class Equation:
-    equation_id: int
-    expression: str
-    section: str
-
-
-@dataclass
-class ParsedPaperWithEquations:
-    parsed_paper: ParsedPaper
-    equations: list[Equation] = field(default_factory=list)
 
 
 class EquationExtractor:
@@ -33,16 +18,13 @@ class EquationExtractor:
     common research-paper equation layouts.
     """
 
-    def extract(
-        self,
-        parsed_paper: ParsedPaper,
-    ) -> ParsedPaperWithEquations:
+    def extract(self, paper: Paper) -> Paper:
 
         equations = []
 
         equation_counter = 1
 
-        for section in parsed_paper.sections:
+        for section in paper.sections:
 
             matches = DISPLAY_EQUATION_PATTERN.findall(
                 section.content
@@ -60,7 +42,6 @@ class EquationExtractor:
 
                 equation_counter += 1
 
-        return ParsedPaperWithEquations(
-            parsed_paper=parsed_paper,
-            equations=equations,
-        )
+        paper.equations = equations
+
+        return paper

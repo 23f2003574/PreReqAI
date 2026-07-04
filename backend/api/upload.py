@@ -9,30 +9,25 @@ def handle_pdf_upload(file_path: str):
     """
     Entry point used by future API endpoints.
 
-    Returns a fully populated RawDocument.
+    Returns a fully populated Paper.
     """
 
     engine = PDFIngestionEngine()
 
     document = engine.ingest(file_path)
 
-    parser = ScientificSectionParser()
-    parsed_paper = parser.parse(document)
+    paper = ScientificSectionParser().parse(document)
 
-    equation_extractor = EquationExtractor()
+    paper = EquationExtractor().extract(paper)
 
-    parsed_with_equations = equation_extractor.extract(parsed_paper)
-
-    figure_extractor = FigureExtractor()
-
-    parsed_with_figures = figure_extractor.extract(
+    paper = FigureExtractor().extract(
         file_path,
-        parsed_with_equations,
+        paper,
     )
 
-    table_extractor = TableExtractor()
-
-    return table_extractor.extract(
+    paper = TableExtractor().extract(
         file_path,
-        parsed_with_figures,
+        paper,
     )
+
+    return paper

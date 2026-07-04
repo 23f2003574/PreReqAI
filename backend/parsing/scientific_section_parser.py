@@ -1,8 +1,7 @@
 import re
 
-from dataclasses import dataclass, field
-
 from backend.ingestion import RawDocument
+from backend.models import Paper, PaperSection
 
 
 SECTION_PATTERN = re.compile(
@@ -11,61 +10,48 @@ SECTION_PATTERN = re.compile(
 )
 
 
-@dataclass
-class PaperSection:
-    title: str
-    content: str
-
-
-@dataclass
-class ParsedPaper:
-    document: RawDocument
-    sections: list[PaperSection] = field(default_factory=list)
-
-
 class ScientificSectionParser:
     """
     Detects high-level scientific paper sections
     using common research-paper headings.
     """
 
-    def parse(self, document: RawDocument) -> ParsedPaper:
+    def parse(self, document: RawDocument) -> Paper:
 
         text = document.full_text
 
         matches = list(SECTION_PATTERN.finditer(text))
 
         if not matches:
-            return ParsedPaper(
-                document=document,
-                sections=[
-                    PaperSection(
-                        title="Full Paper",
-                        content=text.strip(),
-                    )
-                ],
-            )
-
-        sections = []
-
-        for index, match in enumerate(matches):
-
-            start = match.end()
-
-            end = (
-                matches[index + 1].start()
-                if index + 1 < len(matches)
-                else len(text)
-            )
-
-            sections.append(
+            sections = [
                 PaperSection(
-                    title=match.group().strip(),
-                    content=text[start:end].strip(),
+                    title="Full Paper",
+                    content=text.strip(),
                 )
-            )
+            ]
+        else:
+            sections = []
 
-        return ParsedPaper(
-            document=document,
+            for index, match in enumerate(matches):
+
+                start = match.end()
+
+                end = (
+                    matches[index + 1].start()
+                    if index + 1 < len(matches)
+                    else len(text)
+                )
+
+                sections.append(
+                    PaperSection(
+                        title=match.group().strip(),
+                        content=text[start:end].strip(),
+                    )
+                )
+
+        return Paper(
+            source_path=document.source_path,
+            metadata=document.metadata,
+            pages=document.pages,
             sections=sections,
         )

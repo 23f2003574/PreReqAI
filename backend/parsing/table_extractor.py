@@ -1,21 +1,6 @@
 import pdfplumber
 
-from dataclasses import dataclass, field
-
-from .figure_extractor import ParsedPaperWithFigures
-
-
-@dataclass
-class PaperTable:
-    table_id: int
-    page_number: int
-    rows: list[list[str]]
-
-
-@dataclass
-class ParsedPaperWithTables:
-    parsed_paper: ParsedPaperWithFigures
-    tables: list[PaperTable] = field(default_factory=list)
+from backend.models import Paper, PaperTable
 
 
 class TableExtractor:
@@ -29,8 +14,8 @@ class TableExtractor:
     def extract(
         self,
         pdf_path: str,
-        parsed_paper: ParsedPaperWithFigures,
-    ) -> ParsedPaperWithTables:
+        paper: Paper,
+    ) -> Paper:
 
         tables = []
 
@@ -57,7 +42,6 @@ class TableExtractor:
 
                     table_counter += 1
 
-        return ParsedPaperWithTables(
-            parsed_paper=parsed_paper,
-            tables=tables,
-        )
+        paper.tables = tables
+
+        return paper

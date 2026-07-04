@@ -1,23 +1,6 @@
 import fitz
 
-from dataclasses import dataclass, field
-
-from .equation_extractor import ParsedPaperWithEquations
-
-
-@dataclass
-class PaperFigure:
-    figure_id: int
-    page_number: int
-    image_index: int
-    width: int
-    height: int
-
-
-@dataclass
-class ParsedPaperWithFigures:
-    parsed_paper: ParsedPaperWithEquations
-    figures: list[PaperFigure] = field(default_factory=list)
+from backend.models import Paper, PaperFigure
 
 
 class FigureExtractor:
@@ -32,8 +15,8 @@ class FigureExtractor:
     def extract(
         self,
         pdf_path: str,
-        parsed_paper: ParsedPaperWithEquations,
-    ) -> ParsedPaperWithFigures:
+        paper: Paper,
+    ) -> Paper:
 
         document = fitz.open(pdf_path)
 
@@ -63,7 +46,6 @@ class FigureExtractor:
 
         document.close()
 
-        return ParsedPaperWithFigures(
-            parsed_paper=parsed_paper,
-            figures=figures,
-        )
+        paper.figures = figures
+
+        return paper

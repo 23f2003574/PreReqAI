@@ -1,0 +1,53 @@
+from dataclasses import dataclass, field
+
+from backend.ingestion import (
+    RawDocument,
+    DocumentMetadata,
+    RawPage,
+)
+
+
+@dataclass
+class PaperSection:
+    title: str
+    content: str
+
+
+@dataclass
+class Equation:
+    equation_id: int
+    expression: str
+    section: str
+
+
+@dataclass
+class PaperFigure:
+    figure_id: int
+    page_number: int
+    image_index: int
+    width: int
+    height: int
+
+
+@dataclass
+class PaperTable:
+    table_id: int
+    page_number: int
+    rows: list[list[str]]
+
+
+@dataclass
+class Paper:
+    source_path: str
+
+    metadata: DocumentMetadata
+
+    pages: list[RawPage] = field(default_factory=list)
+
+    sections: list[PaperSection] = field(default_factory=list)
+
+    equations: list[Equation] = field(default_factory=list)
+
+    figures: list[PaperFigure] = field(default_factory=list)
+
+    tables: list[PaperTable] = field(default_factory=list)
