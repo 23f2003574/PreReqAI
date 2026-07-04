@@ -13,3 +13,8 @@ from .figure_extractor import (
     ParsedPaperWithFigures,
     FigureExtractor,
 )
+from .table_extractor import (
+    PaperTable,
+    ParsedPaperWithTables,
+    TableExtractor,
+)
