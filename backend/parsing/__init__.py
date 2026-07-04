@@ -8,3 +8,8 @@ from .equation_extractor import (
     ParsedPaperWithEquations,
     EquationExtractor,
 )
+from .figure_extractor import (
+    PaperFigure,
+    ParsedPaperWithFigures,
+    FigureExtractor,
+)
