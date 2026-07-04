@@ -3,3 +3,7 @@ from .pdf_ingestion_engine import (
     RawPage,
     PDFIngestionEngine,
 )
+from .document_metadata_extractor import (
+    DocumentMetadata,
+    DocumentMetadataExtractor,
+)

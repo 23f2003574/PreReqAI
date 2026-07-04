@@ -2,6 +2,8 @@ import fitz  # PyMuPDF
 
 from dataclasses import dataclass, field
 
+from .document_metadata_extractor import DocumentMetadata
+
 
 @dataclass
 class RawPage:
@@ -12,6 +14,7 @@ class RawPage:
 @dataclass
 class RawDocument:
     source_path: str
+    metadata: DocumentMetadata
     pages: list[RawPage] = field(default_factory=list)
 
     @property
@@ -32,6 +35,10 @@ class PDFIngestionEngine:
     def ingest(self, file_path: str) -> RawDocument:
         pdf = fitz.open(file_path)
 
+        from .document_metadata_extractor import DocumentMetadataExtractor
+
+        metadata = DocumentMetadataExtractor().extract(file_path)
+
         pages = []
 
         for page_number, page in enumerate(pdf, start=1):
@@ -46,5 +53,6 @@ class PDFIngestionEngine:
 
         return RawDocument(
             source_path=file_path,
+            metadata=metadata,
             pages=pages,
         )
