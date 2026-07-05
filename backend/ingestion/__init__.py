@@ -11,3 +11,8 @@ from .research_source_detector import (
     ResearchSource,
     ResearchSourceDetector,
 )
+from .research_source_resolver import (
+    BaseSourceResolver,
+    PDFResolver,
+    ResearchSourceResolver,
+)

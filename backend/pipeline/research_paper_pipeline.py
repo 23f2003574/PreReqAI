@@ -4,6 +4,10 @@ from backend.ingestion import (
     ResearchSourceDetector,
 )
 
+from backend.ingestion import (
+    ResearchSourceResolver,
+)
+
 from backend.parsing import (
     ScientificSectionParser,
     EquationExtractor,
@@ -34,6 +38,8 @@ class ResearchPaperPipeline:
 
         self.source_detector = ResearchSourceDetector()
 
+        self.source_resolver = ResearchSourceResolver()
+
         self.section_parser = ScientificSectionParser()
 
         self.equation_extractor = EquationExtractor()
@@ -59,14 +65,12 @@ class ResearchPaperPipeline:
             file_path,
         )
 
-        if source.source_type != "pdf":
-
-            raise NotImplementedError(
-                f"{source.source_type} ingestion will be implemented in upcoming commits."
-            )
+        pdf_path = self.source_resolver.resolve(
+            source,
+        )
 
         document = self.ingestion.ingest(
-            source.identifier,
+            pdf_path,
         )
 
         paper = self.section_parser.parse(document)
