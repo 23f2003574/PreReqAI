@@ -26,6 +26,10 @@ from backend.concepts import (
     RuleBasedConceptDetector,
 )
 
+from backend.graph import (
+    KnowledgeGraphBuilder,
+)
+
 from backend.serialization import (
     PaperSerializer,
 )
@@ -66,6 +70,10 @@ class ResearchPaperPipeline:
         self.paragraph_segmenter = ParagraphSegmenter()
 
         self.concept_detector = RuleBasedConceptDetector()
+
+        self.graph_builder = (
+            KnowledgeGraphBuilder()
+        )
 
         self.serializer = PaperSerializer()
 
@@ -113,6 +121,10 @@ class ResearchPaperPipeline:
         )
 
         paper = self.concept_detector.detect(
+            paper,
+        )
+
+        paper = self.graph_builder.build(
             paper,
         )
 

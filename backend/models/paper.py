@@ -6,6 +6,7 @@ from backend.ingestion import (
     RawPage,
 )
 from .concept import DetectedConcept
+from .knowledge_graph import KnowledgeGraph
 
 
 @dataclass
@@ -81,3 +82,7 @@ class Paper:
     algorithms: list[PaperAlgorithm] = field(default_factory=list)
 
     concepts: list[DetectedConcept] = field(default_factory=list)
+
+    knowledge_graph: KnowledgeGraph = field(
+        default_factory=KnowledgeGraph
+    )

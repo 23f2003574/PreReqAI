@@ -9,3 +9,8 @@ from .paper import (
     PaperAlgorithm,
 )
 from .concept import DetectedConcept
+from .knowledge_graph import (
+    GraphNode,
+    GraphEdge,
+    KnowledgeGraph,
+)
