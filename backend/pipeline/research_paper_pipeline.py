@@ -30,6 +30,10 @@ from backend.graph import (
     KnowledgeGraphBuilder,
 )
 
+from backend.graph import (
+    ConceptRelationshipBuilder,
+)
+
 from backend.serialization import (
     PaperSerializer,
 )
@@ -73,6 +77,10 @@ class ResearchPaperPipeline:
 
         self.graph_builder = (
             KnowledgeGraphBuilder()
+        )
+
+        self.relationship_builder = (
+            ConceptRelationshipBuilder()
         )
 
         self.serializer = PaperSerializer()
@@ -125,6 +133,10 @@ class ResearchPaperPipeline:
         )
 
         paper = self.graph_builder.build(
+            paper,
+        )
+
+        paper = self.relationship_builder.build(
             paper,
         )
 
