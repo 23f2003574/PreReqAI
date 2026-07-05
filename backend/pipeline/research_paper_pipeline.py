@@ -8,6 +8,10 @@ from backend.ingestion import (
     ResearchSourceResolver,
 )
 
+from backend.ingestion import (
+    ResearchMetadataResolver,
+)
+
 from backend.parsing import (
     ScientificSectionParser,
     EquationExtractor,
@@ -39,6 +43,10 @@ class ResearchPaperPipeline:
         self.source_detector = ResearchSourceDetector()
 
         self.source_resolver = ResearchSourceResolver()
+
+        self.metadata_resolver = (
+            ResearchMetadataResolver()
+        )
 
         self.section_parser = ScientificSectionParser()
 

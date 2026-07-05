@@ -16,3 +16,7 @@ from .research_source_resolver import (
     PDFResolver,
     ResearchSourceResolver,
 )
+from .research_metadata_resolver import (
+    PaperMetadata,
+    ResearchMetadataResolver,
+)
