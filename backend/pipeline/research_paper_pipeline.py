@@ -1,5 +1,9 @@
 from backend.ingestion import PDFIngestionEngine
 
+from backend.ingestion import (
+    ResearchSourceDetector,
+)
+
 from backend.parsing import (
     ScientificSectionParser,
     EquationExtractor,
@@ -28,6 +32,8 @@ class ResearchPaperPipeline:
 
         self.ingestion = PDFIngestionEngine()
 
+        self.source_detector = ResearchSourceDetector()
+
         self.section_parser = ScientificSectionParser()
 
         self.equation_extractor = EquationExtractor()
@@ -49,7 +55,19 @@ class ResearchPaperPipeline:
         file_path: str,
     ) -> dict:
 
-        document = self.ingestion.ingest(file_path)
+        source = self.source_detector.detect(
+            file_path,
+        )
+
+        if source.source_type != "pdf":
+
+            raise NotImplementedError(
+                f"{source.source_type} ingestion will be implemented in upcoming commits."
+            )
+
+        document = self.ingestion.ingest(
+            source.identifier,
+        )
 
         paper = self.section_parser.parse(document)
 

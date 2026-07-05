@@ -7,3 +7,7 @@ from .document_metadata_extractor import (
     DocumentMetadata,
     DocumentMetadataExtractor,
 )
+from .research_source_detector import (
+    ResearchSource,
+    ResearchSourceDetector,
+)
