@@ -25,3 +25,4 @@ build/
 # Logs and local data
 *.log
 .cache/
+cache/

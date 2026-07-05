@@ -1,24 +1,14 @@
-from abc import ABC, abstractmethod
-
 from .research_source_detector import (
     ResearchSource,
 )
 
+from .base_source_resolver import (
+    BaseSourceResolver,
+)
 
-class BaseSourceResolver(ABC):
-    """
-    Base interface for all research source
-    resolvers.
-    """
-
-    @abstractmethod
-    def resolve(
-        self,
-        source: ResearchSource,
-    ) -> str:
-        """
-        Returns the path to a local PDF.
-        """
+from .arxiv_resolver import (
+    ArxivResolver,
+)
 
 
 class PDFResolver(BaseSourceResolver):
@@ -41,6 +31,7 @@ class ResearchSourceResolver:
 
         self._resolvers = {
             "pdf": PDFResolver(),
+            "arxiv": ArxivResolver(),
         }
 
     def resolve(

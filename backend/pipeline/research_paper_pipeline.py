@@ -78,12 +78,12 @@ class ResearchPaperPipeline:
         paper = self.equation_extractor.extract(paper)
 
         paper = self.figure_extractor.extract(
-            file_path,
+            pdf_path,
             paper,
         )
 
         paper = self.table_extractor.extract(
-            file_path,
+            pdf_path,
             paper,
         )
 
