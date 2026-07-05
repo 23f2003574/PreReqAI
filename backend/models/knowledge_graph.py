@@ -41,3 +41,13 @@ class KnowledgeGraph:
     ):
 
         self.edges.append(edge)
+
+    def node_exists(
+        self,
+        node_id: str,
+    ) -> bool:
+
+        return any(
+            node.node_id == node_id
+            for node in self.nodes
+        )
