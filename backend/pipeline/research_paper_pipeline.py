@@ -38,6 +38,10 @@ from backend.graph import (
     ParagraphConceptRelationshipBuilder,
 )
 
+from backend.graph import (
+    LearningPathGenerator,
+)
+
 from backend.serialization import (
     PaperSerializer,
 )
@@ -89,6 +93,10 @@ class ResearchPaperPipeline:
 
         self.paragraph_relationship_builder = (
             ParagraphConceptRelationshipBuilder()
+        )
+
+        self.learning_path_generator = (
+            LearningPathGenerator()
         )
 
         self.serializer = PaperSerializer()

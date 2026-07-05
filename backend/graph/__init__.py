@@ -13,3 +13,6 @@ from .knowledge_graph_traversal_engine import (
 from .knowledge_graph_query_engine import (
     KnowledgeGraphQueryEngine,
 )
+from .learning_path_generator import (
+    LearningPathGenerator,
+)
