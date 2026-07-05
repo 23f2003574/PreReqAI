@@ -5,3 +5,7 @@ from .concept_registry import (
 from .rule_based_concept_detector import (
     RuleBasedConceptDetector,
 )
+from .concept_explanation_engine import (
+    ConceptExplanation,
+    ConceptExplanationEngine,
+)

@@ -60,6 +60,13 @@ class PaperAlgorithm:
 
 
 @dataclass
+class ConceptExplanation:
+    concept: str
+    definition: str
+    difficulty: str
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -86,3 +93,7 @@ class Paper:
     knowledge_graph: KnowledgeGraph = field(
         default_factory=KnowledgeGraph
     )
+
+    concept_explanations: list[
+        ConceptExplanation
+    ] = field(default_factory=list)

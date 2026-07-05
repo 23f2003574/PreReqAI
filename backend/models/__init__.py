@@ -7,6 +7,7 @@ from .paper import (
     PaperReference,
     Paragraph,
     PaperAlgorithm,
+    ConceptExplanation,
 )
 from .concept import DetectedConcept
 from .knowledge_graph import (
