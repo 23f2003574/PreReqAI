@@ -10,3 +10,6 @@ from .paragraph_concept_relationship_builder import (
 from .knowledge_graph_traversal_engine import (
     KnowledgeGraphTraversalEngine,
 )
+from .knowledge_graph_query_engine import (
+    KnowledgeGraphQueryEngine,
+)
