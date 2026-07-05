@@ -50,6 +50,10 @@ from backend.serialization import (
     PaperSerializer,
 )
 
+from backend.reporting import (
+    LearningReportGenerator,
+)
+
 
 class ResearchPaperPipeline:
     """
@@ -108,6 +112,10 @@ class ResearchPaperPipeline:
         )
 
         self.serializer = PaperSerializer()
+
+        self.report_generator = (
+            LearningReportGenerator()
+        )
 
     def run(
         self,
@@ -173,6 +181,6 @@ class ResearchPaperPipeline:
             .build(paper)
         )
 
-        return self.serializer.serialize(
+        return self.report_generator.generate(
             paper,
         )
