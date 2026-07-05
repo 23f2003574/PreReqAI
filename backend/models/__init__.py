@@ -6,5 +6,6 @@ from .paper import (
     PaperTable,
     PaperReference,
     Paragraph,
+    PaperAlgorithm,
 )
 from .concept import DetectedConcept

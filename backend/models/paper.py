@@ -51,6 +51,14 @@ class Paragraph:
 
 
 @dataclass
+class PaperAlgorithm:
+    algorithm_id: int
+    title: str
+    content: str
+    section: str
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -69,5 +77,7 @@ class Paper:
     references: list[PaperReference] = field(default_factory=list)
 
     paragraphs: list[Paragraph] = field(default_factory=list)
+
+    algorithms: list[PaperAlgorithm] = field(default_factory=list)
 
     concepts: list[DetectedConcept] = field(default_factory=list)

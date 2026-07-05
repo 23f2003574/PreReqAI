@@ -19,6 +19,7 @@ from backend.parsing import (
     TableExtractor,
     ReferenceExtractor,
     ParagraphSegmenter,
+    AlgorithmExtractor,
 )
 
 from backend.concepts import (
@@ -58,6 +59,10 @@ class ResearchPaperPipeline:
 
         self.reference_extractor = ReferenceExtractor()
 
+        self.algorithm_extractor = (
+            AlgorithmExtractor()
+        )
+
         self.paragraph_segmenter = ParagraphSegmenter()
 
         self.concept_detector = RuleBasedConceptDetector()
@@ -96,6 +101,10 @@ class ResearchPaperPipeline:
         )
 
         paper = self.reference_extractor.extract(
+            paper,
+        )
+
+        paper = self.algorithm_extractor.extract(
             paper,
         )
 
