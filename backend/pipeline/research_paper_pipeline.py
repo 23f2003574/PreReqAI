@@ -58,6 +58,10 @@ from backend.prerequisites import (
     StudyActionPlanGenerator,
 )
 
+from backend.resources import (
+    LearningResourceRecommender,
+)
+
 from backend.graph import (
     KnowledgeGraphBuilder,
 )
@@ -145,6 +149,10 @@ class ResearchPaperPipeline:
 
         self.study_action_generator = (
             StudyActionPlanGenerator()
+        )
+
+        self.resource_recommender = (
+            LearningResourceRecommender()
         )
 
         self.explanation_engine = (
@@ -254,6 +262,12 @@ class ResearchPaperPipeline:
 
         paper = (
             self.study_action_generator.generate(
+                paper,
+            )
+        )
+
+        paper = (
+            self.resource_recommender.recommend(
                 paper,
             )
         )

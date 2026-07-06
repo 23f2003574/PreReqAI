@@ -15,6 +15,7 @@ from .paper import (
     StudyTimeEstimate,
     DifficultyExplanation,
     StudyAction,
+    LearningResource,
 )
 from .concept import DetectedConcept
 from .knowledge_graph import (

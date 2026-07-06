@@ -165,4 +165,18 @@ class LearningReportGenerator:
 
                 for action in paper.study_actions
             ],
+
+            "learning_resources": [
+
+                {
+                    "concept": resource.concept,
+                    "title": resource.title,
+                    "provider": resource.provider,
+                    "url": resource.url,
+                    "estimated_hours": resource.estimated_hours,
+                }
+
+                for resource
+                in paper.learning_resources
+            ],
         }

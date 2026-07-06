@@ -115,6 +115,15 @@ class StudyAction:
 
 
 @dataclass
+class LearningResource:
+    concept: str
+    title: str
+    provider: str
+    url: str
+    estimated_hours: int
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -168,4 +177,8 @@ class Paper:
 
     study_actions: list[
         StudyAction
+    ] = field(default_factory=list)
+
+    learning_resources: list[
+        LearningResource
     ] = field(default_factory=list)
