@@ -30,6 +30,10 @@ from backend.concepts import (
     ConceptExplanationEngine,
 )
 
+from backend.prerequisites import (
+    PrerequisiteDetector,
+)
+
 from backend.graph import (
     KnowledgeGraphBuilder,
 )
@@ -90,6 +94,10 @@ class ResearchPaperPipeline:
         self.paragraph_segmenter = ParagraphSegmenter()
 
         self.concept_detector = RuleBasedConceptDetector()
+
+        self.prerequisite_detector = (
+            PrerequisiteDetector()
+        )
 
         self.explanation_engine = (
             ConceptExplanationEngine()
@@ -161,6 +169,10 @@ class ResearchPaperPipeline:
         )
 
         paper = self.concept_detector.detect(
+            paper,
+        )
+
+        paper = self.prerequisite_detector.detect(
             paper,
         )
 

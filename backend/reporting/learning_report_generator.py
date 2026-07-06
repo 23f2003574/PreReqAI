@@ -80,5 +80,16 @@ class LearningReportGenerator:
                 explanation.difficulty
 
                 for explanation in paper.concept_explanations
-            }
+            },
+
+            "prerequisites": [
+
+                {
+                    "concept": prerequisite.concept,
+                    "reason": prerequisite.reason,
+                    "confidence": prerequisite.confidence,
+                }
+
+                for prerequisite in paper.prerequisites
+            ],
         }

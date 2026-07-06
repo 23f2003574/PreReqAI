@@ -67,6 +67,13 @@ class ConceptExplanation:
 
 
 @dataclass
+class Prerequisite:
+    concept: str
+    reason: str
+    confidence: float
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -96,4 +103,8 @@ class Paper:
 
     concept_explanations: list[
         ConceptExplanation
+    ] = field(default_factory=list)
+
+    prerequisites: list[
+        Prerequisite
     ] = field(default_factory=list)
