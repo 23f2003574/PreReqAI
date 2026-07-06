@@ -143,4 +143,15 @@ class LearningReportGenerator:
                 if paper.study_time is not None
                 else None
             ),
+
+            "difficulty_explanations": [
+
+                {
+                    "title": explanation.title,
+                    "description": explanation.description,
+                }
+
+                for explanation
+                in paper.difficulty_explanations
+            ],
         }

@@ -102,6 +102,12 @@ class StudyTimeEstimate:
 
 
 @dataclass
+class DifficultyExplanation:
+    title: str
+    description: str
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -148,3 +154,7 @@ class Paper:
     difficulty: PaperDifficulty | None = None
 
     study_time: StudyTimeEstimate | None = None
+
+    difficulty_explanations: list[
+        DifficultyExplanation
+    ] = field(default_factory=list)

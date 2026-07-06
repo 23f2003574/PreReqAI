@@ -13,6 +13,7 @@ from .paper import (
     LearningStep,
     PaperDifficulty,
     StudyTimeEstimate,
+    DifficultyExplanation,
 )
 from .concept import DetectedConcept
 from .knowledge_graph import (

@@ -13,3 +13,6 @@ from .difficulty_assessment_engine import (
 from .study_time_estimator import (
     StudyTimeEstimator,
 )
+from .difficulty_explanation_engine import (
+    DifficultyExplanationEngine,
+)

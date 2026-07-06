@@ -50,6 +50,10 @@ from backend.prerequisites import (
     StudyTimeEstimator,
 )
 
+from backend.prerequisites import (
+    DifficultyExplanationEngine,
+)
+
 from backend.graph import (
     KnowledgeGraphBuilder,
 )
@@ -129,6 +133,10 @@ class ResearchPaperPipeline:
 
         self.study_time_estimator = (
             StudyTimeEstimator()
+        )
+
+        self.difficulty_explanation_engine = (
+            DifficultyExplanationEngine()
         )
 
         self.explanation_engine = (
@@ -223,6 +231,11 @@ class ResearchPaperPipeline:
             self.difficulty_engine.assess(
                 paper,
             )
+        )
+
+        paper = (
+            self.difficulty_explanation_engine
+            .explain(paper)
         )
 
         paper = (
