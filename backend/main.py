@@ -1,0 +1,13 @@
+from fastapi import FastAPI
+
+from backend.api.prerequisite_routes import (
+    router as prerequisite_router,
+)
+
+app = FastAPI(
+    title="PreReqAI",
+)
+
+app.include_router(
+    prerequisite_router,
+)
