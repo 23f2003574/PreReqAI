@@ -154,4 +154,15 @@ class LearningReportGenerator:
                 for explanation
                 in paper.difficulty_explanations
             ],
+
+            "study_actions": [
+
+                {
+                    "priority": action.priority,
+                    "title": action.title,
+                    "description": action.description,
+                }
+
+                for action in paper.study_actions
+            ],
         }

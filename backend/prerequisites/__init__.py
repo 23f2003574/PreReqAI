@@ -16,3 +16,6 @@ from .study_time_estimator import (
 from .difficulty_explanation_engine import (
     DifficultyExplanationEngine,
 )
+from .study_action_plan_generator import (
+    StudyActionPlanGenerator,
+)

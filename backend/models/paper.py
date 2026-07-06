@@ -108,6 +108,13 @@ class DifficultyExplanation:
 
 
 @dataclass
+class StudyAction:
+    priority: int
+    title: str
+    description: str
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -157,4 +164,8 @@ class Paper:
 
     difficulty_explanations: list[
         DifficultyExplanation
+    ] = field(default_factory=list)
+
+    study_actions: list[
+        StudyAction
     ] = field(default_factory=list)

@@ -54,6 +54,10 @@ from backend.prerequisites import (
     DifficultyExplanationEngine,
 )
 
+from backend.prerequisites import (
+    StudyActionPlanGenerator,
+)
+
 from backend.graph import (
     KnowledgeGraphBuilder,
 )
@@ -137,6 +141,10 @@ class ResearchPaperPipeline:
 
         self.difficulty_explanation_engine = (
             DifficultyExplanationEngine()
+        )
+
+        self.study_action_generator = (
+            StudyActionPlanGenerator()
         )
 
         self.explanation_engine = (
@@ -240,6 +248,12 @@ class ResearchPaperPipeline:
 
         paper = (
             self.study_time_estimator.estimate(
+                paper,
+            )
+        )
+
+        paper = (
+            self.study_action_generator.generate(
                 paper,
             )
         )
