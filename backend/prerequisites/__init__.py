@@ -10,3 +10,6 @@ from .prerequisite_learning_planner import (
 from .difficulty_assessment_engine import (
     DifficultyAssessmentEngine,
 )
+from .study_time_estimator import (
+    StudyTimeEstimator,
+)

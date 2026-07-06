@@ -126,4 +126,21 @@ class LearningReportGenerator:
                 if paper.difficulty is not None
                 else None
             ),
+
+            "study_time": (
+
+                {
+                    "total_hours":
+                        paper.study_time.total_hours,
+
+                    "recommended_days":
+                        paper.study_time.recommended_days,
+
+                    "hours_per_day":
+                        paper.study_time.average_hours_per_day,
+                }
+
+                if paper.study_time is not None
+                else None
+            ),
         }

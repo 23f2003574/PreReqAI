@@ -95,6 +95,13 @@ class PaperDifficulty:
 
 
 @dataclass
+class StudyTimeEstimate:
+    total_hours: int
+    recommended_days: int
+    average_hours_per_day: float
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -139,3 +146,5 @@ class Paper:
     ] = field(default_factory=list)
 
     difficulty: PaperDifficulty | None = None
+
+    study_time: StudyTimeEstimate | None = None
