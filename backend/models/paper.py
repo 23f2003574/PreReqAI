@@ -74,6 +74,13 @@ class Prerequisite:
 
 
 @dataclass
+class MissingPrerequisite:
+    concept: str
+    satisfied: bool
+    reason: str
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -107,4 +114,8 @@ class Paper:
 
     prerequisites: list[
         Prerequisite
+    ] = field(default_factory=list)
+
+    missing_prerequisites: list[
+        MissingPrerequisite
     ] = field(default_factory=list)

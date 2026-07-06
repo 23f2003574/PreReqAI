@@ -9,6 +9,7 @@ from .paper import (
     PaperAlgorithm,
     ConceptExplanation,
     Prerequisite,
+    MissingPrerequisite,
 )
 from .concept import DetectedConcept
 from .knowledge_graph import (

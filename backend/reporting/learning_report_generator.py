@@ -92,4 +92,15 @@ class LearningReportGenerator:
 
                 for prerequisite in paper.prerequisites
             ],
+
+            "missing_prerequisites": [
+
+                {
+                    "concept": prerequisite.concept,
+                    "satisfied": prerequisite.satisfied,
+                    "reason": prerequisite.reason,
+                }
+
+                for prerequisite in paper.missing_prerequisites
+            ],
         }
