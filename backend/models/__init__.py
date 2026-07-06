@@ -16,6 +16,7 @@ from .paper import (
     DifficultyExplanation,
     StudyAction,
     LearningResource,
+    RoadmapStep,
 )
 from .concept import DetectedConcept
 from .knowledge_graph import (

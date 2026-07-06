@@ -62,6 +62,10 @@ from backend.resources import (
     LearningResourceRecommender,
 )
 
+from backend.resources import (
+    StudyRoadmapGenerator,
+)
+
 from backend.graph import (
     KnowledgeGraphBuilder,
 )
@@ -153,6 +157,10 @@ class ResearchPaperPipeline:
 
         self.resource_recommender = (
             LearningResourceRecommender()
+        )
+
+        self.study_roadmap_generator = (
+            StudyRoadmapGenerator()
         )
 
         self.explanation_engine = (
@@ -268,6 +276,12 @@ class ResearchPaperPipeline:
 
         paper = (
             self.resource_recommender.recommend(
+                paper,
+            )
+        )
+
+        paper = (
+            self.study_roadmap_generator.generate(
                 paper,
             )
         )

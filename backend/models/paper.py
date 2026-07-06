@@ -124,6 +124,15 @@ class LearningResource:
 
 
 @dataclass
+class RoadmapStep:
+    step: int
+    concept: str
+    resource_title: str
+    provider: str
+    estimated_hours: int
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -181,4 +190,8 @@ class Paper:
 
     learning_resources: list[
         LearningResource
+    ] = field(default_factory=list)
+
+    study_roadmap: list[
+        RoadmapStep
     ] = field(default_factory=list)

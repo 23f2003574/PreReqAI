@@ -179,4 +179,18 @@ class LearningReportGenerator:
                 for resource
                 in paper.learning_resources
             ],
+
+            "study_roadmap": [
+
+                {
+                    "step": roadmap.step,
+                    "concept": roadmap.concept,
+                    "resource": roadmap.resource_title,
+                    "provider": roadmap.provider,
+                    "estimated_hours": roadmap.estimated_hours,
+                }
+
+                for roadmap
+                in paper.study_roadmap
+            ],
         }
