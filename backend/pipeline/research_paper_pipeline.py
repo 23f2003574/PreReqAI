@@ -70,6 +70,10 @@ from backend.progress import (
     StudyProgressTracker,
 )
 
+from backend.progress import (
+    PaperReadinessEngine,
+)
+
 from backend.graph import (
     KnowledgeGraphBuilder,
 )
@@ -169,6 +173,10 @@ class ResearchPaperPipeline:
 
         self.progress_tracker = (
             StudyProgressTracker()
+        )
+
+        self.readiness_engine = (
+            PaperReadinessEngine()
         )
 
         self.explanation_engine = (
@@ -296,6 +304,12 @@ class ResearchPaperPipeline:
 
         paper = (
             self.progress_tracker.initialize(
+                paper,
+            )
+        )
+
+        paper = (
+            self.readiness_engine.evaluate(
                 paper,
             )
         )

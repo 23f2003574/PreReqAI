@@ -205,4 +205,27 @@ class LearningReportGenerator:
                 for progress
                 in paper.study_progress
             ],
+
+            "readiness": (
+
+                {
+                    "progress_percent":
+                        paper.readiness.progress_percent,
+
+                    "ready_to_read":
+                        paper.readiness.ready_to_read,
+
+                    "completed_concepts":
+                        paper.readiness.completed_concepts,
+
+                    "total_concepts":
+                        paper.readiness.total_concepts,
+
+                    "status":
+                        paper.readiness.status,
+                }
+
+                if paper.readiness is not None
+                else None
+            ),
         }

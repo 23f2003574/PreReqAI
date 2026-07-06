@@ -140,6 +140,15 @@ class StudyProgress:
 
 
 @dataclass
+class PaperReadiness:
+    progress_percent: int
+    ready_to_read: bool
+    completed_concepts: int
+    total_concepts: int
+    status: str
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -206,3 +215,5 @@ class Paper:
     study_progress: list[
         StudyProgress
     ] = field(default_factory=list)
+
+    readiness: PaperReadiness | None = None
