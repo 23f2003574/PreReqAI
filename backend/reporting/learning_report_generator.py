@@ -193,4 +193,16 @@ class LearningReportGenerator:
                 for roadmap
                 in paper.study_roadmap
             ],
+
+            "study_progress": [
+
+                {
+                    "concept": progress.concept,
+                    "completed": progress.completed,
+                    "progress_percent": progress.progress_percent,
+                }
+
+                for progress
+                in paper.study_progress
+            ],
         }

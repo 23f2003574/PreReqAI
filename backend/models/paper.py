@@ -133,6 +133,13 @@ class RoadmapStep:
 
 
 @dataclass
+class StudyProgress:
+    concept: str
+    completed: bool
+    progress_percent: int
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -194,4 +201,8 @@ class Paper:
 
     study_roadmap: list[
         RoadmapStep
+    ] = field(default_factory=list)
+
+    study_progress: list[
+        StudyProgress
     ] = field(default_factory=list)

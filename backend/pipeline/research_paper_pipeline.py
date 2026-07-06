@@ -66,6 +66,10 @@ from backend.resources import (
     StudyRoadmapGenerator,
 )
 
+from backend.progress import (
+    StudyProgressTracker,
+)
+
 from backend.graph import (
     KnowledgeGraphBuilder,
 )
@@ -161,6 +165,10 @@ class ResearchPaperPipeline:
 
         self.study_roadmap_generator = (
             StudyRoadmapGenerator()
+        )
+
+        self.progress_tracker = (
+            StudyProgressTracker()
         )
 
         self.explanation_engine = (
@@ -282,6 +290,12 @@ class ResearchPaperPipeline:
 
         paper = (
             self.study_roadmap_generator.generate(
+                paper,
+            )
+        )
+
+        paper = (
+            self.progress_tracker.initialize(
                 paper,
             )
         )
