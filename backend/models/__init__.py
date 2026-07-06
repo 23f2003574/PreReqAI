@@ -19,6 +19,7 @@ from .paper import (
     RoadmapStep,
     StudyProgress,
     PaperReadiness,
+    PrerequisiteJustification,
 )
 from .concept import DetectedConcept
 from .knowledge_graph import (

@@ -228,4 +228,15 @@ class LearningReportGenerator:
                 if paper.readiness is not None
                 else None
             ),
+
+            "prerequisite_justifications": [
+
+                {
+                    "concept": item.concept,
+                    "justification": item.justification,
+                }
+
+                for item
+                in paper.prerequisite_justifications
+            ],
         }

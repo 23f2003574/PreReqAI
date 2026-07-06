@@ -19,3 +19,6 @@ from .difficulty_explanation_engine import (
 from .study_action_plan_generator import (
     StudyActionPlanGenerator,
 )
+from .prerequisite_justification_engine import (
+    PrerequisiteJustificationEngine,
+)

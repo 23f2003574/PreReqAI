@@ -149,6 +149,12 @@ class PaperReadiness:
 
 
 @dataclass
+class PrerequisiteJustification:
+    concept: str
+    justification: str
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -217,3 +223,7 @@ class Paper:
     ] = field(default_factory=list)
 
     readiness: PaperReadiness | None = None
+
+    prerequisite_justifications: list[
+        PrerequisiteJustification
+    ] = field(default_factory=list)

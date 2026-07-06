@@ -58,6 +58,10 @@ from backend.prerequisites import (
     StudyActionPlanGenerator,
 )
 
+from backend.prerequisites import (
+    PrerequisiteJustificationEngine,
+)
+
 from backend.resources import (
     LearningResourceRecommender,
 )
@@ -137,6 +141,10 @@ class ResearchPaperPipeline:
 
         self.prerequisite_detector = (
             PrerequisiteDetector()
+        )
+
+        self.justification_engine = (
+            PrerequisiteJustificationEngine()
         )
 
         self.missing_prerequisite_analyzer = (
@@ -254,6 +262,12 @@ class ResearchPaperPipeline:
 
         paper = self.prerequisite_detector.detect(
             paper,
+        )
+
+        paper = (
+            self.justification_engine.justify(
+                paper,
+            )
         )
 
         paper = (
