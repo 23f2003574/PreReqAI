@@ -81,6 +81,13 @@ class MissingPrerequisite:
 
 
 @dataclass
+class LearningStep:
+    order: int
+    concept: str
+    estimated_hours: int
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -118,4 +125,8 @@ class Paper:
 
     missing_prerequisites: list[
         MissingPrerequisite
+    ] = field(default_factory=list)
+
+    learning_plan: list[
+        LearningStep
     ] = field(default_factory=list)

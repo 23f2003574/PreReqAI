@@ -38,6 +38,10 @@ from backend.prerequisites import (
     MissingPrerequisiteAnalyzer,
 )
 
+from backend.prerequisites import (
+    PrerequisiteLearningPlanner,
+)
+
 from backend.graph import (
     KnowledgeGraphBuilder,
 )
@@ -105,6 +109,10 @@ class ResearchPaperPipeline:
 
         self.missing_prerequisite_analyzer = (
             MissingPrerequisiteAnalyzer()
+        )
+
+        self.learning_planner = (
+            PrerequisiteLearningPlanner()
         )
 
         self.explanation_engine = (
@@ -187,6 +195,12 @@ class ResearchPaperPipeline:
         paper = (
             self.missing_prerequisite_analyzer
             .analyze(paper)
+        )
+
+        paper = (
+            self.learning_planner.generate(
+                paper,
+            )
         )
 
         paper = self.explanation_engine.explain(

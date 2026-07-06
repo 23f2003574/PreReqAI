@@ -10,6 +10,7 @@ from .paper import (
     ConceptExplanation,
     Prerequisite,
     MissingPrerequisite,
+    LearningStep,
 )
 from .concept import DetectedConcept
 from .knowledge_graph import (

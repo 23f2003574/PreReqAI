@@ -103,4 +103,15 @@ class LearningReportGenerator:
 
                 for prerequisite in paper.missing_prerequisites
             ],
+
+            "learning_plan": [
+
+                {
+                    "step": step.order,
+                    "concept": step.concept,
+                    "estimated_hours": step.estimated_hours,
+                }
+
+                for step in paper.learning_plan
+            ],
         }

@@ -4,3 +4,6 @@ from .prerequisite_detector import (
 from .missing_prerequisite_analyzer import (
     MissingPrerequisiteAnalyzer,
 )
+from .prerequisite_learning_planner import (
+    PrerequisiteLearningPlanner,
+)
