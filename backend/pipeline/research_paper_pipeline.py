@@ -42,6 +42,10 @@ from backend.prerequisites import (
     PrerequisiteLearningPlanner,
 )
 
+from backend.prerequisites import (
+    DifficultyAssessmentEngine,
+)
+
 from backend.graph import (
     KnowledgeGraphBuilder,
 )
@@ -113,6 +117,10 @@ class ResearchPaperPipeline:
 
         self.learning_planner = (
             PrerequisiteLearningPlanner()
+        )
+
+        self.difficulty_engine = (
+            DifficultyAssessmentEngine()
         )
 
         self.explanation_engine = (
@@ -199,6 +207,12 @@ class ResearchPaperPipeline:
 
         paper = (
             self.learning_planner.generate(
+                paper,
+            )
+        )
+
+        paper = (
+            self.difficulty_engine.assess(
                 paper,
             )
         )

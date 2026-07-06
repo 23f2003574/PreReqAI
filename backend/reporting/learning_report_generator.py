@@ -114,4 +114,16 @@ class LearningReportGenerator:
 
                 for step in paper.learning_plan
             ],
+
+            "paper_difficulty": (
+
+                {
+                    "level": paper.difficulty.level,
+                    "score": paper.difficulty.score,
+                    "explanation": paper.difficulty.explanation,
+                }
+
+                if paper.difficulty is not None
+                else None
+            ),
         }

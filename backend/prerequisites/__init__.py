@@ -7,3 +7,6 @@ from .missing_prerequisite_analyzer import (
 from .prerequisite_learning_planner import (
     PrerequisiteLearningPlanner,
 )
+from .difficulty_assessment_engine import (
+    DifficultyAssessmentEngine,
+)

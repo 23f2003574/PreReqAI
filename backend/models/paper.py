@@ -88,6 +88,13 @@ class LearningStep:
 
 
 @dataclass
+class PaperDifficulty:
+    level: str
+    score: float
+    explanation: str
+
+
+@dataclass
 class Paper:
     source_path: str
 
@@ -130,3 +137,5 @@ class Paper:
     learning_plan: list[
         LearningStep
     ] = field(default_factory=list)
+
+    difficulty: PaperDifficulty | None = None

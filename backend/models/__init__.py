@@ -11,6 +11,7 @@ from .paper import (
     Prerequisite,
     MissingPrerequisite,
     LearningStep,
+    PaperDifficulty,
 )
 from .concept import DetectedConcept
 from .knowledge_graph import (
