@@ -12,6 +12,10 @@ from .misconception_registry import (
     COMMON_MISCONCEPTIONS,
 )
 
+from .analogy_registry import (
+    COMMON_ANALOGIES,
+)
+
 
 class TutorPromptBuilder:
     """
@@ -72,11 +76,45 @@ Instructions:
 Common Misconceptions:
 {self.misconception_examples(context)}
 
+Relevant Analogies:
+{self.analogy_examples(context)}
+
 Rules:
 
 - Ground every answer in the supplied context.
 - Avoid introducing unsupported claims.
 """
+
+    def analogy_examples(
+
+        self,
+
+        context: RetrievedContext,
+
+    ) -> str:
+
+        analogies = []
+
+        for concept in context.concepts:
+
+            entry = COMMON_ANALOGIES.get(
+                concept,
+            )
+
+            if entry:
+
+                analogies.append(
+                    f"{entry['title']}: {entry['analogy']}"
+                )
+
+        if not analogies:
+
+            return "None known for these concepts."
+
+        return "\n".join(
+            f"- {analogy}"
+            for analogy in analogies
+        )
 
     def misconception_examples(
 
@@ -131,8 +169,13 @@ Rules:
             TutorMode.SUMMARY:
                 "Provide a concise summary.",
 
-            TutorMode.ANALOGY:
-                "Use analogies from everyday life whenever possible.",
+            TutorMode.ANALOGY: (
+                "Teach primarily through analogies. Begin with the "
+                "analogy. Then explain how every element of the "
+                "analogy maps to the research concept. Finally explain "
+                "where the analogy breaks down so the learner does not "
+                "overgeneralize."
+            ),
 
             TutorMode.MISCONCEPTION: (
                 "Explain the correct concept. Identify whether the "
