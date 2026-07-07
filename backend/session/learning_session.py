@@ -4,6 +4,7 @@ from uuid import uuid4
 from backend.models import Paper
 
 from .context_retriever import RetrievedContext
+from .learning_gap import LearningGap
 
 
 @dataclass
@@ -24,6 +25,10 @@ class LearningSession:
     current_context: RetrievedContext | None = None
 
     conversation_history: list[dict] = field(
+        default_factory=list
+    )
+
+    learning_gaps: list[LearningGap] = field(
         default_factory=list
     )
 

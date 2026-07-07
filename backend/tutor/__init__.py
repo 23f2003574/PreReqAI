@@ -16,4 +16,9 @@ from .tutor_prompt_builder import (
 
 from backend.session import (
     TutorMode,
+    LearningGap,
+)
+
+from .learning_gap_analyzer import (
+    LearningGapAnalyzer,
 )

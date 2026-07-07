@@ -2,6 +2,10 @@ from .tutor_mode import (
     TutorMode,
 )
 
+from .learning_gap import (
+    LearningGap,
+)
+
 from .learning_session import (
     LearningSession,
 )
