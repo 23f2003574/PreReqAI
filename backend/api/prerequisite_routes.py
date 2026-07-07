@@ -13,6 +13,10 @@ from backend.pipeline import (
     ResearchPaperPipeline,
 )
 
+from backend.session import (
+    session_manager,
+)
+
 router = APIRouter(
     prefix="/api/prerequisites",
     tags=["Prerequisite Explorer"],
@@ -61,11 +65,18 @@ async def analyze_prerequisites(
             missing_ok=True,
         )
 
+    session = session_manager.create(
+        paper_title=report["paper"]["title"],
+        report=report,
+    )
+
     return {
 
         "status": "success",
 
         "feature": "Prerequisite Explorer",
+
+        "session_id": session.session_id,
 
         "report": report,
     }
