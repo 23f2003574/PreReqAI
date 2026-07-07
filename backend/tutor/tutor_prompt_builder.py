@@ -20,11 +20,21 @@ from .socratic_question_bank import (
     SOCRATIC_QUESTIONS,
 )
 
+from .quiz_generator import (
+    QuizGenerator,
+)
+
 
 class TutorPromptBuilder:
     """
     Constructs prompts for every tutoring model.
     """
+
+    def __init__(self):
+
+        self.quiz_generator = (
+            QuizGenerator()
+        )
 
     def build(
 
@@ -86,11 +96,38 @@ Relevant Analogies:
 Possible Socratic Questions:
 {self.socratic_questions(context)}
 
+Suggested Quiz Questions:
+{self.quiz_questions(context)}
+
 Rules:
 
 - Ground every answer in the supplied context.
 - Avoid introducing unsupported claims.
 """
+
+    def quiz_questions(
+
+        self,
+
+        context: RetrievedContext,
+
+    ) -> str:
+
+        quiz = self.quiz_generator.generate(
+            context,
+        )
+
+        if not quiz:
+
+            return "None known for these concepts."
+
+        return "\n".join(
+
+            f"- ({item['difficulty']}) {item['question']} "
+            f"[Reference answer: {item['answer']}]"
+
+            for item in quiz
+        )
 
     def socratic_questions(
 
@@ -226,6 +263,13 @@ Rules:
                 "reveal explanations after the learner has attempted "
                 "an answer. Encourage reflection rather than "
                 "memorization."
+            ),
+
+            TutorMode.QUIZ: (
+                "Do not explain first. Present one quiz question. Wait "
+                "for the learner's answer. Afterwards: 1. Evaluate the "
+                "answer. 2. Explain why it is correct or incorrect. "
+                "3. Reinforce the underlying concept."
             ),
         }
 
