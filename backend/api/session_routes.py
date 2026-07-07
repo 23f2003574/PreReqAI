@@ -14,6 +14,7 @@ from backend.session import (
 
 from backend.tutor import (
     RuleBasedTutor,
+    TutorResponse,
 )
 
 router = APIRouter(
@@ -110,6 +111,22 @@ def ask_question(
             question=body.question,
         )
 
+        context_manager.update(
+            session,
+            context,
+        )
+
+        response = tutor.answer(
+
+            session=session,
+
+            paper=session.paper,
+
+            context=context,
+
+            question=body.question,
+        )
+
     else:
 
         context = RetrievedContext(
@@ -118,19 +135,15 @@ def ask_question(
             equations=[],
         )
 
-    context_manager.update(
-        session,
-        context,
-    )
+        context_manager.update(
+            session,
+            context,
+        )
 
-    response = tutor.answer(
-
-        paper=session.paper,
-
-        context=context,
-
-        question=body.question,
-    )
+        response = TutorResponse(
+            answer="No paper is attached to this session yet.",
+            confidence=0.0,
+        )
 
     return {
 

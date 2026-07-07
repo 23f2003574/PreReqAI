@@ -9,3 +9,7 @@ from .rule_based_tutor import (
 from .tutor_response import (
     TutorResponse,
 )
+
+from .tutor_prompt_builder import (
+    TutorPromptBuilder,
+)

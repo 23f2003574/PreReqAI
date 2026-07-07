@@ -8,6 +8,7 @@ from backend.models import (
 )
 
 from backend.session import (
+    LearningSession,
     RetrievedContext,
 )
 
@@ -26,6 +27,8 @@ class BaseTutor(ABC):
     def answer(
 
         self,
+
+        session: LearningSession,
 
         paper: Paper,
 

@@ -1,5 +1,5 @@
 from backend.tutor import (
-    RuleBasedTutor,
+    TutorPromptBuilder,
 )
 
 from backend.session import (
@@ -16,12 +16,25 @@ from backend.models import (
 )
 
 
-def test_rule_based_tutor():
+def test_prompt_builder():
+
+    builder = TutorPromptBuilder()
 
     session = LearningSession()
 
+    context = RetrievedContext(
+
+        concepts=["Attention"],
+
+        sections=["Method"],
+
+        equations=[],
+    )
+
     paper = Paper(
+
         source_path="paper.pdf",
+
         metadata=DocumentMetadata(
             title="Attention Is All You Need",
             author="Vaswani et al.",
@@ -33,33 +46,17 @@ def test_rule_based_tutor():
         ),
     )
 
-    context = RetrievedContext(
+    prompt = builder.build(
 
-        concepts=["Attention"],
+        session,
 
-        sections=["Method"],
+        paper,
 
-        equations=[],
+        context,
+
+        "Explain Attention",
     )
 
-    response = (
-        RuleBasedTutor()
-        .answer(
+    assert "Explain Attention" in prompt
 
-            session,
-
-            paper,
-
-            context,
-
-            "Explain Attention",
-        )
-    )
-
-    assert response.confidence == 0.0
-
-    assert (
-        "Attention"
-
-        in response.supporting_concepts
-    )
+    assert "Attention" in prompt
