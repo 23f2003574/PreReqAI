@@ -8,6 +8,10 @@ from backend.session import (
     TutorMode,
 )
 
+from .misconception_registry import (
+    COMMON_MISCONCEPTIONS,
+)
+
 
 class TutorPromptBuilder:
     """
@@ -65,11 +69,42 @@ Teaching Mode:
 Instructions:
 {self._mode_instruction(mode)}
 
+Common Misconceptions:
+{self.misconception_examples(context)}
+
 Rules:
 
 - Ground every answer in the supplied context.
 - Avoid introducing unsupported claims.
 """
+
+    def misconception_examples(
+
+        self,
+
+        context: RetrievedContext,
+
+    ) -> str:
+
+        examples = []
+
+        for concept in context.concepts:
+
+            examples.extend(
+                COMMON_MISCONCEPTIONS.get(
+                    concept,
+                    [],
+                )
+            )
+
+        if not examples:
+
+            return "None known for these concepts."
+
+        return "\n".join(
+            f"- {example}"
+            for example in examples
+        )
 
     def _mode_instruction(
 
@@ -98,6 +133,14 @@ Rules:
 
             TutorMode.ANALOGY:
                 "Use analogies from everyday life whenever possible.",
+
+            TutorMode.MISCONCEPTION: (
+                "Explain the correct concept. Identify whether the "
+                "learner's question contains a common misconception. "
+                "If so: 1. State the misconception. 2. Explain why it "
+                "is incorrect. 3. Explain the correct intuition. "
+                "4. End with a mental model."
+            ),
         }
 
         return instructions[mode]
