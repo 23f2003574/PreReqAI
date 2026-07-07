@@ -1,3 +1,5 @@
+from backend.models import Paper
+
 from .learning_session import (
     LearningSession,
 )
@@ -16,6 +18,7 @@ class SessionManager:
         self,
         paper_title: str,
         report: dict | None = None,
+        paper: Paper | None = None,
     ) -> LearningSession:
 
         session = LearningSession(
@@ -23,6 +26,8 @@ class SessionManager:
             paper_title=paper_title,
 
             report=report or {},
+
+            paper=paper,
         )
 
         self.sessions[

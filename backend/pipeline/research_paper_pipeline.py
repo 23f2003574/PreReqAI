@@ -102,6 +102,18 @@ from backend.reporting import (
     LearningReportGenerator,
 )
 
+from dataclasses import dataclass
+
+from backend.models import Paper
+
+
+@dataclass
+class PipelineResult:
+
+    paper: Paper
+
+    report: dict
+
 
 class ResearchPaperPipeline:
     """
@@ -216,7 +228,7 @@ class ResearchPaperPipeline:
     def run(
         self,
         file_path: str,
-    ) -> dict:
+    ) -> PipelineResult:
 
         source = self.source_detector.detect(
             file_path,
@@ -345,6 +357,9 @@ class ResearchPaperPipeline:
             .build(paper)
         )
 
-        return self.report_generator.generate(
-            paper,
+        return PipelineResult(
+            paper=paper,
+            report=self.report_generator.generate(
+                paper,
+            ),
         )

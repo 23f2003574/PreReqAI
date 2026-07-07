@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from backend.session import (
     session_manager,
     QuestionManager,
+    ContextRetriever,
+    ContextManager,
 )
 
 router = APIRouter(
@@ -17,6 +19,10 @@ router = APIRouter(
 )
 
 question_manager = QuestionManager()
+
+context_retriever = ContextRetriever()
+
+context_manager = ContextManager()
 
 
 class QuestionRequest(BaseModel):
@@ -49,6 +55,18 @@ def get_session(session_id: str):
         "active_concept": session.active_concept,
 
         "conversation_history": session.conversation_history,
+
+        "current_context": (
+
+            {
+                "concepts": session.current_context.concepts,
+                "sections": session.current_context.sections,
+                "equations": session.current_context.equations,
+            }
+
+            if session.current_context is not None
+            else None
+        ),
     }
 
 
@@ -77,6 +95,18 @@ def ask_question(
 
         body.topic,
     )
+
+    if session.paper is not None:
+
+        context = context_retriever.retrieve(
+            paper=session.paper,
+            question=body.question,
+        )
+
+        context_manager.update(
+            session,
+            context,
+        )
 
     return {
 

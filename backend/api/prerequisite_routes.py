@@ -45,7 +45,7 @@ async def analyze_prerequisites(
 
     try:
 
-        report = pipeline.run(
+        result = pipeline.run(
             temp_path,
         )
 
@@ -66,8 +66,9 @@ async def analyze_prerequisites(
         )
 
     session = session_manager.create(
-        paper_title=report["paper"]["title"],
-        report=report,
+        paper_title=result.report["paper"]["title"],
+        report=result.report,
+        paper=result.paper,
     )
 
     return {
@@ -78,5 +79,5 @@ async def analyze_prerequisites(
 
         "session_id": session.session_id,
 
-        "report": report,
+        "report": result.report,
     }
