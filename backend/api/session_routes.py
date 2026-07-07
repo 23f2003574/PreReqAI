@@ -6,16 +6,11 @@ from pydantic import BaseModel
 
 from backend.session import (
     session_manager,
-    QuestionManager,
-    ContextRetriever,
-    ContextManager,
-    RetrievedContext,
     TutorMode,
 )
 
-from backend.tutor import (
-    RuleBasedTutor,
-    TutorResponse,
+from backend.pipeline import (
+    InteractiveLearningPipeline,
 )
 
 router = APIRouter(
@@ -25,13 +20,9 @@ router = APIRouter(
     tags=["Learning Session"],
 )
 
-question_manager = QuestionManager()
-
-context_retriever = ContextRetriever()
-
-context_manager = ContextManager()
-
-tutor = RuleBasedTutor()
+pipeline = (
+    InteractiveLearningPipeline()
+)
 
 
 class QuestionRequest(BaseModel):
@@ -98,63 +89,17 @@ def ask_question(
             detail="Session not found",
         )
 
-    learning_question = question_manager.ask(
+    result = pipeline.answer(
 
-        session,
+        session=session,
 
-        body.question,
+        paper=session.paper,
 
-        body.topic,
+        question=body.question,
 
-        body.mode,
+        mode=body.mode,
+
+        topic=body.topic,
     )
 
-    if session.paper is not None:
-
-        context = context_retriever.retrieve(
-            paper=session.paper,
-            question=body.question,
-        )
-
-        context_manager.update(
-            session,
-            context,
-        )
-
-        response = tutor.answer(
-
-            session=session,
-
-            paper=session.paper,
-
-            context=context,
-
-            question=body.question,
-
-            mode=body.mode,
-        )
-
-    else:
-
-        context = RetrievedContext(
-            concepts=[],
-            sections=[],
-            equations=[],
-        )
-
-        context_manager.update(
-            session,
-            context,
-        )
-
-        response = TutorResponse(
-            answer="No paper is attached to this session yet.",
-            confidence=0.0,
-        )
-
-    return {
-
-        "question_id": learning_question.question_id,
-
-        "response": response,
-    }
+    return result

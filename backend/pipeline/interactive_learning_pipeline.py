@@ -1,0 +1,136 @@
+from backend.session import (
+    QuestionManager,
+    ContextRetriever,
+    ContextManager,
+    RetrievedContext,
+)
+
+from backend.tutor import (
+    RuleBasedTutor,
+    TutorResponse,
+    LearningGapAnalyzer,
+    AdaptiveRecommendationEngine,
+)
+
+
+class InteractiveLearningPipeline:
+    """
+    Orchestrates the complete tutoring workflow
+    for a learner session.
+    """
+
+    def __init__(self):
+
+        self.question_manager = QuestionManager()
+
+        self.context_retriever = ContextRetriever()
+
+        self.context_manager = ContextManager()
+
+        self.tutor = RuleBasedTutor()
+
+        self.gap_analyzer = LearningGapAnalyzer()
+
+        self.recommendation_engine = (
+            AdaptiveRecommendationEngine()
+        )
+
+    def answer(
+
+        self,
+
+        session,
+
+        paper,
+
+        question,
+
+        mode,
+
+        topic=None,
+
+    ):
+
+        learning_question = (
+
+            self.question_manager.ask(
+
+                session,
+
+                question,
+
+                topic,
+
+                mode,
+            )
+        )
+
+        if paper is not None:
+
+            context = (
+
+                self.context_retriever.retrieve(
+
+                    paper,
+
+                    question,
+                )
+            )
+
+            self.context_manager.update(
+
+                session,
+
+                context,
+            )
+
+            response = self.tutor.answer(
+
+                session,
+
+                paper,
+
+                context,
+
+                question,
+
+                mode,
+            )
+
+        else:
+
+            context = RetrievedContext(
+                concepts=[],
+                sections=[],
+                equations=[],
+            )
+
+            self.context_manager.update(
+
+                session,
+
+                context,
+            )
+
+            response = TutorResponse(
+                answer="No paper is attached to this session yet.",
+                confidence=0.0,
+            )
+
+        self.gap_analyzer.analyze(
+            session,
+        )
+
+        self.recommendation_engine.recommend(
+            session,
+        )
+
+        return {
+
+            "question": learning_question,
+
+            "response": response,
+
+            "recommendations":
+                session.recommendations,
+        }

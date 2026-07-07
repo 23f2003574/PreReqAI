@@ -19,3 +19,16 @@ Upload a research paper to receive:
 - Estimated preparation time
 - Difficulty assessment
 - Readiness tracking
+
+## Interactive Learning
+
+After prerequisite analysis, learners can begin an interactive tutoring session.
+
+Features include:
+
+- Context-aware question answering
+- Multiple pedagogical teaching strategies
+- Adaptive quizzes
+- Learning gap analysis
+- Personalized recommendations
+- Persistent learning sessions
