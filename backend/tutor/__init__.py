@@ -17,8 +17,13 @@ from .tutor_prompt_builder import (
 from backend.session import (
     TutorMode,
     LearningGap,
+    LearningRecommendation,
 )
 
 from .learning_gap_analyzer import (
     LearningGapAnalyzer,
+)
+
+from .adaptive_recommendation_engine import (
+    AdaptiveRecommendationEngine,
 )

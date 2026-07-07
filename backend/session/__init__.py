@@ -6,6 +6,10 @@ from .learning_gap import (
     LearningGap,
 )
 
+from .learning_recommendation import (
+    LearningRecommendation,
+)
+
 from .learning_session import (
     LearningSession,
 )

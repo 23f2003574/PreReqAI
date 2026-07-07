@@ -5,6 +5,7 @@ from backend.models import Paper
 
 from .context_retriever import RetrievedContext
 from .learning_gap import LearningGap
+from .learning_recommendation import LearningRecommendation
 
 
 @dataclass
@@ -29,6 +30,10 @@ class LearningSession:
     )
 
     learning_gaps: list[LearningGap] = field(
+        default_factory=list
+    )
+
+    recommendations: list[LearningRecommendation] = field(
         default_factory=list
     )
 
