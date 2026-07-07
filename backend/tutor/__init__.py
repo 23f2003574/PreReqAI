@@ -13,3 +13,7 @@ from .tutor_response import (
 from .tutor_prompt_builder import (
     TutorPromptBuilder,
 )
+
+from backend.session import (
+    TutorMode,
+)

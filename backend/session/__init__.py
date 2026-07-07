@@ -1,3 +1,7 @@
+from .tutor_mode import (
+    TutorMode,
+)
+
 from .learning_session import (
     LearningSession,
 )

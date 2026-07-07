@@ -5,6 +5,7 @@ from backend.tutor import (
 from backend.session import (
     LearningSession,
     RetrievedContext,
+    TutorMode,
 )
 
 from backend.ingestion import (
@@ -55,8 +56,12 @@ def test_prompt_builder():
         context,
 
         "Explain Attention",
+
+        TutorMode.INTUITION,
     )
 
     assert "Explain Attention" in prompt
 
     assert "Attention" in prompt
+
+    assert "intuition" in prompt

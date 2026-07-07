@@ -37,6 +37,8 @@ class RuleBasedTutor(BaseTutor):
 
         question,
 
+        mode,
+
     ):
 
         self.last_prompt = self.prompt_builder.build(
@@ -48,6 +50,8 @@ class RuleBasedTutor(BaseTutor):
             context,
 
             question,
+
+            mode,
         )
 
         return TutorResponse(

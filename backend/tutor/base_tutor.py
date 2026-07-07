@@ -10,6 +10,7 @@ from backend.models import (
 from backend.session import (
     LearningSession,
     RetrievedContext,
+    TutorMode,
 )
 
 from .tutor_response import (
@@ -35,6 +36,8 @@ class BaseTutor(ABC):
         context: RetrievedContext,
 
         question: str,
+
+        mode: TutorMode,
 
     ) -> TutorResponse:
 

@@ -9,6 +9,8 @@ from .learning_session import (
     LearningSession,
 )
 
+from .tutor_mode import TutorMode
+
 
 class QuestionManager:
     """
@@ -26,6 +28,8 @@ class QuestionManager:
 
         topic: str | None = None,
 
+        mode: TutorMode = TutorMode.INTUITION,
+
     ) -> LearningQuestion:
 
         learning_question = LearningQuestion(
@@ -37,6 +41,8 @@ class QuestionManager:
             topic=topic,
 
             timestamp=datetime.now(timezone.utc),
+
+            mode=mode,
         )
 
         if topic is not None:
@@ -53,6 +59,7 @@ class QuestionManager:
                     "topic": learning_question.topic,
                     "timestamp": learning_question.timestamp.isoformat(),
                     "answered": learning_question.answered,
+                    "mode": learning_question.mode.value,
                 },
             }
         )

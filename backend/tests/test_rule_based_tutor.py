@@ -5,6 +5,7 @@ from backend.tutor import (
 from backend.session import (
     LearningSession,
     RetrievedContext,
+    TutorMode,
 )
 
 from backend.ingestion import (
@@ -53,6 +54,8 @@ def test_rule_based_tutor():
             context,
 
             "Explain Attention",
+
+            TutorMode.INTUITION,
         )
     )
 

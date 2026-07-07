@@ -10,6 +10,7 @@ from backend.session import (
     ContextRetriever,
     ContextManager,
     RetrievedContext,
+    TutorMode,
 )
 
 from backend.tutor import (
@@ -38,6 +39,8 @@ class QuestionRequest(BaseModel):
     question: str
 
     topic: str | None = None
+
+    mode: TutorMode = TutorMode.INTUITION
 
 
 @router.get("/{session_id}")
@@ -102,6 +105,8 @@ def ask_question(
         body.question,
 
         body.topic,
+
+        body.mode,
     )
 
     if session.paper is not None:
@@ -125,6 +130,8 @@ def ask_question(
             context=context,
 
             question=body.question,
+
+            mode=body.mode,
         )
 
     else:

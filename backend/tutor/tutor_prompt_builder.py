@@ -5,6 +5,7 @@ from backend.models import (
 from backend.session import (
     LearningSession,
     RetrievedContext,
+    TutorMode,
 )
 
 
@@ -24,6 +25,8 @@ class TutorPromptBuilder:
         context: RetrievedContext,
 
         question: str,
+
+        mode: TutorMode,
 
     ) -> str:
 
@@ -56,10 +59,45 @@ Relevant Sections:
 Learner Question:
 {question}
 
+Teaching Mode:
+{mode.value}
+
+Instructions:
+{self._mode_instruction(mode)}
+
 Rules:
 
-- Be educational.
-- Prefer intuition before mathematics.
 - Ground every answer in the supplied context.
 - Avoid introducing unsupported claims.
 """
+
+    def _mode_instruction(
+
+        self,
+
+        mode: TutorMode,
+
+    ) -> str:
+
+        instructions = {
+
+            TutorMode.INTUITION:
+                "Explain ideas intuitively before introducing formal definitions.",
+
+            TutorMode.MATHEMATICS:
+                "Focus on mathematical derivations and notation.",
+
+            TutorMode.IMPLEMENTATION:
+                "Explain implementation details with practical examples.",
+
+            TutorMode.PREREQUISITES:
+                "Relate the answer to prerequisite concepts.",
+
+            TutorMode.SUMMARY:
+                "Provide a concise summary.",
+
+            TutorMode.ANALOGY:
+                "Use analogies from everyday life whenever possible.",
+        }
+
+        return instructions[mode]

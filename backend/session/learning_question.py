@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from .tutor_mode import TutorMode
+
 
 @dataclass
 class LearningQuestion:
@@ -14,3 +16,5 @@ class LearningQuestion:
     timestamp: datetime
 
     answered: bool = False
+
+    mode: TutorMode = TutorMode.INTUITION
