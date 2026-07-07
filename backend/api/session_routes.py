@@ -9,6 +9,11 @@ from backend.session import (
     QuestionManager,
     ContextRetriever,
     ContextManager,
+    RetrievedContext,
+)
+
+from backend.tutor import (
+    RuleBasedTutor,
 )
 
 router = APIRouter(
@@ -23,6 +28,8 @@ question_manager = QuestionManager()
 context_retriever = ContextRetriever()
 
 context_manager = ContextManager()
+
+tutor = RuleBasedTutor()
 
 
 class QuestionRequest(BaseModel):
@@ -103,14 +110,31 @@ def ask_question(
             question=body.question,
         )
 
-        context_manager.update(
-            session,
-            context,
+    else:
+
+        context = RetrievedContext(
+            concepts=[],
+            sections=[],
+            equations=[],
         )
+
+    context_manager.update(
+        session,
+        context,
+    )
+
+    response = tutor.answer(
+
+        paper=session.paper,
+
+        context=context,
+
+        question=body.question,
+    )
 
     return {
 
         "question_id": learning_question.question_id,
 
-        "status": "received",
+        "response": response,
     }
