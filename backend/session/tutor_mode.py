@@ -21,3 +21,5 @@ class TutorMode(str, Enum):
     ANALOGY = "analogy"
 
     MISCONCEPTION = "misconception"
+
+    SOCRATIC = "socratic"

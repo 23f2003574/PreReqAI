@@ -16,6 +16,10 @@ from .analogy_registry import (
     COMMON_ANALOGIES,
 )
 
+from .socratic_question_bank import (
+    SOCRATIC_QUESTIONS,
+)
+
 
 class TutorPromptBuilder:
     """
@@ -79,11 +83,42 @@ Common Misconceptions:
 Relevant Analogies:
 {self.analogy_examples(context)}
 
+Possible Socratic Questions:
+{self.socratic_questions(context)}
+
 Rules:
 
 - Ground every answer in the supplied context.
 - Avoid introducing unsupported claims.
 """
+
+    def socratic_questions(
+
+        self,
+
+        context: RetrievedContext,
+
+    ) -> str:
+
+        questions = []
+
+        for concept in context.concepts:
+
+            questions.extend(
+                SOCRATIC_QUESTIONS.get(
+                    concept,
+                    [],
+                )
+            )
+
+        if not questions:
+
+            return "None known for these concepts."
+
+        return "\n".join(
+            f"- {question}"
+            for question in questions
+        )
 
     def analogy_examples(
 
@@ -183,6 +218,14 @@ Rules:
                 "If so: 1. State the misconception. 2. Explain why it "
                 "is incorrect. 3. Explain the correct intuition. "
                 "4. End with a mental model."
+            ),
+
+            TutorMode.SOCRATIC: (
+                "Do not immediately answer the learner. Guide them "
+                "through reasoning. Ask one question at a time. Only "
+                "reveal explanations after the learner has attempted "
+                "an answer. Encourage reflection rather than "
+                "memorization."
             ),
         }
 
