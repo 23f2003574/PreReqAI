@@ -15,6 +15,7 @@ from backend.tutor import (
 from backend.workflows import (
     LearningIntentDetector,
     LearningWorkflowRouter,
+    LearningWorkflowPlanner,
 )
 
 
@@ -48,6 +49,10 @@ class InteractiveLearningPipeline:
             LearningWorkflowRouter()
         )
 
+        self.workflow_planner = (
+            LearningWorkflowPlanner()
+        )
+
     def answer(
 
         self,
@@ -68,13 +73,15 @@ class InteractiveLearningPipeline:
             question,
         )
 
-        workflow = (
+        plan = (
 
-            self.workflow_router.route(
+            self.workflow_planner.create_plan(
 
                 intent,
             )
         )
+
+        workflow = plan.workflows[0]
 
         learning_question = (
 
