@@ -1,6 +1,8 @@
 from backend.session import (
     LearningIntent,
     WorkflowType,
+    WorkflowMemory,
+    WorkflowRecord,
 )
 
 from .learning_intent_detector import (

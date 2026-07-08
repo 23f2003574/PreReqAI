@@ -10,6 +10,11 @@ from .workflow_type import (
     WorkflowType,
 )
 
+from .workflow_memory import (
+    WorkflowMemory,
+    WorkflowRecord,
+)
+
 from .learning_gap import (
     LearningGap,
 )

@@ -6,6 +6,7 @@ from backend.models import Paper
 from .context_retriever import RetrievedContext
 from .learning_gap import LearningGap
 from .learning_recommendation import LearningRecommendation
+from .workflow_memory import WorkflowMemory
 
 
 @dataclass
@@ -35,6 +36,10 @@ class LearningSession:
 
     recommendations: list[LearningRecommendation] = field(
         default_factory=list
+    )
+
+    workflow_memory: WorkflowMemory = field(
+        default_factory=WorkflowMemory,
     )
 
     status: str = "active"

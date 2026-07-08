@@ -142,6 +142,14 @@ class InteractiveLearningPipeline:
                     mode,
                 )
 
+            session.workflow_memory.add(
+
+                workflow,
+
+                session.active_concept
+                or "Unknown",
+            )
+
         else:
 
             context = RetrievedContext(
