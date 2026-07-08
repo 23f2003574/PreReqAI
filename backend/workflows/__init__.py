@@ -15,6 +15,10 @@ from .implementation_workflow import (
     ImplementationWorkflow,
 )
 
+from .visualization_workflow import (
+    VisualizationWorkflow,
+)
+
 from .workflow_router import (
     LearningWorkflowRouter,
 )

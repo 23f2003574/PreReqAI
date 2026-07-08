@@ -25,3 +25,5 @@ class TutorMode(str, Enum):
     SOCRATIC = "socratic"
 
     QUIZ = "quiz"
+
+    VISUALIZATION = "visualization"

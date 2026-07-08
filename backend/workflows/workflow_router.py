@@ -11,6 +11,10 @@ from .implementation_workflow import (
     ImplementationWorkflow,
 )
 
+from .visualization_workflow import (
+    VisualizationWorkflow,
+)
+
 
 class LearningWorkflowRouter:
     """
@@ -26,6 +30,10 @@ class LearningWorkflowRouter:
 
         self.implementation = (
             ImplementationWorkflow()
+        )
+
+        self.visualization = (
+            VisualizationWorkflow()
         )
 
     ROUTES = {
@@ -95,6 +103,17 @@ class LearningWorkflowRouter:
         if workflow == WorkflowType.IMPLEMENTATION:
 
             return self.implementation.execute(
+
+                session,
+
+                paper,
+
+                question,
+            )
+
+        if workflow == WorkflowType.VISUALIZATION:
+
+            return self.visualization.execute(
 
                 session,
 

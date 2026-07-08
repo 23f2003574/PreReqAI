@@ -271,6 +271,14 @@ Rules:
                 "answer. 2. Explain why it is correct or incorrect. "
                 "3. Reinforce the underlying concept."
             ),
+
+            TutorMode.VISUALIZATION: (
+                "Explain the concept visually. Describe the diagram "
+                "step-by-step. Clearly identify: 1. Components. "
+                "2. Connections. 3. Information flow. 4. Inputs. "
+                "5. Outputs. Use simple spatial language so that the "
+                "learner could recreate the diagram."
+            ),
         }
 
         return instructions[mode]
