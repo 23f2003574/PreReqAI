@@ -305,6 +305,15 @@ Rules:
                 "provide the full explanation if explicitly requested "
                 "in a later interaction."
             ),
+
+            TutorMode.REFLECTION: (
+                "Do not introduce new concepts. Instead: 1. Ask the "
+                "learner to summarize the concept in their own words. "
+                "2. Ask what they found most confusing. 3. Highlight "
+                "one key takeaway. 4. Suggest one concept worth "
+                "revisiting. Encourage metacognitive thinking rather "
+                "than providing additional explanations."
+            ),
         }
 
         return instructions[mode]

@@ -26,4 +26,6 @@ class WorkflowType(str, Enum):
 
     HINT = "hint"
 
+    REFLECTION = "reflection"
+
     DEFAULT = "default"

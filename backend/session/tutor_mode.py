@@ -33,3 +33,5 @@ class TutorMode(str, Enum):
     EXAMPLE = "example"
 
     HINT = "hint"
+
+    REFLECTION = "reflection"

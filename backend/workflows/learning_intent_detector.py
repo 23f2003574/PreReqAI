@@ -84,6 +84,19 @@ class LearningIntentDetector:
             "illustrate",
         ],
 
+        LearningIntent.REFLECTION: [
+
+            "reflect",
+
+            "reflection",
+
+            "what did i learn",
+
+            "review my understanding",
+
+            "recap my learning",
+        ],
+
         LearningIntent.HINT: [
 
             "hint",

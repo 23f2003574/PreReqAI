@@ -27,6 +27,10 @@ from .hint_workflow import (
     HintWorkflow,
 )
 
+from .reflection_workflow import (
+    ReflectionWorkflow,
+)
+
 
 class LearningWorkflowRouter:
     """
@@ -60,6 +64,10 @@ class LearningWorkflowRouter:
             HintWorkflow()
         )
 
+        self.reflection = (
+            ReflectionWorkflow()
+        )
+
     ROUTES = {
 
         LearningIntent.EXPLAIN:
@@ -88,6 +96,9 @@ class LearningWorkflowRouter:
 
         LearningIntent.HINT:
             WorkflowType.HINT,
+
+        LearningIntent.REFLECTION:
+            WorkflowType.REFLECTION,
     }
 
     def route(
@@ -177,6 +188,17 @@ class LearningWorkflowRouter:
         if workflow == WorkflowType.HINT:
 
             return self.hint.execute(
+
+                session,
+
+                paper,
+
+                question,
+            )
+
+        if workflow == WorkflowType.REFLECTION:
+
+            return self.reflection.execute(
 
                 session,
 
