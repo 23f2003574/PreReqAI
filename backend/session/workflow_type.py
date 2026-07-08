@@ -28,4 +28,6 @@ class WorkflowType(str, Enum):
 
     REFLECTION = "reflection"
 
+    FOLLOW_UP = "follow_up"
+
     DEFAULT = "default"

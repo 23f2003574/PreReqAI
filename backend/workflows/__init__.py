@@ -35,6 +35,10 @@ from .reflection_workflow import (
     ReflectionWorkflow,
 )
 
+from .follow_up_workflow import (
+    FollowUpWorkflow,
+)
+
 from .workflow_router import (
     LearningWorkflowRouter,
 )

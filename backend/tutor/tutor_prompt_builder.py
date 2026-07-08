@@ -314,6 +314,15 @@ Rules:
                 "revisiting. Encourage metacognitive thinking rather "
                 "than providing additional explanations."
             ),
+
+            TutorMode.FOLLOW_UP: (
+                "Recommend the learner's next steps. Structure the "
+                "response as follows: 1. Current progress summary. "
+                "2. Concepts that should be reviewed. 3. Recommended "
+                "next topic. 4. Suggested workflow (Explanation, "
+                "Example, Implementation, Quiz, etc.). 5. One stretch "
+                "goal if the learner masters the current topic."
+            ),
         }
 
         return instructions[mode]

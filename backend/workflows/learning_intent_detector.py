@@ -84,6 +84,21 @@ class LearningIntentDetector:
             "illustrate",
         ],
 
+        LearningIntent.FOLLOW_UP: [
+
+            "what next",
+
+            "next step",
+
+            "study next",
+
+            "what should i learn next",
+
+            "continue",
+
+            "where do i go from here",
+        ],
+
         LearningIntent.REFLECTION: [
 
             "reflect",
