@@ -1,6 +1,10 @@
 from uuid import uuid4
 from datetime import datetime, timezone
 
+from backend.workflows import (
+    LearningIntent,
+)
+
 from .learning_question import (
     LearningQuestion,
 )
@@ -30,6 +34,8 @@ class QuestionManager:
 
         mode: TutorMode = TutorMode.INTUITION,
 
+        intent: LearningIntent = LearningIntent.UNKNOWN,
+
     ) -> LearningQuestion:
 
         learning_question = LearningQuestion(
@@ -43,6 +49,8 @@ class QuestionManager:
             timestamp=datetime.now(timezone.utc),
 
             mode=mode,
+
+            intent=intent,
         )
 
         if topic is not None:
@@ -60,6 +68,7 @@ class QuestionManager:
                     "timestamp": learning_question.timestamp.isoformat(),
                     "answered": learning_question.answered,
                     "mode": learning_question.mode.value,
+                    "intent": learning_question.intent.value,
                 },
             }
         )

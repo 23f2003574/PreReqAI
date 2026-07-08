@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from backend.workflows import (
+    LearningIntent,
+)
+
 from .tutor_mode import TutorMode
 
 
@@ -18,3 +22,7 @@ class LearningQuestion:
     answered: bool = False
 
     mode: TutorMode = TutorMode.INTUITION
+
+    intent: LearningIntent = (
+        LearningIntent.UNKNOWN
+    )

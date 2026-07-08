@@ -12,6 +12,10 @@ from backend.tutor import (
     AdaptiveRecommendationEngine,
 )
 
+from backend.workflows import (
+    LearningIntentDetector,
+)
+
 
 class InteractiveLearningPipeline:
     """
@@ -35,6 +39,10 @@ class InteractiveLearningPipeline:
             AdaptiveRecommendationEngine()
         )
 
+        self.intent_detector = (
+            LearningIntentDetector()
+        )
+
     def answer(
 
         self,
@@ -51,6 +59,10 @@ class InteractiveLearningPipeline:
 
     ):
 
+        intent = self.intent_detector.detect(
+            question,
+        )
+
         learning_question = (
 
             self.question_manager.ask(
@@ -62,6 +74,8 @@ class InteractiveLearningPipeline:
                 topic,
 
                 mode,
+
+                intent,
             )
         )
 
