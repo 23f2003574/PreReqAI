@@ -289,6 +289,14 @@ Rules:
                 "when a learner should prefer one concept over the "
                 "other."
             ),
+
+            TutorMode.EXAMPLE: (
+                "Teach using progressively richer examples. Structure "
+                "the response as follows: 1. Simple intuition example. "
+                "2. Practical real-world example. 3. Research-oriented "
+                "example. Clearly explain how each example connects "
+                "back to the underlying concept."
+            ),
         }
 
         return instructions[mode]

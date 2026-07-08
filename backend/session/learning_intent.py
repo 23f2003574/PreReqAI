@@ -22,4 +22,6 @@ class LearningIntent(str, Enum):
 
     PREREQUISITES = "prerequisites"
 
+    EXAMPLE = "example"
+
     UNKNOWN = "unknown"

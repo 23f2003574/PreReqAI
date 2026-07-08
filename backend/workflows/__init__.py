@@ -23,6 +23,10 @@ from .comparison_workflow import (
     ComparisonWorkflow,
 )
 
+from .example_workflow import (
+    ExampleWorkflow,
+)
+
 from .workflow_router import (
     LearningWorkflowRouter,
 )

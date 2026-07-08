@@ -22,4 +22,6 @@ class WorkflowType(str, Enum):
 
     PREREQUISITE = "prerequisite"
 
+    EXAMPLE = "example"
+
     DEFAULT = "default"

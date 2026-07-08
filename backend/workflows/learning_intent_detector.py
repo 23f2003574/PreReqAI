@@ -81,6 +81,19 @@ class LearningIntentDetector:
 
             "prepare",
         ],
+
+        LearningIntent.EXAMPLE: [
+
+            "example",
+
+            "sample",
+
+            "walk through",
+
+            "demonstrate",
+
+            "illustrate",
+        ],
     }
 
     def detect(

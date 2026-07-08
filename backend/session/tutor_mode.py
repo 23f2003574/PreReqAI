@@ -29,3 +29,5 @@ class TutorMode(str, Enum):
     VISUALIZATION = "visualization"
 
     COMPARISON = "comparison"
+
+    EXAMPLE = "example"

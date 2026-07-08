@@ -19,6 +19,10 @@ from .comparison_workflow import (
     ComparisonWorkflow,
 )
 
+from .example_workflow import (
+    ExampleWorkflow,
+)
+
 
 class LearningWorkflowRouter:
     """
@@ -44,6 +48,10 @@ class LearningWorkflowRouter:
             ComparisonWorkflow()
         )
 
+        self.example = (
+            ExampleWorkflow()
+        )
+
     ROUTES = {
 
         LearningIntent.EXPLAIN:
@@ -66,6 +74,9 @@ class LearningWorkflowRouter:
 
         LearningIntent.PREREQUISITES:
             WorkflowType.PREREQUISITE,
+
+        LearningIntent.EXAMPLE:
+            WorkflowType.EXAMPLE,
     }
 
     def route(
@@ -133,6 +144,17 @@ class LearningWorkflowRouter:
         if workflow == WorkflowType.COMPARISON:
 
             return self.comparison.execute(
+
+                session,
+
+                paper,
+
+                question,
+            )
+
+        if workflow == WorkflowType.EXAMPLE:
+
+            return self.example.execute(
 
                 session,
 
