@@ -23,6 +23,10 @@ from .example_workflow import (
     ExampleWorkflow,
 )
 
+from .hint_workflow import (
+    HintWorkflow,
+)
+
 
 class LearningWorkflowRouter:
     """
@@ -52,6 +56,10 @@ class LearningWorkflowRouter:
             ExampleWorkflow()
         )
 
+        self.hint = (
+            HintWorkflow()
+        )
+
     ROUTES = {
 
         LearningIntent.EXPLAIN:
@@ -77,6 +85,9 @@ class LearningWorkflowRouter:
 
         LearningIntent.EXAMPLE:
             WorkflowType.EXAMPLE,
+
+        LearningIntent.HINT:
+            WorkflowType.HINT,
     }
 
     def route(
@@ -155,6 +166,17 @@ class LearningWorkflowRouter:
         if workflow == WorkflowType.EXAMPLE:
 
             return self.example.execute(
+
+                session,
+
+                paper,
+
+                question,
+            )
+
+        if workflow == WorkflowType.HINT:
+
+            return self.hint.execute(
 
                 session,
 

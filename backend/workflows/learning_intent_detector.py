@@ -11,17 +11,6 @@ class LearningIntentDetector:
 
     KEYWORDS = {
 
-        LearningIntent.EXPLAIN: [
-
-            "explain",
-
-            "what is",
-
-            "why",
-
-            "understand",
-        ],
-
         LearningIntent.IMPLEMENT: [
 
             "implement",
@@ -93,6 +82,30 @@ class LearningIntentDetector:
             "demonstrate",
 
             "illustrate",
+        ],
+
+        LearningIntent.HINT: [
+
+            "hint",
+
+            "clue",
+
+            "help me",
+
+            "stuck",
+
+            "nudge",
+        ],
+
+        LearningIntent.EXPLAIN: [
+
+            "explain",
+
+            "what is",
+
+            "why",
+
+            "understand",
         ],
     }
 

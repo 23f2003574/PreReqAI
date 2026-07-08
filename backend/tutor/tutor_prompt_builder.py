@@ -297,6 +297,14 @@ Rules:
                 "example. Clearly explain how each example connects "
                 "back to the underlying concept."
             ),
+
+            TutorMode.HINT: (
+                "Do not reveal the complete answer. Instead: 1. Give "
+                "one small hint. 2. Point the learner toward the "
+                "relevant concept. 3. Encourage another attempt. Only "
+                "provide the full explanation if explicitly requested "
+                "in a later interaction."
+            ),
         }
 
         return instructions[mode]

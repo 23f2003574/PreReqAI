@@ -31,3 +31,5 @@ class TutorMode(str, Enum):
     COMPARISON = "comparison"
 
     EXAMPLE = "example"
+
+    HINT = "hint"

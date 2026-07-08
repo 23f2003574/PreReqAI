@@ -27,6 +27,10 @@ from .example_workflow import (
     ExampleWorkflow,
 )
 
+from .hint_workflow import (
+    HintWorkflow,
+)
+
 from .workflow_router import (
     LearningWorkflowRouter,
 )

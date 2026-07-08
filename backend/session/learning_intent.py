@@ -24,4 +24,6 @@ class LearningIntent(str, Enum):
 
     EXAMPLE = "example"
 
+    HINT = "hint"
+
     UNKNOWN = "unknown"
