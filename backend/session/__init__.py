@@ -2,6 +2,14 @@ from .tutor_mode import (
     TutorMode,
 )
 
+from .learning_intent import (
+    LearningIntent,
+)
+
+from .workflow_type import (
+    WorkflowType,
+)
+
 from .learning_gap import (
     LearningGap,
 )

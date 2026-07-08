@@ -1,10 +1,8 @@
 from uuid import uuid4
 from datetime import datetime, timezone
 
-from backend.workflows import (
-    LearningIntent,
-    WorkflowType,
-)
+from .learning_intent import LearningIntent
+from .workflow_type import WorkflowType
 
 from .learning_question import (
     LearningQuestion,

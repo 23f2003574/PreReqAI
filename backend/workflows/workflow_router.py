@@ -1,9 +1,10 @@
-from .learning_intent import (
+from backend.session import (
     LearningIntent,
+    WorkflowType,
 )
 
-from .workflow_type import (
-    WorkflowType,
+from .explanation_workflow import (
+    ExplanationWorkflow,
 )
 
 
@@ -12,6 +13,12 @@ class LearningWorkflowRouter:
     Maps learner intents to the
     corresponding educational workflow.
     """
+
+    def __init__(self):
+
+        self.explanation = (
+            ExplanationWorkflow()
+        )
 
     ROUTES = {
 
@@ -51,3 +58,30 @@ class LearningWorkflowRouter:
 
             WorkflowType.DEFAULT,
         )
+
+    def execute(
+
+        self,
+
+        workflow,
+
+        session,
+
+        paper,
+
+        question,
+
+    ):
+
+        if workflow == WorkflowType.EXPLANATION:
+
+            return self.explanation.execute(
+
+                session,
+
+                paper,
+
+                question,
+            )
+
+        return None

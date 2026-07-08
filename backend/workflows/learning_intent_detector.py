@@ -1,4 +1,4 @@
-from .learning_intent import (
+from backend.session import (
     LearningIntent,
 )
 

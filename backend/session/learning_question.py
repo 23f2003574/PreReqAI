@@ -1,11 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from backend.workflows import (
-    LearningIntent,
-    WorkflowType,
-)
-
+from .learning_intent import LearningIntent
+from .workflow_type import WorkflowType
 from .tutor_mode import TutorMode
 
 

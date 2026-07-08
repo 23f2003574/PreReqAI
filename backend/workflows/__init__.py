@@ -1,13 +1,14 @@
-from .learning_intent import (
+from backend.session import (
     LearningIntent,
+    WorkflowType,
 )
 
 from .learning_intent_detector import (
     LearningIntentDetector,
 )
 
-from .workflow_type import (
-    WorkflowType,
+from .explanation_workflow import (
+    ExplanationWorkflow,
 )
 
 from .workflow_router import (

@@ -96,9 +96,13 @@ class InteractiveLearningPipeline:
 
         if paper is not None:
 
-            context = (
+            response = (
 
-                self.context_retriever.retrieve(
+                self.workflow_router.execute(
+
+                    workflow,
+
+                    session,
 
                     paper,
 
@@ -106,25 +110,37 @@ class InteractiveLearningPipeline:
                 )
             )
 
-            self.context_manager.update(
+            if response is None:
 
-                session,
+                context = (
 
-                context,
-            )
+                    self.context_retriever.retrieve(
 
-            response = self.tutor.answer(
+                        paper,
 
-                session,
+                        question,
+                    )
+                )
 
-                paper,
+                self.context_manager.update(
 
-                context,
+                    session,
 
-                question,
+                    context,
+                )
 
-                mode,
-            )
+                response = self.tutor.answer(
+
+                    session,
+
+                    paper,
+
+                    context,
+
+                    question,
+
+                    mode,
+                )
 
         else:
 
