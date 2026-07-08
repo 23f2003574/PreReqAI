@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from backend.workflows import (
     LearningIntent,
+    WorkflowType,
 )
 
 from .learning_question import (
@@ -36,6 +37,8 @@ class QuestionManager:
 
         intent: LearningIntent = LearningIntent.UNKNOWN,
 
+        workflow: WorkflowType = WorkflowType.DEFAULT,
+
     ) -> LearningQuestion:
 
         learning_question = LearningQuestion(
@@ -51,6 +54,8 @@ class QuestionManager:
             mode=mode,
 
             intent=intent,
+
+            workflow=workflow,
         )
 
         if topic is not None:
@@ -69,6 +74,7 @@ class QuestionManager:
                     "answered": learning_question.answered,
                     "mode": learning_question.mode.value,
                     "intent": learning_question.intent.value,
+                    "workflow": learning_question.workflow.value,
                 },
             }
         )

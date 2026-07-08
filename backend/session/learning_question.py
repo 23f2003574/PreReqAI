@@ -3,6 +3,7 @@ from datetime import datetime
 
 from backend.workflows import (
     LearningIntent,
+    WorkflowType,
 )
 
 from .tutor_mode import TutorMode
@@ -25,4 +26,8 @@ class LearningQuestion:
 
     intent: LearningIntent = (
         LearningIntent.UNKNOWN
+    )
+
+    workflow: WorkflowType = (
+        WorkflowType.DEFAULT
     )
