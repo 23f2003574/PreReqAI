@@ -19,6 +19,10 @@ from .visualization_workflow import (
     VisualizationWorkflow,
 )
 
+from .comparison_workflow import (
+    ComparisonWorkflow,
+)
+
 from .workflow_router import (
     LearningWorkflowRouter,
 )

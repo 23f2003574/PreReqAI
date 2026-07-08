@@ -27,3 +27,5 @@ class TutorMode(str, Enum):
     QUIZ = "quiz"
 
     VISUALIZATION = "visualization"
+
+    COMPARISON = "comparison"

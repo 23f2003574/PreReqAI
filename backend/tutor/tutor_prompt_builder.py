@@ -279,6 +279,16 @@ Rules:
                 "5. Outputs. Use simple spatial language so that the "
                 "learner could recreate the diagram."
             ),
+
+            TutorMode.COMPARISON: (
+                "Compare the requested concepts in a structured way. "
+                "Present the comparison using the following sections: "
+                "1. Purpose. 2. Core Idea. 3. Similarities. "
+                "4. Differences. 5. Advantages. 6. Limitations. "
+                "7. Typical Applications. Conclude with guidance on "
+                "when a learner should prefer one concept over the "
+                "other."
+            ),
         }
 
         return instructions[mode]

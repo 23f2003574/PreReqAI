@@ -15,6 +15,10 @@ from .visualization_workflow import (
     VisualizationWorkflow,
 )
 
+from .comparison_workflow import (
+    ComparisonWorkflow,
+)
+
 
 class LearningWorkflowRouter:
     """
@@ -34,6 +38,10 @@ class LearningWorkflowRouter:
 
         self.visualization = (
             VisualizationWorkflow()
+        )
+
+        self.comparison = (
+            ComparisonWorkflow()
         )
 
     ROUTES = {
@@ -114,6 +122,17 @@ class LearningWorkflowRouter:
         if workflow == WorkflowType.VISUALIZATION:
 
             return self.visualization.execute(
+
+                session,
+
+                paper,
+
+                question,
+            )
+
+        if workflow == WorkflowType.COMPARISON:
+
+            return self.comparison.execute(
 
                 session,
 
