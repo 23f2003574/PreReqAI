@@ -52,3 +52,7 @@ from .workflow_plan import (
 from .workflow_planner import (
     LearningWorkflowPlanner,
 )
+
+from .workflow_execution_result import (
+    WorkflowExecutionResult,
+)

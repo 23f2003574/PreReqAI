@@ -16,6 +16,7 @@ from backend.workflows import (
     LearningIntentDetector,
     LearningWorkflowRouter,
     LearningWorkflowPlanner,
+    WorkflowExecutionResult,
 )
 
 
@@ -101,61 +102,79 @@ class InteractiveLearningPipeline:
             )
         )
 
+        result = WorkflowExecutionResult()
+
         if paper is not None:
 
-            response = (
+            for planned_workflow in plan.workflows:
 
-                self.workflow_router.execute(
+                try:
 
-                    workflow,
+                    response = (
 
-                    session,
+                        self.workflow_router.execute(
 
-                    paper,
+                            planned_workflow,
 
-                    question,
-                )
-            )
+                            session,
 
-            if response is None:
+                            paper,
 
-                context = (
+                            question,
+                        )
+                    )
 
-                    self.context_retriever.retrieve(
+                except NotImplementedError:
+
+                    response = None
+
+                if response is None:
+
+                    context = (
+
+                        self.context_retriever.retrieve(
+
+                            paper,
+
+                            question,
+                        )
+                    )
+
+                    self.context_manager.update(
+
+                        session,
+
+                        context,
+                    )
+
+                    response = self.tutor.answer(
+
+                        session,
 
                         paper,
 
+                        context,
+
                         question,
+
+                        mode,
                     )
+
+                result.responses.append(
+                    response,
                 )
 
-                self.context_manager.update(
-
-                    session,
-
-                    context,
+                result.executed_workflows.append(
+                    planned_workflow.value,
                 )
 
-                response = self.tutor.answer(
+                session.workflow_memory.add(
 
-                    session,
+                    planned_workflow,
 
-                    paper,
-
-                    context,
-
-                    question,
-
-                    mode,
+                    session.active_concept
+                    or "Unknown",
                 )
-
-            session.workflow_memory.add(
-
-                workflow,
-
-                session.active_concept
-                or "Unknown",
-            )
 
         else:
 
@@ -172,9 +191,12 @@ class InteractiveLearningPipeline:
                 context,
             )
 
-            response = TutorResponse(
-                answer="No paper is attached to this session yet.",
-                confidence=0.0,
+            result.responses.append(
+
+                TutorResponse(
+                    answer="No paper is attached to this session yet.",
+                    confidence=0.0,
+                )
             )
 
         self.gap_analyzer.analyze(
@@ -189,7 +211,11 @@ class InteractiveLearningPipeline:
 
             "question": learning_question,
 
-            "response": response,
+            "workflow_plan":
+                result.executed_workflows,
+
+            "responses":
+                result.responses,
 
             "recommendations":
                 session.recommendations,

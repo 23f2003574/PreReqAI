@@ -32,3 +32,25 @@ Features include:
 - Learning gap analysis
 - Personalized recommendations
 - Persistent learning sessions
+
+## Workflow-Oriented Tutoring
+
+Every learner request is transformed into an educational execution plan.
+
+Example:
+
+```
+Explain Attention
+        │
+        ▼
+Explanation Workflow
+        │
+        ▼
+Example Workflow
+        │
+        ▼
+Follow-up Workflow
+        │
+        ▼
+Unified Learning Response
+```

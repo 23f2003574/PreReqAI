@@ -229,4 +229,8 @@ class LearningWorkflowRouter:
                 question,
             )
 
-        return None
+        raise NotImplementedError(
+
+            f"{workflow.value} "
+            "workflow is not implemented."
+        )
