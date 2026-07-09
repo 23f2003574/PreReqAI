@@ -1,6 +1,5 @@
 from backend.navigation import (
-    NavigationTarget,
-    PaperNavigator,
+    SectionNavigator,
 )
 
 from backend.models import (
@@ -9,10 +8,10 @@ from backend.models import (
 )
 
 
-def test_paper_navigator():
+def test_section_navigator_finds_matching_section():
 
     navigator = (
-        PaperNavigator()
+        SectionNavigator()
     )
 
     paper = Paper(
@@ -25,31 +24,28 @@ def test_paper_navigator():
             PaperSection(
                 title="Introduction",
                 content="This paper studies...",
-            )
+            ),
+            PaperSection(
+                title="Method",
+                content="We propose...",
+            ),
         ],
     )
 
     result = navigator.navigate(
-
         paper,
-
-        NavigationTarget.SECTION,
-
-        "Introduction",
+        "method",
     )
 
-    assert (
-
-        result.target
-
-        == "section"
-    )
+    assert result.target == "section"
+    assert result.title == "Method"
+    assert result.summary == "We propose..."
 
 
-def test_paper_navigator_unimplemented_target():
+def test_section_navigator_raises_when_not_found():
 
     navigator = (
-        PaperNavigator()
+        SectionNavigator()
     )
 
     paper = Paper(
@@ -62,9 +58,8 @@ def test_paper_navigator_unimplemented_target():
     try:
         navigator.navigate(
             paper,
-            NavigationTarget.EQUATION,
-            "softmax",
+            "Conclusion",
         )
-        assert False, "expected NotImplementedError"
-    except NotImplementedError:
+        assert False, "expected ValueError"
+    except ValueError:
         pass
