@@ -18,6 +18,10 @@ from .concept_navigator import (
     ConceptNavigator,
 )
 
+from .equation_navigator import (
+    EquationNavigator,
+)
+
 
 class PaperNavigator:
     """
@@ -35,6 +39,11 @@ class PaperNavigator:
         self.concept_navigator = (
 
             ConceptNavigator()
+        )
+
+        self.equation_navigator = (
+
+            EquationNavigator()
         )
 
     def navigate(
@@ -64,6 +73,17 @@ class PaperNavigator:
 
             return (
                 self.concept_navigator.navigate(
+
+                    paper,
+
+                    query,
+                )
+            )
+
+        if target == NavigationTarget.EQUATION:
+
+            return (
+                self.equation_navigator.navigate(
 
                     paper,
 

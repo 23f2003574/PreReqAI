@@ -62,8 +62,8 @@ def test_paper_navigator_unimplemented_target():
     try:
         navigator.navigate(
             paper,
-            NavigationTarget.EQUATION,
-            "softmax",
+            NavigationTarget.FIGURE,
+            "Figure 1",
         )
         assert False, "expected NotImplementedError"
     except NotImplementedError:

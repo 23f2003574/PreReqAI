@@ -25,3 +25,11 @@ from .concept_navigator import (
 from .concept_node import (
     ConceptNode,
 )
+
+from .equation_navigator import (
+    EquationNavigator,
+)
+
+from .equation_node import (
+    EquationNode,
+)
