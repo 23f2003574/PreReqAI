@@ -46,7 +46,7 @@ def test_paper_navigator():
     )
 
 
-def test_paper_navigator_unimplemented_target():
+def test_paper_navigator_raises_for_a_target_with_no_match():
 
     navigator = (
         PaperNavigator()
@@ -65,6 +65,6 @@ def test_paper_navigator_unimplemented_target():
             NavigationTarget.RELATED_PAPER,
             "Some Other Paper",
         )
-        assert False, "expected NotImplementedError"
-    except NotImplementedError:
+        assert False, "expected ValueError"
+    except ValueError:
         pass

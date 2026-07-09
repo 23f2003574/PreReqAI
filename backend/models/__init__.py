@@ -7,6 +7,7 @@ from .paper import (
     PaperReference,
     Citation,
     Experiment,
+    RelatedPaper,
     Paragraph,
     PaperAlgorithm,
     ConceptExplanation,

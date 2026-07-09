@@ -61,6 +61,16 @@ class Experiment:
 
 
 @dataclass
+class RelatedPaper:
+    reference_number: int
+    title: str
+    authors: list[str]
+    year: int | None
+    relationship: str
+    similarity_score: float | None
+
+
+@dataclass
 class Paragraph:
     paragraph_id: int
     section_title: str
@@ -191,6 +201,8 @@ class Paper:
     citations: list[Citation] = field(default_factory=list)
 
     experiments: list[Experiment] = field(default_factory=list)
+
+    related_papers: list[RelatedPaper] = field(default_factory=list)
 
     paragraphs: list[Paragraph] = field(default_factory=list)
 

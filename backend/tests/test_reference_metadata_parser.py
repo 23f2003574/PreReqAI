@@ -1,4 +1,4 @@
-from backend.navigation import ReferenceMetadataParser
+from backend.parsing import ReferenceMetadataParser
 
 
 def test_parses_authors_title_venue_year_when_cleanly_split():

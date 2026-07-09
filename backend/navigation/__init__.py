@@ -58,7 +58,7 @@ from .reference_node import (
     ReferenceNode,
 )
 
-from .reference_metadata_parser import (
+from backend.parsing import (
     ReferenceMetadataParser,
 )
 
@@ -72,4 +72,12 @@ from .experiment_node import (
 
 from .knowledge_graph_navigator import (
     KnowledgeGraphNavigator,
+)
+
+from .related_paper_navigator import (
+    RelatedPaperNavigator,
+)
+
+from .related_paper_node import (
+    RelatedPaperNode,
 )

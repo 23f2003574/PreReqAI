@@ -2,12 +2,12 @@ from backend.models import (
     Paper,
 )
 
-from .navigation_result import (
-    NavigationResult,
+from backend.parsing import (
+    ReferenceMetadataParser,
 )
 
-from .reference_metadata_parser import (
-    ReferenceMetadataParser,
+from .navigation_result import (
+    NavigationResult,
 )
 
 

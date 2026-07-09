@@ -42,6 +42,10 @@ from .knowledge_graph_navigator import (
     KnowledgeGraphNavigator,
 )
 
+from .related_paper_navigator import (
+    RelatedPaperNavigator,
+)
+
 
 class PaperNavigator:
     """
@@ -89,6 +93,11 @@ class PaperNavigator:
         self.knowledge_graph_navigator = (
 
             KnowledgeGraphNavigator()
+        )
+
+        self.related_paper_navigator = (
+
+            RelatedPaperNavigator()
         )
 
     def navigate(
@@ -184,6 +193,17 @@ class PaperNavigator:
 
             return (
                 self.knowledge_graph_navigator.navigate(
+
+                    paper,
+
+                    query,
+                )
+            )
+
+        if target == NavigationTarget.RELATED_PAPER:
+
+            return (
+                self.related_paper_navigator.navigate(
 
                     paper,
 

@@ -20,6 +20,7 @@ from backend.parsing import (
     ReferenceExtractor,
     CitationExtractor,
     ExperimentExtractor,
+    RelatedPaperExtractor,
     ParagraphSegmenter,
     AlgorithmExtractor,
 )
@@ -145,6 +146,10 @@ class ResearchPaperPipeline:
 
         self.reference_extractor = ReferenceExtractor()
 
+        self.related_paper_extractor = (
+            RelatedPaperExtractor()
+        )
+
         self.citation_extractor = CitationExtractor()
 
         self.algorithm_extractor = (
@@ -265,6 +270,10 @@ class ResearchPaperPipeline:
         )
 
         paper = self.reference_extractor.extract(
+            paper,
+        )
+
+        paper = self.related_paper_extractor.extract(
             paper,
         )
 
