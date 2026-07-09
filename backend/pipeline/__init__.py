@@ -6,3 +6,7 @@ from .research_paper_pipeline import (
 from .interactive_learning_pipeline import (
     InteractiveLearningPipeline,
 )
+
+from backend.navigation import (
+    PaperNavigator,
+)
