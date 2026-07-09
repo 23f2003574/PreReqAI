@@ -17,3 +17,11 @@ from .section_navigator import (
 from .navigation_node import (
     NavigationNode,
 )
+
+from .concept_navigator import (
+    ConceptNavigator,
+)
+
+from .concept_node import (
+    ConceptNode,
+)

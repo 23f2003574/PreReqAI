@@ -14,6 +14,10 @@ from .section_navigator import (
     SectionNavigator,
 )
 
+from .concept_navigator import (
+    ConceptNavigator,
+)
+
 
 class PaperNavigator:
     """
@@ -26,6 +30,11 @@ class PaperNavigator:
         self.section_navigator = (
 
             SectionNavigator()
+        )
+
+        self.concept_navigator = (
+
+            ConceptNavigator()
         )
 
     def navigate(
@@ -44,6 +53,17 @@ class PaperNavigator:
 
             return (
                 self.section_navigator.navigate(
+
+                    paper,
+
+                    query,
+                )
+            )
+
+        if target == NavigationTarget.CONCEPT:
+
+            return (
+                self.concept_navigator.navigate(
 
                     paper,
 
