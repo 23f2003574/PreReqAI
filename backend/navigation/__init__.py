@@ -86,3 +86,11 @@ from .navigation_history import (
     NavigationHistory,
     NavigationEvent,
 )
+
+from .navigation_recommendation_engine import (
+    NavigationRecommendationEngine,
+)
+
+from .navigation_recommendation import (
+    NavigationRecommendation,
+)

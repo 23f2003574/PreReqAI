@@ -58,6 +58,26 @@ Related Paper
 Navigation Timeline
 ```
 
+## Personalized Navigation
+
+Navigation recommendations adapt to the learner's exploration history.
+
+Example:
+
+```
+Attention
+        │
+        ▼
+Recommended:
+
+• Equation (3)
+• Figure 2
+• Experiment 1
+        │
+        ▼
+Continue Exploration
+```
+
 ## Workflow-Oriented Tutoring
 
 Every learner request is transformed into an educational execution plan.

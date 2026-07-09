@@ -10,3 +10,7 @@ from .interactive_learning_pipeline import (
 from backend.navigation import (
     PaperNavigator,
 )
+
+from .navigation_pipeline import (
+    NavigationPipeline,
+)
