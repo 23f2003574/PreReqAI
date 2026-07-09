@@ -3,7 +3,10 @@ from uuid import uuid4
 
 from backend.models import Paper
 
-from backend.navigation import NavigationHistory
+from backend.navigation import (
+    NavigationHistory,
+    NavigationResult,
+)
 
 from .context_retriever import RetrievedContext
 from .learning_gap import LearningGap
@@ -47,5 +50,7 @@ class LearningSession:
     navigation_history: NavigationHistory = field(
         default_factory=NavigationHistory,
     )
+
+    last_navigation: NavigationResult | None = None
 
     status: str = "active"

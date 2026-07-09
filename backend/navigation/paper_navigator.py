@@ -134,6 +134,8 @@ class PaperNavigator:
                 query,
             )
 
+            session.last_navigation = result
+
         return result
 
     def _dispatch(

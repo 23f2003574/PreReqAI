@@ -137,3 +137,38 @@ def test_paper_navigator_does_not_record_failed_navigation():
         pass
 
     assert session.navigation_history.events == []
+
+
+def test_paper_navigator_updates_session_last_navigation():
+
+    navigator = (
+        PaperNavigator()
+    )
+
+    paper = Paper(
+
+        source_path="paper.pdf",
+
+        metadata=None,
+
+        sections=[
+            PaperSection(
+                title="Introduction",
+                content="This paper studies...",
+            )
+        ],
+    )
+
+    session = LearningSession()
+
+    assert session.last_navigation is None
+
+    navigator.navigate(
+        paper,
+        NavigationTarget.SECTION,
+        "Introduction",
+        session,
+    )
+
+    assert session.last_navigation is not None
+    assert session.last_navigation.title == "Introduction"

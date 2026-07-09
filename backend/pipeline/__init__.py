@@ -11,6 +11,6 @@ from backend.navigation import (
     PaperNavigator,
 )
 
-from .navigation_pipeline import (
-    NavigationPipeline,
+from .research_navigation_pipeline import (
+    ResearchNavigationPipeline,
 )

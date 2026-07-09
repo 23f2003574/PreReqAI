@@ -78,6 +78,29 @@ Recommended:
 Continue Exploration
 ```
 
+## Research Navigation Pipeline
+
+Every navigation request follows a unified execution flow.
+
+```
+Navigation Request
+        │
+        ▼
+Paper Navigator
+        │
+        ▼
+Specialized Navigator
+        │
+        ▼
+Navigation History
+        │
+        ▼
+Recommendation Engine
+        │
+        ▼
+Unified Navigation Response
+```
+
 ## Workflow-Oriented Tutoring
 
 Every learner request is transformed into an educational execution plan.

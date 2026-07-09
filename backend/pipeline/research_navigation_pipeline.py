@@ -4,16 +4,20 @@ from backend.navigation import (
 )
 
 
-class NavigationPipeline:
+class ResearchNavigationPipeline:
     """
-    Orchestrates paper navigation together with
-    personalized recommendations for what to
-    explore next.
+    Orchestrates the complete research
+    navigation experience: dispatch to the
+    right specialized navigator, record
+    exploration history, and generate
+    personalized recommendations.
     """
 
     def __init__(self):
 
-        self.navigator = PaperNavigator()
+        self.navigator = (
+            PaperNavigator()
+        )
 
         self.recommendation_engine = (
             NavigationRecommendationEngine()
@@ -49,6 +53,9 @@ class NavigationPipeline:
         return {
 
             "navigation": result,
+
+            "history":
+                session.navigation_history.events,
 
             "recommendations":
                 recommendations,
