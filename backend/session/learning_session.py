@@ -3,6 +3,8 @@ from uuid import uuid4
 
 from backend.models import Paper
 
+from backend.navigation import NavigationHistory
+
 from .context_retriever import RetrievedContext
 from .learning_gap import LearningGap
 from .learning_recommendation import LearningRecommendation
@@ -40,6 +42,10 @@ class LearningSession:
 
     workflow_memory: WorkflowMemory = field(
         default_factory=WorkflowMemory,
+    )
+
+    navigation_history: NavigationHistory = field(
+        default_factory=NavigationHistory,
     )
 
     status: str = "active"

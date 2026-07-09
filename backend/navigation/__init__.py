@@ -81,3 +81,8 @@ from .related_paper_navigator import (
 from .related_paper_node import (
     RelatedPaperNode,
 )
+
+from .navigation_history import (
+    NavigationHistory,
+    NavigationEvent,
+)

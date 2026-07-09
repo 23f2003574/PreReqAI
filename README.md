@@ -33,6 +33,31 @@ Features include:
 - Personalized recommendations
 - Persistent learning sessions
 
+## Navigation History
+
+Every navigation event is recorded during exploration.
+
+Example:
+
+```
+Attention
+        │
+        ▼
+Equation (3)
+        │
+        ▼
+Figure 2
+        │
+        ▼
+Experiment 1
+        │
+        ▼
+Related Paper
+        │
+        ▼
+Navigation Timeline
+```
+
 ## Workflow-Oriented Tutoring
 
 Every learner request is transformed into an educational execution plan.

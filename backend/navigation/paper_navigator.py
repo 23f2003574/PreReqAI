@@ -110,6 +110,42 @@ class PaperNavigator:
 
         query: str,
 
+        session=None,
+
+    ) -> NavigationResult:
+        """
+        session is intentionally untyped here (not
+        LearningSession) to avoid backend.navigation
+        importing backend.session, which would create
+        a circular import since LearningSession itself
+        holds a NavigationHistory.
+        """
+
+        result = self._dispatch(
+            paper,
+            target,
+            query,
+        )
+
+        if session is not None:
+
+            session.navigation_history.record(
+                target,
+                query,
+            )
+
+        return result
+
+    def _dispatch(
+
+        self,
+
+        paper: Paper,
+
+        target: NavigationTarget,
+
+        query: str,
+
     ) -> NavigationResult:
 
         if target == NavigationTarget.SECTION:
