@@ -33,3 +33,11 @@ from .equation_navigator import (
 from .equation_node import (
     EquationNode,
 )
+
+from .figure_navigator import (
+    FigureNavigator,
+)
+
+from .figure_node import (
+    FigureNode,
+)

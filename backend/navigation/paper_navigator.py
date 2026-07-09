@@ -22,6 +22,10 @@ from .equation_navigator import (
     EquationNavigator,
 )
 
+from .figure_navigator import (
+    FigureNavigator,
+)
+
 
 class PaperNavigator:
     """
@@ -44,6 +48,11 @@ class PaperNavigator:
         self.equation_navigator = (
 
             EquationNavigator()
+        )
+
+        self.figure_navigator = (
+
+            FigureNavigator()
         )
 
     def navigate(
@@ -84,6 +93,17 @@ class PaperNavigator:
 
             return (
                 self.equation_navigator.navigate(
+
+                    paper,
+
+                    query,
+                )
+            )
+
+        if target == NavigationTarget.FIGURE:
+
+            return (
+                self.figure_navigator.navigate(
 
                     paper,
 
