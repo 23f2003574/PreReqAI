@@ -5,6 +5,7 @@ from .paper import (
     PaperFigure,
     PaperTable,
     PaperReference,
+    Citation,
     Paragraph,
     PaperAlgorithm,
     ConceptExplanation,

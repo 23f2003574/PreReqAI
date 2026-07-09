@@ -45,6 +45,14 @@ class PaperReference:
 
 
 @dataclass
+class Citation:
+    citation_id: int
+    reference_number: int
+    context: str
+    section: str
+
+
+@dataclass
 class Paragraph:
     paragraph_id: int
     section_title: str
@@ -171,6 +179,8 @@ class Paper:
     tables: list[PaperTable] = field(default_factory=list)
 
     references: list[PaperReference] = field(default_factory=list)
+
+    citations: list[Citation] = field(default_factory=list)
 
     paragraphs: list[Paragraph] = field(default_factory=list)
 

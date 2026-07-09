@@ -41,3 +41,11 @@ from .figure_navigator import (
 from .figure_node import (
     FigureNode,
 )
+
+from .citation_navigator import (
+    CitationNavigator,
+)
+
+from .citation_node import (
+    CitationNode,
+)
