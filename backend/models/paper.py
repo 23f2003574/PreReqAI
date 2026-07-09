@@ -53,6 +53,14 @@ class Citation:
 
 
 @dataclass
+class Experiment:
+    experiment_id: int
+    title: str
+    description: str
+    section: str
+
+
+@dataclass
 class Paragraph:
     paragraph_id: int
     section_title: str
@@ -181,6 +189,8 @@ class Paper:
     references: list[PaperReference] = field(default_factory=list)
 
     citations: list[Citation] = field(default_factory=list)
+
+    experiments: list[Experiment] = field(default_factory=list)
 
     paragraphs: list[Paragraph] = field(default_factory=list)
 

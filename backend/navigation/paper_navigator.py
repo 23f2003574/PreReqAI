@@ -34,6 +34,10 @@ from .reference_navigator import (
     ReferenceNavigator,
 )
 
+from .experiment_navigator import (
+    ExperimentNavigator,
+)
+
 
 class PaperNavigator:
     """
@@ -71,6 +75,11 @@ class PaperNavigator:
         self.reference_navigator = (
 
             ReferenceNavigator()
+        )
+
+        self.experiment_navigator = (
+
+            ExperimentNavigator()
         )
 
     def navigate(
@@ -144,6 +153,17 @@ class PaperNavigator:
 
             return (
                 self.reference_navigator.navigate(
+
+                    paper,
+
+                    query,
+                )
+            )
+
+        if target == NavigationTarget.EXPERIMENT:
+
+            return (
+                self.experiment_navigator.navigate(
 
                     paper,
 
