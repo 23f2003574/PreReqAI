@@ -62,8 +62,8 @@ def test_paper_navigator_unimplemented_target():
     try:
         navigator.navigate(
             paper,
-            NavigationTarget.KNOWLEDGE_GRAPH,
-            "Attention",
+            NavigationTarget.RELATED_PAPER,
+            "Some Other Paper",
         )
         assert False, "expected NotImplementedError"
     except NotImplementedError:

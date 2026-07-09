@@ -69,3 +69,7 @@ from .experiment_navigator import (
 from .experiment_node import (
     ExperimentNode,
 )
+
+from .knowledge_graph_navigator import (
+    KnowledgeGraphNavigator,
+)
