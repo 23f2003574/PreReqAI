@@ -49,3 +49,15 @@ from .citation_navigator import (
 from .citation_node import (
     CitationNode,
 )
+
+from .reference_navigator import (
+    ReferenceNavigator,
+)
+
+from .reference_node import (
+    ReferenceNode,
+)
+
+from .reference_metadata_parser import (
+    ReferenceMetadataParser,
+)

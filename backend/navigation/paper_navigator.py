@@ -30,6 +30,10 @@ from .citation_navigator import (
     CitationNavigator,
 )
 
+from .reference_navigator import (
+    ReferenceNavigator,
+)
+
 
 class PaperNavigator:
     """
@@ -62,6 +66,11 @@ class PaperNavigator:
         self.citation_navigator = (
 
             CitationNavigator()
+        )
+
+        self.reference_navigator = (
+
+            ReferenceNavigator()
         )
 
     def navigate(
@@ -124,6 +133,17 @@ class PaperNavigator:
 
             return (
                 self.citation_navigator.navigate(
+
+                    paper,
+
+                    query,
+                )
+            )
+
+        if target == NavigationTarget.REFERENCE:
+
+            return (
+                self.reference_navigator.navigate(
 
                     paper,
 

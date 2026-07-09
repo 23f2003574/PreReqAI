@@ -4,8 +4,8 @@ from backend.models import Paper, PaperReference
 
 
 REFERENCE_PATTERN = re.compile(
-    r"^\[(\d+)\]\s+(.+)$",
-    re.MULTILINE,
+    r"\[(\d+)\]\s+(.+?)(?=\n\[\d+\]|\Z)",
+    re.DOTALL,
 )
 
 
@@ -37,7 +37,7 @@ class ReferenceExtractor:
                 paper.references.append(
                     PaperReference(
                         reference_number=int(number),
-                        raw_text=text.strip(),
+                        raw_text=" ".join(text.split()),
                     )
                 )
 
