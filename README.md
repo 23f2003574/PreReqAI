@@ -282,3 +282,29 @@ Compare
 ↓
 
 Interaction Timeline
+
+## Interactive Object Pipeline
+
+Every interaction follows one execution flow, regardless of object type.
+
+```
+Research Object
+    │
+    ▼
+Dispatcher
+    │
+    ▼
+Action Engine
+    │
+    ▼
+Workflow
+    │
+    ▼
+Interaction History
+    │
+    ▼
+Action Recommendations
+    │
+    ▼
+Unified Response
+```

@@ -54,3 +54,7 @@ from .action_recommendation import (
 from .action_recommendation_engine import (
     ActionRecommendationEngine,
 )
+
+from .interaction_dispatcher import (
+    InteractionDispatcher,
+)

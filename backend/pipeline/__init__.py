@@ -14,3 +14,7 @@ from backend.navigation import (
 from .research_navigation_pipeline import (
     ResearchNavigationPipeline,
 )
+
+from .interactive_object_pipeline import (
+    InteractiveObjectPipeline,
+)

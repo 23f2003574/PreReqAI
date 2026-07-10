@@ -20,11 +20,6 @@ from backend.workflows import (
 )
 
 from backend.interaction import (
-    ConceptActionEngine,
-    EquationActionEngine,
-    FigureActionEngine,
-    ExperimentActionEngine,
-    ReferenceActionEngine,
     ActionRecommendationEngine,
 )
 
@@ -63,36 +58,6 @@ class InteractiveLearningPipeline:
             LearningWorkflowPlanner()
         )
 
-        self.concept_actions = (
-            ConceptActionEngine(
-                self.workflow_router,
-            )
-        )
-
-        self.equation_actions = (
-            EquationActionEngine(
-                self.workflow_router,
-            )
-        )
-
-        self.figure_actions = (
-            FigureActionEngine(
-                self.workflow_router,
-            )
-        )
-
-        self.experiment_actions = (
-            ExperimentActionEngine(
-                self.workflow_router,
-            )
-        )
-
-        self.reference_actions = (
-            ReferenceActionEngine(
-                self.workflow_router,
-            )
-        )
-
         self.action_recommendations = (
             ActionRecommendationEngine()
         )
@@ -116,146 +81,6 @@ class InteractiveLearningPipeline:
                 research_object,
 
                 session,
-            )
-        )
-
-    def execute_reference_action(
-
-        self,
-
-        research_object,
-
-        action,
-
-        session,
-
-        paper,
-
-    ):
-
-        return (
-
-            self.reference_actions.execute(
-
-                research_object,
-
-                action,
-
-                session,
-
-                paper,
-            )
-        )
-
-    def execute_experiment_action(
-
-        self,
-
-        research_object,
-
-        action,
-
-        session,
-
-        paper,
-
-    ):
-
-        return (
-
-            self.experiment_actions.execute(
-
-                research_object,
-
-                action,
-
-                session,
-
-                paper,
-            )
-        )
-
-    def execute_figure_action(
-
-        self,
-
-        research_object,
-
-        action,
-
-        session,
-
-        paper,
-
-    ):
-
-        return (
-
-            self.figure_actions.execute(
-
-                research_object,
-
-                action,
-
-                session,
-
-                paper,
-            )
-        )
-
-    def execute_equation_action(
-
-        self,
-
-        research_object,
-
-        action,
-
-        session,
-
-        paper,
-
-    ):
-
-        return (
-
-            self.equation_actions.execute(
-
-                research_object,
-
-                action,
-
-                session,
-
-                paper,
-            )
-        )
-
-    def execute_concept_action(
-
-        self,
-
-        research_object,
-
-        action,
-
-        session,
-
-        paper,
-
-    ):
-
-        return (
-
-            self.concept_actions.execute(
-
-                research_object,
-
-                action,
-
-                session,
-
-                paper,
             )
         )
 
