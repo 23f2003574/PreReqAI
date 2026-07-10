@@ -64,3 +64,19 @@ def test_available_actions_are_type_driven():
     assert not equation.supports(
         ObjectAction.SHOW_PREREQUISITES
     )
+
+
+def test_experiment_supports_implement():
+
+    experiment = ResearchObject(
+        id="ablation-1",
+        object_type=(
+            ResearchObjectType.EXPERIMENT
+        ),
+        title="Ablation Study",
+        description="Removing attention heads",
+    )
+
+    assert experiment.supports(
+        ObjectAction.IMPLEMENT
+    )

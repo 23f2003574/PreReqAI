@@ -31,6 +31,7 @@ CAPABILITY_MAP: dict[
     ResearchObjectType.EXPERIMENT: [
         ObjectAction.EXPLAIN,
         ObjectAction.COMPARE,
+        ObjectAction.IMPLEMENT,
         ObjectAction.SHOW_RELATIONS,
     ],
     ResearchObjectType.SECTION: [

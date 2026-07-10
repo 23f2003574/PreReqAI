@@ -122,3 +122,20 @@ Follow-up Workflow
         ▼
 Unified Learning Response
 ```
+
+## Interactive Research Objects
+
+Each research object exposes only the educational actions appropriate for its type.
+
+Example:
+
+```
+Concept
+    │
+    ▼
+Explain
+Visualize
+Compare
+Quiz
+Show Prerequisites
+```
