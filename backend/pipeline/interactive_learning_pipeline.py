@@ -19,6 +19,10 @@ from backend.workflows import (
     WorkflowExecutionResult,
 )
 
+from backend.interaction import (
+    ConceptActionEngine,
+)
+
 
 class InteractiveLearningPipeline:
     """
@@ -52,6 +56,40 @@ class InteractiveLearningPipeline:
 
         self.workflow_planner = (
             LearningWorkflowPlanner()
+        )
+
+        self.concept_actions = (
+            ConceptActionEngine(
+                self.workflow_router,
+            )
+        )
+
+    def execute_concept_action(
+
+        self,
+
+        research_object,
+
+        action,
+
+        session,
+
+        paper,
+
+    ):
+
+        return (
+
+            self.concept_actions.execute(
+
+                research_object,
+
+                action,
+
+                session,
+
+                paper,
+            )
         )
 
     def answer(

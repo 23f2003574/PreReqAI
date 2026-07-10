@@ -139,3 +139,22 @@ Compare
 Quiz
 Show Prerequisites
 ```
+
+## Concept Actions
+
+Selecting an action on a concept runs the real learning workflow behind it and returns the tutor's response, not just the workflow's name.
+
+Example:
+
+```
+Attention
+    │
+    ▼
+Explain
+    │
+    ▼
+Explanation Workflow
+    │
+    ▼
+Tutor Response
+```
