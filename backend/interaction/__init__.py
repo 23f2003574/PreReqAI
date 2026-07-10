@@ -29,3 +29,7 @@ from .concept_action_engine import (
 from .equation_action_engine import (
     EquationActionEngine,
 )
+
+from .figure_action_engine import (
+    FigureActionEngine,
+)

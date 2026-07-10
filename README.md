@@ -159,6 +159,25 @@ Explanation Workflow
 Tutor Response
 ```
 
+## Figure Actions
+
+Diagrams and plots run the same real workflows too, so explaining a figure or exploring its related concepts returns an actual tutor response.
+
+Example:
+
+```
+Figure 2
+    │
+    ▼
+Explain
+    │
+    ▼
+Explanation Workflow
+    │
+    ▼
+Tutor Response
+```
+
 ## Equation Actions
 
 Mathematical expressions run the same real workflows as concepts, so explaining, visualizing, or implementing an equation returns an actual tutor response.
