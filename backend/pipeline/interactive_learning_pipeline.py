@@ -23,6 +23,7 @@ from backend.interaction import (
     ConceptActionEngine,
     EquationActionEngine,
     FigureActionEngine,
+    ExperimentActionEngine,
 )
 
 
@@ -75,6 +76,40 @@ class InteractiveLearningPipeline:
         self.figure_actions = (
             FigureActionEngine(
                 self.workflow_router,
+            )
+        )
+
+        self.experiment_actions = (
+            ExperimentActionEngine(
+                self.workflow_router,
+            )
+        )
+
+    def execute_experiment_action(
+
+        self,
+
+        research_object,
+
+        action,
+
+        session,
+
+        paper,
+
+    ):
+
+        return (
+
+            self.experiment_actions.execute(
+
+                research_object,
+
+                action,
+
+                session,
+
+                paper,
             )
         )
 

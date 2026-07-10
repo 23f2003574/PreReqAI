@@ -33,3 +33,7 @@ from .equation_action_engine import (
 from .figure_action_engine import (
     FigureActionEngine,
 )
+
+from .experiment_action_engine import (
+    ExperimentActionEngine,
+)

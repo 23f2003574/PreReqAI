@@ -178,6 +178,25 @@ Explanation Workflow
 Tutor Response
 ```
 
+## Experiment Actions
+
+Experimental evaluations run the same real workflows too, so comparing baselines or explaining results returns an actual tutor response.
+
+Example:
+
+```
+Experiment 1
+    │
+    ▼
+Compare
+    │
+    ▼
+Comparison Workflow
+    │
+    ▼
+Tutor Response
+```
+
 ## Equation Actions
 
 Mathematical expressions run the same real workflows as concepts, so explaining, visualizing, or implementing an equation returns an actual tutor response.
