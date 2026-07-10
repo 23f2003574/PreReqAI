@@ -7,32 +7,6 @@ from .object_action import (
 from .research_object import (
     ResearchObject,
 )
-from .research_object_type import (
-    ResearchObjectType,
-)
-from .concept_action_engine import (
-    ConceptActionEngine,
-)
-from .equation_action_engine import (
-    EquationActionEngine,
-)
-from .figure_action_engine import (
-    FigureActionEngine,
-)
-from .experiment_action_engine import (
-    ExperimentActionEngine,
-)
-from .reference_action_engine import (
-    ReferenceActionEngine,
-)
-
-ENGINE_BY_TYPE = {
-    ResearchObjectType.CONCEPT: ConceptActionEngine,
-    ResearchObjectType.EQUATION: EquationActionEngine,
-    ResearchObjectType.FIGURE: FigureActionEngine,
-    ResearchObjectType.EXPERIMENT: ExperimentActionEngine,
-    ResearchObjectType.REFERENCE: ReferenceActionEngine,
-}
 
 
 class ActionRecommendationEngine:
@@ -64,13 +38,13 @@ class ActionRecommendationEngine:
             research_object.available_actions()
         )
 
-        workflow_memory = getattr(
+        history = getattr(
             session,
-            "workflow_memory",
+            "interaction_history",
             None,
         )
 
-        if workflow_memory is None:
+        if history is None:
 
             return [
                 ActionRecommendation(
@@ -81,43 +55,15 @@ class ActionRecommendationEngine:
                 if action in available
             ]
 
-        engine_cls = ENGINE_BY_TYPE.get(
-            research_object.object_type,
-        )
-
-        action_mapping = (
-            engine_cls.action_mapping()
-            if engine_cls
-            else {}
-        )
-
-        recommendations = []
-
-        for action in self.DEFAULT_PRIORITY:
-
-            if action not in available:
-
-                continue
-
-            workflow = action_mapping.get(
+        return [
+            ActionRecommendation(
+                action=action,
+                reason="Not yet completed for this object",
+            )
+            for action in self.DEFAULT_PRIORITY
+            if action in available
+            and not history.has_completed(
+                research_object.id,
                 action,
             )
-
-            if (
-                workflow is not None
-                and workflow_memory.has_completed(
-                    workflow,
-                    research_object.title,
-                )
-            ):
-
-                continue
-
-            recommendations.append(
-                ActionRecommendation(
-                    action=action,
-                    reason="Not yet completed for this object",
-                )
-            )
-
-        return recommendations
+        ]

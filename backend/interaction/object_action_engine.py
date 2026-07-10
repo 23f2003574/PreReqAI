@@ -98,17 +98,18 @@ class ObjectActionEngine:
 
         if response is not None:
 
-            workflow_memory = getattr(
+            interaction_history = getattr(
                 session,
-                "workflow_memory",
+                "interaction_history",
                 None,
             )
 
-            if workflow_memory is not None:
+            if interaction_history is not None:
 
-                workflow_memory.add(
-                    workflow,
+                interaction_history.record(
+                    research_object.id,
                     research_object.title,
+                    action,
                 )
 
         return ActionExecutionResult(

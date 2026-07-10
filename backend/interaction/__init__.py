@@ -18,6 +18,11 @@ from .action_execution_result import (
     ActionExecutionResult,
 )
 
+from .interaction_history import (
+    InteractionHistory,
+    InteractionEvent,
+)
+
 from .object_action_engine import (
     ObjectActionEngine,
 )

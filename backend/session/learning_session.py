@@ -3,6 +3,10 @@ from uuid import uuid4
 
 from backend.models import Paper
 
+from backend.interaction import (
+    InteractionHistory,
+)
+
 from backend.navigation import (
     NavigationHistory,
     NavigationResult,
@@ -45,6 +49,10 @@ class LearningSession:
 
     workflow_memory: WorkflowMemory = field(
         default_factory=WorkflowMemory,
+    )
+
+    interaction_history: InteractionHistory = field(
+        default_factory=InteractionHistory,
     )
 
     navigation_history: NavigationHistory = field(

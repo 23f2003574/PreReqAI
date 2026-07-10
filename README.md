@@ -252,3 +252,33 @@ Attention (after completing Explain)
     ▼
 Visualize, Compare, Implement, Quiz
 ```
+
+## Interaction History
+
+Every educational interaction is recorded throughout the learning session, driving the personalized recommendations above.
+
+Attention
+
+↓
+
+Explain
+
+↓
+
+Equation (3)
+
+↓
+
+Visualize
+
+↓
+
+Experiment 1
+
+↓
+
+Compare
+
+↓
+
+Interaction Timeline
