@@ -40,6 +40,8 @@ CAPABILITY_MAP: dict[
     ],
     ResearchObjectType.REFERENCE: [
         ObjectAction.EXPLAIN,
+        ObjectAction.COMPARE,
+        ObjectAction.SHOW_PREREQUISITES,
         ObjectAction.SHOW_RELATIONS,
     ],
     ResearchObjectType.CITATION: [

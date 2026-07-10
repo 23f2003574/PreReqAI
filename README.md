@@ -197,6 +197,25 @@ Comparison Workflow
 Tutor Response
 ```
 
+## Reference Actions
+
+Cited papers run the same real workflows too, so exploring a reference's related work returns an actual tutor response instead of a bibliography entry.
+
+Example:
+
+```
+Attention Is All You Need
+    │
+    ▼
+Show Relations
+    │
+    ▼
+Follow-up Workflow
+    │
+    ▼
+Tutor Response
+```
+
 ## Equation Actions
 
 Mathematical expressions run the same real workflows as concepts, so explaining, visualizing, or implementing an equation returns an actual tutor response.
