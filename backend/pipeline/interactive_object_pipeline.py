@@ -1,3 +1,11 @@
+"""
+Lower-level execution layer beneath
+InteractiveResearchEngine: dispatches a
+single action and returns a standardized
+response, with no awareness of multi-action
+plans (that's InteractionOrchestrator's job).
+"""
+
 from backend.interaction import (
     ActionRecommendationEngine,
     InteractionDispatcher,
@@ -11,10 +19,12 @@ class InteractiveObjectPipeline:
     one unified pipeline.
     """
 
-    def __init__(self):
+    def __init__(self, workflow_router=None):
 
         self.dispatcher = (
-            InteractionDispatcher()
+            InteractionDispatcher(
+                workflow_router,
+            )
         )
 
         self.recommendations = (

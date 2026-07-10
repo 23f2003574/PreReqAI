@@ -330,3 +330,26 @@ Quiz
 ↓
 
 Complete Learning Session
+
+## Interactive Research Engine
+
+Every educational interaction flows through one high-level engine, whether it's a single action or a multi-action plan.
+
+```
+Research Object
+    │
+    ▼
+Interactive Research Engine
+    │
+    ▼
+Interaction Pipeline
+    │
+    ▼
+Action Engine
+    │
+    ▼
+Learning Workflow
+    │
+    ▼
+Adaptive Tutor
+```
