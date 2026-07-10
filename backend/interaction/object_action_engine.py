@@ -36,7 +36,8 @@ class ObjectActionEngine:
             or LearningWorkflowRouter()
         )
 
-    def action_mapping(self):
+    @staticmethod
+    def action_mapping():
 
         raise NotImplementedError
 
@@ -94,6 +95,21 @@ class ObjectActionEngine:
         except NotImplementedError:
 
             response = None
+
+        if response is not None:
+
+            workflow_memory = getattr(
+                session,
+                "workflow_memory",
+                None,
+            )
+
+            if workflow_memory is not None:
+
+                workflow_memory.add(
+                    workflow,
+                    research_object.title,
+                )
 
         return ActionExecutionResult(
             object_id=research_object.id,

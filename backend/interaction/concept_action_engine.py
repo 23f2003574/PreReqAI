@@ -12,7 +12,8 @@ class ConceptActionEngine(ObjectActionEngine):
     research concepts.
     """
 
-    def action_mapping(self):
+    @staticmethod
+    def action_mapping():
 
         from backend.session import (
             WorkflowType,

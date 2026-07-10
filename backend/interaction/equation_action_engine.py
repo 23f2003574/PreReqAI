@@ -12,7 +12,8 @@ class EquationActionEngine(ObjectActionEngine):
     mathematical equations.
     """
 
-    def action_mapping(self):
+    @staticmethod
+    def action_mapping():
 
         from backend.session import (
             WorkflowType,

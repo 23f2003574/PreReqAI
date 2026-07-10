@@ -234,3 +234,21 @@ Explanation Workflow
     ▼
 Tutor Response
 ```
+
+## Personalized Object Actions
+
+Recommended actions adapt to what a learner has already completed on an object, instead of showing the same static list to everyone.
+
+Example:
+
+```
+Attention (first visit)
+    │
+    ▼
+Explain, Visualize, Compare, Implement, Quiz
+
+Attention (after completing Explain)
+    │
+    ▼
+Visualize, Compare, Implement, Quiz
+```

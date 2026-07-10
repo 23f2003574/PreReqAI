@@ -25,6 +25,7 @@ from backend.interaction import (
     FigureActionEngine,
     ExperimentActionEngine,
     ReferenceActionEngine,
+    ActionRecommendationEngine,
 )
 
 
@@ -89,6 +90,32 @@ class InteractiveLearningPipeline:
         self.reference_actions = (
             ReferenceActionEngine(
                 self.workflow_router,
+            )
+        )
+
+        self.action_recommendations = (
+            ActionRecommendationEngine()
+        )
+
+    def recommend_actions(
+
+        self,
+
+        research_object,
+
+        session,
+
+    ):
+
+        return (
+
+            self.action_recommendations
+
+            .recommend(
+
+                research_object,
+
+                session,
             )
         )
 

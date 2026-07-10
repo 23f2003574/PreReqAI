@@ -12,7 +12,8 @@ class FigureActionEngine(ObjectActionEngine):
     research figures.
     """
 
-    def action_mapping(self):
+    @staticmethod
+    def action_mapping():
 
         from backend.session import (
             WorkflowType,

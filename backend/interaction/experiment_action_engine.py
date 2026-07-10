@@ -12,7 +12,8 @@ class ExperimentActionEngine(ObjectActionEngine):
     research experiments.
     """
 
-    def action_mapping(self):
+    @staticmethod
+    def action_mapping():
 
         from backend.session import (
             WorkflowType,
