@@ -158,3 +158,22 @@ Explanation Workflow
     ▼
 Tutor Response
 ```
+
+## Equation Actions
+
+Mathematical expressions run the same real workflows as concepts, so explaining, visualizing, or implementing an equation returns an actual tutor response.
+
+Example:
+
+```
+Equation (3)
+    │
+    ▼
+Explain
+    │
+    ▼
+Explanation Workflow
+    │
+    ▼
+Tutor Response
+```

@@ -6,10 +6,10 @@ from .object_action_engine import (
 )
 
 
-class ConceptActionEngine(ObjectActionEngine):
+class EquationActionEngine(ObjectActionEngine):
     """
     Executes educational actions for
-    research concepts.
+    mathematical equations.
     """
 
     def action_mapping(self):
@@ -22,6 +22,5 @@ class ConceptActionEngine(ObjectActionEngine):
             ObjectAction.EXPLAIN: WorkflowType.EXPLANATION,
             ObjectAction.VISUALIZE: WorkflowType.VISUALIZATION,
             ObjectAction.IMPLEMENT: WorkflowType.IMPLEMENTATION,
-            ObjectAction.COMPARE: WorkflowType.COMPARISON,
-            ObjectAction.QUIZ: WorkflowType.QUIZ,
+            ObjectAction.SHOW_RELATIONS: WorkflowType.PREREQUISITE,
         }
