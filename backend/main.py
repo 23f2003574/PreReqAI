@@ -8,16 +8,16 @@ from backend.api.session_routes import (
     router as session_router,
 )
 
-from backend.engine import (
-    InteractiveResearchEngine,
+from backend.platform import (
+    PreReqAIPlatform,
 )
 
 app = FastAPI(
     title="PreReqAI",
 )
 
-interactive_engine = (
-    InteractiveResearchEngine()
+platform = (
+    PreReqAIPlatform()
 )
 
 app.include_router(

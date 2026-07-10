@@ -353,3 +353,30 @@ Learning Workflow
     ▼
 Adaptive Tutor
 ```
+
+## Platform Architecture
+
+```
+Research Paper
+        │
+        ▼
+Analysis Layer
+        │
+        ▼
+Knowledge Graph
+        │
+        ▼
+Navigation Layer
+        │
+        ▼
+Interaction Layer
+        │
+        ▼
+Learning Workflows
+        │
+        ▼
+Adaptive Tutor
+```
+
+Every subsystem is coordinated through the
+`PreReqAIPlatform`.
