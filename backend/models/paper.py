@@ -5,6 +5,7 @@ from backend.ingestion import (
     DocumentMetadata,
     RawPage,
 )
+from backend.interaction import ResearchObject
 from .concept import DetectedConcept
 from .knowledge_graph import KnowledgeGraph
 
@@ -258,4 +259,8 @@ class Paper:
 
     prerequisite_justifications: list[
         PrerequisiteJustification
+    ] = field(default_factory=list)
+
+    interactive_objects: list[
+        ResearchObject
     ] = field(default_factory=list)
