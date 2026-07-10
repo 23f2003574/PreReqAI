@@ -308,3 +308,25 @@ Action Recommendations
     ▼
 Unified Response
 ```
+
+## Interaction Orchestration
+
+Educational actions can be coordinated into structured learning experiences.
+
+Attention
+
+↓
+
+Explain
+
+↓
+
+Visualize
+
+↓
+
+Quiz
+
+↓
+
+Complete Learning Session

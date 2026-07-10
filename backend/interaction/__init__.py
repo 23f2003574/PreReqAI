@@ -58,3 +58,11 @@ from .action_recommendation_engine import (
 from .interaction_dispatcher import (
     InteractionDispatcher,
 )
+
+from .interaction_plan import (
+    InteractionPlan,
+)
+
+from .interaction_orchestrator import (
+    InteractionOrchestrator,
+)
