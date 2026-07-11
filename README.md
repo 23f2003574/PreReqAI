@@ -446,3 +446,18 @@ Educational Workflow
 ```
 
 The action menu validates object capabilities before forwarding interactions to the platform's educational interaction engine.
+
+## Paper Outline Explorer
+
+The visual research workspace provides a hierarchical representation of the paper's document structure.
+
+Extracted sections and subsections are transformed into navigable outline nodes that preserve:
+
+- Section identity
+- Section title
+- Hierarchical level
+- Section numbering
+- Page location
+- Parent-child relationships
+
+This allows learners to explore research papers structurally rather than relying exclusively on linear scrolling or conversational navigation.

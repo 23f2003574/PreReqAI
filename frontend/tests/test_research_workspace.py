@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from frontend.src.workspace import (
 
     ResearchWorkspace,
@@ -183,4 +185,65 @@ def test_workspace_exposes_selected_object_actions():
 
             for item in actions
         )
+    )
+
+
+def test_workspace_loads_paper_outline():
+
+    @dataclass
+    class Section:
+
+        id: str
+
+        title: str
+
+        level: int
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    sections = [
+
+        Section(
+
+            id="intro",
+
+            title="Introduction",
+
+            level=1,
+        ),
+
+        Section(
+
+            id="methods",
+
+            title="Methods",
+
+            level=1,
+        ),
+    ]
+
+    outline = (
+
+        workspace.load_paper_outline(
+
+            "Example Paper",
+
+            sections,
+        )
+    )
+
+    assert (
+
+        outline.paper_title
+
+        == "Example Paper"
+    )
+
+    assert (
+
+        len(outline.roots)
+
+        == 2
     )

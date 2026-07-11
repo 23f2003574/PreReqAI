@@ -27,6 +27,10 @@ from frontend.src.actions import (
     WorkspaceActionResult,
 )
 
+from frontend.src.explorer import (
+    PaperOutlineExplorer,
+)
+
 
 class ResearchWorkspace:
     """
@@ -82,6 +86,12 @@ class ResearchWorkspace:
         )
 
         self.active_action_result = None
+
+        self.paper_explorer = (
+            PaperOutlineExplorer()
+        )
+
+        self.paper_outline = None
 
     def panels_for(
 
@@ -208,3 +218,49 @@ class ResearchWorkspace:
         self.state.active_region = (
             region.value
         )
+
+    def load_paper_outline(
+
+        self,
+
+        paper_title: str,
+
+        sections,
+
+    ):
+
+        self.paper_outline = (
+
+            self.paper_explorer.build(
+
+                paper_title,
+
+                sections,
+            )
+        )
+
+        return self.paper_outline
+
+    def select_outline_node(
+
+        self,
+
+        node,
+
+    ):
+
+        section = (
+
+            self.paper_explorer.select(
+
+                node
+            )
+        )
+
+        self.state.metadata[
+
+            "selected_section"
+
+        ] = section
+
+        return section

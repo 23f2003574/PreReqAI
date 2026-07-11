@@ -17,7 +17,16 @@ DEFAULT_WORKSPACE_PANELS = [
 
         region=WorkspaceRegion.EXPLORER,
 
-        component="PaperExplorer",
+        component="PaperOutlineExplorer",
+
+        metadata={
+
+            "hierarchical": True,
+
+            "supports_selection": True,
+
+            "supports_expansion": True,
+        },
     ),
 
     WorkspacePanel(
