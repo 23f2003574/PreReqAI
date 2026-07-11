@@ -380,3 +380,17 @@ Adaptive Tutor
 
 Every subsystem is coordinated through the
 `PreReqAIPlatform`.
+
+## Visual Research Workspace
+
+PreReqAI provides a unified workspace for exploring and learning from research papers.
+
+The workspace is organized into five primary regions:
+
+- Workspace Header
+- Research Explorer
+- Main Research View
+- Research Object Inspector
+- Learning Timeline
+
+The workspace maintains shared state across paper navigation, research object selection, learning workflows, and educational interactions.
