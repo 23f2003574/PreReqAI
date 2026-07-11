@@ -522,3 +522,21 @@ Each timeline step can be represented as:
 - Skipped
 
 This allows learners to understand where they are inside a multi-step educational experience rather than treating workflow execution as an opaque backend process.
+
+## Contextual Learning Panel
+
+Educational content generated from research object interactions is presented inside a dedicated contextual learning surface.
+
+The panel can represent:
+
+- Explanations
+- Visualizations
+- Implementations
+- Comparisons
+- Quizzes
+- Prerequisite guidance
+- Follow-up learning content
+
+Each learning output preserves its source research object, educational action, workflow context, and associated metadata.
+
+Learners can move between the paper, knowledge graph, and learning content without losing their current research context.

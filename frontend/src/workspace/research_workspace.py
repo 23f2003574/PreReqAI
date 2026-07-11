@@ -43,6 +43,10 @@ from frontend.src.timeline import (
     LearningWorkflowTimeline,
 )
 
+from frontend.src.learning import (
+    ContextualLearningPanel,
+)
+
 
 class ResearchWorkspace:
     """
@@ -117,6 +121,10 @@ class ResearchWorkspace:
 
         self.learning_timeline = (
             LearningWorkflowTimeline()
+        )
+
+        self.learning_panel = (
+            ContextualLearningPanel()
         )
 
     def panels_for(
@@ -236,6 +244,17 @@ class ResearchWorkspace:
         )
 
         self.active_action_result = result
+
+        self.learning_panel.present_response(
+
+            research_object,
+
+            action,
+
+            response,
+        )
+
+        self.show_learning_content()
 
         workflow_steps = (
 
@@ -428,6 +447,13 @@ class ResearchWorkspace:
             "paper"
         )
 
+    def show_learning_content(self):
+
+        self.set_active_view(
+
+            "learning"
+        )
+
     def navigate_breadcrumb(
 
         self,
@@ -544,4 +570,20 @@ class ResearchWorkspace:
         return list(
 
             self.learning_timeline.steps
+        )
+
+    def active_learning_content(self):
+
+        return (
+
+            self.learning_panel
+            .active_content
+        )
+
+    def learning_content_history(self):
+
+        return list(
+
+            self.learning_panel
+            .content_history
         )

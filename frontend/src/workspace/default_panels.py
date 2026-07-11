@@ -86,6 +86,33 @@ DEFAULT_WORKSPACE_PANELS = [
 
     WorkspacePanel(
 
+        id="contextual-learning",
+
+        title="Learning",
+
+        region=WorkspaceRegion.MAIN,
+
+        component="ContextualLearningPanel",
+
+        visible=True,
+
+        metadata={
+
+            "contextual": True,
+
+            "supports_multiple_content_types":
+                True,
+
+            "tracks_content_history":
+                True,
+
+            "requires_interaction":
+                True,
+        },
+    ),
+
+    WorkspacePanel(
+
         id="object-inspector",
 
         title="Object Inspector",

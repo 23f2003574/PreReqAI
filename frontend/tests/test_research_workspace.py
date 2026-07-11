@@ -364,3 +364,19 @@ def test_workspace_tracks_learning_timeline():
 
         == TimelineStepStatus.ACTIVE
     )
+
+
+def test_workspace_switches_to_learning_view():
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    workspace.show_learning_content()
+
+    assert (
+
+        workspace.state.active_view
+
+        == "learning"
+    )
