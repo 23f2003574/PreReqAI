@@ -247,3 +247,28 @@ def test_workspace_loads_paper_outline():
 
         == 2
     )
+
+
+def test_workspace_switches_to_graph_view():
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    workspace.show_knowledge_graph()
+
+    assert (
+
+        workspace.state.active_view
+
+        == "knowledge_graph"
+    )
+
+    workspace.show_paper()
+
+    assert (
+
+        workspace.state.active_view
+
+        == "paper"
+    )

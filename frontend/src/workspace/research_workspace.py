@@ -31,6 +31,10 @@ from frontend.src.explorer import (
     PaperOutlineExplorer,
 )
 
+from frontend.src.graph import (
+    KnowledgeGraphWorkspaceView,
+)
+
 
 class ResearchWorkspace:
     """
@@ -92,6 +96,12 @@ class ResearchWorkspace:
         )
 
         self.paper_outline = None
+
+        self.knowledge_graph_view = (
+            KnowledgeGraphWorkspaceView()
+        )
+
+        self.graph_view_model = None
 
     def panels_for(
 
@@ -264,3 +274,65 @@ class ResearchWorkspace:
         ] = section
 
         return section
+
+    def load_knowledge_graph(
+
+        self,
+
+        knowledge_graph,
+
+    ):
+
+        self.graph_view_model = (
+
+            self.knowledge_graph_view.build(
+
+                knowledge_graph
+            )
+        )
+
+        return self.graph_view_model
+
+    def select_graph_node(
+
+        self,
+
+        node_id: str,
+
+    ):
+
+        node = (
+
+            self.knowledge_graph_view
+
+            .select_node(
+
+                node_id
+            )
+        )
+
+        if node is None:
+
+            return None
+
+        self.state.metadata[
+
+            "selected_graph_node"
+
+        ] = node
+
+        return node
+
+    def show_knowledge_graph(self):
+
+        self.set_active_view(
+
+            "knowledge_graph"
+        )
+
+    def show_paper(self):
+
+        self.set_active_view(
+
+            "paper"
+        )

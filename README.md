@@ -461,3 +461,18 @@ Extracted sections and subsections are transformed into navigable outline nodes 
 - Parent-child relationships
 
 This allows learners to explore research papers structurally rather than relying exclusively on linear scrolling or conversational navigation.
+
+## Knowledge Graph Workspace
+
+The visual research workspace can represent a paper as an interconnected knowledge graph.
+
+Backend graph entities are transformed into visual nodes and edges containing:
+
+- Node identity
+- Node type
+- Description
+- Source context
+- Relationships
+- Selection state
+
+Learners can switch between the paper view and knowledge graph view while remaining inside the same research session.

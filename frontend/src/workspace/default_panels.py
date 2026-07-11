@@ -42,6 +42,30 @@ DEFAULT_WORKSPACE_PANELS = [
 
     WorkspacePanel(
 
+        id="knowledge-graph",
+
+        title="Knowledge Graph",
+
+        region=WorkspaceRegion.MAIN,
+
+        component="KnowledgeGraphWorkspaceView",
+
+        visible=True,
+
+        metadata={
+
+            "interactive": True,
+
+            "supports_selection": True,
+
+            "supports_zoom": True,
+
+            "supports_pan": True,
+        },
+    ),
+
+    WorkspacePanel(
+
         id="object-inspector",
 
         title="Object Inspector",
