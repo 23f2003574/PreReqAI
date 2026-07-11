@@ -18,6 +18,15 @@ from frontend.src.inspector import (
     ResearchObjectInspector,
 )
 
+from backend.engine import (
+    InteractiveResearchEngine,
+)
+
+from frontend.src.actions import (
+    ObjectActionMenu,
+    WorkspaceActionResult,
+)
+
 
 class ResearchWorkspace:
     """
@@ -60,6 +69,20 @@ class ResearchWorkspace:
 
         self.inspector_view = None
 
+        self.interaction_engine = (
+            InteractiveResearchEngine()
+        )
+
+        self.action_menu = (
+
+            ObjectActionMenu(
+
+                self.interaction_engine
+            )
+        )
+
+        self.active_action_result = None
+
     def panels_for(
 
         self,
@@ -97,6 +120,72 @@ class ResearchWorkspace:
         )
 
         return self.inspector_view
+
+    def available_actions(self):
+
+        if (
+
+            self.state.selected_object
+
+            is None
+        ):
+
+            return []
+
+        return self.action_menu.build(
+
+            self.state.selected_object
+        )
+
+    def execute_action(
+
+        self,
+
+        session,
+
+        action,
+
+    ):
+
+        research_object = (
+
+            self.state.selected_object
+        )
+
+        if research_object is None:
+
+            raise ValueError(
+
+                "No research object "
+                "is currently selected."
+            )
+
+        response = (
+
+            self.action_menu.execute(
+
+                session,
+
+                research_object,
+
+                action,
+            )
+        )
+
+        result = WorkspaceActionResult(
+
+            object_id=(
+                research_object.id
+            ),
+
+            action=action.value,
+
+            response=response,
+        )
+
+        self.active_action_result = result
+
+        return result
 
     def set_active_view(
 

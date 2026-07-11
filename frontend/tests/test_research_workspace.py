@@ -7,6 +7,8 @@ from frontend.src.workspace import (
 
 from backend.interaction import (
 
+    ObjectAction,
+
     ResearchObject,
 
     ResearchObjectType,
@@ -139,4 +141,46 @@ def test_workspace_inspects_selected_object():
         inspector_view.title
 
         == "Attention"
+    )
+
+
+def test_workspace_exposes_selected_object_actions():
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    research_object = ResearchObject(
+
+        id="attention",
+
+        object_type=(
+            ResearchObjectType.CONCEPT
+        ),
+
+        title="Attention",
+
+        description="Attention mechanism",
+    )
+
+    workspace.select_object(
+
+        research_object
+    )
+
+    actions = (
+
+        workspace.available_actions()
+    )
+
+    assert (
+
+        any(
+
+            item.action
+
+            == ObjectAction.EXPLAIN
+
+            for item in actions
+        )
     )

@@ -421,3 +421,28 @@ Selecting a research object opens a contextual inspector containing:
 - Available educational actions
 
 The inspector uses the unified research object model, allowing concepts, equations, figures, experiments, and references to share a consistent inspection experience.
+
+## Interactive Action Menu
+
+Selected research objects expose executable educational actions through the visual workspace.
+
+Example:
+
+```
+Attention
+    │
+    ▼
+Explain
+Visualize
+Implement
+Compare
+Quiz
+    │
+    ▼
+Interactive Research Engine
+    │
+    ▼
+Educational Workflow
+```
+
+The action menu validates object capabilities before forwarding interactions to the platform's educational interaction engine.
