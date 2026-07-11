@@ -33,3 +33,15 @@ from .workspace_event_type import (
 from .workspace_state_coordinator import (
     WorkspaceStateCoordinator,
 )
+
+from .visual_research_workspace import (
+    VisualResearchWorkspace,
+)
+
+from .workspace_factory import (
+    create_visual_research_workspace,
+)
+
+from .workspace_view import (
+    WorkspaceView,
+)

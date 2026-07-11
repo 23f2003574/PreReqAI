@@ -599,3 +599,48 @@ Workspace events include:
 The coordinator maintains a consistent workspace state while allowing independent visual subsystems to react to shared user interactions.
 
 Workspace events are also recorded as an ordered event history, providing a foundation for future debugging, session replay, state restoration, analytics, and undo or redo capabilities.
+
+## Visual Research Workspace API
+
+PreReqAI provides a unified visual environment for exploring and learning from research papers.
+
+The workspace coordinates:
+
+- Hierarchical paper exploration
+- Knowledge graph navigation
+- Contextual research object inspection
+- Executable educational actions
+- Learning workflow progress
+- Contextual educational content
+- Research navigation breadcrumbs
+- Interaction history
+- Personalized next-action recommendations
+- Unified workspace state
+
+### Research Experience
+
+```text
+Load Research Paper
+        ↓
+Explore Paper Structure
+        ↓
+Navigate Knowledge Graph
+        ↓
+Select Research Object
+        ↓
+Inspect Context and Capabilities
+        ↓
+Execute Educational Action
+        ↓
+Track Learning Workflow
+        ↓
+Present Contextual Learning Content
+        ↓
+Record Interaction History
+        ↓
+Recommend the Next Learning Step
+        ↓
+Continue Research
+```
+
+The `VisualResearchWorkspace` provides the application-facing interface for coordinating the complete research-learning experience.
