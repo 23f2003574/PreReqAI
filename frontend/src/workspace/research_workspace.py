@@ -14,6 +14,10 @@ from .workspace_panel_registry import (
     WorkspacePanelRegistry,
 )
 
+from frontend.src.inspector import (
+    ResearchObjectInspector,
+)
+
 
 class ResearchWorkspace:
     """
@@ -50,6 +54,12 @@ class ResearchWorkspace:
                 panel
             )
 
+        self.object_inspector = (
+            ResearchObjectInspector()
+        )
+
+        self.inspector_view = None
+
     def panels_for(
 
         self,
@@ -77,6 +87,16 @@ class ResearchWorkspace:
         self.state.selected_object = (
             research_object
         )
+
+        self.inspector_view = (
+
+            self.object_inspector.inspect(
+
+                research_object
+            )
+        )
+
+        return self.inspector_view
 
     def set_active_view(
 

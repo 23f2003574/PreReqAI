@@ -5,6 +5,13 @@ from frontend.src.workspace import (
     WorkspaceRegion,
 )
 
+from backend.interaction import (
+
+    ResearchObject,
+
+    ResearchObjectType,
+)
+
 
 def test_research_workspace():
 
@@ -33,12 +40,18 @@ def test_workspace_object_selection():
         ResearchWorkspace()
     )
 
-    research_object = {
+    research_object = ResearchObject(
 
-        "id": "attention",
+        id="attention",
 
-        "title": "Attention",
-    }
+        object_type=(
+            ResearchObjectType.CONCEPT
+        ),
+
+        title="Attention",
+
+        description="Attention mechanism",
+    )
 
     workspace.select_object(
 
@@ -79,4 +92,51 @@ def test_default_workspace_panels():
         explorer_panels[0].id
 
         == "paper-explorer"
+    )
+
+
+def test_workspace_inspects_selected_object():
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    research_object = ResearchObject(
+
+        id="attention",
+
+        object_type=(
+            ResearchObjectType.CONCEPT
+        ),
+
+        title="Attention",
+
+        description="Attention mechanism",
+
+        metadata={
+
+            "section": "3.2",
+        },
+    )
+
+    inspector_view = (
+
+        workspace.select_object(
+
+            research_object
+        )
+    )
+
+    assert (
+
+        workspace.state.selected_object
+
+        == research_object
+    )
+
+    assert (
+
+        inspector_view.title
+
+        == "Attention"
     )

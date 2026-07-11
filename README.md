@@ -409,3 +409,15 @@ Each panel defines:
 - Optional metadata
 
 This allows the research workspace to dynamically host features such as paper exploration, knowledge graph visualization, object inspection, learning timelines, and future research tools.
+
+## Research Object Inspector
+
+Selecting a research object opens a contextual inspector containing:
+
+- Object identity
+- Research object type
+- Description
+- Paper metadata
+- Available educational actions
+
+The inspector uses the unified research object model, allowing concepts, equations, figures, experiments, and references to share a consistent inspection experience.

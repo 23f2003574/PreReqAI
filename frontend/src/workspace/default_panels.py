@@ -40,6 +40,13 @@ DEFAULT_WORKSPACE_PANELS = [
         region=WorkspaceRegion.INSPECTOR,
 
         component="ResearchObjectInspector",
+
+        metadata={
+
+            "contextual": True,
+
+            "requires_selection": True,
+        },
     ),
 
     WorkspacePanel(
