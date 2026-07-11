@@ -47,6 +47,10 @@ from frontend.src.learning import (
     ContextualLearningPanel,
 )
 
+from frontend.src.history import (
+    WorkspaceInteractionHistory,
+)
+
 
 class ResearchWorkspace:
     """
@@ -126,6 +130,12 @@ class ResearchWorkspace:
         self.learning_panel = (
             ContextualLearningPanel()
         )
+
+        self.interaction_history_view = (
+            WorkspaceInteractionHistory()
+        )
+
+        self.history_view_model = None
 
     def panels_for(
 
@@ -276,6 +286,11 @@ class ResearchWorkspace:
 
                 workflow_steps
             )
+
+        self.load_interaction_history(
+
+            session
+        )
 
         return result
 
@@ -587,3 +602,120 @@ class ResearchWorkspace:
             self.learning_panel
             .content_history
         )
+
+    def load_interaction_history(
+
+        self,
+
+        session,
+
+    ):
+
+        self.history_view_model = (
+
+            self.interaction_history_view.load(
+
+                session.interaction_history
+            )
+        )
+
+        return self.history_view_model
+
+    def interaction_history_entries(
+        self,
+    ):
+
+        if (
+
+            self.history_view_model
+
+            is None
+        ):
+
+            return []
+
+        return list(
+
+            self.history_view_model.entries
+        )
+
+    def select_history_entry(
+
+        self,
+
+        entry_id: str,
+
+    ):
+
+        entry = (
+
+            self.interaction_history_view
+
+            .select(
+
+                entry_id
+            )
+        )
+
+        if entry is None:
+
+            return None
+
+        self.state.metadata[
+
+            "selected_history_entry"
+
+        ] = entry
+
+        return entry
+
+    def learning_content_for_history(
+
+        self,
+
+        entry_id: str,
+
+    ):
+
+        entry = (
+
+            self.interaction_history_view
+
+            .select(
+
+                entry_id
+            )
+        )
+
+        if entry is None:
+
+            return None
+
+        matches = [
+
+            content
+
+            for content
+
+            in self.learning_panel
+            .content_history
+
+            if (
+
+                content.object_id
+
+                == entry.object_id
+
+                and
+
+                content.action
+
+                == entry.action
+            )
+        ]
+
+        if not matches:
+
+            return None
+
+        return matches[-1]

@@ -51,6 +51,28 @@ DEFAULT_WORKSPACE_PANELS = [
 
     WorkspacePanel(
 
+        id="interaction-history",
+
+        title="Interaction History",
+
+        region=WorkspaceRegion.EXPLORER,
+
+        component="WorkspaceInteractionHistory",
+
+        visible=True,
+
+        metadata={
+
+            "contextual": True,
+
+            "supports_selection": True,
+
+            "tracks_session": True,
+        },
+    ),
+
+    WorkspacePanel(
+
         id="paper-view",
 
         title="Paper View",

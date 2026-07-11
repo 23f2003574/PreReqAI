@@ -540,3 +540,23 @@ The panel can represent:
 Each learning output preserves its source research object, educational action, workflow context, and associated metadata.
 
 Learners can move between the paper, knowledge graph, and learning content without losing their current research context.
+
+## Workspace Interaction History
+
+The visual research workspace exposes the learner's educational interaction history throughout the current research session.
+
+Example:
+
+```
+Attention — Explained
+
+Equation (3) — Visualized
+
+Figure 2 — Explored
+
+Experiment 1 — Compared
+```
+
+Workspace history is derived from the backend interaction history, preserving a single source of truth for educational interactions.
+
+Historical entries can be selected and associated with previously generated learning content without automatically re-executing educational workflows.

@@ -9,6 +9,8 @@ from frontend.src.workspace import (
 
 from backend.interaction import (
 
+    InteractionHistory,
+
     ObjectAction,
 
     ResearchObject,
@@ -379,4 +381,48 @@ def test_workspace_switches_to_learning_view():
         workspace.state.active_view
 
         == "learning"
+    )
+
+
+def test_workspace_loads_interaction_history():
+
+    class Session:
+
+        interaction_history = (
+            InteractionHistory()
+        )
+
+    Session.interaction_history.record(
+
+        "attention",
+
+        "Attention",
+
+        ObjectAction.EXPLAIN,
+    )
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    model = (
+
+        workspace.load_interaction_history(
+
+            Session()
+        )
+    )
+
+    assert (
+
+        len(model.entries)
+
+        == 1
+    )
+
+    assert (
+
+        model.entries[0].object_title
+
+        == "Attention"
     )
