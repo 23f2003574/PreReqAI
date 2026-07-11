@@ -272,3 +272,47 @@ def test_workspace_switches_to_graph_view():
 
         == "paper"
     )
+
+
+def test_workspace_tracks_object_navigation():
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    research_object = ResearchObject(
+
+        id="attention",
+
+        object_type=(
+            ResearchObjectType.CONCEPT
+        ),
+
+        title="Attention",
+
+        description="Attention mechanism",
+    )
+
+    workspace.select_object(
+
+        research_object
+    )
+
+    breadcrumbs = (
+
+        workspace.breadcrumb_items()
+    )
+
+    assert (
+
+        breadcrumbs[-1].label
+
+        == "Attention"
+    )
+
+    assert (
+
+        breadcrumbs[-1].context_type
+
+        == "concept"
+    )

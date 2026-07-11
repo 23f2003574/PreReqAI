@@ -476,3 +476,21 @@ Backend graph entities are transformed into visual nodes and edges containing:
 - Selection state
 
 Learners can switch between the paper view and knowledge graph view while remaining inside the same research session.
+
+## Contextual Navigation Breadcrumbs
+
+The visual research workspace maintains a contextual navigation trail as learners move through papers, sections, knowledge graph nodes, and interactive research objects.
+
+Example:
+
+```
+Attention Is All You Need
+    →
+Model Architecture
+    →
+Multi-Head Attention
+    →
+Equation (3)
+```
+
+Breadcrumbs preserve the current research path and allow learners to return to earlier contexts without losing the structure of their exploration.

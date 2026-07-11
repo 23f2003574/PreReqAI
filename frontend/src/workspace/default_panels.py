@@ -11,6 +11,26 @@ DEFAULT_WORKSPACE_PANELS = [
 
     WorkspacePanel(
 
+        id="navigation-breadcrumbs",
+
+        title="Navigation Breadcrumbs",
+
+        region=WorkspaceRegion.HEADER,
+
+        component="NavigationBreadcrumbs",
+
+        metadata={
+
+            "interactive": True,
+
+            "supports_backtracking": True,
+
+            "contextual": True,
+        },
+    ),
+
+    WorkspacePanel(
+
         id="paper-explorer",
 
         title="Paper Explorer",

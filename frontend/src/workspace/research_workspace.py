@@ -35,6 +35,10 @@ from frontend.src.graph import (
     KnowledgeGraphWorkspaceView,
 )
 
+from frontend.src.navigation import (
+    NavigationBreadcrumbs,
+)
+
 
 class ResearchWorkspace:
     """
@@ -103,6 +107,10 @@ class ResearchWorkspace:
 
         self.graph_view_model = None
 
+        self.breadcrumbs = (
+            NavigationBreadcrumbs()
+        )
+
     def panels_for(
 
         self,
@@ -137,6 +145,22 @@ class ResearchWorkspace:
 
                 research_object
             )
+        )
+
+        self.breadcrumbs.enter(
+
+            id=research_object.id,
+
+            label=research_object.title,
+
+            context_type=(
+
+                research_object
+                .object_type
+                .value
+            ),
+
+            source=research_object,
         )
 
         return self.inspector_view
@@ -249,6 +273,19 @@ class ResearchWorkspace:
             )
         )
 
+        self.breadcrumbs.trail.clear()
+
+        self.breadcrumbs.enter(
+
+            id="paper",
+
+            label=paper_title,
+
+            context_type="paper",
+
+            source=self.paper_outline,
+        )
+
         return self.paper_outline
 
     def select_outline_node(
@@ -272,6 +309,17 @@ class ResearchWorkspace:
             "selected_section"
 
         ] = section
+
+        self.breadcrumbs.enter(
+
+            id=node.id,
+
+            label=node.title,
+
+            context_type="section",
+
+            source=section,
+        )
 
         return section
 
@@ -321,6 +369,20 @@ class ResearchWorkspace:
 
         ] = node
 
+        self.breadcrumbs.enter(
+
+            id=node.id,
+
+            label=node.label,
+
+            context_type=(
+
+                f"graph_{node.node_type}"
+            ),
+
+            source=node,
+        )
+
         return node
 
     def show_knowledge_graph(self):
@@ -335,4 +397,35 @@ class ResearchWorkspace:
         self.set_active_view(
 
             "paper"
+        )
+
+    def navigate_breadcrumb(
+
+        self,
+
+        index: int,
+
+    ):
+
+        item = (
+
+            self.breadcrumbs.navigate_to(
+
+                index
+            )
+        )
+
+        self.state.metadata[
+
+            "navigation_context"
+
+        ] = item
+
+        return item
+
+    def breadcrumb_items(self):
+
+        return (
+
+            self.breadcrumbs.items()
         )
