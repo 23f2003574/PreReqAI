@@ -4,6 +4,8 @@ from frontend.src.workspace import (
 
     ResearchWorkspace,
 
+    WorkspaceEventType,
+
     WorkspaceRegion,
 )
 
@@ -472,4 +474,32 @@ def test_workspace_loads_next_action_recommendations():
         model.recommendations[0].action
 
         == "visualize"
+    )
+
+
+def test_workspace_records_state_transitions():
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    workspace.show_knowledge_graph()
+
+    events = (
+
+        workspace.workspace_events()
+    )
+
+    assert (
+
+        events[-1].event_type
+
+        == WorkspaceEventType.VIEW_CHANGED
+    )
+
+    assert (
+
+        events[-1].payload
+
+        == "knowledge_graph"
     )

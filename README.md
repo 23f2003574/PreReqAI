@@ -578,3 +578,24 @@ Recommended Next
 Recommendations can be prioritized, selected, and explicitly executed when they target an action supported by the currently selected research object.
 
 The workspace can also consume recommendations returned by educational interactions, allowing learning experiences to continuously suggest meaningful next steps.
+
+## Workspace State Coordination
+
+The visual research workspace coordinates major state transitions through a centralized event-driven state coordinator.
+
+Workspace events include:
+
+- Paper loading
+- Section selection
+- Research object selection
+- Knowledge graph selection
+- View changes
+- Educational action execution
+- Workflow loading and progress
+- Learning content presentation
+- Interaction history updates
+- Recommendation updates
+
+The coordinator maintains a consistent workspace state while allowing independent visual subsystems to react to shared user interactions.
+
+Workspace events are also recorded as an ordered event history, providing a foundation for future debugging, session replay, state restoration, analytics, and undo or redo capabilities.

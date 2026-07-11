@@ -6,6 +6,14 @@ from .workspace_state import (
     WorkspaceState,
 )
 
+from .workspace_event_type import (
+    WorkspaceEventType,
+)
+
+from .workspace_state_coordinator import (
+    WorkspaceStateCoordinator,
+)
+
 from .default_panels import (
     DEFAULT_WORKSPACE_PANELS,
 )
@@ -66,6 +74,13 @@ class ResearchWorkspace:
 
         self.state = (
             WorkspaceState()
+        )
+
+        self.state_coordinator = (
+            WorkspaceStateCoordinator(
+
+                self.state
+            )
         )
 
         self.regions = [
@@ -171,8 +186,11 @@ class ResearchWorkspace:
 
     ):
 
-        self.state.selected_object = (
-            research_object
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.OBJECT_SELECTED,
+
+            payload=research_object,
         )
 
         self.inspector_view = (
@@ -265,13 +283,30 @@ class ResearchWorkspace:
 
         self.active_action_result = result
 
-        self.learning_panel.present_response(
+        self.state_coordinator.emit(
 
-            research_object,
+            WorkspaceEventType.ACTION_EXECUTED,
 
-            action,
+            payload=result,
+        )
 
-            response,
+        learning_content = (
+
+            self.learning_panel.present_response(
+
+                research_object,
+
+                action,
+
+                response,
+            )
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.LEARNING_CONTENT_PRESENTED,
+
+            payload=learning_content,
         )
 
         self.show_learning_content()
@@ -333,7 +368,12 @@ class ResearchWorkspace:
 
     ):
 
-        self.state.active_view = view
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.VIEW_CHANGED,
+
+            payload=view,
+        )
 
     def set_active_region(
 
@@ -380,6 +420,13 @@ class ResearchWorkspace:
             source=self.paper_outline,
         )
 
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.PAPER_LOADED,
+
+            payload=self.paper_outline,
+        )
+
         return self.paper_outline
 
     def select_outline_node(
@@ -398,11 +445,12 @@ class ResearchWorkspace:
             )
         )
 
-        self.state.metadata[
+        self.state_coordinator.emit(
 
-            "selected_section"
+            WorkspaceEventType.SECTION_SELECTED,
 
-        ] = section
+            payload=section,
+        )
 
         self.breadcrumbs.enter(
 
@@ -457,11 +505,12 @@ class ResearchWorkspace:
 
             return None
 
-        self.state.metadata[
+        self.state_coordinator.emit(
 
-            "selected_graph_node"
+            WorkspaceEventType.GRAPH_NODE_SELECTED,
 
-        ] = node
+            payload=node,
+        )
 
         self.breadcrumbs.enter(
 
@@ -539,13 +588,22 @@ class ResearchWorkspace:
 
     ):
 
-        return (
+        steps = (
 
             self.learning_timeline.load(
 
                 workflow_steps
             )
         )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.WORKFLOW_LOADED,
+
+            payload=steps,
+        )
+
+        return steps
 
     def activate_workflow_step(
 
@@ -648,6 +706,13 @@ class ResearchWorkspace:
 
                 session.interaction_history
             )
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.HISTORY_UPDATED,
+
+            payload=self.history_view_model,
         )
 
         return self.history_view_model
@@ -765,6 +830,15 @@ class ResearchWorkspace:
 
                 recommendations
             )
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.RECOMMENDATIONS_UPDATED,
+
+            payload=(
+                self.recommendation_view_model
+            ),
         )
 
         return (
@@ -893,4 +967,12 @@ class ResearchWorkspace:
             session,
 
             action,
+        )
+
+    def workspace_events(self):
+
+        return list(
+
+            self.state_coordinator
+            .event_history
         )

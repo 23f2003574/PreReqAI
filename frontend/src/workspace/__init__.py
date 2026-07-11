@@ -21,3 +21,15 @@ from .workspace_panel import (
 from .workspace_panel_registry import (
     WorkspacePanelRegistry,
 )
+
+from .workspace_event import (
+    WorkspaceEvent,
+)
+
+from .workspace_event_type import (
+    WorkspaceEventType,
+)
+
+from .workspace_state_coordinator import (
+    WorkspaceStateCoordinator,
+)
