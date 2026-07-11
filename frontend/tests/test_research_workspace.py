@@ -51,3 +51,32 @@ def test_workspace_object_selection():
 
         == research_object
     )
+
+
+def test_default_workspace_panels():
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    explorer_panels = (
+
+        workspace.panels_for(
+
+            WorkspaceRegion.EXPLORER
+        )
+    )
+
+    assert (
+
+        len(explorer_panels)
+
+        > 0
+    )
+
+    assert (
+
+        explorer_panels[0].id
+
+        == "paper-explorer"
+    )

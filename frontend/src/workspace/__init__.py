@@ -13,3 +13,11 @@ from .workspace_state import (
 from .workspace_layout import (
     WorkspaceLayout,
 )
+
+from .workspace_panel import (
+    WorkspacePanel,
+)
+
+from .workspace_panel_registry import (
+    WorkspacePanelRegistry,
+)

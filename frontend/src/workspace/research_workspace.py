@@ -6,6 +6,14 @@ from .workspace_state import (
     WorkspaceState,
 )
 
+from .default_panels import (
+    DEFAULT_WORKSPACE_PANELS,
+)
+
+from .workspace_panel_registry import (
+    WorkspacePanelRegistry,
+)
+
 
 class ResearchWorkspace:
     """
@@ -31,6 +39,32 @@ class ResearchWorkspace:
 
             WorkspaceRegion.TIMELINE,
         ]
+
+        self.panel_registry = (
+            WorkspacePanelRegistry()
+        )
+
+        for panel in DEFAULT_WORKSPACE_PANELS:
+
+            self.panel_registry.register(
+                panel
+            )
+
+    def panels_for(
+
+        self,
+
+        region: WorkspaceRegion,
+
+    ):
+
+        return (
+
+            self.panel_registry.for_region(
+
+                region
+            )
+        )
 
     def select_object(
 

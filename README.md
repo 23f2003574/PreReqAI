@@ -394,3 +394,18 @@ The workspace is organized into five primary regions:
 - Learning Timeline
 
 The workspace maintains shared state across paper navigation, research object selection, learning workflows, and educational interactions.
+
+## Modular Workspace Panels
+
+Visual capabilities are registered as modular workspace panels rather than being hardcoded into the workspace layout.
+
+Each panel defines:
+
+- A unique identifier
+- A display title
+- A workspace region
+- A component contract
+- Visibility state
+- Optional metadata
+
+This allows the research workspace to dynamically host features such as paper exploration, knowledge graph visualization, object inspection, learning timelines, and future research tools.
