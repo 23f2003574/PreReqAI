@@ -560,3 +560,21 @@ Experiment 1 — Compared
 Workspace history is derived from the backend interaction history, preserving a single source of truth for educational interactions.
 
 Historical entries can be selected and associated with previously generated learning content without automatically re-executing educational workflows.
+
+## Personalized Next Actions
+
+The visual research workspace can surface personalized recommendations for what the learner should explore next.
+
+Example:
+
+```
+Recommended Next
+
+- Visualize Attention
+- Explore Equation (3)
+- Test Your Understanding
+```
+
+Recommendations can be prioritized, selected, and explicitly executed when they target an action supported by the currently selected research object.
+
+The workspace can also consume recommendations returned by educational interactions, allowing learning experiences to continuously suggest meaningful next steps.

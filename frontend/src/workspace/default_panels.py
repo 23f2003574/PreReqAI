@@ -153,6 +153,30 @@ DEFAULT_WORKSPACE_PANELS = [
 
     WorkspacePanel(
 
+        id="next-actions",
+
+        title="Recommended Next",
+
+        region=WorkspaceRegion.INSPECTOR,
+
+        component="PersonalizedNextActionPanel",
+
+        visible=True,
+
+        metadata={
+
+            "personalized": True,
+
+            "contextual": True,
+
+            "supports_selection": True,
+
+            "supports_execution": True,
+        },
+    ),
+
+    WorkspacePanel(
+
         id="learning-timeline",
 
         title="Learning Timeline",

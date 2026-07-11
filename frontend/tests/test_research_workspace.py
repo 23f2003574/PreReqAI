@@ -426,3 +426,50 @@ def test_workspace_loads_interaction_history():
 
         == "Attention"
     )
+
+
+def test_workspace_loads_next_action_recommendations():
+
+    class Recommendation:
+
+        id = "visualize-attention"
+
+        title = "Visualize Attention"
+
+        description = (
+            "See the mechanism visually."
+        )
+
+        action = "visualize"
+
+        object_id = "attention"
+
+        priority = 10
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    model = (
+
+        workspace.load_recommendations(
+
+            [
+                Recommendation(),
+            ]
+        )
+    )
+
+    assert (
+
+        len(model.recommendations)
+
+        == 1
+    )
+
+    assert (
+
+        model.recommendations[0].action
+
+        == "visualize"
+    )

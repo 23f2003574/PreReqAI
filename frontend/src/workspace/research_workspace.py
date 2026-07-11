@@ -51,6 +51,10 @@ from frontend.src.history import (
     WorkspaceInteractionHistory,
 )
 
+from frontend.src.recommendations import (
+    PersonalizedNextActionPanel,
+)
+
 
 class ResearchWorkspace:
     """
@@ -136,6 +140,12 @@ class ResearchWorkspace:
         )
 
         self.history_view_model = None
+
+        self.next_action_panel = (
+            PersonalizedNextActionPanel()
+        )
+
+        self.recommendation_view_model = None
 
     def panels_for(
 
@@ -291,6 +301,27 @@ class ResearchWorkspace:
 
             session
         )
+
+        recommendations = (
+
+            response.get(
+                "recommendations"
+            )
+
+            if isinstance(
+                response,
+                dict,
+            )
+
+            else None
+        )
+
+        if recommendations:
+
+            self.load_recommendations(
+
+                recommendations
+            )
 
         return result
 
@@ -719,3 +750,147 @@ class ResearchWorkspace:
             return None
 
         return matches[-1]
+
+    def load_recommendations(
+
+        self,
+
+        recommendations,
+
+    ):
+
+        self.recommendation_view_model = (
+
+            self.next_action_panel.load(
+
+                recommendations
+            )
+        )
+
+        return (
+
+            self.recommendation_view_model
+        )
+
+    def next_action_recommendations(
+        self,
+    ):
+
+        if (
+
+            self.recommendation_view_model
+
+            is None
+        ):
+
+            return []
+
+        return list(
+
+            self.recommendation_view_model
+            .recommendations
+        )
+
+    def select_recommendation(
+
+        self,
+
+        recommendation_id: str,
+
+    ):
+
+        recommendation = (
+
+            self.next_action_panel.select(
+
+                recommendation_id
+            )
+        )
+
+        if recommendation is None:
+
+            return None
+
+        self.state.metadata[
+
+            "selected_recommendation"
+
+        ] = recommendation
+
+        return recommendation
+
+    def execute_recommendation(
+
+        self,
+
+        session,
+
+        recommendation_id: str,
+
+    ):
+
+        recommendation = (
+
+            self.select_recommendation(
+
+                recommendation_id
+            )
+        )
+
+        if recommendation is None:
+
+            raise ValueError(
+
+                "Recommendation "
+                "could not be found."
+            )
+
+        research_object = (
+
+            self.state.selected_object
+        )
+
+        if research_object is None:
+
+            raise ValueError(
+
+                "No research object "
+                "is currently selected."
+            )
+
+        action = next(
+
+            (
+
+                item.action
+
+                for item
+
+                in self.available_actions()
+
+                if (
+
+                    item.action.value
+
+                    == recommendation.action
+                )
+            ),
+
+            None,
+        )
+
+        if action is None:
+
+            raise ValueError(
+
+                "Recommended action "
+                "is not available for "
+                "the selected object."
+            )
+
+        return self.execute_action(
+
+            session,
+
+            action,
+        )
