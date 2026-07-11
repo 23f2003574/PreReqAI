@@ -494,3 +494,31 @@ Equation (3)
 ```
 
 Breadcrumbs preserve the current research path and allow learners to return to earlier contexts without losing the structure of their exploration.
+
+## Learning Workflow Timeline
+
+The visual research workspace exposes the progress of structured educational workflows.
+
+Example:
+
+```
+✓ Explanation
+      ↓
+✓ Example
+      ↓
+● Visualization
+      ↓
+○ Quiz
+      ↓
+○ Reflection
+```
+
+Each timeline step can be represented as:
+
+- Pending
+- Active
+- Completed
+- Failed
+- Skipped
+
+This allows learners to understand where they are inside a multi-step educational experience rather than treating workflow execution as an opaque backend process.

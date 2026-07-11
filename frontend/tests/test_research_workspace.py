@@ -16,6 +16,10 @@ from backend.interaction import (
     ResearchObjectType,
 )
 
+from frontend.src.timeline import (
+    TimelineStepStatus,
+)
+
 
 def test_research_workspace():
 
@@ -315,4 +319,48 @@ def test_workspace_tracks_object_navigation():
         breadcrumbs[-1].context_type
 
         == "concept"
+    )
+
+
+def test_workspace_tracks_learning_timeline():
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    workspace.load_workflow_timeline(
+
+        [
+
+            "Explain",
+
+            "Visualize",
+
+            "Quiz",
+        ]
+    )
+
+    workspace.activate_workflow_step(
+
+        "step-1"
+    )
+
+    steps = (
+
+        workspace
+        .workflow_timeline_steps()
+    )
+
+    assert (
+
+        len(steps)
+
+        == 3
+    )
+
+    assert (
+
+        steps[0].status
+
+        == TimelineStepStatus.ACTIVE
     )

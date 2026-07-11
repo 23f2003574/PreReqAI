@@ -39,6 +39,10 @@ from frontend.src.navigation import (
     NavigationBreadcrumbs,
 )
 
+from frontend.src.timeline import (
+    LearningWorkflowTimeline,
+)
+
 
 class ResearchWorkspace:
     """
@@ -109,6 +113,10 @@ class ResearchWorkspace:
 
         self.breadcrumbs = (
             NavigationBreadcrumbs()
+        )
+
+        self.learning_timeline = (
+            LearningWorkflowTimeline()
         )
 
     def panels_for(
@@ -228,6 +236,27 @@ class ResearchWorkspace:
         )
 
         self.active_action_result = result
+
+        workflow_steps = (
+
+            response.get(
+                "workflow_steps"
+            )
+
+            if isinstance(
+                response,
+                dict,
+            )
+
+            else None
+        )
+
+        if workflow_steps:
+
+            self.load_workflow_timeline(
+
+                workflow_steps
+            )
 
         return result
 
@@ -428,4 +457,91 @@ class ResearchWorkspace:
         return (
 
             self.breadcrumbs.items()
+        )
+
+    def load_workflow_timeline(
+
+        self,
+
+        workflow_steps,
+
+    ):
+
+        return (
+
+            self.learning_timeline.load(
+
+                workflow_steps
+            )
+        )
+
+    def activate_workflow_step(
+
+        self,
+
+        step_id: str,
+
+    ):
+
+        return (
+
+            self.learning_timeline.activate(
+
+                step_id
+            )
+        )
+
+    def complete_workflow_step(
+
+        self,
+
+        step_id: str,
+
+    ):
+
+        return (
+
+            self.learning_timeline.complete(
+
+                step_id
+            )
+        )
+
+    def fail_workflow_step(
+
+        self,
+
+        step_id: str,
+
+    ):
+
+        return (
+
+            self.learning_timeline.fail(
+
+                step_id
+            )
+        )
+
+    def skip_workflow_step(
+
+        self,
+
+        step_id: str,
+
+    ):
+
+        return (
+
+            self.learning_timeline.skip(
+
+                step_id
+            )
+        )
+
+    def workflow_timeline_steps(self):
+
+        return list(
+
+            self.learning_timeline.steps
         )

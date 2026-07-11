@@ -110,6 +110,17 @@ DEFAULT_WORKSPACE_PANELS = [
 
         region=WorkspaceRegion.TIMELINE,
 
-        component="LearningTimeline",
+        component="LearningWorkflowTimeline",
+
+        metadata={
+
+            "interactive": True,
+
+            "tracks_progress": True,
+
+            "supports_failure": True,
+
+            "supports_skipping": True,
+        },
     ),
 ]
