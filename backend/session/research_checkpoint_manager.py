@@ -26,6 +26,8 @@ class ResearchCheckpointManager:
 
         checkpoint_store,
 
+        version_manager,
+
         policy=None,
 
     ):
@@ -36,6 +38,10 @@ class ResearchCheckpointManager:
 
         self.checkpoint_store = (
             checkpoint_store
+        )
+
+        self.version_manager = (
+            version_manager
         )
 
         self.policy = (
@@ -86,6 +92,30 @@ class ResearchCheckpointManager:
             )
         )
 
+        version = (
+
+            self.version_manager
+            .create(
+
+                snapshot=snapshot,
+
+                metadata={
+
+                    "checkpoint_reason":
+                        reason.value,
+
+                    **(
+
+                        metadata
+
+                        if metadata is not None
+
+                        else {}
+                    ),
+                },
+            )
+        )
+
         checkpoint = ResearchCheckpoint(
 
             session_id=session_id,
@@ -94,6 +124,10 @@ class ResearchCheckpointManager:
 
             snapshot_updated_at=(
                 snapshot.updated_at
+            ),
+
+            snapshot_version_id=(
+                version.id
             ),
 
             metadata=(

@@ -180,4 +180,24 @@ from .json_research_checkpoint_store import (
     JsonResearchCheckpointStore,
 )
 
+from .research_session_version import (
+    ResearchSessionVersion,
+)
+
+from .research_session_version_store import (
+    ResearchSessionVersionStore,
+)
+
+from .in_memory_research_session_version_store import (
+    InMemoryResearchSessionVersionStore,
+)
+
+from .json_research_session_version_store import (
+    JsonResearchSessionVersionStore,
+)
+
+from .research_session_version_manager import (
+    ResearchSessionVersionManager,
+)
+
 session_manager = SessionManager()

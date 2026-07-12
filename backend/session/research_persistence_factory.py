@@ -14,6 +14,10 @@ from .json_research_session_store import (
     JsonResearchSessionStore,
 )
 
+from .json_research_session_version_store import (
+    JsonResearchSessionVersionStore,
+)
+
 from .research_persistence_config import (
     ResearchPersistenceConfig,
 )
@@ -65,6 +69,15 @@ class ResearchPersistenceFactory:
                 JsonResearchCheckpointStore(
 
                     config.checkpoints_path
+                )
+            ),
+
+            "session_version_store": (
+
+                JsonResearchSessionVersionStore(
+
+                    config
+                    .session_versions_path
                 )
             ),
         }

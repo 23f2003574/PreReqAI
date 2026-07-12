@@ -4,6 +4,8 @@ from backend.session import (
 
     InMemoryResearchSessionStore,
 
+    InMemoryResearchSessionVersionStore,
+
     ResearchCheckpointManager,
 
     ResearchCheckpointPolicy,
@@ -11,6 +13,8 @@ from backend.session import (
     ResearchCheckpointReason,
 
     ResearchSessionManager,
+
+    ResearchSessionVersionManager,
 )
 
 from frontend.src.workspace import (
@@ -31,6 +35,14 @@ def test_creates_research_checkpoint():
         )
     )
 
+    version_manager = (
+
+        ResearchSessionVersionManager(
+
+            InMemoryResearchSessionVersionStore()
+        )
+    )
+
     checkpoint_manager = (
 
         ResearchCheckpointManager(
@@ -42,6 +54,10 @@ def test_creates_research_checkpoint():
             checkpoint_store=(
 
                 InMemoryResearchCheckpointStore()
+            ),
+
+            version_manager=(
+                version_manager
             ),
         )
     )
@@ -107,6 +123,14 @@ def test_skips_disabled_checkpoint_reason():
         )
     )
 
+    version_manager = (
+
+        ResearchSessionVersionManager(
+
+            InMemoryResearchSessionVersionStore()
+        )
+    )
+
     checkpoint_manager = (
 
         ResearchCheckpointManager(
@@ -118,6 +142,10 @@ def test_skips_disabled_checkpoint_reason():
             checkpoint_store=(
 
                 InMemoryResearchCheckpointStore()
+            ),
+
+            version_manager=(
+                version_manager
             ),
 
             policy=policy,
@@ -170,6 +198,14 @@ def test_latest_checkpoint_returns_most_recent():
         )
     )
 
+    version_manager = (
+
+        ResearchSessionVersionManager(
+
+            InMemoryResearchSessionVersionStore()
+        )
+    )
+
     checkpoint_manager = (
 
         ResearchCheckpointManager(
@@ -181,6 +217,10 @@ def test_latest_checkpoint_returns_most_recent():
             checkpoint_store=(
 
                 InMemoryResearchCheckpointStore()
+            ),
+
+            version_manager=(
+                version_manager
             ),
         )
     )
@@ -262,6 +302,14 @@ def test_get_and_delete_checkpoint():
         )
     )
 
+    version_manager = (
+
+        ResearchSessionVersionManager(
+
+            InMemoryResearchSessionVersionStore()
+        )
+    )
+
     checkpoint_manager = (
 
         ResearchCheckpointManager(
@@ -273,6 +321,10 @@ def test_get_and_delete_checkpoint():
             checkpoint_store=(
 
                 InMemoryResearchCheckpointStore()
+            ),
+
+            version_manager=(
+                version_manager
             ),
         )
     )
@@ -329,4 +381,99 @@ def test_get_and_delete_checkpoint():
         )
 
         is None
+    )
+
+
+def test_checkpoint_references_immutable_session_version():
+
+    session_store = (
+        InMemoryResearchSessionStore()
+    )
+
+    session_manager = (
+
+        ResearchSessionManager(
+
+            session_store
+        )
+    )
+
+    version_store = (
+
+        InMemoryResearchSessionVersionStore()
+    )
+
+    version_manager = (
+
+        ResearchSessionVersionManager(
+
+            version_store
+        )
+    )
+
+    checkpoint_manager = (
+
+        ResearchCheckpointManager(
+
+            session_manager=(
+                session_manager
+            ),
+
+            checkpoint_store=(
+
+                InMemoryResearchCheckpointStore()
+            ),
+
+            version_manager=(
+                version_manager
+            ),
+        )
+    )
+
+    workspace = (
+        VisualResearchWorkspace()
+    )
+
+    checkpoint = (
+
+        checkpoint_manager
+        .checkpoint(
+
+            session_id="session-1",
+
+            workspace=workspace,
+
+            reason=(
+
+                ResearchCheckpointReason
+                .WORKFLOW_PROGRESS
+            ),
+        )
+    )
+
+    assert checkpoint is not None
+
+    assert (
+
+        checkpoint.snapshot_version_id
+
+        is not None
+    )
+
+    version = (
+
+        version_store.get(
+
+            checkpoint
+            .snapshot_version_id
+        )
+    )
+
+    assert version is not None
+
+    assert (
+
+        version.session_id
+
+        == "session-1"
     )

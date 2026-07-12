@@ -623,3 +623,77 @@ def test_manual_checkpoint_uses_same_pipeline_as_autosave():
 
         is None
     )
+
+
+def test_checkpoints_preserve_distinct_historical_snapshots():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    application.activate_research_session(
+
+        "session-1"
+    )
+
+    application.active_paper_title = (
+        "Version One"
+    )
+
+    first_checkpoint = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    application.active_paper_title = (
+        "Version Two"
+    )
+
+    second_checkpoint = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-2"
+        )
+    )
+
+    first_version = (
+
+        application
+        .research_checkpoint_version(
+
+            first_checkpoint.id
+        )
+    )
+
+    second_version = (
+
+        application
+        .research_checkpoint_version(
+
+            second_checkpoint.id
+        )
+    )
+
+    assert (
+
+        first_version
+        .snapshot
+        .paper_title
+
+        == "Version One"
+    )
+
+    assert (
+
+        second_version
+        .snapshot
+        .paper_title
+
+        == "Version Two"
+    )

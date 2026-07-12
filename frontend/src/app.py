@@ -8,6 +8,7 @@ from backend.session import (
     InMemoryResearchArtifactStore,
     InMemoryResearchCheckpointStore,
     InMemoryResearchSessionStore,
+    InMemoryResearchSessionVersionStore,
     InteractionArtifactCorrelationManager,
     ResearchArtifactManager,
     ResearchArtifactRestorer,
@@ -19,6 +20,7 @@ from backend.session import (
     ResearchSessionManager,
     ResearchSessionRestorer,
     ResearchSessionSerializer,
+    ResearchSessionVersionManager,
 )
 
 
@@ -39,6 +41,8 @@ class PreReqAIApplication:
         interaction_link_store=None,
 
         checkpoint_store=None,
+
+        session_version_store=None,
 
     ):
 
@@ -157,6 +161,23 @@ class PreReqAIApplication:
             or InMemoryResearchCheckpointStore()
         )
 
+        self.session_version_store = (
+
+            session_version_store
+
+            or (
+                InMemoryResearchSessionVersionStore()
+            )
+        )
+
+        self.session_version_manager = (
+
+            ResearchSessionVersionManager(
+
+                self.session_version_store
+            )
+        )
+
         self.checkpoint_manager = (
 
             ResearchCheckpointManager(
@@ -167,6 +188,10 @@ class PreReqAIApplication:
 
                 checkpoint_store=(
                     self.checkpoint_store
+                ),
+
+                version_manager=(
+                    self.session_version_manager
                 ),
             )
         )
@@ -901,5 +926,94 @@ class PreReqAIApplication:
             .delete_checkpoint(
 
                 checkpoint_id
+            )
+        )
+
+    def get_research_session_version(
+
+        self,
+
+        version_id: str,
+
+    ):
+
+        return (
+
+            self.session_version_manager
+            .get(
+
+                version_id
+            )
+        )
+
+    def research_session_versions(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_version_manager
+            .for_session(
+
+                session_id
+            )
+        )
+
+    def latest_research_session_version(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_version_manager
+            .latest(
+
+                session_id
+            )
+        )
+
+    def research_checkpoint_version(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        checkpoint = (
+
+            self.get_research_checkpoint(
+
+                checkpoint_id
+            )
+        )
+
+        if checkpoint is None:
+
+            return None
+
+        if (
+
+            checkpoint.snapshot_version_id
+
+            is None
+        ):
+
+            return None
+
+        return (
+
+            self.get_research_session_version(
+
+                checkpoint
+                .snapshot_version_id
             )
         )

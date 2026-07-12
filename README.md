@@ -845,3 +845,28 @@ Available implementations include:
 When filesystem persistence is enabled, checkpoint timelines survive application restarts and continue accumulating as research progresses.
 
 This allows PreReqAI to preserve not only the latest research state, but also the sequence of meaningful persistence events that led to it.
+
+## Immutable Session Snapshot Versions
+
+Every research checkpoint can preserve an immutable historical version of the research session snapshot that existed when the checkpoint was created.
+
+The latest research session snapshot remains mutable and represents the current durable state.
+
+Historical session versions are stored independently and preserve:
+
+- Version identity
+- Research session identity
+- Exact serialized session snapshot
+- Version metadata
+- Creation time
+
+Each new checkpoint can reference its exact historical session version through `snapshot_version_id`.
+
+This allows older checkpoints to preserve their original research state even after the current session continues changing.
+
+Historical session versions can be stored using:
+
+- `InMemoryResearchSessionVersionStore`
+- `JsonResearchSessionVersionStore`
+
+Filesystem-backed versions survive application restarts and provide the foundation for exact research checkpoint recovery.

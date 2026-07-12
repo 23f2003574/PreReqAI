@@ -328,3 +328,86 @@ def test_checkpoint_timeline_continues_after_restart(
 
         == "step-2"
     )
+
+
+def test_checkpoint_versions_survive_application_recreation(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        session_id="session-1",
+
+        paper_title="Version One",
+    )
+
+    first_checkpoint = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    first_app.active_paper_title = (
+        "Version Two"
+    )
+
+    first_app.checkpoint_workflow_progress(
+
+        "step-2"
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    checkpoint = (
+
+        second_app
+        .get_research_checkpoint(
+
+            first_checkpoint.id
+        )
+    )
+
+    version = (
+
+        second_app
+        .research_checkpoint_version(
+
+            checkpoint.id
+        )
+    )
+
+    assert version is not None
+
+    assert (
+
+        version.snapshot
+        .paper_title
+
+        == "Version One"
+    )

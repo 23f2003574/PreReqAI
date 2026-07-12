@@ -30,6 +30,10 @@ class ResearchCheckpoint:
 
     snapshot_updated_at: datetime
 
+    snapshot_version_id: (
+        str | None
+    ) = None
+
     id: str = field(
         default_factory=lambda:
             str(uuid4()),

@@ -64,4 +64,11 @@ def create_persistent_application(
                 "checkpoint_store"
             ]
         ),
+
+        session_version_store=(
+
+            stores[
+                "session_version_store"
+            ]
+        ),
     )
