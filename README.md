@@ -791,3 +791,33 @@ Each recorded checkpoint preserves:
 - Creation time
 
 Automatic checkpoints allow research progress to remain durable without requiring learners to manually save after every meaningful interaction.
+
+## Filesystem Research Persistence
+
+PreReqAI includes JSON-backed implementations of its research persistence contracts.
+
+Persistent local storage is available for:
+
+- Research session snapshots
+- Durable research artifacts
+- Interaction-to-artifact correlations
+
+The filesystem backend uses atomic file replacement to reduce the risk of partially written JSON files.
+
+A persistent application can be created with:
+
+```python
+from frontend.src.persistent_app import (
+    create_persistent_application,
+)
+
+application = (
+    create_persistent_application(
+        ".prereqai"
+    )
+)
+```
+
+Research state is stored under the configured data directory and can survive application process restarts.
+
+The JSON persistence backend is intended for local development, testing, single-user workflows, and single-process deployments. Multi-process and distributed deployments should use a transactional database-backed persistence implementation.

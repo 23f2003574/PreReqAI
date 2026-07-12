@@ -148,4 +148,24 @@ from .research_checkpoint_manager import (
     ResearchCheckpointManager,
 )
 
+from .json_research_session_store import (
+    JsonResearchSessionStore,
+)
+
+from .json_research_artifact_store import (
+    JsonResearchArtifactStore,
+)
+
+from .json_interaction_artifact_link_store import (
+    JsonInteractionArtifactLinkStore,
+)
+
+from .research_persistence_config import (
+    ResearchPersistenceConfig,
+)
+
+from .research_persistence_factory import (
+    ResearchPersistenceFactory,
+)
+
 session_manager = SessionManager()

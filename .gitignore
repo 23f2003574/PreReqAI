@@ -26,3 +26,6 @@ build/
 *.log
 .cache/
 cache/
+
+# Local PreReqAI research persistence
+.prereqai/

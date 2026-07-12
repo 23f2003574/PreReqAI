@@ -27,10 +27,23 @@ class PreReqAIApplication:
     for the visual PreReqAI experience.
     """
 
-    def __init__(self):
+    def __init__(
+
+        self,
+
+        session_store=None,
+
+        artifact_store=None,
+
+        interaction_link_store=None,
+
+    ):
 
         self.artifact_store = (
-            InMemoryResearchArtifactStore()
+
+            artifact_store
+
+            or InMemoryResearchArtifactStore()
         )
 
         self.artifact_manager = (
@@ -50,7 +63,11 @@ class PreReqAIApplication:
 
         self.interaction_artifact_link_store = (
 
-            InMemoryInteractionArtifactLinkStore()
+            interaction_link_store
+
+            or (
+                InMemoryInteractionArtifactLinkStore()
+            )
         )
 
         self.interaction_artifact_correlations = (
@@ -82,7 +99,10 @@ class PreReqAIApplication:
         )
 
         self.session_store = (
-            InMemoryResearchSessionStore()
+
+            session_store
+
+            or InMemoryResearchSessionStore()
         )
 
         self.runtime_registry = (
