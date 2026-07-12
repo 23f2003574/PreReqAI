@@ -3,9 +3,11 @@ from frontend.src.workspace import (
 )
 
 from backend.session import (
+    AnnotatedResearchCheckpoint,
     ArtifactRestorationResult,
     InMemoryInteractionArtifactLinkStore,
     InMemoryResearchArtifactStore,
+    InMemoryResearchCheckpointAnnotationStore,
     InMemoryResearchCheckpointStore,
     InMemoryResearchSessionStore,
     InMemoryResearchSessionVersionStore,
@@ -13,6 +15,7 @@ from backend.session import (
     ResearchArtifactManager,
     ResearchArtifactRestorer,
     ResearchArtifactTypeMapper,
+    ResearchCheckpointAnnotationManager,
     ResearchCheckpointManager,
     ResearchCheckpointReason,
     ResearchCheckpointRecoveryManager,
@@ -46,6 +49,8 @@ class PreReqAIApplication:
         checkpoint_store=None,
 
         session_version_store=None,
+
+        checkpoint_annotation_store=None,
 
     ):
 
@@ -240,6 +245,29 @@ class PreReqAIApplication:
 
                 comparator=(
                     self.session_comparator
+                ),
+            )
+        )
+
+        self.checkpoint_annotation_store = (
+
+            checkpoint_annotation_store
+
+            or (
+                InMemoryResearchCheckpointAnnotationStore()
+            )
+        )
+
+        self.checkpoint_annotation_manager = (
+
+            ResearchCheckpointAnnotationManager(
+
+                checkpoint_store=(
+                    self.checkpoint_store
+                ),
+
+                annotation_store=(
+                    self.checkpoint_annotation_store
                 ),
             )
         )
@@ -1252,5 +1280,202 @@ class PreReqAIApplication:
                 target_snapshot=(
                     second.snapshot
                 ),
+            )
+        )
+
+    def update_research_checkpoint_annotation(
+
+        self,
+
+        checkpoint_id: str,
+
+        **changes,
+
+    ):
+
+        return (
+
+            self.checkpoint_annotation_manager
+            .update(
+
+                checkpoint_id,
+
+                **changes,
+            )
+        )
+
+    def research_checkpoint_annotation(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_annotation_manager
+            .get(
+
+                checkpoint_id
+            )
+        )
+
+    def remove_research_checkpoint_annotation(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_annotation_manager
+            .remove(
+
+                checkpoint_id
+            )
+        )
+
+    def annotated_research_checkpoints(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        checkpoints = (
+
+            self.research_checkpoints(
+
+                session_id
+            )
+        )
+
+        return [
+
+            AnnotatedResearchCheckpoint(
+
+                checkpoint=checkpoint,
+
+                annotation=(
+
+                    self
+                    .research_checkpoint_annotation(
+
+                        checkpoint.id
+                    )
+                ),
+            )
+
+            for checkpoint
+
+            in checkpoints
+        ]
+
+    def pinned_research_checkpoints(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return [
+
+            checkpoint
+
+            for checkpoint
+
+            in (
+                self
+                .annotated_research_checkpoints(
+
+                    session_id
+                )
+            )
+
+            if checkpoint.pinned
+        ]
+
+    def label_research_checkpoint(
+
+        self,
+
+        checkpoint_id: str,
+
+        label: str | None,
+
+    ):
+
+        return (
+
+            self
+            .update_research_checkpoint_annotation(
+
+                checkpoint_id,
+
+                label=label,
+            )
+        )
+
+    def note_research_checkpoint(
+
+        self,
+
+        checkpoint_id: str,
+
+        note: str | None,
+
+    ):
+
+        return (
+
+            self
+            .update_research_checkpoint_annotation(
+
+                checkpoint_id,
+
+                note=note,
+            )
+        )
+
+    def pin_research_checkpoint(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        return (
+
+            self
+            .update_research_checkpoint_annotation(
+
+                checkpoint_id,
+
+                pinned=True,
+            )
+        )
+
+    def unpin_research_checkpoint(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        return (
+
+            self
+            .update_research_checkpoint_annotation(
+
+                checkpoint_id,
+
+                pinned=False,
             )
         )

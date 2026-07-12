@@ -924,3 +924,22 @@ A preview can report meaningful changes including:
 The comparison layer uses explicit semantic fields rather than blindly comparing complete serialized snapshots.
 
 Historical session versions can also be compared directly, allowing future interfaces to inspect differences between arbitrary research checkpoints.
+
+## Human-Friendly Checkpoint Annotations
+
+Research checkpoints can be enriched with mutable human-authored annotations without modifying their immutable historical state.
+
+Checkpoint annotations support:
+
+- Custom labels
+- Personal notes
+- Pinned status
+- Partial updates
+- Explicit field clearing
+- Persistent storage across application restarts
+
+Annotations are stored independently from checkpoint records and immutable session versions.
+
+This separation allows a user to rename, annotate, pin, unpin, or remove human metadata without changing the historical checkpoint event or the exact research state associated with it.
+
+PreReqAI can expose annotated checkpoint timelines and pinned recovery points for future user interfaces.

@@ -697,3 +697,247 @@ def test_checkpoints_preserve_distinct_historical_snapshots():
 
         == "Version Two"
     )
+
+
+def test_application_exposes_annotated_checkpoint_timeline():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    application.activate_research_session(
+
+        "session-1"
+    )
+
+    checkpoint = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    application.update_research_checkpoint_annotation(
+
+        checkpoint.id,
+
+        label=(
+            "Stable workflow state"
+        ),
+
+        pinned=True,
+    )
+
+    timeline = (
+
+        application
+        .annotated_research_checkpoints(
+
+            "session-1"
+        )
+    )
+
+    assert len(timeline) == 1
+
+    assert (
+
+        timeline[0].label
+
+        == "Stable workflow state"
+    )
+
+    assert timeline[0].pinned is True
+
+
+def test_application_lists_only_pinned_checkpoints():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    application.activate_research_session(
+
+        "session-1"
+    )
+
+    first = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    second = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-2"
+        )
+    )
+
+    application.pin_research_checkpoint(
+
+        second.id
+    )
+
+    pinned = (
+
+        application
+        .pinned_research_checkpoints(
+
+            "session-1"
+        )
+    )
+
+    assert len(pinned) == 1
+
+    assert (
+
+        pinned[0]
+        .checkpoint
+        .id
+
+        == second.id
+    )
+
+    assert (
+
+        pinned[0]
+        .checkpoint
+        .id
+
+        != first.id
+    )
+
+
+def test_annotation_updates_do_not_modify_historical_version():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    application.activate_research_session(
+
+        session_id="session-1",
+
+        paper_title="Historical State",
+    )
+
+    checkpoint = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    version_before = (
+
+        application
+        .research_checkpoint_version(
+
+            checkpoint.id
+        )
+    )
+
+    application.update_research_checkpoint_annotation(
+
+        checkpoint.id,
+
+        label="Renamed checkpoint",
+
+        note="Human-authored note",
+
+        pinned=True,
+    )
+
+    version_after = (
+
+        application
+        .research_checkpoint_version(
+
+            checkpoint.id
+        )
+    )
+
+    assert (
+
+        version_after.id
+
+        == version_before.id
+    )
+
+    assert (
+
+        version_after.snapshot
+        .paper_title
+
+        == "Historical State"
+    )
+
+
+def test_removing_annotation_does_not_delete_checkpoint():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    application.activate_research_session(
+
+        "session-1"
+    )
+
+    checkpoint = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    application.label_research_checkpoint(
+
+        checkpoint.id,
+
+        "Temporary label",
+    )
+
+    removed = (
+
+        application
+        .remove_research_checkpoint_annotation(
+
+            checkpoint.id
+        )
+    )
+
+    assert removed is True
+
+    assert (
+
+        application
+        .research_checkpoint_annotation(
+
+            checkpoint.id
+        )
+
+        is None
+    )
+
+    assert (
+
+        application
+        .get_research_checkpoint(
+
+            checkpoint.id
+        )
+
+        is not None
+    )

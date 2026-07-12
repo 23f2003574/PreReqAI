@@ -6,6 +6,10 @@ from .json_research_artifact_store import (
     JsonResearchArtifactStore,
 )
 
+from .json_research_checkpoint_annotation_store import (
+    JsonResearchCheckpointAnnotationStore,
+)
+
 from .json_research_checkpoint_store import (
     JsonResearchCheckpointStore,
 )
@@ -78,6 +82,15 @@ class ResearchPersistenceFactory:
 
                     config
                     .session_versions_path
+                )
+            ),
+
+            "checkpoint_annotation_store": (
+
+                JsonResearchCheckpointAnnotationStore(
+
+                    config
+                    .checkpoint_annotations_path
                 )
             ),
         }

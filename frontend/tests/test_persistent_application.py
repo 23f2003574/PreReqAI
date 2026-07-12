@@ -687,3 +687,93 @@ def test_recovery_preview_works_after_application_recreation(
             .changed_fields()
         )
     )
+
+
+def test_checkpoint_annotations_survive_application_recreation(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        "session-1"
+    )
+
+    checkpoint = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    first_app.update_research_checkpoint_annotation(
+
+        checkpoint.id,
+
+        label=(
+            "Best stable state"
+        ),
+
+        note=(
+            "Return here before "
+            "rewriting methodology."
+        ),
+
+        pinned=True,
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    annotation = (
+
+        second_app
+        .research_checkpoint_annotation(
+
+            checkpoint.id
+        )
+    )
+
+    assert annotation is not None
+
+    assert (
+
+        annotation.label
+
+        == "Best stable state"
+    )
+
+    assert (
+
+        annotation.note
+
+        == (
+            "Return here before "
+            "rewriting methodology."
+        )
+    )
+
+    assert annotation.pinned is True

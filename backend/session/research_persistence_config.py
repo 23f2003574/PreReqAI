@@ -61,3 +61,13 @@ class ResearchPersistenceConfig:
 
             / "session_versions.json"
         )
+
+    @property
+    def checkpoint_annotations_path(self):
+
+        return (
+
+            self.root_directory
+
+            / "checkpoint_annotations.json"
+        )
