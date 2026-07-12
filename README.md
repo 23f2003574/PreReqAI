@@ -669,3 +669,28 @@ Research session persistence is separated into:
 - `ResearchSessionManager` for application-level coordination
 
 The initial in-memory store provides a development and testing implementation while preserving a storage abstraction that can later support database-backed persistence.
+
+## Research Session Restoration
+
+Persisted research sessions can be restored into live visual workspaces through runtime identifier resolution.
+
+The restoration architecture includes:
+
+- `ResearchRuntimeRegistry` for currently available runtime entities
+- `ResearchRuntimeResolver` for resolving durable identifiers
+- `ResearchSessionRestorer` for reconstructing workspace state
+- `ResearchSessionRestorationResult` for reporting successful and unresolved restoration state
+
+Restoration can recover:
+
+- Active workspace view
+- Selected research object
+- Selected paper section
+- Selected knowledge graph node
+- Navigation breadcrumbs
+- Learning workflow timeline
+- Personalized recommendations
+
+Historical educational actions are not re-executed during restoration.
+
+Missing or outdated runtime references are reported explicitly rather than silently failing.

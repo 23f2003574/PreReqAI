@@ -22,6 +22,8 @@ class ResearchSessionManager:
 
         serializer=None,
 
+        restorer=None,
+
     ):
 
         self.store = store
@@ -32,6 +34,8 @@ class ResearchSessionManager:
 
             or ResearchSessionSerializer()
         )
+
+        self.restorer = restorer
 
     def save_workspace(
 
@@ -92,3 +96,41 @@ class ResearchSessionManager:
     def list_sessions(self):
 
         return self.store.list_sessions()
+
+    def restore_workspace(
+
+        self,
+
+        session_id: str,
+
+        workspace,
+
+    ):
+
+        if self.restorer is None:
+
+            raise ValueError(
+
+                "A research session "
+                "restorer is required."
+            )
+
+        snapshot = self.load_session(
+
+            session_id
+        )
+
+        if snapshot is None:
+
+            raise ValueError(
+
+                "Research session "
+                "could not be found."
+            )
+
+        return self.restorer.restore(
+
+            snapshot,
+
+            workspace,
+        )

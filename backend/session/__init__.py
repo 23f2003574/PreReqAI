@@ -68,4 +68,20 @@ from .research_session_manager import (
     ResearchSessionManager,
 )
 
+from .research_runtime_registry import (
+    ResearchRuntimeRegistry,
+)
+
+from .research_runtime_resolver import (
+    ResearchRuntimeResolver,
+)
+
+from .research_session_restoration_result import (
+    ResearchSessionRestorationResult,
+)
+
+from .research_session_restorer import (
+    ResearchSessionRestorer,
+)
+
 session_manager = SessionManager()

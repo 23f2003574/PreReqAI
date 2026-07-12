@@ -4,7 +4,10 @@ from frontend.src.workspace import (
 
 from backend.session import (
     InMemoryResearchSessionStore,
+    ResearchRuntimeRegistry,
+    ResearchRuntimeResolver,
     ResearchSessionManager,
+    ResearchSessionRestorer,
 )
 
 
@@ -24,10 +27,32 @@ class PreReqAIApplication:
             InMemoryResearchSessionStore()
         )
 
+        self.runtime_registry = (
+            ResearchRuntimeRegistry()
+        )
+
+        self.runtime_resolver = (
+            ResearchRuntimeResolver(
+
+                self.runtime_registry
+            )
+        )
+
+        self.session_restorer = (
+            ResearchSessionRestorer(
+
+                self.runtime_resolver
+            )
+        )
+
         self.session_manager = (
             ResearchSessionManager(
 
-                self.session_store
+                self.session_store,
+
+                restorer=(
+                    self.session_restorer
+                ),
             )
         )
 
@@ -81,4 +106,74 @@ class PreReqAIApplication:
 
             self.session_manager
             .list_sessions()
+        )
+
+    def restore_research_session(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_manager
+            .restore_workspace(
+
+                session_id,
+
+                self.workspace,
+            )
+        )
+
+    def register_research_objects(
+
+        self,
+
+        research_objects,
+
+    ):
+
+        (
+
+            self.runtime_registry
+            .register_objects(
+
+                research_objects
+            )
+        )
+
+    def register_research_sections(
+
+        self,
+
+        sections,
+
+    ):
+
+        (
+
+            self.runtime_registry
+            .register_sections(
+
+                sections
+            )
+        )
+
+    def register_graph_nodes(
+
+        self,
+
+        graph_nodes,
+
+    ):
+
+        (
+
+            self.runtime_registry
+            .register_graph_nodes(
+
+                graph_nodes
+            )
         )
