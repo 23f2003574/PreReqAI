@@ -644,3 +644,28 @@ Continue Research
 ```
 
 The `VisualResearchWorkspace` provides the application-facing interface for coordinating the complete research-learning experience.
+
+## Persistent Research Sessions
+
+PreReqAI can serialize active visual research workspaces into stable research session snapshots.
+
+Session snapshots preserve durable research context including:
+
+- Active paper
+- Active workspace view
+- Selected research object
+- Selected paper section
+- Selected knowledge graph node
+- Navigation breadcrumbs
+- Learning workflow progress
+- Interaction history
+- Personalized recommendations
+
+Research session persistence is separated into:
+
+- `ResearchSessionSnapshot` for stable serialized state
+- `ResearchSessionSerializer` for workspace serialization
+- `ResearchSessionStore` for persistence contracts
+- `ResearchSessionManager` for application-level coordination
+
+The initial in-memory store provides a development and testing implementation while preserving a storage abstraction that can later support database-backed persistence.
