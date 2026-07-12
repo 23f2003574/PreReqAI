@@ -411,3 +411,195 @@ def test_checkpoint_versions_survive_application_recreation(
 
         == "Version One"
     )
+
+
+def test_recovery_survives_application_recreation(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        session_id="session-1",
+
+        paper_title="State A",
+    )
+
+    checkpoint_a = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-a"
+        )
+    )
+
+    first_app.active_paper_title = (
+        "State B"
+    )
+
+    first_app.checkpoint_workflow_progress(
+
+        "step-b"
+    )
+
+    first_app.restore_research_checkpoint(
+
+        checkpoint_a.id
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    restored_session = (
+
+        second_app
+        .get_research_session(
+
+            "session-1"
+        )
+    )
+
+    assert restored_session is not None
+
+    assert (
+
+        restored_session.paper_title
+
+        == "State A"
+    )
+
+
+def test_recovery_keeps_pre_recovery_history_after_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        session_id="session-1",
+
+        paper_title="State A",
+    )
+
+    checkpoint_a = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-a"
+        )
+    )
+
+    first_app.active_paper_title = (
+        "State B"
+    )
+
+    checkpoint_b = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-b"
+        )
+    )
+
+    result = (
+
+        first_app
+        .restore_research_checkpoint(
+
+            checkpoint_a.id
+        )
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    assert (
+
+        second_app
+        .get_research_checkpoint(
+
+            checkpoint_a.id
+        )
+
+        is not None
+    )
+
+    assert (
+
+        second_app
+        .get_research_checkpoint(
+
+            checkpoint_b.id
+        )
+
+        is not None
+    )
+
+    assert (
+
+        second_app
+        .get_research_checkpoint(
+
+            result
+            .safety_checkpoint_id
+        )
+
+        is not None
+    )
+
+    assert (
+
+        second_app
+        .get_research_checkpoint(
+
+            result
+            .recovery_checkpoint_id
+        )
+
+        is not None
+    )

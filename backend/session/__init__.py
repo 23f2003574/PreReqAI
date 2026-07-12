@@ -200,4 +200,12 @@ from .research_session_version_manager import (
     ResearchSessionVersionManager,
 )
 
+from .research_recovery_result import (
+    ResearchRecoveryResult,
+)
+
+from .research_checkpoint_recovery_manager import (
+    ResearchCheckpointRecoveryManager,
+)
+
 session_manager = SessionManager()

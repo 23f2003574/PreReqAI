@@ -43,3 +43,11 @@ class ResearchCheckpointReason(
     APPLICATION_BACKGROUND = (
         "application_background"
     )
+
+    RECOVERY_SAFETY = (
+        "recovery_safety"
+    )
+
+    CHECKPOINT_RESTORED = (
+        "checkpoint_restored"
+    )

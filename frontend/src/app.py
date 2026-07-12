@@ -15,6 +15,7 @@ from backend.session import (
     ResearchArtifactTypeMapper,
     ResearchCheckpointManager,
     ResearchCheckpointReason,
+    ResearchCheckpointRecoveryManager,
     ResearchRuntimeRegistry,
     ResearchRuntimeResolver,
     ResearchSessionManager,
@@ -192,6 +193,24 @@ class PreReqAIApplication:
 
                 version_manager=(
                     self.session_version_manager
+                ),
+            )
+        )
+
+        self.recovery_manager = (
+
+            ResearchCheckpointRecoveryManager(
+
+                checkpoint_manager=(
+                    self.checkpoint_manager
+                ),
+
+                version_manager=(
+                    self.session_version_manager
+                ),
+
+                session_restorer=(
+                    self.session_restorer
                 ),
             )
         )
@@ -1017,3 +1036,76 @@ class PreReqAIApplication:
                 .snapshot_version_id
             )
         )
+
+    def restore_research_checkpoint(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        if self.active_session_id is None:
+
+            raise ValueError(
+
+                "No active research session "
+                "is available for recovery"
+            )
+
+        restored_workspace, result = (
+
+            self.recovery_manager
+            .recover(
+
+                checkpoint_id=(
+                    checkpoint_id
+                ),
+
+                current_workspace=(
+                    self.workspace
+                ),
+
+                session_id=(
+                    self.active_session_id
+                ),
+
+                paper_id=(
+                    self.active_paper_id
+                ),
+
+                paper_title=(
+                    self.active_paper_title
+                ),
+            )
+        )
+
+        self.workspace = (
+            restored_workspace
+        )
+
+        source_version = (
+
+            self.get_research_session_version(
+
+                result.source_version_id
+            )
+        )
+
+        if source_version is not None:
+
+            self.active_paper_id = (
+
+                source_version
+                .snapshot
+                .paper_id
+            )
+
+            self.active_paper_title = (
+
+                source_version
+                .snapshot
+                .paper_title
+            )
+
+        return result

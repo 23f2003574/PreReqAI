@@ -46,6 +46,12 @@ class ResearchCheckpointPolicy:
 
                 ResearchCheckpointReason
                 .APPLICATION_BACKGROUND,
+
+                ResearchCheckpointReason
+                .RECOVERY_SAFETY,
+
+                ResearchCheckpointReason
+                .CHECKPOINT_RESTORED,
             }
         )
 

@@ -168,6 +168,25 @@ class ResearchSessionRestorer:
             )
         )
 
+    def restore_snapshot(
+
+        self,
+
+        snapshot,
+
+        workspace,
+
+    ):
+
+        self.restore(
+
+            snapshot,
+
+            workspace,
+        )
+
+        return workspace
+
     @staticmethod
     def _restore_view(
 

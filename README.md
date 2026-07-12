@@ -870,3 +870,32 @@ Historical session versions can be stored using:
 - `JsonResearchSessionVersionStore`
 
 Filesystem-backed versions survive application restarts and provide the foundation for exact research checkpoint recovery.
+
+## Safe Research Checkpoint Recovery
+
+PreReqAI supports non-destructive recovery of historical research checkpoint states.
+
+A recovery operation:
+
+1. Validates the requested checkpoint.
+2. Resolves its immutable historical session version.
+3. Creates a safety checkpoint preserving the current research state.
+4. Restores the historical snapshot into a new active workspace.
+5. Persists the restored state as the latest current session state.
+6. Creates a new recovery checkpoint describing the operation.
+
+Recovery never deletes newer checkpoints or historical session versions.
+
+If a research timeline contains states A, B, and C, restoring A produces a new current state derived from A while preserving B and C:
+
+```text
+A → B → C → Safety(C) → Restored(A)
+```
+
+Recovery checkpoints preserve references to:
+
+- The source checkpoint
+- The source immutable version
+- The pre-recovery safety checkpoint
+
+This makes checkpoint recovery auditable and itself recoverable.
