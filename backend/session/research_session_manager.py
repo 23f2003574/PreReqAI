@@ -37,6 +37,34 @@ class ResearchSessionManager:
 
         self.restorer = restorer
 
+    def snapshot_workspace(
+
+        self,
+
+        session_id: str,
+
+        workspace,
+
+        paper_id: str | None = None,
+
+        paper_title: str | None = None,
+
+    ):
+
+        return (
+
+            self.serializer.serialize(
+
+                session_id=session_id,
+
+                workspace=workspace,
+
+                paper_id=paper_id,
+
+                paper_title=paper_title,
+            )
+        )
+
     def save_workspace(
 
         self,
@@ -53,7 +81,7 @@ class ResearchSessionManager:
 
         snapshot = (
 
-            self.serializer.serialize(
+            self.snapshot_workspace(
 
                 session_id=session_id,
 

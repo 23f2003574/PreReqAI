@@ -208,4 +208,28 @@ from .research_checkpoint_recovery_manager import (
     ResearchCheckpointRecoveryManager,
 )
 
+from .research_state_change_type import (
+    ResearchStateChangeType,
+)
+
+from .research_state_change import (
+    ResearchStateChange,
+)
+
+from .research_session_comparison import (
+    ResearchSessionComparison,
+)
+
+from .research_session_comparator import (
+    ResearchSessionComparator,
+)
+
+from .research_recovery_preview import (
+    ResearchRecoveryPreview,
+)
+
+from .research_recovery_preview_manager import (
+    ResearchRecoveryPreviewManager,
+)
+
 session_manager = SessionManager()

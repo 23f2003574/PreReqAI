@@ -603,3 +603,87 @@ def test_recovery_keeps_pre_recovery_history_after_restart(
 
         is not None
     )
+
+
+def test_recovery_preview_works_after_application_recreation(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        session_id="session-1",
+
+        paper_title="Historical State",
+    )
+
+    checkpoint = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    first_app.active_paper_title = (
+        "Current State"
+    )
+
+    first_app.checkpoint_workflow_progress(
+
+        "step-2"
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    second_app.activate_research_session(
+
+        session_id="session-1",
+
+        paper_title="Current State",
+    )
+
+    preview = (
+
+        second_app
+        .preview_research_checkpoint_recovery(
+
+            checkpoint.id
+        )
+    )
+
+    assert preview.has_changes
+
+    assert (
+
+        "paper_title"
+
+        in (
+            preview
+            .comparison
+            .changed_fields()
+        )
+    )

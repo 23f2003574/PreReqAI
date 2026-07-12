@@ -899,3 +899,28 @@ Recovery checkpoints preserve references to:
 - The pre-recovery safety checkpoint
 
 This makes checkpoint recovery auditable and itself recoverable.
+
+## Research Recovery Preview and Comparison
+
+PreReqAI can compare the current research state with an immutable historical checkpoint before recovery is executed.
+
+Recovery previews are read-only and do not:
+
+- Persist the current session
+- Create checkpoints
+- Create historical session versions
+- Modify the active workspace
+- Execute recovery
+
+A preview can report meaningful changes including:
+
+- Paper context changes
+- Active section changes
+- Selected research object changes
+- Knowledge graph context changes
+- Workflow position changes
+- Added and removed research artifacts
+
+The comparison layer uses explicit semantic fields rather than blindly comparing complete serialized snapshots.
+
+Historical session versions can also be compared directly, allowing future interfaces to inspect differences between arbitrary research checkpoints.

@@ -16,8 +16,10 @@ from backend.session import (
     ResearchCheckpointManager,
     ResearchCheckpointReason,
     ResearchCheckpointRecoveryManager,
+    ResearchRecoveryPreviewManager,
     ResearchRuntimeRegistry,
     ResearchRuntimeResolver,
+    ResearchSessionComparator,
     ResearchSessionManager,
     ResearchSessionRestorer,
     ResearchSessionSerializer,
@@ -211,6 +213,33 @@ class PreReqAIApplication:
 
                 session_restorer=(
                     self.session_restorer
+                ),
+            )
+        )
+
+        self.session_comparator = (
+
+            ResearchSessionComparator()
+        )
+
+        self.recovery_preview_manager = (
+
+            ResearchRecoveryPreviewManager(
+
+                checkpoint_manager=(
+                    self.checkpoint_manager
+                ),
+
+                version_manager=(
+                    self.session_version_manager
+                ),
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                comparator=(
+                    self.session_comparator
                 ),
             )
         )
@@ -1109,3 +1138,119 @@ class PreReqAIApplication:
             )
 
         return result
+
+    def preview_research_checkpoint_recovery(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        if self.active_session_id is None:
+
+            raise ValueError(
+
+                "No active research session "
+                "is available for recovery "
+                "preview"
+            )
+
+        return (
+
+            self.recovery_preview_manager
+            .preview(
+
+                checkpoint_id=(
+                    checkpoint_id
+                ),
+
+                session_id=(
+                    self.active_session_id
+                ),
+
+                current_workspace=(
+                    self.workspace
+                ),
+
+                paper_id=(
+                    self.active_paper_id
+                ),
+
+                paper_title=(
+                    self.active_paper_title
+                ),
+            )
+        )
+
+    def compare_research_session_versions(
+
+        self,
+
+        first_version_id: str,
+
+        second_version_id: str,
+
+    ):
+
+        first = (
+
+            self.get_research_session_version(
+
+                first_version_id
+            )
+        )
+
+        second = (
+
+            self.get_research_session_version(
+
+                second_version_id
+            )
+        )
+
+        if first is None:
+
+            raise ValueError(
+
+                "Research session version "
+                "does not exist: "
+                f"{first_version_id}"
+            )
+
+        if second is None:
+
+            raise ValueError(
+
+                "Research session version "
+                "does not exist: "
+                f"{second_version_id}"
+            )
+
+        if (
+
+            first.session_id
+
+            != second.session_id
+        ):
+
+            raise ValueError(
+
+                "Research session versions "
+                "belong to different sessions"
+            )
+
+        return (
+
+            self.session_comparator
+            .compare(
+
+                current_snapshot=(
+                    first.snapshot
+                ),
+
+                target_snapshot=(
+                    second.snapshot
+                ),
+            )
+        )
