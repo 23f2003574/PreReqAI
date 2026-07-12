@@ -12,6 +12,18 @@ class ResearchSessionSerializer:
     snapshots.
     """
 
+    def __init__(
+
+        self,
+
+        artifact_manager=None,
+
+    ):
+
+        self.artifact_manager = (
+            artifact_manager
+        )
+
     def serialize(
 
         self,
@@ -78,6 +90,23 @@ class ResearchSessionSerializer:
 
             None,
         )
+
+        artifact_ids = []
+
+        if self.artifact_manager is not None:
+
+            artifact_ids = [
+
+                artifact.id
+
+                for artifact
+
+                in self.artifact_manager
+                .for_session(
+
+                    session_id
+                )
+            ]
 
         return ResearchSessionSnapshot(
 
@@ -248,6 +277,8 @@ class ResearchSessionSerializer:
                     [],
                 )
             ],
+
+            artifact_ids=artifact_ids,
 
             metadata={
 

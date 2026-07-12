@@ -694,3 +694,34 @@ Restoration can recover:
 Historical educational actions are not re-executed during restoration.
 
 Missing or outdated runtime references are reported explicitly rather than silently failing.
+
+## Durable Research Artifacts
+
+Generated learning outputs are persisted independently from workspace state as durable research artifacts.
+
+Research artifacts can represent:
+
+- Explanations
+- Visualizations
+- Implementations
+- Comparisons
+- Quizzes
+- Summaries
+- Derivations
+- Exploratory outputs
+
+Each artifact preserves:
+
+- Session identity
+- Research object identity
+- Artifact type
+- Educational action
+- Generated content
+- Content format
+- Version
+- Metadata
+- Creation and update timestamps
+
+Repeated outputs for the same research object and educational action are versioned rather than silently overwritten.
+
+Research session snapshots store artifact references while artifact content remains independently managed by the artifact persistence layer.

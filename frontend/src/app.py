@@ -3,11 +3,15 @@ from frontend.src.workspace import (
 )
 
 from backend.session import (
+    InMemoryResearchArtifactStore,
     InMemoryResearchSessionStore,
+    ResearchArtifactManager,
+    ResearchArtifactTypeMapper,
     ResearchRuntimeRegistry,
     ResearchRuntimeResolver,
     ResearchSessionManager,
     ResearchSessionRestorer,
+    ResearchSessionSerializer,
 )
 
 
@@ -45,10 +49,34 @@ class PreReqAIApplication:
             )
         )
 
+        self.artifact_store = (
+            InMemoryResearchArtifactStore()
+        )
+
+        self.artifact_manager = (
+            ResearchArtifactManager(
+
+                self.artifact_store
+            )
+        )
+
+        self.session_serializer = (
+            ResearchSessionSerializer(
+
+                artifact_manager=(
+                    self.artifact_manager
+                )
+            )
+        )
+
         self.session_manager = (
             ResearchSessionManager(
 
                 self.session_store,
+
+                serializer=(
+                    self.session_serializer
+                ),
 
                 restorer=(
                     self.session_restorer
@@ -175,5 +203,109 @@ class PreReqAIApplication:
             .register_graph_nodes(
 
                 graph_nodes
+            )
+        )
+
+    def save_learning_artifact(
+
+        self,
+
+        session_id: str,
+
+        object_id: str,
+
+        action,
+
+        content,
+
+        title: str | None = None,
+
+        content_type: str = "text",
+
+        metadata: dict | None = None,
+
+    ):
+
+        artifact_type = (
+
+            ResearchArtifactTypeMapper
+            .from_action(
+
+                action
+            )
+        )
+
+        return (
+
+            self.artifact_manager
+            .create(
+
+                session_id=session_id,
+
+                object_id=object_id,
+
+                artifact_type=(
+                    artifact_type
+                ),
+
+                content=content,
+
+                action=(
+
+                    action.value
+
+                    if hasattr(
+                        action,
+                        "value",
+                    )
+
+                    else str(action)
+                ),
+
+                title=title,
+
+                content_type=(
+                    content_type
+                ),
+
+                metadata=metadata,
+            )
+        )
+
+    def research_artifacts(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.artifact_manager
+            .for_session(
+
+                session_id
+            )
+        )
+
+    def research_artifacts_for_object(
+
+        self,
+
+        session_id: str,
+
+        object_id: str,
+
+    ):
+
+        return (
+
+            self.artifact_manager
+            .for_object(
+
+                session_id,
+
+                object_id,
             )
         )

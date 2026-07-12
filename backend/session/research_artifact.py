@@ -8,49 +8,47 @@ from datetime import datetime
 
 from typing import Any
 
+from uuid import uuid4
+
+from .research_artifact_type import (
+    ResearchArtifactType,
+)
+
 
 @dataclass
-class ResearchSessionSnapshot:
+class ResearchArtifact:
     """
-    Represents a serializable snapshot
-    of a research-learning session.
+    Represents a durable output generated
+    during a research-learning session.
     """
 
     session_id: str
 
-    paper_id: str | None = None
+    object_id: str
 
-    paper_title: str | None = None
-
-    active_view: str = "paper"
-
-    selected_object_id: str | None = None
-
-    selected_section_id: str | None = None
-
-    selected_graph_node_id: str | None = None
-
-    breadcrumbs: list[dict] = field(
-        default_factory=list,
+    artifact_type: (
+        ResearchArtifactType
     )
 
-    timeline: list[dict] = field(
-        default_factory=list,
+    content: Any
+
+    id: str = field(
+        default_factory=lambda:
+            str(uuid4()),
     )
 
-    interaction_history: list[dict] = field(
-        default_factory=list,
-    )
+    action: str | None = None
 
-    recommendations: list[dict] = field(
-        default_factory=list,
-    )
+    title: str | None = None
 
-    artifact_ids: list[str] = field(
-        default_factory=list,
-    )
+    content_type: str = "text"
 
-    metadata: dict[str, Any] = field(
+    version: int = 1
+
+    metadata: dict[
+        str,
+        Any,
+    ] = field(
         default_factory=dict,
     )
 
@@ -65,6 +63,10 @@ class ResearchSessionSnapshot:
     def to_dict(self):
 
         data = asdict(self)
+
+        data["artifact_type"] = (
+            self.artifact_type.value
+        )
 
         data["created_at"] = (
             self.created_at.isoformat()
@@ -87,6 +89,16 @@ class ResearchSessionSnapshot:
 
         payload = dict(data)
 
+        payload["artifact_type"] = (
+
+            ResearchArtifactType(
+
+                payload[
+                    "artifact_type"
+                ]
+            )
+        )
+
         for field_name in (
 
             "created_at",
@@ -104,6 +116,7 @@ class ResearchSessionSnapshot:
             ):
 
                 payload[field_name] = (
+
                     datetime.fromisoformat(
                         value
                     )

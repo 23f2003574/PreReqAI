@@ -144,3 +144,79 @@ def test_application_restores_selected_object_after_restart():
 
         is research_object
     )
+
+
+def test_application_saves_learning_artifact_and_references_it_in_session():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    artifact = (
+
+        application
+        .save_learning_artifact(
+
+            session_id="session-1",
+
+            object_id="attention",
+
+            action="explain",
+
+            content=(
+                "Attention explanation"
+            ),
+        )
+    )
+
+    assert artifact.version == 1
+
+    assert (
+
+        len(
+
+            application
+            .research_artifacts(
+                "session-1"
+            )
+        )
+
+        == 1
+    )
+
+    assert (
+
+        len(
+
+            application
+            .research_artifacts_for_object(
+                "session-1",
+
+                "attention",
+            )
+        )
+
+        == 1
+    )
+
+    saved = (
+
+        application
+        .save_research_session(
+
+            session_id="session-1",
+
+            paper_title=(
+                "Example Paper"
+            ),
+        )
+    )
+
+    assert (
+
+        saved.artifact_ids
+
+        == [
+            artifact.id
+        ]
+    )

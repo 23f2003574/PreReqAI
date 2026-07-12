@@ -6,6 +6,9 @@ from backend.models import (
 )
 
 from backend.session import (
+    InMemoryResearchArtifactStore,
+    ResearchArtifactManager,
+    ResearchArtifactType,
     ResearchSessionSerializer,
 )
 
@@ -187,4 +190,67 @@ def test_serializes_selected_section_and_graph_node():
         ]
 
         > 0
+    )
+
+
+def test_serializes_artifact_references():
+
+    artifact_manager = (
+
+        ResearchArtifactManager(
+
+            InMemoryResearchArtifactStore()
+        )
+    )
+
+    artifact = (
+
+        artifact_manager.create(
+
+            session_id="session-1",
+
+            object_id="attention",
+
+            artifact_type=(
+
+                ResearchArtifactType
+                .EXPLANATION
+            ),
+
+            content=(
+                "Attention explanation"
+            ),
+
+            action="explain",
+        )
+    )
+
+    serializer = (
+
+        ResearchSessionSerializer(
+
+            artifact_manager=(
+                artifact_manager
+            )
+        )
+    )
+
+    workspace = (
+        VisualResearchWorkspace()
+    )
+
+    snapshot = serializer.serialize(
+
+        session_id="session-1",
+
+        workspace=workspace,
+    )
+
+    assert (
+
+        snapshot.artifact_ids
+
+        == [
+            artifact.id
+        ]
     )

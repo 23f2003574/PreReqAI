@@ -84,4 +84,28 @@ from .research_session_restorer import (
     ResearchSessionRestorer,
 )
 
+from .research_artifact_type import (
+    ResearchArtifactType,
+)
+
+from .research_artifact import (
+    ResearchArtifact,
+)
+
+from .research_artifact_store import (
+    ResearchArtifactStore,
+)
+
+from .in_memory_research_artifact_store import (
+    InMemoryResearchArtifactStore,
+)
+
+from .research_artifact_manager import (
+    ResearchArtifactManager,
+)
+
+from .research_artifact_type_mapper import (
+    ResearchArtifactTypeMapper,
+)
+
 session_manager = SessionManager()
