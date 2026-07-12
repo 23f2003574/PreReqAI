@@ -6,6 +6,7 @@ from backend.session import (
     ArtifactRestorationResult,
     InMemoryInteractionArtifactLinkStore,
     InMemoryResearchArtifactStore,
+    InMemoryResearchCheckpointStore,
     InMemoryResearchSessionStore,
     InteractionArtifactCorrelationManager,
     ResearchArtifactManager,
@@ -36,6 +37,8 @@ class PreReqAIApplication:
         artifact_store=None,
 
         interaction_link_store=None,
+
+        checkpoint_store=None,
 
     ):
 
@@ -147,11 +150,24 @@ class PreReqAIApplication:
             )
         )
 
+        self.checkpoint_store = (
+
+            checkpoint_store
+
+            or InMemoryResearchCheckpointStore()
+        )
+
         self.checkpoint_manager = (
 
             ResearchCheckpointManager(
 
-                self.session_manager
+                session_manager=(
+                    self.session_manager
+                ),
+
+                checkpoint_store=(
+                    self.checkpoint_store
+                ),
             )
         )
 
@@ -851,5 +867,39 @@ class PreReqAIApplication:
             .latest_checkpoint(
 
                 session_id
+            )
+        )
+
+    def get_research_checkpoint(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_manager
+            .get_checkpoint(
+
+                checkpoint_id
+            )
+        )
+
+    def delete_research_checkpoint(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_manager
+            .delete_checkpoint(
+
+                checkpoint_id
             )
         )

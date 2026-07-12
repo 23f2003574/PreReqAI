@@ -24,6 +24,8 @@ class ResearchCheckpointManager:
 
         session_manager,
 
+        checkpoint_store,
+
         policy=None,
 
     ):
@@ -32,17 +34,16 @@ class ResearchCheckpointManager:
             session_manager
         )
 
+        self.checkpoint_store = (
+            checkpoint_store
+        )
+
         self.policy = (
 
             policy
 
             or ResearchCheckpointPolicy()
         )
-
-        self._checkpoints: dict[
-            str,
-            list[ResearchCheckpoint],
-        ] = {}
 
     def checkpoint(
 
@@ -105,16 +106,14 @@ class ResearchCheckpointManager:
             ),
         )
 
-        self._checkpoints.setdefault(
+        return (
 
-            session_id,
+            self.checkpoint_store
+            .save(
 
-            [],
-        ).append(
-            checkpoint
+                checkpoint
+            )
         )
-
-        return checkpoint
 
     def list_checkpoints(
 
@@ -122,17 +121,14 @@ class ResearchCheckpointManager:
 
         session_id: str,
 
-    ) -> list[
-        ResearchCheckpoint
-    ]:
+    ):
 
-        return list(
+        return (
 
-            self._checkpoints.get(
+            self.checkpoint_store
+            .list_for_session(
 
-                session_id,
-
-                [],
+                session_id
             )
         )
 
@@ -142,18 +138,47 @@ class ResearchCheckpointManager:
 
         session_id: str,
 
-    ) -> ResearchCheckpoint | None:
+    ):
 
-        checkpoints = (
+        return (
 
-            self.list_checkpoints(
+            self.checkpoint_store
+            .latest_for_session(
 
                 session_id
             )
         )
 
-        if not checkpoints:
+    def get_checkpoint(
 
-            return None
+        self,
 
-        return checkpoints[-1]
+        checkpoint_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_store
+            .get(
+
+                checkpoint_id
+            )
+        )
+
+    def delete_checkpoint(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_store
+            .delete(
+
+                checkpoint_id
+            )
+        )

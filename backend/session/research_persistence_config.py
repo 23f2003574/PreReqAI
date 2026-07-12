@@ -41,3 +41,13 @@ class ResearchPersistenceConfig:
 
             / "interaction_artifact_links.json"
         )
+
+    @property
+    def checkpoints_path(self):
+
+        return (
+
+            self.root_directory
+
+            / "checkpoints.json"
+        )

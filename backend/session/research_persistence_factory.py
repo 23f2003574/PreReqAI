@@ -6,6 +6,10 @@ from .json_research_artifact_store import (
     JsonResearchArtifactStore,
 )
 
+from .json_research_checkpoint_store import (
+    JsonResearchCheckpointStore,
+)
+
 from .json_research_session_store import (
     JsonResearchSessionStore,
 )
@@ -53,6 +57,14 @@ class ResearchPersistenceFactory:
 
                     config
                     .interaction_links_path
+                )
+            ),
+
+            "checkpoint_store": (
+
+                JsonResearchCheckpointStore(
+
+                    config.checkpoints_path
                 )
             ),
         }

@@ -168,4 +168,16 @@ from .research_persistence_factory import (
     ResearchPersistenceFactory,
 )
 
+from .research_checkpoint_store import (
+    ResearchCheckpointStore,
+)
+
+from .in_memory_research_checkpoint_store import (
+    InMemoryResearchCheckpointStore,
+)
+
+from .json_research_checkpoint_store import (
+    JsonResearchCheckpointStore,
+)
+
 session_manager = SessionManager()

@@ -64,3 +64,51 @@ class ResearchCheckpoint:
         )
 
         return data
+
+    @classmethod
+    def from_dict(
+
+        cls,
+
+        data: dict,
+
+    ):
+
+        payload = dict(data)
+
+        payload["reason"] = (
+
+            ResearchCheckpointReason(
+
+                payload[
+                    "reason"
+                ]
+            )
+        )
+
+        for field_name in (
+
+            "snapshot_updated_at",
+
+            "created_at",
+        ):
+
+            value = payload.get(
+                field_name
+            )
+
+            if isinstance(
+                value,
+                str,
+            ):
+
+                payload[field_name] = (
+
+                    datetime.fromisoformat(
+                        value
+                    )
+                )
+
+        return cls(
+            **payload
+        )

@@ -821,3 +821,27 @@ application = (
 Research state is stored under the configured data directory and can survive application process restarts.
 
 The JSON persistence backend is intended for local development, testing, single-user workflows, and single-process deployments. Multi-process and distributed deployments should use a transactional database-backed persistence implementation.
+
+## Persistent Research Checkpoint History
+
+Research checkpoint records can be persisted independently from the current research session snapshot.
+
+Each durable checkpoint preserves:
+
+- Checkpoint identity
+- Research session identity
+- Checkpoint reason
+- Snapshot update time
+- Checkpoint metadata
+- Creation time
+
+Checkpoint persistence uses the `ResearchCheckpointStore` contract.
+
+Available implementations include:
+
+- `InMemoryResearchCheckpointStore`
+- `JsonResearchCheckpointStore`
+
+When filesystem persistence is enabled, checkpoint timelines survive application restarts and continue accumulating as research progresses.
+
+This allows PreReqAI to preserve not only the latest research state, but also the sequence of meaningful persistence events that led to it.

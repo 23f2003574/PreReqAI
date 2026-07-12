@@ -57,4 +57,11 @@ def create_persistent_application(
                 "interaction_link_store"
             ]
         ),
+
+        checkpoint_store=(
+
+            stores[
+                "checkpoint_store"
+            ]
+        ),
     )

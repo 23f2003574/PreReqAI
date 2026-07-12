@@ -1,5 +1,7 @@
 from backend.session import (
 
+    InMemoryResearchCheckpointStore,
+
     InMemoryResearchSessionStore,
 
     ResearchCheckpointManager,
@@ -33,7 +35,14 @@ def test_creates_research_checkpoint():
 
         ResearchCheckpointManager(
 
-            session_manager
+            session_manager=(
+                session_manager
+            ),
+
+            checkpoint_store=(
+
+                InMemoryResearchCheckpointStore()
+            ),
         )
     )
 
@@ -102,7 +111,14 @@ def test_skips_disabled_checkpoint_reason():
 
         ResearchCheckpointManager(
 
-            session_manager,
+            session_manager=(
+                session_manager
+            ),
+
+            checkpoint_store=(
+
+                InMemoryResearchCheckpointStore()
+            ),
 
             policy=policy,
         )
@@ -158,7 +174,14 @@ def test_latest_checkpoint_returns_most_recent():
 
         ResearchCheckpointManager(
 
-            session_manager
+            session_manager=(
+                session_manager
+            ),
+
+            checkpoint_store=(
+
+                InMemoryResearchCheckpointStore()
+            ),
         )
     )
 
@@ -224,3 +247,86 @@ def test_latest_checkpoint_returns_most_recent():
     assert latest.id == second.id
 
     assert latest.id != first.id
+
+
+def test_get_and_delete_checkpoint():
+
+    store = (
+        InMemoryResearchSessionStore()
+    )
+
+    session_manager = (
+
+        ResearchSessionManager(
+            store
+        )
+    )
+
+    checkpoint_manager = (
+
+        ResearchCheckpointManager(
+
+            session_manager=(
+                session_manager
+            ),
+
+            checkpoint_store=(
+
+                InMemoryResearchCheckpointStore()
+            ),
+        )
+    )
+
+    workspace = (
+        VisualResearchWorkspace()
+    )
+
+    checkpoint = (
+
+        checkpoint_manager
+        .checkpoint(
+
+            session_id="session-1",
+
+            workspace=workspace,
+
+            reason=(
+
+                ResearchCheckpointReason
+                .ARTIFACT_CREATED
+            ),
+        )
+    )
+
+    fetched = (
+
+        checkpoint_manager
+        .get_checkpoint(
+
+            checkpoint.id
+        )
+    )
+
+    assert fetched.id == checkpoint.id
+
+    deleted = (
+
+        checkpoint_manager
+        .delete_checkpoint(
+
+            checkpoint.id
+        )
+    )
+
+    assert deleted is True
+
+    assert (
+
+        checkpoint_manager
+        .get_checkpoint(
+
+            checkpoint.id
+        )
+
+        is None
+    )
