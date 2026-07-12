@@ -14,6 +14,10 @@ from backend.interaction.research_object_type import (
     ResearchObjectType,
 )
 
+from backend.session import (
+    ResearchCheckpointReason,
+)
+
 from frontend.src import (
     PreReqAIApplication,
 )
@@ -473,3 +477,149 @@ def test_application_restore_history_entry_handles_unknown_entry():
     )
 
     assert result.restored is False
+
+
+def test_artifact_creation_checkpoints_active_session():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    application.activate_research_session(
+
+        session_id="session-1",
+
+        paper_id="paper-1",
+
+        paper_title="Example Paper",
+    )
+
+    application.save_interaction_artifact(
+
+        interaction_id="interaction-1",
+
+        session_id="session-1",
+
+        object_id="attention",
+
+        action="explain",
+
+        content="Attention explanation",
+    )
+
+    snapshot = (
+
+        application
+        .get_research_session(
+
+            "session-1"
+        )
+    )
+
+    assert snapshot is not None
+
+    assert (
+
+        len(
+            snapshot.artifact_ids
+        )
+
+        == 1
+    )
+
+    checkpoint = (
+
+        application
+        .latest_research_checkpoint(
+
+            "session-1"
+        )
+    )
+
+    assert checkpoint is not None
+
+    assert (
+
+        checkpoint.reason
+
+        == (
+            ResearchCheckpointReason
+            .ARTIFACT_CREATED
+        )
+    )
+
+
+def test_checkpoint_without_active_session_is_safe():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    checkpoint = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    assert checkpoint is None
+
+
+def test_manual_checkpoint_uses_same_pipeline_as_autosave():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    application.activate_research_session(
+
+        session_id="session-1",
+
+        paper_title="Example Paper",
+    )
+
+    checkpoint = (
+
+        application
+        .checkpoint_research_session()
+    )
+
+    assert checkpoint is not None
+
+    assert (
+
+        checkpoint.reason
+
+        == (
+            ResearchCheckpointReason
+            .MANUAL
+        )
+    )
+
+    assert (
+
+        application
+        .get_research_session(
+            "session-1"
+        )
+
+        is not None
+    )
+
+    deactivated = (
+
+        application
+        .deactivate_research_session()
+    )
+
+    assert deactivated == "session-1"
+
+    assert (
+
+        application
+        .checkpoint_research_session()
+
+        is None
+    )

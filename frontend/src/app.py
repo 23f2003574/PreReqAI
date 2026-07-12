@@ -11,6 +11,8 @@ from backend.session import (
     ResearchArtifactManager,
     ResearchArtifactRestorer,
     ResearchArtifactTypeMapper,
+    ResearchCheckpointManager,
+    ResearchCheckpointReason,
     ResearchRuntimeRegistry,
     ResearchRuntimeResolver,
     ResearchSessionManager,
@@ -124,6 +126,20 @@ class PreReqAIApplication:
                 ),
             )
         )
+
+        self.checkpoint_manager = (
+
+            ResearchCheckpointManager(
+
+                self.session_manager
+            )
+        )
+
+        self.active_session_id = None
+
+        self.active_paper_id = None
+
+        self.active_paper_title = None
 
     def save_research_session(
 
@@ -461,6 +477,27 @@ class PreReqAIApplication:
             artifact,
         )
 
+        self.checkpoint_active_session(
+
+            ResearchCheckpointReason
+            .ARTIFACT_CREATED,
+
+            metadata={
+
+                "interaction_id":
+                    str(interaction_id),
+
+                "artifact_id":
+                    artifact.id,
+
+                "object_id":
+                    artifact.object_id,
+
+                "action":
+                    artifact.action,
+            },
+        )
+
         return artifact
 
     def restore_interaction_artifacts(
@@ -553,5 +590,246 @@ class PreReqAIApplication:
                 workspace=(
                     self.workspace
                 ),
+            )
+        )
+
+    def activate_research_session(
+
+        self,
+
+        session_id: str,
+
+        paper_id: str | None = None,
+
+        paper_title: str | None = None,
+
+    ):
+
+        self.active_session_id = (
+            session_id
+        )
+
+        self.active_paper_id = (
+            paper_id
+        )
+
+        self.active_paper_title = (
+            paper_title
+        )
+
+        return session_id
+
+    def deactivate_research_session(
+
+        self,
+
+    ):
+
+        session_id = (
+            self.active_session_id
+        )
+
+        self.active_session_id = None
+
+        self.active_paper_id = None
+
+        self.active_paper_title = None
+
+        return session_id
+
+    def checkpoint_active_session(
+
+        self,
+
+        reason,
+
+        metadata: dict | None = None,
+
+    ):
+
+        if self.active_session_id is None:
+
+            return None
+
+        return (
+
+            self.checkpoint_manager
+            .checkpoint(
+
+                session_id=(
+                    self.active_session_id
+                ),
+
+                workspace=(
+                    self.workspace
+                ),
+
+                reason=reason,
+
+                paper_id=(
+                    self.active_paper_id
+                ),
+
+                paper_title=(
+                    self.active_paper_title
+                ),
+
+                metadata=metadata,
+            )
+        )
+
+    def checkpoint_workflow_progress(
+
+        self,
+
+        step_id: str | None = None,
+
+    ):
+
+        return (
+
+            self.checkpoint_active_session(
+
+                ResearchCheckpointReason
+                .WORKFLOW_PROGRESS,
+
+                metadata={
+
+                    "step_id":
+                        step_id,
+                },
+            )
+        )
+
+    def checkpoint_research_object(
+
+        self,
+
+        object_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_active_session(
+
+                ResearchCheckpointReason
+                .RESEARCH_OBJECT_CHANGED,
+
+                metadata={
+
+                    "object_id":
+                        object_id,
+                },
+            )
+        )
+
+    def checkpoint_section(
+
+        self,
+
+        section_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_active_session(
+
+                ResearchCheckpointReason
+                .SECTION_CHANGED,
+
+                metadata={
+
+                    "section_id":
+                        section_id,
+                },
+            )
+        )
+
+    def checkpoint_graph_context(
+
+        self,
+
+        node_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_active_session(
+
+                ResearchCheckpointReason
+                .GRAPH_CONTEXT_CHANGED,
+
+                metadata={
+
+                    "node_id":
+                        node_id,
+                },
+            )
+        )
+
+    def checkpoint_before_background(
+
+        self,
+
+    ):
+
+        return (
+
+            self.checkpoint_active_session(
+
+                ResearchCheckpointReason
+                .APPLICATION_BACKGROUND
+            )
+        )
+
+    def checkpoint_research_session(
+
+        self,
+
+    ):
+
+        return (
+
+            self.checkpoint_active_session(
+
+                ResearchCheckpointReason
+                .MANUAL
+            )
+        )
+
+    def research_checkpoints(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_manager
+            .list_checkpoints(
+
+                session_id
+            )
+        )
+
+    def latest_research_checkpoint(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.checkpoint_manager
+            .latest_checkpoint(
+
+                session_id
             )
         )

@@ -764,3 +764,30 @@ Selecting a historical interaction can:
 Restored content is explicitly marked as historical and does not create duplicate learning-history entries when reopened repeatedly.
 
 Missing artifacts are reported gracefully rather than causing the research session to fail.
+
+## Automatic Research Checkpoints
+
+PreReqAI can automatically persist active research sessions after meaningful research transitions.
+
+Checkpoint triggers can include:
+
+- Durable artifact creation
+- Completed learning actions
+- Workflow progress
+- Research object changes
+- Paper section changes
+- Knowledge graph context changes
+- Application backgrounding
+- Explicit manual saves
+
+Checkpoint behavior is controlled through `ResearchCheckpointPolicy`, preventing insignificant workspace events from causing unnecessary persistence operations.
+
+Each recorded checkpoint preserves:
+
+- Session identity
+- Checkpoint reason
+- Snapshot update time
+- Checkpoint metadata
+- Creation time
+
+Automatic checkpoints allow research progress to remain durable without requiring learners to manually save after every meaningful interaction.
