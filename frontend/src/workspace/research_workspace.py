@@ -853,6 +853,43 @@ class ResearchWorkspace:
             entry.artifact_ids
         )
 
+    def restore_learning_artifact(
+
+        self,
+
+        artifact,
+
+    ):
+
+        learning_content = (
+
+            self.learning_panel
+            .restore_artifact(
+
+                artifact
+            )
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType
+            .LEARNING_CONTENT_PRESENTED,
+
+            payload=(
+                learning_content
+            ),
+
+            metadata={
+
+                "restored": True,
+
+                "artifact_id":
+                    artifact.id,
+            },
+        )
+
+        return learning_content
+
     def load_recommendations(
 
         self,

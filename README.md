@@ -747,3 +747,20 @@ Interaction 2
 Historical interactions can therefore resolve the precise generated output associated with that moment rather than relying on research-object and action matching.
 
 The correlation model supports multiple artifacts per interaction, allowing a single educational workflow to produce related explanations, visualizations, implementations, or other outputs.
+
+## Historical Artifact Restoration
+
+PreReqAI can restore the exact durable learning outputs associated with previous educational interactions.
+
+Selecting a historical interaction can:
+
+- Resolve its exact correlated artifact identifiers
+- Load the corresponding durable research artifacts
+- Reconstruct contextual learning content
+- Present the historical output inside the active learning workspace
+- Preserve artifact version and content metadata
+- Avoid re-executing the original educational workflow
+
+Restored content is explicitly marked as historical and does not create duplicate learning-history entries when reopened repeatedly.
+
+Missing artifacts are reported gracefully rather than causing the research session to fail.

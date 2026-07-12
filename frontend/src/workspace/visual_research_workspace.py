@@ -232,6 +232,23 @@ class VisualResearchWorkspace:
             .active_learning_content()
         )
 
+    def restore_learning_artifact(
+
+        self,
+
+        artifact,
+
+    ):
+
+        return (
+
+            self.workspace
+            .restore_learning_artifact(
+
+                artifact
+            )
+        )
+
     def breadcrumbs(self):
 
         return (

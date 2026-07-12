@@ -147,6 +147,143 @@ class ContextualLearningPanel:
             LearningContentType.GENERAL,
         )
 
+    def restore_artifact(
+
+        self,
+
+        artifact,
+
+    ):
+
+        content = (
+
+            self._build_artifact_content(
+
+                artifact
+            )
+        )
+
+        self.active_content = (
+            content
+        )
+
+        if not any(
+
+            existing.metadata.get(
+                "artifact_id"
+            )
+
+            == artifact.id
+
+            for existing
+
+            in self.content_history
+        ):
+
+            self.content_history.append(
+                content
+            )
+
+        return content
+
+    @staticmethod
+    def _content_type_for_artifact(
+        artifact,
+    ):
+
+        try:
+
+            return LearningContentType(
+
+                artifact
+                .artifact_type
+                .value
+            )
+
+        except ValueError:
+
+            return (
+                LearningContentType
+                .GENERAL
+            )
+
+    def _build_artifact_content(
+
+        self,
+
+        artifact,
+
+    ):
+
+        action = (
+
+            artifact.action
+
+            or artifact
+            .artifact_type
+            .value
+        )
+
+        title = (
+
+            artifact.title
+
+            or (
+
+                f"{artifact.object_id} — "
+                f"{action.replace('_', ' ').title()}"
+            )
+        )
+
+        return LearningContent(
+
+            id=(
+                f"artifact:{artifact.id}"
+            ),
+
+            title=title,
+
+            content_type=(
+
+                self._content_type_for_artifact(
+                    artifact
+                )
+            ),
+
+            body=(
+                artifact.content
+            ),
+
+            object_id=(
+                artifact.object_id
+            ),
+
+            action=action,
+
+            metadata={
+
+                **artifact.metadata,
+
+                "artifact_id":
+                    artifact.id,
+
+                "artifact_type": (
+
+                    artifact
+                    .artifact_type
+                    .value
+                ),
+
+                "artifact_version":
+                    artifact.version,
+
+                "restored": True,
+
+                "content_type":
+                    artifact.content_type,
+            },
+        )
+
     @staticmethod
     def _get(obj, key):
         """

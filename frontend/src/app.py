@@ -3,11 +3,13 @@ from frontend.src.workspace import (
 )
 
 from backend.session import (
+    ArtifactRestorationResult,
     InMemoryInteractionArtifactLinkStore,
     InMemoryResearchArtifactStore,
     InMemoryResearchSessionStore,
     InteractionArtifactCorrelationManager,
     ResearchArtifactManager,
+    ResearchArtifactRestorer,
     ResearchArtifactTypeMapper,
     ResearchRuntimeRegistry,
     ResearchRuntimeResolver,
@@ -31,6 +33,14 @@ class PreReqAIApplication:
 
         self.artifact_manager = (
             ResearchArtifactManager(
+
+                self.artifact_store
+            )
+        )
+
+        self.artifact_restorer = (
+
+            ResearchArtifactRestorer(
 
                 self.artifact_store
             )
@@ -452,3 +462,96 @@ class PreReqAIApplication:
         )
 
         return artifact
+
+    def restore_interaction_artifacts(
+
+        self,
+
+        interaction_id: str,
+
+    ):
+
+        links = (
+
+            self
+            .interaction_artifact_correlations
+            .links_for_interaction(
+
+                interaction_id
+            )
+        )
+
+        artifact_ids = [
+
+            link.artifact_id
+
+            for link in links
+        ]
+
+        return (
+
+            self.artifact_restorer
+            .restore_for_interaction(
+
+                interaction_id=(
+                    interaction_id
+                ),
+
+                artifact_ids=(
+                    artifact_ids
+                ),
+
+                workspace=(
+                    self.workspace
+                ),
+            )
+        )
+
+    def restore_history_entry(
+
+        self,
+
+        entry_id: str,
+
+    ):
+
+        selected = (
+
+            self.workspace
+            .workspace
+            .select_history_entry(
+
+                entry_id
+            )
+        )
+
+        if selected is None:
+
+            return ArtifactRestorationResult(
+
+                restored=False,
+
+                interaction_id=(
+                    entry_id
+                ),
+            )
+
+        return (
+
+            self.artifact_restorer
+            .restore_for_interaction(
+
+                interaction_id=(
+                    selected.id
+                ),
+
+                artifact_ids=(
+
+                    selected.artifact_ids
+                ),
+
+                workspace=(
+                    self.workspace
+                ),
+            )
+        )

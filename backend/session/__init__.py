@@ -124,4 +124,12 @@ from .interaction_artifact_correlation_manager import (
     InteractionArtifactCorrelationManager,
 )
 
+from .artifact_restoration_result import (
+    ArtifactRestorationResult,
+)
+
+from .research_artifact_restorer import (
+    ResearchArtifactRestorer,
+)
+
 session_manager = SessionManager()

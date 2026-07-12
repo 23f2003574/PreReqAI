@@ -302,3 +302,174 @@ def test_application_correlates_interaction_with_exact_artifact():
             artifact.id
         ]
     )
+
+
+def test_application_restores_exact_interaction_artifact():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    artifact = (
+
+        application
+        .save_interaction_artifact(
+
+            interaction_id=(
+                "interaction-1"
+            ),
+
+            session_id=(
+                "session-1"
+            ),
+
+            object_id="attention",
+
+            action="explain",
+
+            content=(
+                "Exact historical "
+                "explanation"
+            ),
+        )
+    )
+
+    result = (
+
+        application
+        .restore_interaction_artifacts(
+
+            "interaction-1"
+        )
+    )
+
+    assert result.restored is True
+
+    assert (
+
+        result.artifacts[0].id
+
+        == artifact.id
+    )
+
+    assert (
+
+        application
+        .workspace
+        .learning_content()
+        .body
+
+        == (
+            "Exact historical "
+            "explanation"
+        )
+    )
+
+
+def test_application_restores_history_entry_by_clicking_it():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    class Session:
+
+        interaction_history = (
+            InteractionHistory()
+        )
+
+    Session.interaction_history.record(
+
+        "attention",
+
+        "Attention",
+
+        ObjectAction.EXPLAIN,
+    )
+
+    application.workspace.workspace.load_interaction_history(
+
+        Session()
+    )
+
+    entry = (
+
+        application
+        .workspace
+        .history()[0]
+    )
+
+    artifact = (
+
+        application
+        .save_interaction_artifact(
+
+            interaction_id=entry.id,
+
+            session_id="session-1",
+
+            object_id="attention",
+
+            action=ObjectAction.EXPLAIN,
+
+            content="Explanation v1",
+        )
+    )
+
+    application.workspace.workspace.load_interaction_history(
+
+        Session()
+    )
+
+    refreshed_entry = (
+
+        application
+        .workspace
+        .history()[0]
+    )
+
+    result = (
+
+        application
+        .restore_history_entry(
+
+            refreshed_entry.id
+        )
+    )
+
+    assert result.restored is True
+
+    assert (
+
+        result.artifacts[0].id
+
+        == artifact.id
+    )
+
+    assert (
+
+        application
+        .workspace
+        .learning_content()
+        .body
+
+        == "Explanation v1"
+    )
+
+
+def test_application_restore_history_entry_handles_unknown_entry():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    result = (
+
+        application
+        .restore_history_entry(
+
+            "unknown-entry"
+        )
+    )
+
+    assert result.restored is False

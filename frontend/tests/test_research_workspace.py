@@ -24,6 +24,13 @@ from frontend.src.timeline import (
     TimelineStepStatus,
 )
 
+from backend.session import (
+
+    ResearchArtifact,
+
+    ResearchArtifactType,
+)
+
 
 def test_research_workspace():
 
@@ -502,4 +509,53 @@ def test_workspace_records_state_transitions():
         events[-1].payload
 
         == "knowledge_graph"
+    )
+
+
+def test_workspace_restores_learning_artifact():
+
+    workspace = (
+        ResearchWorkspace()
+    )
+
+    artifact = ResearchArtifact(
+
+        session_id="session-1",
+
+        object_id="attention",
+
+        artifact_type=(
+
+            ResearchArtifactType
+            .EXPLANATION
+        ),
+
+        action="explain",
+
+        content="Historical explanation",
+    )
+
+    content = (
+
+        workspace
+        .restore_learning_artifact(
+
+            artifact
+        )
+    )
+
+    assert (
+
+        content.body
+
+        == "Historical explanation"
+    )
+
+    assert (
+
+        content.metadata[
+            "restored"
+        ]
+
+        is True
     )
