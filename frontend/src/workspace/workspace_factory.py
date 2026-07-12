@@ -3,10 +3,19 @@ from .visual_research_workspace import (
 )
 
 
-def create_visual_research_workspace():
+def create_visual_research_workspace(
+
+    correlation_provider=None,
+
+):
     """
     Creates a fully configured visual
     research workspace.
     """
 
-    return VisualResearchWorkspace()
+    return VisualResearchWorkspace(
+
+        correlation_provider=(
+            correlation_provider
+        )
+    )

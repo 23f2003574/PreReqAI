@@ -14,10 +14,22 @@ class VisualResearchWorkspace:
     and contextual learning.
     """
 
-    def __init__(self):
+    def __init__(
+
+        self,
+
+        correlation_provider=None,
+
+    ):
 
         self.workspace = (
-            ResearchWorkspace()
+
+            ResearchWorkspace(
+
+                correlation_provider=(
+                    correlation_provider
+                )
+            )
         )
 
     @property

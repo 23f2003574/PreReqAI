@@ -14,7 +14,17 @@ class WorkspaceInteractionHistory:
     history entries.
     """
 
-    def __init__(self):
+    def __init__(
+
+        self,
+
+        correlation_provider=None,
+
+    ):
+
+        self.correlation_provider = (
+            correlation_provider
+        )
 
         self.view_model = (
             WorkspaceHistoryViewModel()
@@ -112,8 +122,9 @@ class WorkspaceInteractionHistory:
 
         return selected
 
-    @staticmethod
     def _build_entry(
+
+        self,
 
         event,
 
@@ -137,13 +148,50 @@ class WorkspaceInteractionHistory:
             )
         )
 
-        return WorkspaceHistoryEntry(
+        interaction_id = getattr(
 
-            id=(
+            event,
+
+            "id",
+
+            None,
+        )
+
+        if interaction_id is None:
+
+            interaction_id = (
 
                 f"{event.object_id}:"
                 f"{action}:"
                 f"{index + 1}"
+            )
+
+        artifact_ids = []
+
+        if self.correlation_provider is not None:
+
+            links = (
+
+                self.correlation_provider
+                .links_for_interaction(
+
+                    str(
+                        interaction_id
+                    )
+                )
+            )
+
+            artifact_ids = [
+
+                link.artifact_id
+
+                for link in links
+            ]
+
+        return WorkspaceHistoryEntry(
+
+            id=str(
+                interaction_id
             ),
 
             object_id=(
@@ -159,6 +207,8 @@ class WorkspaceInteractionHistory:
             timestamp=(
                 event.timestamp
             ),
+
+            artifact_ids=artifact_ids,
 
             source=event,
         )

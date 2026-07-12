@@ -115,3 +115,64 @@ def test_selects_history_entry():
 
         == entry_id
     )
+
+
+class Link:
+
+    artifact_id = "artifact-1"
+
+
+class CorrelationProvider:
+
+    def links_for_interaction(
+
+        self,
+
+        interaction_id,
+
+    ):
+
+        return [
+            Link(),
+        ]
+
+
+def test_history_entry_contains_artifact_ids():
+
+    history = (
+        InteractionHistory()
+    )
+
+    history.record(
+
+        "attention",
+
+        "Attention",
+
+        ObjectAction.EXPLAIN,
+    )
+
+    workspace_history = (
+
+        WorkspaceInteractionHistory(
+
+            correlation_provider=(
+
+                CorrelationProvider()
+            )
+        )
+    )
+
+    model = workspace_history.load(
+        history
+    )
+
+    assert (
+
+        model.entries[0]
+        .artifact_ids
+
+        == [
+            "artifact-1"
+        ]
+    )

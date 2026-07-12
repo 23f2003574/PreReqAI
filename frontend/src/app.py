@@ -3,8 +3,10 @@ from frontend.src.workspace import (
 )
 
 from backend.session import (
+    InMemoryInteractionArtifactLinkStore,
     InMemoryResearchArtifactStore,
     InMemoryResearchSessionStore,
+    InteractionArtifactCorrelationManager,
     ResearchArtifactManager,
     ResearchArtifactTypeMapper,
     ResearchRuntimeRegistry,
@@ -23,8 +25,48 @@ class PreReqAIApplication:
 
     def __init__(self):
 
+        self.artifact_store = (
+            InMemoryResearchArtifactStore()
+        )
+
+        self.artifact_manager = (
+            ResearchArtifactManager(
+
+                self.artifact_store
+            )
+        )
+
+        self.interaction_artifact_link_store = (
+
+            InMemoryInteractionArtifactLinkStore()
+        )
+
+        self.interaction_artifact_correlations = (
+
+            InteractionArtifactCorrelationManager(
+
+                link_store=(
+
+                    self
+                    .interaction_artifact_link_store
+                ),
+
+                artifact_store=(
+                    self.artifact_store
+                ),
+            )
+        )
+
         self.workspace = (
-            create_visual_research_workspace()
+
+            create_visual_research_workspace(
+
+                correlation_provider=(
+
+                    self
+                    .interaction_artifact_correlations
+                )
+            )
         )
 
         self.session_store = (
@@ -46,17 +88,6 @@ class PreReqAIApplication:
             ResearchSessionRestorer(
 
                 self.runtime_resolver
-            )
-        )
-
-        self.artifact_store = (
-            InMemoryResearchArtifactStore()
-        )
-
-        self.artifact_manager = (
-            ResearchArtifactManager(
-
-                self.artifact_store
             )
         )
 
@@ -309,3 +340,115 @@ class PreReqAIApplication:
                 object_id,
             )
         )
+
+    def link_interaction_artifact(
+
+        self,
+
+        interaction_id: str,
+
+        artifact,
+
+    ):
+
+        return (
+
+            self.interaction_artifact_correlations
+            .link(
+
+                interaction_id,
+
+                artifact,
+            )
+        )
+
+    def artifacts_for_interaction(
+
+        self,
+
+        interaction_id: str,
+
+    ):
+
+        return (
+
+            self.interaction_artifact_correlations
+            .artifacts_for_interaction(
+
+                interaction_id
+            )
+        )
+
+    def primary_artifact_for_interaction(
+
+        self,
+
+        interaction_id: str,
+
+    ):
+
+        return (
+
+            self.interaction_artifact_correlations
+            .primary_artifact_for_interaction(
+
+                interaction_id
+            )
+        )
+
+    def save_interaction_artifact(
+
+        self,
+
+        interaction_id: str,
+
+        session_id: str,
+
+        object_id: str,
+
+        action,
+
+        content,
+
+        title: str | None = None,
+
+        content_type: str = "text",
+
+        metadata: dict | None = None,
+
+    ):
+
+        artifact = (
+
+            self.save_learning_artifact(
+
+                session_id=(
+                    session_id
+                ),
+
+                object_id=(
+                    object_id
+                ),
+
+                action=action,
+
+                content=content,
+
+                title=title,
+
+                content_type=(
+                    content_type
+                ),
+
+                metadata=metadata,
+            )
+        )
+
+        self.link_interaction_artifact(
+
+            interaction_id,
+
+            artifact,
+        )
+
+        return artifact

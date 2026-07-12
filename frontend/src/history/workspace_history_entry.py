@@ -26,6 +26,10 @@ class WorkspaceHistoryEntry:
 
     timestamp: datetime
 
+    artifact_ids: list[str] = field(
+        default_factory=list,
+    )
+
     source: Any = None
 
     metadata: dict = field(

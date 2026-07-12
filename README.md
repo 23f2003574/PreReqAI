@@ -725,3 +725,25 @@ Each artifact preserves:
 Repeated outputs for the same research object and educational action are versioned rather than silently overwritten.
 
 Research session snapshots store artifact references while artifact content remains independently managed by the artifact persistence layer.
+
+## Interaction-to-Artifact Correlation
+
+PreReqAI maintains explicit relationships between educational interactions and the exact durable research artifacts produced by those interactions.
+
+This removes ambiguity when the same educational action is performed multiple times against the same research object.
+
+Example:
+
+Interaction 1
+- Attention
+- Explain
+- Explanation artifact v1
+
+Interaction 2
+- Attention
+- Explain
+- Explanation artifact v2
+
+Historical interactions can therefore resolve the precise generated output associated with that moment rather than relying on research-object and action matching.
+
+The correlation model supports multiple artifacts per interaction, allowing a single educational workflow to produce related explanations, visualizations, implementations, or other outputs.

@@ -108,4 +108,20 @@ from .research_artifact_type_mapper import (
     ResearchArtifactTypeMapper,
 )
 
+from .interaction_artifact_link import (
+    InteractionArtifactLink,
+)
+
+from .interaction_artifact_link_store import (
+    InteractionArtifactLinkStore,
+)
+
+from .in_memory_interaction_artifact_link_store import (
+    InMemoryInteractionArtifactLinkStore,
+)
+
+from .interaction_artifact_correlation_manager import (
+    InteractionArtifactCorrelationManager,
+)
+
 session_manager = SessionManager()

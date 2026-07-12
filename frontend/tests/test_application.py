@@ -1,3 +1,11 @@
+from backend.interaction.interaction_history import (
+    InteractionHistory,
+)
+
+from backend.interaction.object_action import (
+    ObjectAction,
+)
+
 from backend.interaction.research_object import (
     ResearchObject,
 )
@@ -215,6 +223,80 @@ def test_application_saves_learning_artifact_and_references_it_in_session():
     assert (
 
         saved.artifact_ids
+
+        == [
+            artifact.id
+        ]
+    )
+
+
+def test_application_correlates_interaction_with_exact_artifact():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    class Session:
+
+        interaction_history = (
+            InteractionHistory()
+        )
+
+    Session.interaction_history.record(
+
+        "attention",
+
+        "Attention",
+
+        ObjectAction.EXPLAIN,
+    )
+
+    application.workspace.workspace.load_interaction_history(
+
+        Session()
+    )
+
+    entry = (
+
+        application
+        .workspace
+        .history()[0]
+    )
+
+    assert entry.artifact_ids == []
+
+    artifact = (
+
+        application
+        .save_interaction_artifact(
+
+            interaction_id=entry.id,
+
+            session_id="session-1",
+
+            object_id="attention",
+
+            action=ObjectAction.EXPLAIN,
+
+            content="Attention explanation",
+        )
+    )
+
+    application.workspace.workspace.load_interaction_history(
+
+        Session()
+    )
+
+    refreshed_entry = (
+
+        application
+        .workspace
+        .history()[0]
+    )
+
+    assert (
+
+        refreshed_entry.artifact_ids
 
         == [
             artifact.id

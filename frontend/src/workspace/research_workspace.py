@@ -70,7 +70,13 @@ class ResearchWorkspace:
     workspace and its active state.
     """
 
-    def __init__(self):
+    def __init__(
+
+        self,
+
+        correlation_provider=None,
+
+    ):
 
         self.state = (
             WorkspaceState()
@@ -151,7 +157,13 @@ class ResearchWorkspace:
         )
 
         self.interaction_history_view = (
-            WorkspaceInteractionHistory()
+
+            WorkspaceInteractionHistory(
+
+                correlation_provider=(
+                    correlation_provider
+                )
+            )
         )
 
         self.history_view_model = None
@@ -815,6 +827,31 @@ class ResearchWorkspace:
             return None
 
         return matches[-1]
+
+    def artifact_ids_for_history(
+
+        self,
+
+        entry_id: str,
+
+    ):
+
+        entry = (
+
+            self.interaction_history_view
+            .select(
+
+                entry_id
+            )
+        )
+
+        if entry is None:
+
+            return []
+
+        return list(
+            entry.artifact_ids
+        )
 
     def load_recommendations(
 
