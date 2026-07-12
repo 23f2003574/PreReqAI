@@ -943,3 +943,35 @@ Annotations are stored independently from checkpoint records and immutable sessi
 This separation allows a user to rename, annotate, pin, unpin, or remove human metadata without changing the historical checkpoint event or the exact research state associated with it.
 
 PreReqAI can expose annotated checkpoint timelines and pinned recovery points for future user interfaces.
+
+## Research History Querying
+
+PreReqAI provides a dedicated query layer for navigating large research checkpoint timelines.
+
+Research history can be filtered by:
+
+- Checkpoint reason
+- Pinned status
+- Recovery-related events
+- Creation date range
+- Human-authored label and note text
+
+Results can be:
+
+- Sorted newest-first
+- Sorted oldest-first
+- Paginated using offset and limit
+
+Each timeline result combines the historical checkpoint with its optional mutable human annotation.
+
+Paginated responses include:
+
+- Matching timeline items
+- Total result count
+- Current offset
+- Page limit
+- Number of returned items
+- Whether more results exist
+- The next offset when available
+
+Research history queries are read-only and do not modify session state, checkpoint history, immutable versions, or annotations.

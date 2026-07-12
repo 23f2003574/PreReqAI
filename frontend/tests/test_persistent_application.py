@@ -777,3 +777,86 @@ def test_checkpoint_annotations_survive_application_recreation(
     )
 
     assert annotation.pinned is True
+
+
+def test_research_history_query_works_after_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        "session-1"
+    )
+
+    checkpoint = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    first_app.update_research_checkpoint_annotation(
+
+        checkpoint.id,
+
+        label=(
+            "Stable methodology state"
+        ),
+
+        note=(
+            "Important recovery point"
+        ),
+
+        pinned=True,
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    page = (
+
+        second_app
+        .query_research_history(
+
+            session_id=(
+                "session-1"
+            ),
+
+            pinned=True,
+
+            search="methodology",
+        )
+    )
+
+    assert page.total == 1
+
+    assert (
+
+        page.items[0].id
+
+        == checkpoint.id
+    )

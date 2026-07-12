@@ -260,4 +260,24 @@ from .annotated_research_checkpoint import (
     AnnotatedResearchCheckpoint,
 )
 
+from .research_history_sort_order import (
+    ResearchHistorySortOrder,
+)
+
+from .research_history_query import (
+    ResearchHistoryQuery,
+)
+
+from .research_history_timeline_item import (
+    ResearchHistoryTimelineItem,
+)
+
+from .research_history_page import (
+    ResearchHistoryPage,
+)
+
+from .research_history_query_service import (
+    ResearchHistoryQueryService,
+)
+
 session_manager = SessionManager()

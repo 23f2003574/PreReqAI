@@ -19,6 +19,8 @@ from backend.session import (
     ResearchCheckpointManager,
     ResearchCheckpointReason,
     ResearchCheckpointRecoveryManager,
+    ResearchHistoryQuery,
+    ResearchHistoryQueryService,
     ResearchRecoveryPreviewManager,
     ResearchRuntimeRegistry,
     ResearchRuntimeResolver,
@@ -261,6 +263,20 @@ class PreReqAIApplication:
         self.checkpoint_annotation_manager = (
 
             ResearchCheckpointAnnotationManager(
+
+                checkpoint_store=(
+                    self.checkpoint_store
+                ),
+
+                annotation_store=(
+                    self.checkpoint_annotation_store
+                ),
+            )
+        )
+
+        self.research_history_query_service = (
+
+            ResearchHistoryQueryService(
 
                 checkpoint_store=(
                     self.checkpoint_store
@@ -1477,5 +1493,103 @@ class PreReqAIApplication:
                 checkpoint_id,
 
                 pinned=False,
+            )
+        )
+
+    def query_research_history(
+
+        self,
+
+        session_id: str,
+
+        reasons=None,
+
+        pinned=None,
+
+        recovery_only=False,
+
+        search=None,
+
+        created_from=None,
+
+        created_until=None,
+
+        sort_order="newest",
+
+        offset=0,
+
+        limit=50,
+
+    ):
+
+        query = ResearchHistoryQuery(
+
+            reasons=set(
+                reasons or []
+            ),
+
+            pinned=pinned,
+
+            recovery_only=(
+                recovery_only
+            ),
+
+            search=search,
+
+            created_from=(
+                created_from
+            ),
+
+            created_until=(
+                created_until
+            ),
+
+            sort_order=(
+                sort_order
+            ),
+
+            offset=offset,
+
+            limit=limit,
+        )
+
+        return (
+
+            self.research_history_query_service
+            .query(
+
+                session_id=(
+                    session_id
+                ),
+
+                query=query,
+            )
+        )
+
+    def query_active_research_history(
+
+        self,
+
+        **query_options,
+
+    ):
+
+        if self.active_session_id is None:
+
+            raise ValueError(
+
+                "No active research session "
+                "is available"
+            )
+
+        return (
+
+            self.query_research_history(
+
+                session_id=(
+                    self.active_session_id
+                ),
+
+                **query_options,
             )
         )

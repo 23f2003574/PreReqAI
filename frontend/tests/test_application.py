@@ -941,3 +941,155 @@ def test_removing_annotation_does_not_delete_checkpoint():
 
         is not None
     )
+
+
+def test_application_queries_pinned_research_history():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    application.activate_research_session(
+
+        "session-1"
+    )
+
+    first = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-1"
+        )
+    )
+
+    second = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-2"
+        )
+    )
+
+    application.update_research_checkpoint_annotation(
+
+        second.id,
+
+        label=(
+            "Important methodology state"
+        ),
+
+        pinned=True,
+    )
+
+    page = (
+
+        application
+        .query_active_research_history(
+
+            pinned=True,
+
+            search="methodology",
+        )
+    )
+
+    assert page.total == 1
+
+    assert (
+
+        page.items[0].id
+
+        == second.id
+    )
+
+    assert (
+
+        page.items[0].id
+
+        != first.id
+    )
+
+
+def test_history_query_is_read_only():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    application.activate_research_session(
+
+        "session-1"
+    )
+
+    application.checkpoint_workflow_progress(
+
+        "step-1"
+    )
+
+    before_checkpoints = (
+
+        application
+        .research_checkpoints(
+
+            "session-1"
+        )
+    )
+
+    before_versions = (
+
+        application
+        .research_session_versions(
+
+            "session-1"
+        )
+    )
+
+    application.query_research_history(
+
+        session_id="session-1",
+
+        search="workflow",
+
+        limit=10,
+    )
+
+    after_checkpoints = (
+
+        application
+        .research_checkpoints(
+
+            "session-1"
+        )
+    )
+
+    after_versions = (
+
+        application
+        .research_session_versions(
+
+            "session-1"
+        )
+    )
+
+    assert (
+
+        len(
+            after_checkpoints
+        )
+
+        == len(
+            before_checkpoints
+        )
+    )
+
+    assert (
+
+        len(
+            after_versions
+        )
+
+        == len(
+            before_versions
+        )
+    )
