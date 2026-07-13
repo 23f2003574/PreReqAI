@@ -15,8 +15,10 @@ from backend.session import (
     ResearchArtifactManager,
     ResearchArtifactRestorer,
     ResearchArtifactTypeMapper,
+    InMemoryResearchCollectionStore,
     InMemoryResearchSessionBranchStore,
     InMemoryResearchSessionProfileStore,
+    InMemoryResearchTagStore,
     ResearchCheckpointAnnotationManager,
     ResearchCheckpointManager,
     ResearchCheckpointReason,
@@ -37,6 +39,7 @@ from backend.session import (
     ResearchSessionRestorer,
     ResearchSessionSerializer,
     ResearchSessionVersionManager,
+    ResearchWorkspaceOrganizationService,
 )
 
 
@@ -65,6 +68,10 @@ class PreReqAIApplication:
         session_branch_store=None,
 
         session_profile_store=None,
+
+        tag_store=None,
+
+        collection_store=None,
 
     ):
 
@@ -385,6 +392,22 @@ class PreReqAIApplication:
             )
         )
 
+        self.tag_store = (
+
+            tag_store
+
+            or InMemoryResearchTagStore()
+        )
+
+        self.collection_store = (
+
+            collection_store
+
+            or (
+                InMemoryResearchCollectionStore()
+            )
+        )
+
         self.session_query_service = (
 
             ResearchSessionQueryService(
@@ -403,6 +426,32 @@ class PreReqAIApplication:
 
                 lineage_service=(
                     self.session_lineage_service
+                ),
+
+                tag_store=(
+                    self.tag_store
+                ),
+
+                collection_store=(
+                    self.collection_store
+                ),
+            )
+        )
+
+        self.workspace_organization_service = (
+
+            ResearchWorkspaceOrganizationService(
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                tag_store=(
+                    self.tag_store
+                ),
+
+                collection_store=(
+                    self.collection_store
                 ),
             )
         )
@@ -2381,6 +2430,12 @@ class PreReqAIApplication:
 
         direct_parent_session_id=None,
 
+        tag_names=None,
+
+        match_all_tags=True,
+
+        collection_ids=None,
+
         sort_order="updated_newest",
 
         offset=0,
@@ -2413,6 +2468,18 @@ class PreReqAIApplication:
                 direct_parent_session_id=(
 
                     direct_parent_session_id
+                ),
+
+                tag_names=set(
+                    tag_names or []
+                ),
+
+                match_all_tags=(
+                    match_all_tags
+                ),
+
+                collection_ids=set(
+                    collection_ids or []
                 ),
 
                 sort_order=(
@@ -2515,5 +2582,203 @@ class PreReqAIApplication:
                 second_session_id=(
                     second_session_id
                 ),
+            )
+        )
+
+    def tag_research_session(
+
+        self,
+
+        session_id,
+
+        tag_name,
+
+    ):
+
+        return (
+
+            self.workspace_organization_service
+            .tag_session(
+
+                session_id,
+
+                tag_name,
+            )
+        )
+
+    def untag_research_session(
+
+        self,
+
+        session_id,
+
+        tag_name,
+
+    ):
+
+        return (
+
+            self.workspace_organization_service
+            .untag_session(
+
+                session_id,
+
+                tag_name,
+            )
+        )
+
+    def research_session_tags(
+
+        self,
+
+        session_id,
+
+    ):
+
+        return (
+
+            self.workspace_organization_service
+            .tags_for_session(
+
+                session_id
+            )
+        )
+
+    def create_research_collection(
+
+        self,
+
+        name,
+
+        description=None,
+
+    ):
+
+        return (
+
+            self.workspace_organization_service
+            .create_collection(
+
+                name,
+
+                description,
+            )
+        )
+
+    def update_research_collection(
+
+        self,
+
+        collection_id,
+
+        name=None,
+
+        description=None,
+
+    ):
+
+        return (
+
+            self.workspace_organization_service
+            .update_collection(
+
+                collection_id,
+
+                name=name,
+
+                description=description,
+            )
+        )
+
+    def add_research_session_to_collection(
+
+        self,
+
+        collection_id,
+
+        session_id,
+
+    ):
+
+        return (
+
+            self.workspace_organization_service
+            .add_session_to_collection(
+
+                collection_id,
+
+                session_id,
+            )
+        )
+
+    def remove_research_session_from_collection(
+
+        self,
+
+        collection_id,
+
+        session_id,
+
+    ):
+
+        return (
+
+            self.workspace_organization_service
+            .remove_session_from_collection(
+
+                collection_id,
+
+                session_id,
+            )
+        )
+
+    def delete_research_collection(
+
+        self,
+
+        collection_id,
+
+    ):
+
+        return (
+
+            self.workspace_organization_service
+            .delete_collection(
+
+                collection_id
+            )
+        )
+
+    def research_collections_for_session(
+
+        self,
+
+        session_id,
+
+    ):
+
+        return (
+
+            self.workspace_organization_service
+            .collections_for_session(
+
+                session_id
+            )
+        )
+
+    def research_session_ids_in_collection(
+
+        self,
+
+        collection_id,
+
+    ):
+
+        return (
+
+            self.workspace_organization_service
+            .session_ids_in_collection(
+
+                collection_id
             )
         )

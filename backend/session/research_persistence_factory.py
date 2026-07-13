@@ -30,6 +30,14 @@ from .json_research_session_profile_store import (
     JsonResearchSessionProfileStore,
 )
 
+from .json_research_tag_store import (
+    JsonResearchTagStore,
+)
+
+from .json_research_collection_store import (
+    JsonResearchCollectionStore,
+)
+
 from .research_persistence_config import (
     ResearchPersistenceConfig,
 )
@@ -115,6 +123,23 @@ class ResearchPersistenceFactory:
                 JsonResearchSessionProfileStore(
 
                     config.session_profiles_path
+                )
+            ),
+
+            "tag_store": (
+
+                JsonResearchTagStore(
+
+                    config.research_tags_path
+                )
+            ),
+
+            "collection_store": (
+
+                JsonResearchCollectionStore(
+
+                    config
+                    .research_collections_path
                 )
             ),
         }

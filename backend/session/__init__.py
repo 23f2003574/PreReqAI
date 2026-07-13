@@ -388,4 +388,52 @@ from .research_session_lineage_comparison_service import (
     ResearchSessionLineageComparisonService,
 )
 
+from .research_tag_normalizer import (
+    normalize_research_tag_name,
+)
+
+from .research_tag import (
+    ResearchTag,
+)
+
+from .research_session_tag_assignment import (
+    ResearchSessionTagAssignment,
+)
+
+from .research_tag_store import (
+    ResearchTagStore,
+)
+
+from .in_memory_research_tag_store import (
+    InMemoryResearchTagStore,
+)
+
+from .json_research_tag_store import (
+    JsonResearchTagStore,
+)
+
+from .research_collection import (
+    ResearchCollection,
+)
+
+from .research_collection_membership import (
+    ResearchCollectionMembership,
+)
+
+from .research_collection_store import (
+    ResearchCollectionStore,
+)
+
+from .in_memory_research_collection_store import (
+    InMemoryResearchCollectionStore,
+)
+
+from .json_research_collection_store import (
+    JsonResearchCollectionStore,
+)
+
+from .research_workspace_organization_service import (
+    ResearchWorkspaceOrganizationService,
+)
+
 session_manager = SessionManager()

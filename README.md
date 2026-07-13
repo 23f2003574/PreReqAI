@@ -1147,3 +1147,51 @@ Supported lineage relationships include:
 Unrelated sessions can still be compared by state, workflow, and artifacts. They simply do not have a common lineage ancestor or lineage distance.
 
 Comparisons are derived on demand and are not persisted separately. Persistent sessions, branch relationships, and artifacts remain the sources of truth.
+
+## Workspace Organization
+
+PreReqAI supports reusable research tags and user-curated research collections.
+
+### Tags
+
+Research sessions can have multiple tags.
+
+Tag names are normalized so equivalent values such as `#Transformers`, `transformers`, and `TRANSFORMERS` resolve to the same reusable tag.
+
+Tags can be:
+
+- Assigned to multiple sessions
+- Removed independently from individual sessions
+- Used as research session discovery filters
+- Combined using all-tags or any-tag matching
+
+### Collections
+
+Research collections are first-class workspace entities with:
+
+- Stable identifiers
+- Human-readable names
+- Optional descriptions
+- Creation timestamps
+- Update timestamps
+
+A research session can belong to multiple collections, and a collection can contain multiple research sessions.
+
+Deleting a collection removes only the collection and its membership relationships. It does not delete the research sessions contained within it.
+
+### Discovery Integration
+
+Research session discovery can combine:
+
+- Text search
+- Lifecycle status
+- Archived state
+- Root or branch kind
+- Lineage root
+- Direct parent
+- Tags
+- Collections
+- Sorting
+- Pagination
+
+Session discovery results also expose the session's current tag names and collection identifiers.

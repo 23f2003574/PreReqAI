@@ -1,5 +1,6 @@
 from dataclasses import (
     dataclass,
+    field,
 )
 
 from datetime import datetime
@@ -56,6 +57,18 @@ class ResearchSessionListItem:
 
     updated_at: datetime
 
+    tag_names: list[
+        str
+    ] = field(
+        default_factory=list,
+    )
+
+    collection_ids: list[
+        str
+    ] = field(
+        default_factory=list,
+    )
+
     def to_dict(self):
 
         return {
@@ -106,4 +119,14 @@ class ResearchSessionListItem:
             "updated_at":
                 self.updated_at
                 .isoformat(),
+
+            "tag_names":
+                list(
+                    self.tag_names
+                ),
+
+            "collection_ids":
+                list(
+                    self.collection_ids
+                ),
         }

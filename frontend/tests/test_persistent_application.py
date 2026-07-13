@@ -1348,3 +1348,126 @@ def test_session_comparison_reconstructs_after_restart(
     )
 
     assert comparison.lineage_distance == 2
+
+
+def test_workspace_organization_survives_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        "session-a"
+    )
+
+    first_app.save_research_session(
+        "session-a"
+    )
+
+    first_app.tag_research_session(
+
+        "session-a",
+
+        "math-heavy",
+    )
+
+    collection = (
+
+        first_app
+        .create_research_collection(
+
+            "Current Research"
+        )
+    )
+
+    first_app.add_research_session_to_collection(
+
+        collection.id,
+
+        "session-a",
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    tags = (
+
+        second_app
+        .research_session_tags(
+
+            "session-a"
+        )
+    )
+
+    collections = (
+
+        second_app
+        .research_collections_for_session(
+
+            "session-a"
+        )
+    )
+
+    assert [
+
+        tag.name
+
+        for tag
+
+        in tags
+
+    ] == [
+
+        "math-heavy"
+    ]
+
+    assert [
+
+        item.name
+
+        for item
+
+        in collections
+
+    ] == [
+
+        "Current Research"
+    ]
+
+    page = (
+
+        second_app
+        .query_research_sessions(
+
+            tag_names={
+                "math-heavy"
+            },
+
+            collection_ids={
+                collection.id
+            },
+        )
+    )
+
+    assert page.total == 1

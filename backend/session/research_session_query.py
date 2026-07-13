@@ -15,6 +15,10 @@ from .research_session_status import (
     ResearchSessionStatus,
 )
 
+from .research_tag_normalizer import (
+    normalize_research_tag_name,
+)
+
 
 @dataclass
 class ResearchSessionQuery:
@@ -47,6 +51,20 @@ class ResearchSessionQuery:
     direct_parent_session_id: (
         str | None
     ) = None
+
+    tag_names: set[
+        str
+    ] = field(
+        default_factory=set,
+    )
+
+    match_all_tags: bool = True
+
+    collection_ids: set[
+        str
+    ] = field(
+        default_factory=set,
+    )
 
     sort_order: (
         ResearchSessionSortOrder
@@ -153,3 +171,14 @@ class ResearchSessionQuery:
 
                 or None
             )
+
+        self.tag_names = {
+
+            normalize_research_tag_name(
+                name
+            )
+
+            for name
+
+            in self.tag_names
+        }

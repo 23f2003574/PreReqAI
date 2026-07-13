@@ -40,6 +40,10 @@ class ResearchSessionQueryService:
 
         lineage_service,
 
+        tag_store=None,
+
+        collection_store=None,
+
     ):
 
         self.session_manager = (
@@ -56,6 +60,14 @@ class ResearchSessionQueryService:
 
         self.lineage_service = (
             lineage_service
+        )
+
+        self.tag_store = (
+            tag_store
+        )
+
+        self.collection_store = (
+            collection_store
         )
 
     @staticmethod
@@ -272,6 +284,51 @@ class ResearchSessionQueryService:
             else None
         )
 
+        tag_names = (
+
+            sorted(
+
+                tag.name
+
+                for tag
+
+                in self.tag_store
+                .list_for_session(
+
+                    session_id
+                )
+            )
+
+            if self.tag_store is not None
+
+            else []
+        )
+
+        collection_ids = (
+
+            sorted(
+
+                collection.id
+
+                for collection
+
+                in self.collection_store
+                .list_for_session(
+
+                    session_id
+                )
+            )
+
+            if (
+
+                self.collection_store
+
+                is not None
+            )
+
+            else []
+        )
+
         return (
 
             ResearchSessionListItem(
@@ -359,6 +416,14 @@ class ResearchSessionQueryService:
                         profile,
                     )
                 ),
+
+                tag_names=(
+                    tag_names
+                ),
+
+                collection_ids=(
+                    collection_ids
+                ),
             )
         )
 
@@ -420,6 +485,22 @@ class ResearchSessionQueryService:
             items,
 
             query.direct_parent_session_id,
+        )
+
+        items = self._filter_tags(
+
+            items,
+
+            query.tag_names,
+
+            query.match_all_tags,
+        )
+
+        items = self._filter_collections(
+
+            items,
+
+            query.collection_ids,
         )
 
         items = self._filter_search(
@@ -594,6 +675,99 @@ class ResearchSessionQueryService:
                 item.parent_session_id
 
                 == direct_parent_session_id
+            )
+        ]
+
+    def _filter_tags(
+
+        self,
+
+        items,
+
+        tag_names,
+
+        match_all_tags,
+
+    ):
+
+        if not tag_names:
+
+            return items
+
+        if self.tag_store is None:
+
+            return []
+
+        matching = []
+
+        for item in items:
+
+            session_tags = set(
+
+                item.tag_names
+            )
+
+            if match_all_tags:
+
+                matches = (
+
+                    tag_names
+                    .issubset(
+
+                        session_tags
+                    )
+                )
+
+            else:
+
+                matches = bool(
+
+                    tag_names
+
+                    & session_tags
+                )
+
+            if matches:
+
+                matching.append(
+                    item
+                )
+
+        return matching
+
+    def _filter_collections(
+
+        self,
+
+        items,
+
+        collection_ids,
+
+    ):
+
+        if not collection_ids:
+
+            return items
+
+        if self.collection_store is None:
+
+            return []
+
+        return [
+
+            item
+
+            for item
+
+            in items
+
+            if (
+
+                set(
+                    item.collection_ids
+                )
+
+                & collection_ids
             )
         ]
 

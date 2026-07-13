@@ -91,3 +91,23 @@ class ResearchPersistenceConfig:
 
             / "session_profiles.json"
         )
+
+    @property
+    def research_tags_path(self):
+
+        return (
+
+            self.root_directory
+
+            / "research_tags.json"
+        )
+
+    @property
+    def research_collections_path(self):
+
+        return (
+
+            self.root_directory
+
+            / "research_collections.json"
+        )

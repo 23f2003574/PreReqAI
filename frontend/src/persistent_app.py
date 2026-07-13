@@ -92,4 +92,18 @@ def create_persistent_application(
                 "session_profile_store"
             ]
         ),
+
+        tag_store=(
+
+            stores[
+                "tag_store"
+            ]
+        ),
+
+        collection_store=(
+
+            stores[
+                "collection_store"
+            ]
+        ),
     )
