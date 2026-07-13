@@ -476,4 +476,40 @@ from .research_activity_service import (
     ResearchActivityService,
 )
 
+from .research_workspace_overview import (
+    ResearchWorkspaceOverview,
+)
+
+from .research_lifecycle_statistics import (
+    ResearchLifecycleStatistics,
+)
+
+from .research_lineage_statistics import (
+    ResearchLineageStatistics,
+)
+
+from .research_tag_statistic import (
+    ResearchTagStatistic,
+)
+
+from .research_collection_statistic import (
+    ResearchCollectionStatistic,
+)
+
+from .research_activity_statistics import (
+    ResearchActivityStatistics,
+)
+
+from .research_session_activity_summary import (
+    ResearchSessionActivitySummary,
+)
+
+from .research_workspace_insights import (
+    ResearchWorkspaceInsights,
+)
+
+from .research_workspace_insights_service import (
+    ResearchWorkspaceInsightsService,
+)
+
 session_manager = SessionManager()

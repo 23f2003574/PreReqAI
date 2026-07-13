@@ -44,6 +44,7 @@ from backend.session import (
     ResearchSessionRestorer,
     ResearchSessionSerializer,
     ResearchSessionVersionManager,
+    ResearchWorkspaceInsightsService,
     ResearchWorkspaceOrganizationService,
 )
 
@@ -516,6 +517,36 @@ class PreReqAIApplication:
 
                 artifact_store=(
                     self.artifact_store
+                ),
+            )
+        )
+
+        self.research_workspace_insights_service = (
+
+            ResearchWorkspaceInsightsService(
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                profile_store=(
+                    self.session_profile_store
+                ),
+
+                lineage_service=(
+                    self.session_lineage_service
+                ),
+
+                tag_store=(
+                    self.tag_store
+                ),
+
+                collection_store=(
+                    self.collection_store
+                ),
+
+                activity_store=(
+                    self.research_activity_store
                 ),
             )
         )
@@ -3055,5 +3086,48 @@ class PreReqAIApplication:
             .query(
 
                 query
+            )
+        )
+
+    def research_workspace_insights(
+
+        self,
+
+        top_tag_limit=10,
+
+        collection_limit=10,
+
+        recent_session_limit=10,
+
+        dormant_session_limit=10,
+
+        dormant_after_days=30,
+
+    ):
+
+        return (
+
+            self.research_workspace_insights_service
+            .build_insights(
+
+                top_tag_limit=(
+                    top_tag_limit
+                ),
+
+                collection_limit=(
+                    collection_limit
+                ),
+
+                recent_session_limit=(
+                    recent_session_limit
+                ),
+
+                dormant_session_limit=(
+                    dormant_session_limit
+                ),
+
+                dormant_after_days=(
+                    dormant_after_days
+                ),
             )
         )

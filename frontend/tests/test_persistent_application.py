@@ -1573,3 +1573,95 @@ def test_research_activity_survives_restart(
     ]
 
     assert len(created_events) == 1
+
+
+def test_workspace_insights_survive_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        "session-a"
+    )
+
+    first_app.save_research_session(
+        "session-a"
+    )
+
+    first_app.tag_research_session(
+
+        "session-a",
+
+        "transformers",
+    )
+
+    collection = (
+
+        first_app
+        .create_research_collection(
+
+            "Current Research"
+        )
+    )
+
+    first_app.add_research_session_to_collection(
+
+        collection.id,
+
+        "session-a",
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    insights = (
+
+        second_app
+        .research_workspace_insights()
+    )
+
+    assert (
+
+        insights.overview
+        .total_sessions
+
+        == 1
+    )
+
+    assert (
+
+        insights.top_tags[0]
+        .tag_name
+
+        == "transformers"
+    )
+
+    assert (
+
+        insights.largest_collections[0]
+        .collection_name
+
+        == "Current Research"
+    )

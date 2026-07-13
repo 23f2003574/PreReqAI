@@ -1245,3 +1245,61 @@ Idempotent domain operations do not produce duplicate activity events when no st
 Persistent applications restore activity history without re-emitting historical events during application startup.
 
 Checkpoint and version activity events are recorded only for explicit user-triggered checkpoints, not for the many automatic system checkpoints created during ordinary research interaction, to keep the timeline meaningful rather than noisy.
+
+## Research Workspace Insights
+
+PreReqAI derives workspace-level research analytics directly from canonical research state.
+
+The insights engine provides:
+
+### Workspace Overview
+
+- Total research sessions
+- Archived and unarchived session counts
+- Root and branch session counts
+- Total reusable tags
+- Total research collections
+- Total recorded activity events
+
+### Lifecycle Statistics
+
+Research sessions are grouped by their current lifecycle state.
+
+### Lineage Statistics
+
+The workspace can derive:
+
+- Total research roots
+- Total research branches
+- Maximum lineage depth
+- Average lineage depth
+- Deepest research session
+- Session with the most direct branches
+
+### Organization Statistics
+
+The workspace ranks:
+
+- Most-used research tags
+- Largest research collections
+
+### Activity Statistics
+
+Activity analytics include:
+
+- Total activity events
+- Activity during the last 24 hours
+- Activity during the last 7 days
+- Activity during the last 30 days
+- Counts grouped by activity type
+
+### Session Activity Insights
+
+The workspace identifies:
+
+- Recently active research sessions
+- Active or paused sessions that have become dormant
+
+Dormancy is configurable and excludes completed or archived research sessions.
+
+Workspace insights are derived from canonical domain stores and are not independently persisted as a second source of truth.
