@@ -1303,3 +1303,45 @@ The workspace identifies:
 Dormancy is configurable and excludes completed or archived research sessions.
 
 Workspace insights are derived from canonical domain stores and are not independently persisted as a second source of truth.
+
+## Portable Research Snapshots
+
+PreReqAI can export research state into a versioned, portable snapshot format.
+
+Supported snapshot scopes include:
+
+- A single research session
+- A research session and all descendant branches
+- An entire connected research lineage
+- The complete research workspace
+
+Portable snapshots can contain:
+
+- Research sessions
+- Human-readable session profiles
+- Checkpoints
+- Immutable research versions
+- Internal branch relationships
+- Tags used by included sessions
+- Tag assignments
+- Collections containing included sessions
+- Filtered collection memberships
+- Referentially closed research activity history
+
+Each snapshot contains a manifest with:
+
+- Snapshot format name
+- Schema version
+- Unique snapshot identifier
+- UTC creation timestamp
+- Export scope
+- Optional root research session identifier
+- Application identity
+
+Snapshot generation is read-only and does not mutate research state or create activity events.
+
+The snapshot validator checks structural and referential integrity before generated snapshots are returned.
+
+Scoped exports omit relationships and activity events that would otherwise reference sessions outside the exported snapshot.
+
+Snapshots use a stable JSON-compatible representation rather than serializing internal store implementations.

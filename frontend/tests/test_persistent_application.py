@@ -1665,3 +1665,75 @@ def test_workspace_insights_survive_restart(
 
         == "Current Research"
     )
+
+
+def test_persisted_workspace_can_be_exported_after_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        "session-a"
+    )
+
+    first_app.save_research_session(
+        "session-a"
+    )
+
+    first_app.tag_research_session(
+
+        "session-a",
+
+        "transformers",
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    snapshot = (
+
+        second_app
+        .export_research_workspace()
+    )
+
+    result = (
+
+        second_app
+        .research_snapshot_validator
+        .validate(
+            snapshot
+        )
+    )
+
+    assert result.is_valid is True
+
+    assert (
+
+        len(
+            snapshot.sessions
+        )
+
+        == 1
+    )

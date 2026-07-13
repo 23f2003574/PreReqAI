@@ -8,6 +8,10 @@ from .research_collection import (
     ResearchCollection,
 )
 
+from .research_collection_membership import (
+    ResearchCollectionMembership,
+)
+
 from .research_collection_store import (
     ResearchCollectionStore,
 )
@@ -334,3 +338,41 @@ class JsonResearchCollectionStore(
                 in data["collections"]
             )
         ]
+
+    def list_memberships_for_session(
+
+        self,
+
+        session_id,
+
+    ):
+
+        data = self.file.read()
+
+        matching = [
+
+            ResearchCollectionMembership
+            .from_dict(
+
+                entry
+            )
+
+            for entry
+
+            in data["memberships"]
+
+            if (
+
+                entry["session_id"]
+
+                == session_id
+            )
+        ]
+
+        return sorted(
+
+            matching,
+
+            key=lambda item:
+                item.collection_id,
+        )

@@ -512,4 +512,36 @@ from .research_workspace_insights_service import (
     ResearchWorkspaceInsightsService,
 )
 
+from .research_snapshot_scope import (
+    ResearchSnapshotScope,
+)
+
+from .research_snapshot_manifest import (
+    ResearchSnapshotManifest,
+)
+
+from .research_snapshot import (
+    ResearchSnapshot,
+)
+
+from .research_snapshot_validation_issue import (
+    ResearchSnapshotValidationIssue,
+)
+
+from .research_snapshot_validation_result import (
+    ResearchSnapshotValidationResult,
+)
+
+from .research_snapshot_validator import (
+    ResearchSnapshotValidator,
+)
+
+from .research_snapshot_service import (
+    ResearchSnapshotService,
+)
+
+from .research_snapshot_serializer import (
+    ResearchSnapshotSerializer,
+)
+
 session_manager = SessionManager()

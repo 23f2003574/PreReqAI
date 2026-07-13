@@ -115,3 +115,16 @@ class ResearchCollectionStore(
     ]:
 
         raise NotImplementedError
+
+    @abstractmethod
+    def list_memberships_for_session(
+
+        self,
+
+        session_id: str,
+
+    ) -> list[
+        ResearchCollectionMembership
+    ]:
+
+        raise NotImplementedError

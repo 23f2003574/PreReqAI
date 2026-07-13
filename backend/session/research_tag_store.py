@@ -114,3 +114,16 @@ class ResearchTagStore(
     ]:
 
         raise NotImplementedError
+
+    @abstractmethod
+    def list_assignments_for_session(
+
+        self,
+
+        session_id: str,
+
+    ) -> list[
+        ResearchSessionTagAssignment
+    ]:
+
+        raise NotImplementedError

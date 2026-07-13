@@ -4,6 +4,10 @@ from backend.storage import (
     AtomicJsonFile,
 )
 
+from .research_session_tag_assignment import (
+    ResearchSessionTagAssignment,
+)
+
 from .research_tag import (
     ResearchTag,
 )
@@ -300,3 +304,41 @@ class JsonResearchTagStore(
                 == tag_id
             )
         })
+
+    def list_assignments_for_session(
+
+        self,
+
+        session_id,
+
+    ):
+
+        data = self.file.read()
+
+        matching = [
+
+            ResearchSessionTagAssignment
+            .from_dict(
+
+                entry
+            )
+
+            for entry
+
+            in data["assignments"]
+
+            if (
+
+                entry["session_id"]
+
+                == session_id
+            )
+        ]
+
+        return sorted(
+
+            matching,
+
+            key=lambda item:
+                item.tag_id,
+        )

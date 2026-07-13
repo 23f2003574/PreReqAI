@@ -242,3 +242,44 @@ class InMemoryResearchCollectionStore(
                 in self._collections
             )
         ]
+
+    def list_memberships_for_session(
+
+        self,
+
+        session_id,
+
+    ):
+
+        memberships = [
+
+            membership
+
+            for membership
+
+            in self._memberships.values()
+
+            if (
+
+                membership.session_id
+
+                == session_id
+            )
+        ]
+
+        return [
+
+            deepcopy(
+                membership
+            )
+
+            for membership
+
+            in sorted(
+
+                memberships,
+
+                key=lambda item:
+                    item.collection_id,
+            )
+        ]

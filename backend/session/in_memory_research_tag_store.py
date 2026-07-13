@@ -210,3 +210,44 @@ class InMemoryResearchTagStore(
                 == tag_id
             )
         })
+
+    def list_assignments_for_session(
+
+        self,
+
+        session_id,
+
+    ):
+
+        assignments = [
+
+            assignment
+
+            for assignment
+
+            in self._assignments.values()
+
+            if (
+
+                assignment.session_id
+
+                == session_id
+            )
+        ]
+
+        return [
+
+            deepcopy(
+                assignment
+            )
+
+            for assignment
+
+            in sorted(
+
+                assignments,
+
+                key=lambda item:
+                    item.tag_id,
+            )
+        ]

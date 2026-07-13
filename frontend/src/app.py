@@ -44,6 +44,10 @@ from backend.session import (
     ResearchSessionRestorer,
     ResearchSessionSerializer,
     ResearchSessionVersionManager,
+    ResearchSnapshotScope,
+    ResearchSnapshotSerializer,
+    ResearchSnapshotService,
+    ResearchSnapshotValidator,
     ResearchWorkspaceInsightsService,
     ResearchWorkspaceOrganizationService,
 )
@@ -549,6 +553,62 @@ class PreReqAIApplication:
                     self.research_activity_store
                 ),
             )
+        )
+
+        self.research_snapshot_validator = (
+
+            ResearchSnapshotValidator()
+        )
+
+        self.research_snapshot_service = (
+
+            ResearchSnapshotService(
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                profile_store=(
+                    self.session_profile_store
+                ),
+
+                checkpoint_store=(
+                    self.checkpoint_store
+                ),
+
+                version_store=(
+                    self.session_version_store
+                ),
+
+                branch_store=(
+                    self.session_branch_store
+                ),
+
+                lineage_service=(
+                    self.session_lineage_service
+                ),
+
+                tag_store=(
+                    self.tag_store
+                ),
+
+                collection_store=(
+                    self.collection_store
+                ),
+
+                activity_store=(
+                    self.research_activity_store
+                ),
+
+                validator=(
+                    self.research_snapshot_validator
+                ),
+            )
+        )
+
+        self.research_snapshot_serializer = (
+
+            ResearchSnapshotSerializer()
         )
 
         self.active_session_id = None
@@ -3129,5 +3189,136 @@ class PreReqAIApplication:
                 dormant_after_days=(
                     dormant_after_days
                 ),
+            )
+        )
+
+    def export_research_session(
+
+        self,
+
+        session_id,
+
+    ):
+
+        return (
+
+            self.research_snapshot_service
+            .build_snapshot(
+
+                scope=(
+
+                    ResearchSnapshotScope
+                    .SESSION
+                ),
+
+                root_session_id=(
+                    session_id
+                ),
+            )
+        )
+
+    def export_research_session_tree(
+
+        self,
+
+        session_id,
+
+    ):
+
+        return (
+
+            self.research_snapshot_service
+            .build_snapshot(
+
+                scope=(
+
+                    ResearchSnapshotScope
+                    .SESSION_WITH_DESCENDANTS
+                ),
+
+                root_session_id=(
+                    session_id
+                ),
+            )
+        )
+
+    def export_research_lineage(
+
+        self,
+
+        session_id,
+
+    ):
+
+        return (
+
+            self.research_snapshot_service
+            .build_snapshot(
+
+                scope=(
+
+                    ResearchSnapshotScope
+                    .LINEAGE
+                ),
+
+                root_session_id=(
+                    session_id
+                ),
+            )
+        )
+
+    def export_research_workspace(
+
+        self,
+
+    ):
+
+        return (
+
+            self.research_snapshot_service
+            .build_snapshot(
+
+                scope=(
+
+                    ResearchSnapshotScope
+                    .WORKSPACE
+                )
+            )
+        )
+
+    def serialize_research_snapshot(
+
+        self,
+
+        snapshot,
+
+    ):
+
+        return (
+
+            self.research_snapshot_serializer
+            .dumps(
+                snapshot
+            )
+        )
+
+    def write_research_snapshot(
+
+        self,
+
+        snapshot,
+
+        path,
+
+    ):
+
+        return (
+
+            self.research_snapshot_serializer
+            .write(
+
+                snapshot,
+
+                path,
             )
         )
