@@ -1069,3 +1069,49 @@ Branch origin records remain immutable lineage facts. Renaming, describing, paus
 When no explicit display name exists, presentation falls back to the session's paper title and then to the raw session ID.
 
 Research lineage trees can be enriched with session profile information for frontend presentation.
+
+## Research Session Discovery
+
+PreReqAI provides a dedicated query layer for discovering and browsing research sessions across a workspace.
+
+Research sessions can be searched using:
+
+- Session display name
+- Session description
+- Paper title
+- Paper identifier
+- Session identifier
+- Lifecycle status
+- Session kind
+
+Sessions can be filtered by:
+
+- One or more lifecycle statuses
+- Archived state
+- Root or branch session kind
+- Lineage root
+- Direct parent session
+
+Results can be sorted by:
+
+- Creation time, newest or oldest
+- Last update time, newest or oldest
+- Display name, ascending or descending
+
+Session discovery results include:
+
+- Human-readable session identity
+- Paper information
+- Lifecycle status
+- Archived state
+- Root or branch kind
+- Parent session
+- Root session
+- Lineage depth
+- Direct child count
+- Total descendant count
+- Creation and update timestamps
+
+Results are paginated and expose total count, returned count, next offset, and whether additional results exist.
+
+The query system is read-only and does not create profiles or modify research sessions while browsing them.

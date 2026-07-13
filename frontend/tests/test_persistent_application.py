@@ -1147,3 +1147,114 @@ def test_branch_profile_survives_application_recreation(
             .PAUSED
         )
     )
+
+
+def test_session_discovery_query_works_after_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        session_id="session-main",
+
+        paper_title=(
+            "Transformer Paper"
+        ),
+    )
+
+    first_app.save_research_session(
+
+        "session-main",
+
+        paper_title=(
+            "Transformer Paper"
+        ),
+    )
+
+    first_app.update_research_session_profile(
+
+        "session-main",
+
+        display_name=(
+            "Transformer Research"
+        ),
+    )
+
+    checkpoint = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-a"
+        )
+    )
+
+    first_app.branch_research_checkpoint(
+
+        checkpoint.id,
+
+        branch_session_id=(
+            "math-branch"
+        ),
+
+        display_name=(
+            "Mathematical Approach"
+        ),
+    )
+
+    first_app.pause_research_session(
+
+        "math-branch"
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    page = (
+
+        second_app
+        .query_research_sessions(
+
+            search="mathematical",
+
+            statuses={
+                "paused"
+            },
+
+            kinds={
+                "branch"
+            },
+        )
+    )
+
+    assert page.total == 1
+
+    assert (
+
+        page.items[0]
+        .session_id
+
+        == "math-branch"
+    )

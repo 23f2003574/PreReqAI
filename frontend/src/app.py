@@ -31,6 +31,8 @@ from backend.session import (
     ResearchSessionLineageService,
     ResearchSessionManager,
     ResearchSessionProfileManager,
+    ResearchSessionQuery,
+    ResearchSessionQueryService,
     ResearchSessionRestorer,
     ResearchSessionSerializer,
     ResearchSessionVersionManager,
@@ -378,6 +380,28 @@ class PreReqAIApplication:
 
                 session_manager=(
                     self.session_manager
+                ),
+            )
+        )
+
+        self.session_query_service = (
+
+            ResearchSessionQueryService(
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                profile_store=(
+                    self.session_profile_store
+                ),
+
+                branch_store=(
+                    self.session_branch_store
+                ),
+
+                lineage_service=(
+                    self.session_lineage_service
                 ),
             )
         )
@@ -2316,4 +2340,132 @@ class PreReqAIApplication:
 
                 session_id
             )
+        )
+
+    def query_research_sessions(
+
+        self,
+
+        search=None,
+
+        statuses=None,
+
+        archived=None,
+
+        kinds=None,
+
+        lineage_root_session_id=None,
+
+        direct_parent_session_id=None,
+
+        sort_order="updated_newest",
+
+        offset=0,
+
+        limit=50,
+
+    ):
+
+        query = (
+
+            ResearchSessionQuery(
+
+                search=search,
+
+                statuses=set(
+                    statuses or []
+                ),
+
+                archived=archived,
+
+                kinds=set(
+                    kinds or []
+                ),
+
+                lineage_root_session_id=(
+
+                    lineage_root_session_id
+                ),
+
+                direct_parent_session_id=(
+
+                    direct_parent_session_id
+                ),
+
+                sort_order=(
+                    sort_order
+                ),
+
+                offset=offset,
+
+                limit=limit,
+            )
+        )
+
+        return (
+
+            self.session_query_service
+            .query(
+
+                query
+            )
+        )
+
+    def active_research_sessions(
+
+        self,
+
+        **query_options,
+
+    ):
+
+        options = {
+
+            **query_options,
+
+            "archived": False,
+        }
+
+        return self.query_research_sessions(
+            **options
+        )
+
+    def archived_research_sessions(
+
+        self,
+
+        **query_options,
+
+    ):
+
+        options = {
+
+            **query_options,
+
+            "archived": True,
+        }
+
+        return self.query_research_sessions(
+            **options
+        )
+
+    def root_research_sessions(
+
+        self,
+
+        **query_options,
+
+    ):
+
+        options = {
+
+            **query_options,
+
+            "kinds": {
+                "root"
+            },
+        }
+
+        return self.query_research_sessions(
+            **options
         )

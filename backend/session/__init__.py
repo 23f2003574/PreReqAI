@@ -340,4 +340,28 @@ from .research_session_profile_manager import (
     ResearchSessionProfileManager,
 )
 
+from .research_session_kind import (
+    ResearchSessionKind,
+)
+
+from .research_session_list_item import (
+    ResearchSessionListItem,
+)
+
+from .research_session_page import (
+    ResearchSessionPage,
+)
+
+from .research_session_query import (
+    ResearchSessionQuery,
+)
+
+from .research_session_query_service import (
+    ResearchSessionQueryService,
+)
+
+from .research_session_sort_order import (
+    ResearchSessionSortOrder,
+)
+
 session_manager = SessionManager()
