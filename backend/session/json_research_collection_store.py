@@ -392,3 +392,36 @@ class JsonResearchCollectionStore(
         self.file.write(
             state
         )
+
+    def list_all_memberships(
+
+        self,
+
+    ) -> list[
+        ResearchCollectionMembership
+    ]:
+
+        data = self.file.read()
+
+        restored = [
+
+            ResearchCollectionMembership
+            .from_dict(
+
+                entry
+            )
+
+            for entry
+
+            in data["memberships"]
+        ]
+
+        return sorted(
+
+            restored,
+
+            key=lambda item: (
+                item.collection_id,
+                item.session_id,
+            ),
+        )

@@ -129,6 +129,17 @@ class ResearchTagStore(
         raise NotImplementedError
 
     @abstractmethod
+    def list_all_assignments(
+
+        self,
+
+    ) -> list[
+        ResearchSessionTagAssignment
+    ]:
+
+        raise NotImplementedError
+
+    @abstractmethod
     def export_state(
         self,
     ):

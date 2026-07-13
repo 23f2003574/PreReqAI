@@ -130,6 +130,17 @@ class ResearchCollectionStore(
         raise NotImplementedError
 
     @abstractmethod
+    def list_all_memberships(
+
+        self,
+
+    ) -> list[
+        ResearchCollectionMembership
+    ]:
+
+        raise NotImplementedError
+
+    @abstractmethod
     def export_state(
         self,
     ):

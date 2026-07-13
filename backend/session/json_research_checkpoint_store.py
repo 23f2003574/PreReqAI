@@ -209,3 +209,36 @@ class JsonResearchCheckpointStore(
         self.file.write(
             state
         )
+
+    def list_all(
+
+        self,
+
+    ) -> list[
+        ResearchCheckpoint
+    ]:
+
+        checkpoints = (
+            self.file.read()
+        )
+
+        restored = [
+
+            ResearchCheckpoint
+            .from_dict(
+
+                data
+            )
+
+            for data
+
+            in checkpoints.values()
+        ]
+
+        return sorted(
+
+            restored,
+
+            key=lambda item:
+                item.created_at,
+        )

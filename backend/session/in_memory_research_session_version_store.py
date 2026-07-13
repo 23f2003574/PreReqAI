@@ -163,6 +163,31 @@ class InMemoryResearchSessionVersionStore(
 
         return True
 
+    def list_all(
+
+        self,
+
+    ) -> list[
+        ResearchSessionVersion
+    ]:
+
+        return [
+
+            deepcopy(
+                version
+            )
+
+            for version
+
+            in sorted(
+
+                self._versions.values(),
+
+                key=lambda item:
+                    item.created_at,
+            )
+        ]
+
     def export_state(self):
 
         return deepcopy(

@@ -205,3 +205,34 @@ class JsonResearchSessionVersionStore(
         self.file.write(
             state
         )
+
+    def list_all(
+
+        self,
+
+    ) -> list[
+        ResearchSessionVersion
+    ]:
+
+        versions = self.file.read()
+
+        restored = [
+
+            ResearchSessionVersion
+            .from_dict(
+
+                data
+            )
+
+            for data
+
+            in versions.values()
+        ]
+
+        return sorted(
+
+            restored,
+
+            key=lambda item:
+                item.created_at,
+        )

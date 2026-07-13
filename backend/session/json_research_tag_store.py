@@ -358,3 +358,36 @@ class JsonResearchTagStore(
         self.file.write(
             state
         )
+
+    def list_all_assignments(
+
+        self,
+
+    ) -> list[
+        ResearchSessionTagAssignment
+    ]:
+
+        data = self.file.read()
+
+        restored = [
+
+            ResearchSessionTagAssignment
+            .from_dict(
+
+                entry
+            )
+
+            for entry
+
+            in data["assignments"]
+        ]
+
+        return sorted(
+
+            restored,
+
+            key=lambda item: (
+                item.session_id,
+                item.tag_id,
+            ),
+        )

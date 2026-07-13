@@ -78,6 +78,17 @@ class ResearchSessionBranchStore(
         raise NotImplementedError
 
     @abstractmethod
+    def list_all(
+
+        self,
+
+    ) -> list[
+        ResearchSessionBranch
+    ]:
+
+        raise NotImplementedError
+
+    @abstractmethod
     def export_state(
         self,
     ):

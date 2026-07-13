@@ -74,6 +74,17 @@ class ResearchSessionVersionStore(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def list_all(
+
+        self,
+
+    ) -> list[
+        ResearchSessionVersion
+    ]:
+
+        raise NotImplementedError
+
+    @abstractmethod
     def export_state(
         self,
     ):

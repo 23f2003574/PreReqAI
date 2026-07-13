@@ -2,6 +2,10 @@ from copy import (
     deepcopy,
 )
 
+from .research_collection_membership import (
+    ResearchCollectionMembership,
+)
+
 from .research_collection_store import (
     ResearchCollectionStore,
 )
@@ -316,3 +320,30 @@ class InMemoryResearchCollectionStore(
 
             state["memberships"]
         )
+
+    def list_all_memberships(
+
+        self,
+
+    ) -> list[
+        ResearchCollectionMembership
+    ]:
+
+        return [
+
+            deepcopy(
+                membership
+            )
+
+            for membership
+
+            in sorted(
+
+                self._memberships.values(),
+
+                key=lambda item: (
+                    item.collection_id,
+                    item.session_id,
+                ),
+            )
+        ]

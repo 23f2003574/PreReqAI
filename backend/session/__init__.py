@@ -576,4 +576,36 @@ from .research_snapshot_import_service import (
     ResearchSnapshotImportService,
 )
 
+from .research_integrity_severity import (
+    ResearchIntegritySeverity,
+)
+
+from .research_integrity_finding import (
+    ResearchIntegrityFinding,
+)
+
+from .research_integrity_report import (
+    ResearchIntegrityReport,
+)
+
+from .research_repair_risk import (
+    ResearchRepairRisk,
+)
+
+from .research_repair_action import (
+    ResearchRepairAction,
+)
+
+from .research_repair_plan import (
+    ResearchRepairPlan,
+)
+
+from .research_workspace_integrity_auditor import (
+    ResearchWorkspaceIntegrityAuditor,
+)
+
+from .research_workspace_repair_planner import (
+    ResearchWorkspaceRepairPlanner,
+)
+
 session_manager = SessionManager()

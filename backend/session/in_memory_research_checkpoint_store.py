@@ -160,6 +160,31 @@ class InMemoryResearchCheckpointStore(
 
         return True
 
+    def list_all(
+
+        self,
+
+    ) -> list[
+        ResearchCheckpoint
+    ]:
+
+        return [
+
+            deepcopy(
+                checkpoint
+            )
+
+            for checkpoint
+
+            in sorted(
+
+                self._checkpoints.values(),
+
+                key=lambda item:
+                    item.created_at,
+            )
+        ]
+
     def export_state(self):
 
         return deepcopy(

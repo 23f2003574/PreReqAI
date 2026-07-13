@@ -260,3 +260,34 @@ class JsonResearchSessionBranchStore(
             key=lambda item:
                 item.created_at,
         )
+
+    def list_all(
+
+        self,
+
+    ) -> list[
+        ResearchSessionBranch
+    ]:
+
+        branches = self.file.read()
+
+        restored = [
+
+            ResearchSessionBranch
+            .from_dict(
+
+                data
+            )
+
+            for data
+
+            in branches.values()
+        ]
+
+        return sorted(
+
+            restored,
+
+            key=lambda item:
+                item.created_at,
+        )

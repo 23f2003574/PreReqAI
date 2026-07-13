@@ -226,3 +226,28 @@ class InMemoryResearchSessionBranchStore(
                     item.created_at,
             )
         ]
+
+    def list_all(
+
+        self,
+
+    ) -> list[
+        ResearchSessionBranch
+    ]:
+
+        return [
+
+            deepcopy(
+                branch
+            )
+
+            for branch
+
+            in sorted(
+
+                self._branches.values(),
+
+                key=lambda item:
+                    item.created_at,
+            )
+        ]

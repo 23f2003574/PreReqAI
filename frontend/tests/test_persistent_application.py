@@ -1855,3 +1855,73 @@ def test_failed_import_remains_rolled_back_after_restart(
 
         == []
     )
+
+
+def test_persisted_workspace_passes_integrity_audit_after_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+        "session-main"
+    )
+
+    first_app.save_research_session(
+        "session-main"
+    )
+
+    checkpoint = (
+
+        first_app
+        .checkpoint_workflow_progress(
+            "step-a"
+        )
+    )
+
+    first_app.branch_research_checkpoint(
+
+        checkpoint.id,
+
+        branch_session_id=(
+            "session-branch"
+        ),
+    )
+
+    first_app.tag_research_session(
+
+        "session-main",
+
+        "transformers",
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    report = (
+
+        second_app
+        .audit_research_workspace()
+    )
+
+    assert report.is_healthy is True

@@ -1371,3 +1371,33 @@ Snapshot imports are applied as a single logical transaction. If any restoration
 ### Historical Restoration
 
 Imported records preserve their original identities (unless remapped) and timestamps. Import restoration bypasses normal user-facing creation commands, so it does not generate duplicate domain activity events or overwrite historical timestamps with the current time.
+
+## Research Workspace Integrity Auditing
+
+PreReqAI includes a read-only workspace integrity auditor for detecting structural, referential, graph, and semantic inconsistencies.
+
+The auditor can detect:
+
+- Orphan research session profiles
+- Sessions missing human-readable profiles
+- Checkpoints referencing missing sessions or missing immutable versions
+- Versions referencing missing sessions
+- Branches with missing endpoints
+- Self-referencing branches
+- Duplicate branch relationships
+- Research sessions with multiple branch parents
+- Cycles in research lineage graphs
+- Tag assignments referencing missing sessions or tags
+- Duplicate tag assignments
+- Collection memberships referencing missing sessions or collections
+- Duplicate collection memberships
+- Historical activity referencing missing sessions
+- Duplicate canonical entity identifiers
+
+Findings are classified by severity: info, warning, error, and critical. The auditor is read-only and does not mutate workspace state.
+
+## Research Repair Planning
+
+Integrity reports can be converted into explicit repair plans. Repair actions are classified as safe, review required, or destructive.
+
+Only operations whose intent is unambiguous, such as removing exact duplicate relationships, are eligible for automatic repair. Ambiguous graph corruption, including lineage cycles and multiple-parent conflicts, is never repaired automatically. Repair planning is also read-only.

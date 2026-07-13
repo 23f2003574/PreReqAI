@@ -2,6 +2,10 @@ from copy import (
     deepcopy,
 )
 
+from .research_session_tag_assignment import (
+    ResearchSessionTagAssignment,
+)
+
 from .research_tag_store import (
     ResearchTagStore,
 )
@@ -284,3 +288,30 @@ class InMemoryResearchTagStore(
 
             state["assignments"]
         )
+
+    def list_all_assignments(
+
+        self,
+
+    ) -> list[
+        ResearchSessionTagAssignment
+    ]:
+
+        return [
+
+            deepcopy(
+                assignment
+            )
+
+            for assignment
+
+            in sorted(
+
+                self._assignments.values(),
+
+                key=lambda item: (
+                    item.session_id,
+                    item.tag_id,
+                ),
+            )
+        ]

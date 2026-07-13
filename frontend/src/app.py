@@ -53,7 +53,9 @@ from backend.session import (
     ResearchSnapshotService,
     ResearchSnapshotValidator,
     ResearchWorkspaceInsightsService,
+    ResearchWorkspaceIntegrityAuditor,
     ResearchWorkspaceOrganizationService,
+    ResearchWorkspaceRepairPlanner,
 )
 
 
@@ -701,6 +703,49 @@ class PreReqAIApplication:
                     self.research_activity_store
                 ),
             )
+        )
+
+        self.research_workspace_integrity_auditor = (
+
+            ResearchWorkspaceIntegrityAuditor(
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                profile_store=(
+                    self.session_profile_store
+                ),
+
+                checkpoint_store=(
+                    self.checkpoint_store
+                ),
+
+                version_store=(
+                    self.session_version_store
+                ),
+
+                branch_store=(
+                    self.session_branch_store
+                ),
+
+                tag_store=(
+                    self.tag_store
+                ),
+
+                collection_store=(
+                    self.collection_store
+                ),
+
+                activity_store=(
+                    self.research_activity_store
+                ),
+            )
+        )
+
+        self.research_workspace_repair_planner = (
+
+            ResearchWorkspaceRepairPlanner()
         )
 
         self.active_session_id = None
@@ -3525,5 +3570,40 @@ class PreReqAIApplication:
                 snapshot=snapshot,
 
                 strategy=strategy,
+            )
+        )
+
+    def audit_research_workspace(
+
+        self,
+
+    ):
+
+        return (
+
+            self.research_workspace_integrity_auditor
+            .audit()
+        )
+
+    def plan_research_workspace_repairs(
+
+        self,
+
+        report=None,
+
+    ):
+
+        if report is None:
+
+            report = (
+
+                self.audit_research_workspace()
+            )
+
+        return (
+
+            self.research_workspace_repair_planner
+            .plan(
+                report
             )
         )

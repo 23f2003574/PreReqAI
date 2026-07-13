@@ -73,6 +73,17 @@ class ResearchCheckpointStore(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def list_all(
+
+        self,
+
+    ) -> list[
+        ResearchCheckpoint
+    ]:
+
+        raise NotImplementedError
+
+    @abstractmethod
     def export_state(
         self,
     ):
