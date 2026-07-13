@@ -1440,3 +1440,55 @@ Large snapshot imports emit a single summary change event after the import trans
 The reactive workspace change feed is distinct from the human-readable research activity timeline. Research activity describes meaningful historical actions. Workspace change events provide machine-oriented synchronization signals for interfaces and integrations.
 
 Read-only operations, including workspace queries, comparisons, insights, snapshot export, import preview, integrity auditing, and repair planning, never emit workspace change events.
+
+## Unified Research Workspace Gateway
+
+PreReqAI exposes its research workspace through a unified application-facing gateway (`application.research_workspace`).
+
+The gateway provides a stable capability surface for:
+
+- Research sessions
+- Session discovery
+- Research lineage
+- Session comparison
+- Tags and collections
+- Activity history
+- Workspace insights
+- Snapshot export
+- Transactional snapshot import
+- Integrity auditing
+- Repair planning
+- Reactive change feeds
+- Live in-process subscriptions
+
+External interfaces should depend on the gateway rather than directly coupling themselves to internal stores and services. Full architectural details live in `docs/research-workspace-architecture.md`.
+
+## Capability Discovery
+
+The workspace exposes discoverable capability metadata describing:
+
+- Available capability names
+- Capability versions
+- Supported public operations
+- Whether a capability is enabled
+
+This provides a foundation for future frontend and API compatibility handling.
+
+## End-to-End Architecture Validation
+
+Integration tests exercise complete research workspace lifecycles through the public gateway only, including:
+
+- Session creation
+- Profile updates
+- Checkpointing
+- Independent branching
+- Lineage traversal
+- Research organization
+- Session comparison
+- Workspace insights
+- Reactive change tracking
+- Integrity auditing
+- Snapshot export
+- Transactional import
+- Post-import integrity verification
+- Persistence across application restarts

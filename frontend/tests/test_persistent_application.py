@@ -2166,3 +2166,100 @@ def test_failed_import_rollback_emits_no_workspace_change_event(
     )
 
     assert restarted_page.events == []
+
+
+def test_workspace_gateway_survives_application_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_application = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_workspace = (
+
+        first_application
+        .research_workspace
+    )
+
+    session = (
+
+        first_workspace
+        .create_session(
+
+            "session-a",
+
+            paper_title=(
+                "Persistent research"
+            ),
+        )
+    )
+
+    previous_sequence = (
+
+        first_workspace
+        .get_latest_change_sequence()
+    )
+
+    second_application = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    second_workspace = (
+
+        second_application
+        .research_workspace
+    )
+
+    restored = (
+
+        second_workspace
+        .get_session(
+
+            session.session_id
+        )
+    )
+
+    assert restored is not None
+
+    assert (
+
+        second_workspace
+        .get_latest_change_sequence()
+
+        == previous_sequence
+    )
+
+    second_workspace.update_session_profile(
+
+        session.session_id,
+
+        display_name=(
+            "Restored Research"
+        ),
+    )
+
+    assert (
+
+        second_workspace
+        .get_latest_change_sequence()
+
+        > previous_sequence
+    )

@@ -54,9 +54,11 @@ from backend.session import (
     ResearchSnapshotSerializer,
     ResearchSnapshotService,
     ResearchSnapshotValidator,
+    ResearchWorkspaceCapabilities,
     ResearchWorkspaceChangeFeed,
     ResearchWorkspaceChangeOperation,
     ResearchWorkspaceEventBus,
+    ResearchWorkspaceGateway,
     ResearchWorkspaceInsightsService,
     ResearchWorkspaceIntegrityAuditor,
     ResearchWorkspaceOrganizationService,
@@ -773,6 +775,25 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_event_bus
+                ),
+            )
+        )
+
+        self.research_workspace_capabilities = (
+
+            ResearchWorkspaceCapabilities()
+        )
+
+        self.research_workspace = (
+
+            ResearchWorkspaceGateway(
+
+                application=self,
+
+                capabilities=(
+
+                    self
+                    .research_workspace_capabilities
                 ),
             )
         )

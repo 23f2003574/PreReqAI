@@ -632,4 +632,20 @@ from .research_workspace_change_feed import (
     ResearchWorkspaceChangeFeed,
 )
 
+from .research_workspace_capability import (
+    ResearchWorkspaceCapability,
+)
+
+from .research_workspace_capability_descriptor import (
+    ResearchWorkspaceCapabilityDescriptor,
+)
+
+from .research_workspace_capabilities import (
+    ResearchWorkspaceCapabilities,
+)
+
+from .research_workspace_gateway import (
+    ResearchWorkspaceGateway,
+)
+
 session_manager = SessionManager()
