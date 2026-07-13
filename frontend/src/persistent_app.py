@@ -85,4 +85,11 @@ def create_persistent_application(
                 "session_branch_store"
             ]
         ),
+
+        session_profile_store=(
+
+            stores[
+                "session_profile_store"
+            ]
+        ),
     )

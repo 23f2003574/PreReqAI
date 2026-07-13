@@ -1,5 +1,6 @@
 from backend.session import (
     ResearchCheckpointReason,
+    ResearchSessionStatus,
 )
 
 from frontend.src.persistent_app import (
@@ -1049,4 +1050,100 @@ def test_lineage_traversal_survives_application_recreation(
 
             "session-c",
         ]
+    )
+
+
+def test_branch_profile_survives_application_recreation(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        "session-main"
+    )
+
+    checkpoint = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-a"
+        )
+    )
+
+    first_app.branch_research_checkpoint(
+
+        checkpoint.id,
+
+        branch_session_id=(
+            "session-math"
+        ),
+
+        display_name=(
+            "Mathematical Approach"
+        ),
+
+        description=(
+
+            "Explore theorem-first "
+            "prerequisites."
+        ),
+    )
+
+    first_app.pause_research_session(
+
+        "session-math"
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    profile = (
+
+        second_app
+        .research_session_profile(
+
+            "session-math"
+        )
+    )
+
+    assert profile is not None
+
+    assert (
+
+        profile.display_name
+
+        == "Mathematical Approach"
+    )
+
+    assert (
+
+        profile.status
+
+        == (
+            ResearchSessionStatus
+            .PAUSED
+        )
     )

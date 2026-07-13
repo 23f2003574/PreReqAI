@@ -81,3 +81,13 @@ class ResearchPersistenceConfig:
 
             / "session_branches.json"
         )
+
+    @property
+    def session_profiles_path(self):
+
+        return (
+
+            self.root_directory
+
+            / "session_profiles.json"
+        )

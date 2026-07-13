@@ -26,6 +26,10 @@ from .json_research_session_branch_store import (
     JsonResearchSessionBranchStore,
 )
 
+from .json_research_session_profile_store import (
+    JsonResearchSessionProfileStore,
+)
+
 from .research_persistence_config import (
     ResearchPersistenceConfig,
 )
@@ -103,6 +107,14 @@ class ResearchPersistenceFactory:
                 JsonResearchSessionBranchStore(
 
                     config.session_branches_path
+                )
+            ),
+
+            "session_profile_store": (
+
+                JsonResearchSessionProfileStore(
+
+                    config.session_profiles_path
                 )
             ),
         }

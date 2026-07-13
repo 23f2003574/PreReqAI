@@ -316,4 +316,28 @@ from .research_session_lineage_summary import (
     ResearchSessionLineageSummary,
 )
 
+from .research_session_status import (
+    ResearchSessionStatus,
+)
+
+from .research_session_profile import (
+    ResearchSessionProfile,
+)
+
+from .research_session_profile_store import (
+    ResearchSessionProfileStore,
+)
+
+from .in_memory_research_session_profile_store import (
+    InMemoryResearchSessionProfileStore,
+)
+
+from .json_research_session_profile_store import (
+    JsonResearchSessionProfileStore,
+)
+
+from .research_session_profile_manager import (
+    ResearchSessionProfileManager,
+)
+
 session_manager = SessionManager()

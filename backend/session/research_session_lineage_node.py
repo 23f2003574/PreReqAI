@@ -31,6 +31,20 @@ class ResearchSessionLineageNode:
 
     depth: int = 0
 
+    display_name: (
+        str | None
+    ) = None
+
+    description: (
+        str | None
+    ) = None
+
+    status: (
+        str | None
+    ) = None
+
+    archived: bool = False
+
     children: list[
         "ResearchSessionLineageNode"
     ] = field(
@@ -58,6 +72,18 @@ class ResearchSessionLineageNode:
 
             "depth":
                 self.depth,
+
+            "display_name":
+                self.display_name,
+
+            "description":
+                self.description,
+
+            "status":
+                self.status,
+
+            "archived":
+                self.archived,
 
             "children": [
 

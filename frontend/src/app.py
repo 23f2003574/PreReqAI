@@ -16,6 +16,7 @@ from backend.session import (
     ResearchArtifactRestorer,
     ResearchArtifactTypeMapper,
     InMemoryResearchSessionBranchStore,
+    InMemoryResearchSessionProfileStore,
     ResearchCheckpointAnnotationManager,
     ResearchCheckpointManager,
     ResearchCheckpointReason,
@@ -29,6 +30,7 @@ from backend.session import (
     ResearchSessionComparator,
     ResearchSessionLineageService,
     ResearchSessionManager,
+    ResearchSessionProfileManager,
     ResearchSessionRestorer,
     ResearchSessionSerializer,
     ResearchSessionVersionManager,
@@ -58,6 +60,8 @@ class PreReqAIApplication:
         checkpoint_annotation_store=None,
 
         session_branch_store=None,
+
+        session_profile_store=None,
 
     ):
 
@@ -352,6 +356,29 @@ class PreReqAIApplication:
                 branch_store=(
                     self.session_branch_store
                 )
+            )
+        )
+
+        self.session_profile_store = (
+
+            session_profile_store
+
+            or (
+                InMemoryResearchSessionProfileStore()
+            )
+        )
+
+        self.session_profile_manager = (
+
+            ResearchSessionProfileManager(
+
+                profile_store=(
+                    self.session_profile_store
+                ),
+
+                session_manager=(
+                    self.session_manager
+                ),
             )
         )
 
@@ -1670,6 +1697,12 @@ class PreReqAIApplication:
         branch_session_id:
             str | None = None,
 
+        display_name:
+            str | None = None,
+
+        description:
+            str | None = None,
+
         metadata:
             dict | None = None,
 
@@ -1697,6 +1730,27 @@ class PreReqAIApplication:
             )
         )
 
+        profile = (
+
+            self.session_profile_manager
+            .get_or_create(
+
+                session_id=(
+
+                    branch
+                    .branch_session_id
+                ),
+
+                display_name=(
+                    display_name
+                ),
+
+                description=(
+                    description
+                ),
+            )
+        )
+
         return {
 
             "branch":
@@ -1707,6 +1761,9 @@ class PreReqAIApplication:
 
             "workspace":
                 restored_workspace,
+
+            "profile":
+                profile,
         }
 
     def branch_and_activate_research_checkpoint(
@@ -2031,6 +2088,52 @@ class PreReqAIApplication:
             )
         )
 
+    def _enrich_lineage_node(
+
+        self,
+
+        node,
+
+    ):
+
+        profile = (
+
+            self.research_session_profile(
+
+                node.session_id
+            )
+        )
+
+        node.display_name = (
+
+            self.research_session_display_name(
+
+                node.session_id
+            )
+        )
+
+        if profile is not None:
+
+            node.description = (
+                profile.description
+            )
+
+            node.status = (
+                profile.status.value
+            )
+
+            node.archived = (
+                profile.archived
+            )
+
+        for child in node.children:
+
+            self._enrich_lineage_node(
+                child
+            )
+
+        return node
+
     def research_session_lineage_tree(
 
         self,
@@ -2039,12 +2142,20 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        tree = (
 
             self.session_lineage_service
             .lineage_tree(
 
                 session_id
+            )
+        )
+
+        return (
+
+            self._enrich_lineage_node(
+
+                tree
             )
         )
 
@@ -2060,6 +2171,148 @@ class PreReqAIApplication:
 
             self.session_lineage_service
             .summarize(
+
+                session_id
+            )
+        )
+
+    def research_session_profile(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_profile_store
+            .get(
+
+                session_id
+            )
+        )
+
+    def update_research_session_profile(
+
+        self,
+
+        session_id: str,
+
+        **changes,
+
+    ):
+
+        return (
+
+            self.session_profile_manager
+            .update(
+
+                session_id=(
+                    session_id
+                ),
+
+                **changes,
+            )
+        )
+
+    def research_session_display_name(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_profile_manager
+            .display_name(
+
+                session_id
+            )
+        )
+
+    def pause_research_session(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_profile_manager
+            .pause(
+
+                session_id
+            )
+        )
+
+    def resume_research_session(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_profile_manager
+            .resume(
+
+                session_id
+            )
+        )
+
+    def complete_research_session(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_profile_manager
+            .complete(
+
+                session_id
+            )
+        )
+
+    def archive_research_session(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_profile_manager
+            .archive(
+
+                session_id
+            )
+        )
+
+    def unarchive_research_session(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_profile_manager
+            .unarchive(
 
                 session_id
             )

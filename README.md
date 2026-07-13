@@ -1041,3 +1041,31 @@ Supported lineage operations include:
 Lineage traversal includes cycle detection to prevent corrupted branch data from causing infinite traversal.
 
 The graph itself is not separately persisted. Branch relationships remain the single source of truth, while lineage structures are derived on demand.
+
+## Research Session Profiles
+
+Research sessions can have mutable human-facing profiles independent of their immutable branch origins.
+
+A session profile may contain:
+
+- Display name
+- Description
+- Lifecycle status
+- Archived state
+- Custom metadata
+- Creation time
+- Last update time
+
+Supported lifecycle statuses are:
+
+- Active
+- Paused
+- Completed
+
+Archiving is independent from lifecycle status. For example, a completed session may be archived without changing its completed state.
+
+Branch origin records remain immutable lineage facts. Renaming, describing, pausing, completing, or archiving a session does not modify the checkpoint or immutable session version from which the branch originated.
+
+When no explicit display name exists, presentation falls back to the session's paper title and then to the raw session ID.
+
+Research lineage trees can be enriched with session profile information for frontend presentation.
