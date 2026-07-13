@@ -44,6 +44,10 @@ from backend.session import (
     ResearchSessionRestorer,
     ResearchSessionSerializer,
     ResearchSessionVersionManager,
+    ResearchSnapshotImportPlanner,
+    ResearchSnapshotImportService,
+    ResearchSnapshotImportStrategy,
+    ResearchSnapshotImportTransaction,
     ResearchSnapshotScope,
     ResearchSnapshotSerializer,
     ResearchSnapshotService,
@@ -609,6 +613,94 @@ class PreReqAIApplication:
         self.research_snapshot_serializer = (
 
             ResearchSnapshotSerializer()
+        )
+
+        self.research_snapshot_import_planner = (
+
+            ResearchSnapshotImportPlanner(
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                checkpoint_store=(
+                    self.checkpoint_store
+                ),
+
+                version_store=(
+                    self.session_version_store
+                ),
+
+                branch_store=(
+                    self.session_branch_store
+                ),
+
+                tag_store=(
+                    self.tag_store
+                ),
+
+                collection_store=(
+                    self.collection_store
+                ),
+
+                activity_store=(
+                    self.research_activity_store
+                ),
+
+                snapshot_validator=(
+                    self.research_snapshot_validator
+                ),
+            )
+        )
+
+        self.research_snapshot_import_service = (
+
+            ResearchSnapshotImportService(
+
+                import_planner=(
+
+                    self
+                    .research_snapshot_import_planner
+                ),
+
+                transaction_factory=(
+
+                    self
+                    ._create_research_import_transaction
+                ),
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                profile_store=(
+                    self.session_profile_store
+                ),
+
+                checkpoint_store=(
+                    self.checkpoint_store
+                ),
+
+                version_store=(
+                    self.session_version_store
+                ),
+
+                branch_store=(
+                    self.session_branch_store
+                ),
+
+                tag_store=(
+                    self.tag_store
+                ),
+
+                collection_store=(
+                    self.collection_store
+                ),
+
+                activity_store=(
+                    self.research_activity_store
+                ),
+            )
         )
 
         self.active_session_id = None
@@ -3320,5 +3412,118 @@ class PreReqAIApplication:
                 snapshot,
 
                 path,
+            )
+        )
+
+    def _create_research_import_transaction(
+
+        self,
+
+    ):
+
+        return (
+
+            ResearchSnapshotImportTransaction(
+
+                stores=[
+
+                    self.session_manager,
+
+                    self.session_profile_store,
+
+                    self.checkpoint_store,
+
+                    self.session_version_store,
+
+                    self.session_branch_store,
+
+                    self.tag_store,
+
+                    self.collection_store,
+
+                    self.research_activity_store,
+                ]
+            )
+        )
+
+    def preview_research_snapshot_import(
+
+        self,
+
+        snapshot,
+
+        strategy=(
+
+            ResearchSnapshotImportStrategy
+            .REJECT
+        ),
+
+    ):
+
+        return (
+
+            self.research_snapshot_import_service
+            .preview(
+
+                snapshot=snapshot,
+
+                strategy=strategy,
+            )
+        )
+
+    def import_research_snapshot(
+
+        self,
+
+        snapshot,
+
+        strategy=(
+
+            ResearchSnapshotImportStrategy
+            .REJECT
+        ),
+
+    ):
+
+        return (
+
+            self.research_snapshot_import_service
+            .import_snapshot(
+
+                snapshot=snapshot,
+
+                strategy=strategy,
+            )
+        )
+
+    def import_research_snapshot_json(
+
+        self,
+
+        payload,
+
+        strategy=(
+
+            ResearchSnapshotImportStrategy
+            .REJECT
+        ),
+
+    ):
+
+        snapshot = (
+
+            self.research_snapshot_serializer
+            .loads(
+                payload
+            )
+        )
+
+        return (
+
+            self.import_research_snapshot(
+
+                snapshot=snapshot,
+
+                strategy=strategy,
             )
         )

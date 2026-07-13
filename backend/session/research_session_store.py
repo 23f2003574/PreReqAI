@@ -58,3 +58,33 @@ class ResearchSessionStore(ABC):
     ]:
 
         raise NotImplementedError
+
+    @abstractmethod
+    def restore(
+
+        self,
+
+        snapshot:
+            ResearchSessionSnapshot,
+
+    ) -> ResearchSessionSnapshot:
+
+        raise NotImplementedError
+
+    @abstractmethod
+    def export_state(
+        self,
+    ):
+
+        raise NotImplementedError
+
+    @abstractmethod
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        raise NotImplementedError

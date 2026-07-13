@@ -283,3 +283,36 @@ class InMemoryResearchCollectionStore(
                     item.collection_id,
             )
         ]
+
+    def export_state(self):
+
+        return {
+
+            "collections":
+                deepcopy(
+                    self._collections
+                ),
+
+            "memberships":
+                deepcopy(
+                    self._memberships
+                ),
+        }
+
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        self._collections = deepcopy(
+
+            state["collections"]
+        )
+
+        self._memberships = deepcopy(
+
+            state["memberships"]
+        )

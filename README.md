@@ -1345,3 +1345,29 @@ The snapshot validator checks structural and referential integrity before genera
 Scoped exports omit relationships and activity events that would otherwise reference sessions outside the exported snapshot.
 
 Snapshots use a stable JSON-compatible representation rather than serializing internal store implementations.
+
+## Transactional Research Snapshot Import
+
+PreReqAI can restore portable research snapshots into a workspace through a validation-first transactional import pipeline.
+
+### Import Preview
+
+Snapshots can be analyzed before any workspace state changes. Previewing an import reports entities that would be created, identity conflicts, planned identity remapping, and final import counts. Preview is read-only.
+
+### Conflict Strategies
+
+Supported identity conflict strategies:
+
+- Reject conflicting identities
+- Remap only conflicting identities
+- Remap every imported identity
+
+When identities are remapped, every typed internal reference is rewritten consistently: profiles, checkpoints (including their version reference), immutable versions, branch relationships (including their checkpoint and version references), tag assignments, collection memberships, and activity events.
+
+### Transactional Application
+
+Snapshot imports are applied as a single logical transaction. If any restoration step fails, all participating stores are restored to their pre-import state and the restored state is re-persisted, so partial imports are not retained after an application restart.
+
+### Historical Restoration
+
+Imported records preserve their original identities (unless remapped) and timestamps. Import restoration bypasses normal user-facing creation commands, so it does not generate duplicate domain activity events or overwrite historical timestamps with the current time.

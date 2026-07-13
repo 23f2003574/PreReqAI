@@ -159,3 +159,21 @@ class InMemoryResearchCheckpointStore(
         ]
 
         return True
+
+    def export_state(self):
+
+        return deepcopy(
+            self._checkpoints
+        )
+
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        self._checkpoints = deepcopy(
+            state
+        )

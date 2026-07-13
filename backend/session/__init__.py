@@ -544,4 +544,36 @@ from .research_snapshot_serializer import (
     ResearchSnapshotSerializer,
 )
 
+from .research_snapshot_import_strategy import (
+    ResearchSnapshotImportStrategy,
+)
+
+from .research_snapshot_import_conflict import (
+    ResearchSnapshotImportConflict,
+)
+
+from .research_snapshot_identity_map import (
+    ResearchSnapshotIdentityMap,
+)
+
+from .research_snapshot_import_plan import (
+    ResearchSnapshotImportPlan,
+)
+
+from .research_snapshot_import_result import (
+    ResearchSnapshotImportResult,
+)
+
+from .research_snapshot_import_planner import (
+    ResearchSnapshotImportPlanner,
+)
+
+from .research_snapshot_import_transaction import (
+    ResearchSnapshotImportTransaction,
+)
+
+from .research_snapshot_import_service import (
+    ResearchSnapshotImportService,
+)
+
 session_manager = SessionManager()

@@ -166,6 +166,24 @@ class InMemoryResearchSessionBranchStore(
             )
         ]
 
+    def export_state(self):
+
+        return deepcopy(
+            self._branches
+        )
+
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        self._branches = deepcopy(
+            state
+        )
+
     def list_from_checkpoint(
 
         self,

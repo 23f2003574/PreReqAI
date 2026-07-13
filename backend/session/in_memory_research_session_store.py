@@ -129,3 +129,58 @@ class InMemoryResearchSessionStore(
                 reverse=True,
             )
         ]
+
+    def restore(
+
+        self,
+
+        snapshot:
+            ResearchSessionSnapshot,
+
+    ) -> ResearchSessionSnapshot:
+
+        if (
+
+            snapshot.session_id
+
+            in self._sessions
+        ):
+
+            raise ValueError(
+
+                "Research session "
+                "already exists: "
+                f"{snapshot.session_id}"
+            )
+
+        stored = deepcopy(
+            snapshot
+        )
+
+        self._sessions[
+
+            snapshot.session_id
+
+        ] = stored
+
+        return deepcopy(
+            stored
+        )
+
+    def export_state(self):
+
+        return deepcopy(
+            self._sessions
+        )
+
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        self._sessions = deepcopy(
+            state
+        )

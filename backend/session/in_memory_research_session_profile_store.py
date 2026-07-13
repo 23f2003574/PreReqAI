@@ -97,3 +97,21 @@ class InMemoryResearchSessionProfileStore(
                 ),
             )
         ]
+
+    def export_state(self):
+
+        return deepcopy(
+            self._profiles
+        )
+
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        self._profiles = deepcopy(
+            state
+        )

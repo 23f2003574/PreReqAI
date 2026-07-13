@@ -251,3 +251,36 @@ class InMemoryResearchTagStore(
                     item.tag_id,
             )
         ]
+
+    def export_state(self):
+
+        return {
+
+            "tags":
+                deepcopy(
+                    self._tags
+                ),
+
+            "assignments":
+                deepcopy(
+                    self._assignments
+                ),
+        }
+
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        self._tags = deepcopy(
+
+            state["tags"]
+        )
+
+        self._assignments = deepcopy(
+
+            state["assignments"]
+        )

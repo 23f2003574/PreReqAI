@@ -89,3 +89,30 @@ class InMemoryResearchActivityStore(
 
             in self._events
         ]
+
+    def export_state(self):
+
+        return deepcopy(
+            self._events
+        )
+
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        self._events = deepcopy(
+            state
+        )
+
+        self._events_by_id = {
+
+            event.id: event
+
+            for event
+
+            in self._events
+        }

@@ -162,3 +162,31 @@ class ResearchSessionManager:
 
             workspace,
         )
+
+    def restore_session_record(
+
+        self,
+
+        snapshot,
+
+    ):
+
+        return self.store.restore(
+            snapshot
+        )
+
+    def export_state(self):
+
+        return self.store.export_state()
+
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        self.store.restore_state(
+            state
+        )

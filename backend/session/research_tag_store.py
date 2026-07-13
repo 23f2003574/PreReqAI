@@ -127,3 +127,21 @@ class ResearchTagStore(
     ]:
 
         raise NotImplementedError
+
+    @abstractmethod
+    def export_state(
+        self,
+    ):
+
+        raise NotImplementedError
+
+    @abstractmethod
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        raise NotImplementedError

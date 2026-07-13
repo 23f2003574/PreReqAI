@@ -342,3 +342,19 @@ class JsonResearchTagStore(
             key=lambda item:
                 item.tag_id,
         )
+
+    def export_state(self):
+
+        return self.file.read()
+
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        self.file.write(
+            state
+        )

@@ -150,3 +150,56 @@ class JsonResearchSessionStore(
 
             reverse=True,
         )
+
+    def restore(
+
+        self,
+
+        snapshot:
+            ResearchSessionSnapshot,
+
+    ) -> ResearchSessionSnapshot:
+
+        sessions = self.file.read()
+
+        if (
+
+            snapshot.session_id
+
+            in sessions
+        ):
+
+            raise ValueError(
+
+                "Research session "
+                "already exists: "
+                f"{snapshot.session_id}"
+            )
+
+        sessions[
+            snapshot.session_id
+        ] = snapshot.to_dict()
+
+        self.file.write(
+            sessions
+        )
+
+        return deepcopy(
+            snapshot
+        )
+
+    def export_state(self):
+
+        return self.file.read()
+
+    def restore_state(
+
+        self,
+
+        state,
+
+    ) -> None:
+
+        self.file.write(
+            state
+        )

@@ -1,3 +1,5 @@
+import pytest
+
 from backend.session import (
     ResearchActivityType,
     ResearchCheckpointReason,
@@ -1736,4 +1738,120 @@ def test_persisted_workspace_can_be_exported_after_restart(
         )
 
         == 1
+    )
+
+
+def test_failed_import_remains_rolled_back_after_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    source = (
+
+        create_persistent_application(
+
+            tmp_path
+
+            / "prereqai-source"
+        )
+    )
+
+    source.activate_research_session(
+        "session-a"
+    )
+
+    source.save_research_session(
+        "session-a"
+    )
+
+    checkpoint = (
+
+        source
+        .checkpoint_workflow_progress(
+            "step-a"
+        )
+    )
+
+    source.branch_research_checkpoint(
+
+        checkpoint.id,
+
+        branch_session_id=(
+            "session-b"
+        ),
+    )
+
+    snapshot = (
+
+        source
+        .export_research_workspace()
+    )
+
+    application = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    def failing_save(
+
+        *args,
+
+        **kwargs,
+
+    ):
+
+        raise RuntimeError(
+            "simulated failure"
+        )
+
+    application.session_version_store.save = (
+        failing_save
+    )
+
+    with pytest.raises(
+        RuntimeError
+    ):
+
+        application.import_research_snapshot(
+
+            snapshot
+        )
+
+    restarted = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    assert (
+
+        restarted
+        .session_manager
+        .list_sessions()
+
+        == []
+    )
+
+    assert (
+
+        restarted
+        .checkpoint_store
+        .list_for_session(
+            "session-a"
+        )
+
+        == []
     )
