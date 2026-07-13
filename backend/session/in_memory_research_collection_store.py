@@ -131,13 +131,17 @@ class InMemoryResearchCollectionStore(
             membership.session_id,
         )
 
-        if key not in self._memberships:
+        if key in self._memberships:
 
-            self._memberships[
-                key
-            ] = deepcopy(
-                membership
-            )
+            return False
+
+        self._memberships[
+            key
+        ] = deepcopy(
+            membership
+        )
+
+        return True
 
     def remove_membership(
 

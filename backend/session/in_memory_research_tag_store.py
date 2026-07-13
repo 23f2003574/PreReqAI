@@ -107,13 +107,17 @@ class InMemoryResearchTagStore(
             assignment.tag_id,
         )
 
-        if key not in self._assignments:
+        if key in self._assignments:
 
-            self._assignments[
-                key
-            ] = deepcopy(
-                assignment
-            )
+            return False
+
+        self._assignments[
+            key
+        ] = deepcopy(
+            assignment
+        )
+
+        return True
 
     def unassign(
 

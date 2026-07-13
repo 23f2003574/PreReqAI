@@ -6,12 +6,17 @@ from backend.session import (
     AnnotatedResearchCheckpoint,
     ArtifactRestorationResult,
     InMemoryInteractionArtifactLinkStore,
+    InMemoryResearchActivityStore,
     InMemoryResearchArtifactStore,
     InMemoryResearchCheckpointAnnotationStore,
     InMemoryResearchCheckpointStore,
     InMemoryResearchSessionStore,
     InMemoryResearchSessionVersionStore,
     InteractionArtifactCorrelationManager,
+    ResearchActivityActorType,
+    ResearchActivityRecorder,
+    ResearchActivityService,
+    ResearchActivityType,
     ResearchArtifactManager,
     ResearchArtifactRestorer,
     ResearchArtifactTypeMapper,
@@ -72,6 +77,8 @@ class PreReqAIApplication:
         tag_store=None,
 
         collection_store=None,
+
+        activity_store=None,
 
     ):
 
@@ -180,6 +187,33 @@ class PreReqAIApplication:
                 restorer=(
                     self.session_restorer
                 ),
+            )
+        )
+
+        self.research_activity_store = (
+
+            activity_store
+
+            or InMemoryResearchActivityStore()
+        )
+
+        self.activity_recorder = (
+
+            ResearchActivityRecorder(
+
+                activity_store=(
+                    self.research_activity_store
+                )
+            )
+        )
+
+        self.research_activity_service = (
+
+            ResearchActivityService(
+
+                activity_store=(
+                    self.research_activity_store
+                )
             )
         )
 
@@ -389,6 +423,10 @@ class PreReqAIApplication:
                 session_manager=(
                     self.session_manager
                 ),
+
+                activity_recorder=(
+                    self.activity_recorder
+                ),
             )
         )
 
@@ -452,6 +490,10 @@ class PreReqAIApplication:
 
                 collection_store=(
                     self.collection_store
+                ),
+
+                activity_recorder=(
+                    self.activity_recorder
                 ),
             )
         )
@@ -948,6 +990,15 @@ class PreReqAIApplication:
 
     ):
 
+        existing = (
+
+            self.session_manager
+            .load_session(
+
+                session_id
+            )
+        )
+
         self.active_session_id = (
             session_id
         )
@@ -958,6 +1009,36 @@ class PreReqAIApplication:
 
         self.active_paper_title = (
             paper_title
+        )
+
+        if existing is None:
+
+            self.activity_recorder.record(
+
+                ResearchActivityType
+                .SESSION_CREATED,
+
+                session_id=session_id,
+
+                actor_type=(
+
+                    ResearchActivityActorType
+                    .USER
+                ),
+            )
+
+        self.activity_recorder.record(
+
+            ResearchActivityType
+            .SESSION_ACTIVATED,
+
+            session_id=session_id,
+
+            actor_type=(
+
+                ResearchActivityActorType
+                .USER
+            ),
         )
 
         return session_id
@@ -1134,7 +1215,7 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        checkpoint = (
 
             self.checkpoint_active_session(
 
@@ -1142,6 +1223,66 @@ class PreReqAIApplication:
                 .MANUAL
             )
         )
+
+        if checkpoint is not None:
+
+            self.activity_recorder.record(
+
+                ResearchActivityType
+                .CHECKPOINT_CREATED,
+
+                session_id=(
+                    checkpoint.session_id
+                ),
+
+                actor_type=(
+
+                    ResearchActivityActorType
+                    .USER
+                ),
+
+                metadata={
+
+                    "checkpoint_id":
+                        checkpoint.id,
+                },
+            )
+
+            if (
+
+                checkpoint
+                .snapshot_version_id
+
+                is not None
+            ):
+
+                self.activity_recorder.record(
+
+                    ResearchActivityType
+                    .VERSION_CREATED,
+
+                    session_id=(
+                        checkpoint.session_id
+                    ),
+
+                    actor_type=(
+
+                        ResearchActivityActorType
+                        .SYSTEM
+                    ),
+
+                    metadata={
+
+                        "version_id":
+                            checkpoint
+                            .snapshot_version_id,
+
+                        "checkpoint_id":
+                            checkpoint.id,
+                    },
+                )
+
+        return checkpoint
 
     def research_checkpoints(
 
@@ -1845,6 +1986,39 @@ class PreReqAIApplication:
                     description
                 ),
             )
+        )
+
+        self.activity_recorder.record(
+
+            ResearchActivityType
+            .BRANCH_CREATED,
+
+            session_id=(
+                branch.source_session_id
+            ),
+
+            related_session_id=(
+                branch.branch_session_id
+            ),
+
+            actor_type=(
+
+                ResearchActivityActorType
+                .USER
+            ),
+
+            metadata={
+
+                "branch_session_id":
+                    branch.branch_session_id,
+
+                "source_checkpoint_id":
+                    branch
+                    .source_checkpoint_id,
+
+                "source_version_id":
+                    branch.source_version_id,
+            },
         )
 
         return {
@@ -2570,7 +2744,7 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        comparison = (
 
             self.session_lineage_comparison_service
             .compare(
@@ -2584,6 +2758,38 @@ class PreReqAIApplication:
                 ),
             )
         )
+
+        self.activity_recorder.record(
+
+            ResearchActivityType
+            .SESSION_COMPARED,
+
+            session_id=first_session_id,
+
+            related_session_id=(
+                second_session_id
+            ),
+
+            actor_type=(
+
+                ResearchActivityActorType
+                .USER
+            ),
+
+            metadata={
+
+                "relationship":
+                    comparison
+                    .relationship
+                    .value,
+
+                "lineage_distance":
+                    comparison
+                    .lineage_distance,
+            },
+        )
+
+        return comparison
 
     def tag_research_session(
 
@@ -2780,5 +2986,74 @@ class PreReqAIApplication:
             .session_ids_in_collection(
 
                 collection_id
+            )
+        )
+
+    def research_session_activity(
+
+        self,
+
+        session_id,
+
+        page=1,
+
+        page_size=50,
+
+    ):
+
+        return (
+
+            self.research_activity_service
+            .timeline_for_session(
+
+                session_id=(
+                    session_id
+                ),
+
+                page=page,
+
+                page_size=(
+                    page_size
+                ),
+            )
+        )
+
+    def recent_research_activity(
+
+        self,
+
+        page=1,
+
+        page_size=50,
+
+    ):
+
+        return (
+
+            self.research_activity_service
+            .recent_activity(
+
+                page=page,
+
+                page_size=(
+                    page_size
+                ),
+            )
+        )
+
+    def query_research_activity(
+
+        self,
+
+        query,
+
+    ):
+
+        return (
+
+            self.research_activity_service
+            .query(
+
+                query
             )
         )

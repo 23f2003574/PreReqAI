@@ -1195,3 +1195,53 @@ Research session discovery can combine:
 - Pagination
 
 Session discovery results also expose the session's current tag names and collection identifiers.
+
+## Research Activity Timeline
+
+PreReqAI records immutable domain-level activity events for meaningful research workspace actions.
+
+The unified activity timeline can represent:
+
+- Research session creation
+- Session activation
+- Profile renaming
+- Description updates
+- Lifecycle status changes
+- Archiving and restoration
+- Checkpoint creation
+- Immutable version creation
+- Research branch creation
+- Tag assignment and removal
+- Collection creation and updates
+- Collection membership changes
+- User-triggered research session comparisons
+
+Activity events contain:
+
+- Stable event identifiers
+- Typed activity categories
+- UTC occurrence timestamps
+- Primary session identifiers
+- Optional related session identifiers
+- Actor categories
+- Optional actor identifiers
+- JSON-serializable event metadata
+
+Activity history is append-only. Events represent completed domain facts and are not silently rewritten.
+
+The activity query system supports:
+
+- Global workspace activity
+- Per-session timelines
+- Related-session activity
+- Activity-type filtering
+- Actor-type filtering
+- Time-range filtering
+- Newest-first or oldest-first ordering
+- Pagination
+
+Idempotent domain operations do not produce duplicate activity events when no state change occurred.
+
+Persistent applications restore activity history without re-emitting historical events during application startup.
+
+Checkpoint and version activity events are recorded only for explicit user-triggered checkpoints, not for the many automatic system checkpoints created during ordinary research interaction, to keep the timeline meaningful rather than noisy.

@@ -73,7 +73,7 @@ class ResearchCollectionStore(
         membership:
             ResearchCollectionMembership,
 
-    ) -> None:
+    ) -> bool:
 
         raise NotImplementedError
 

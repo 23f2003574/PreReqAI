@@ -111,3 +111,13 @@ class ResearchPersistenceConfig:
 
             / "research_collections.json"
         )
+
+    @property
+    def research_activity_events_path(self):
+
+        return (
+
+            self.root_directory
+
+            / "research_activity_events.json"
+        )

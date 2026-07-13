@@ -72,7 +72,7 @@ class ResearchTagStore(
         assignment:
             ResearchSessionTagAssignment,
 
-    ) -> None:
+    ) -> bool:
 
         raise NotImplementedError
 

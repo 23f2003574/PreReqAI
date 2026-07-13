@@ -38,6 +38,10 @@ from .json_research_collection_store import (
     JsonResearchCollectionStore,
 )
 
+from .json_research_activity_store import (
+    JsonResearchActivityStore,
+)
+
 from .research_persistence_config import (
     ResearchPersistenceConfig,
 )
@@ -140,6 +144,15 @@ class ResearchPersistenceFactory:
 
                     config
                     .research_collections_path
+                )
+            ),
+
+            "activity_store": (
+
+                JsonResearchActivityStore(
+
+                    config
+                    .research_activity_events_path
                 )
             ),
         }

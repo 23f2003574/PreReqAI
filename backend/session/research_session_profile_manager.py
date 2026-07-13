@@ -4,6 +4,14 @@ from dataclasses import (
     replace,
 )
 
+from .research_activity_actor_type import (
+    ResearchActivityActorType,
+)
+
+from .research_activity_type import (
+    ResearchActivityType,
+)
+
 from .research_session_profile import (
     ResearchSessionProfile,
     utc_now,
@@ -31,6 +39,8 @@ class ResearchSessionProfileManager:
 
         session_manager,
 
+        activity_recorder=None,
+
     ):
 
         self.profile_store = (
@@ -39,6 +49,10 @@ class ResearchSessionProfileManager:
 
         self.session_manager = (
             session_manager
+        )
+
+        self.activity_recorder = (
+            activity_recorder
         )
 
     def _require_session(
@@ -302,7 +316,7 @@ class ResearchSessionProfileManager:
             **changes,
         )
 
-        return (
+        saved = (
 
             self.profile_store
             .save(
@@ -310,6 +324,163 @@ class ResearchSessionProfileManager:
                 updated
             )
         )
+
+        self._record_profile_changes(
+
+            session_id,
+
+            profile,
+
+            saved,
+        )
+
+        return saved
+
+    def _record_profile_changes(
+
+        self,
+
+        session_id,
+
+        old_profile,
+
+        new_profile,
+
+    ):
+
+        if self.activity_recorder is None:
+
+            return
+
+        if (
+
+            old_profile.display_name
+
+            != new_profile.display_name
+        ):
+
+            self.activity_recorder.record(
+
+                ResearchActivityType
+                .SESSION_RENAMED,
+
+                session_id=session_id,
+
+                actor_type=(
+
+                    ResearchActivityActorType
+                    .USER
+                ),
+
+                metadata={
+
+                    "old_name":
+                        old_profile
+                        .display_name,
+
+                    "new_name":
+                        new_profile
+                        .display_name,
+                },
+            )
+
+        if (
+
+            old_profile.description
+
+            != new_profile.description
+        ):
+
+            self.activity_recorder.record(
+
+                ResearchActivityType
+                .SESSION_DESCRIPTION_UPDATED,
+
+                session_id=session_id,
+
+                actor_type=(
+
+                    ResearchActivityActorType
+                    .USER
+                ),
+
+                metadata={
+
+                    "old_description":
+                        old_profile
+                        .description,
+
+                    "new_description":
+                        new_profile
+                        .description,
+                },
+            )
+
+        if (
+
+            old_profile.status
+
+            != new_profile.status
+        ):
+
+            self.activity_recorder.record(
+
+                ResearchActivityType
+                .SESSION_STATUS_CHANGED,
+
+                session_id=session_id,
+
+                actor_type=(
+
+                    ResearchActivityActorType
+                    .USER
+                ),
+
+                metadata={
+
+                    "old_status":
+                        old_profile
+                        .status
+                        .value,
+
+                    "new_status":
+                        new_profile
+                        .status
+                        .value,
+                },
+            )
+
+        if (
+
+            old_profile.archived
+
+            != new_profile.archived
+        ):
+
+            self.activity_recorder.record(
+
+                (
+
+                    ResearchActivityType
+                    .SESSION_ARCHIVED
+
+                    if new_profile.archived
+
+                    else (
+
+                        ResearchActivityType
+                        .SESSION_RESTORED
+                    )
+                ),
+
+                session_id=session_id,
+
+                actor_type=(
+
+                    ResearchActivityActorType
+                    .USER
+                ),
+            )
 
     def pause(
 

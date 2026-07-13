@@ -1,4 +1,5 @@
 from backend.session import (
+    ResearchActivityType,
     ResearchCheckpointReason,
     ResearchSessionStatus,
 )
@@ -1471,3 +1472,104 @@ def test_workspace_organization_survives_restart(
     )
 
     assert page.total == 1
+
+
+def test_research_activity_survives_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        "session-a"
+    )
+
+    first_app.save_research_session(
+        "session-a"
+    )
+
+    first_app.tag_research_session(
+
+        "session-a",
+
+        "math-heavy",
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    page = (
+
+        second_app
+        .research_session_activity(
+
+            "session-a"
+        )
+    )
+
+    activity_types = {
+
+        event.activity_type
+
+        for event
+
+        in page.items
+    }
+
+    assert (
+
+        ResearchActivityType
+        .SESSION_CREATED
+
+        in activity_types
+    )
+
+    assert (
+
+        ResearchActivityType
+        .TAG_ASSIGNED
+
+        in activity_types
+    )
+
+    created_events = [
+
+        event
+
+        for event
+
+        in page.items
+
+        if (
+
+            event.activity_type
+
+            == (
+                ResearchActivityType
+                .SESSION_CREATED
+            )
+        )
+    ]
+
+    assert len(created_events) == 1

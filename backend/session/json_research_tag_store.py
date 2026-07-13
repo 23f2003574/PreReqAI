@@ -167,7 +167,7 @@ class JsonResearchTagStore(
 
         if exists:
 
-            return
+            return False
 
         data["assignments"].append(
 
@@ -177,6 +177,8 @@ class JsonResearchTagStore(
         self.file.write(
             data
         )
+
+        return True
 
     def unassign(
 

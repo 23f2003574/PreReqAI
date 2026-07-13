@@ -436,4 +436,44 @@ from .research_workspace_organization_service import (
     ResearchWorkspaceOrganizationService,
 )
 
+from .research_activity_type import (
+    ResearchActivityType,
+)
+
+from .research_activity_actor_type import (
+    ResearchActivityActorType,
+)
+
+from .research_activity_event import (
+    ResearchActivityEvent,
+)
+
+from .research_activity_store import (
+    ResearchActivityStore,
+)
+
+from .in_memory_research_activity_store import (
+    InMemoryResearchActivityStore,
+)
+
+from .json_research_activity_store import (
+    JsonResearchActivityStore,
+)
+
+from .research_activity_recorder import (
+    ResearchActivityRecorder,
+)
+
+from .research_activity_query import (
+    ResearchActivityQuery,
+)
+
+from .research_activity_page import (
+    ResearchActivityPage,
+)
+
+from .research_activity_service import (
+    ResearchActivityService,
+)
+
 session_manager = SessionManager()

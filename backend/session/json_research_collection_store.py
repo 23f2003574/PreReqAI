@@ -195,7 +195,7 @@ class JsonResearchCollectionStore(
 
         if exists:
 
-            return
+            return False
 
         data["memberships"].append(
 
@@ -205,6 +205,8 @@ class JsonResearchCollectionStore(
         self.file.write(
             data
         )
+
+        return True
 
     def remove_membership(
 

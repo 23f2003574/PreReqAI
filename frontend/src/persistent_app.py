@@ -106,4 +106,11 @@ def create_persistent_application(
                 "collection_store"
             ]
         ),
+
+        activity_store=(
+
+            stores[
+                "activity_store"
+            ]
+        ),
     )

@@ -7,6 +7,14 @@ from uuid import (
     uuid4,
 )
 
+from .research_activity_actor_type import (
+    ResearchActivityActorType,
+)
+
+from .research_activity_type import (
+    ResearchActivityType,
+)
+
 from .research_collection import (
     ResearchCollection,
 )
@@ -44,6 +52,8 @@ class ResearchWorkspaceOrganizationService:
 
         collection_store,
 
+        activity_recorder=None,
+
     ):
 
         self.session_manager = (
@@ -56,6 +66,37 @@ class ResearchWorkspaceOrganizationService:
 
         self.collection_store = (
             collection_store
+        )
+
+        self.activity_recorder = (
+            activity_recorder
+        )
+
+    def _record(
+
+        self,
+
+        activity_type,
+
+        **kwargs,
+
+    ):
+
+        if self.activity_recorder is None:
+
+            return
+
+        self.activity_recorder.record(
+
+            activity_type,
+
+            actor_type=(
+
+                ResearchActivityActorType
+                .USER
+            ),
+
+            **kwargs,
         )
 
     @staticmethod
@@ -182,10 +223,32 @@ class ResearchWorkspaceOrganizationService:
             )
         )
 
-        self.tag_store.assign(
+        created = (
 
-            assignment
+            self.tag_store.assign(
+
+                assignment
+            )
         )
+
+        if created:
+
+            self._record(
+
+                ResearchActivityType
+                .TAG_ASSIGNED,
+
+                session_id=session_id,
+
+                metadata={
+
+                    "tag_id":
+                        tag.id,
+
+                    "tag_name":
+                        tag.name,
+                },
+            )
 
         return tag
 
@@ -220,7 +283,7 @@ class ResearchWorkspaceOrganizationService:
 
             return False
 
-        return (
+        removed = (
 
             self.tag_store
             .unassign(
@@ -230,6 +293,27 @@ class ResearchWorkspaceOrganizationService:
                 tag.id,
             )
         )
+
+        if removed:
+
+            self._record(
+
+                ResearchActivityType
+                .TAG_REMOVED,
+
+                session_id=session_id,
+
+                metadata={
+
+                    "tag_id":
+                        tag.id,
+
+                    "tag_name":
+                        tag.name,
+                },
+            )
+
+        return removed
 
     def tags_for_session(
 
@@ -314,6 +398,21 @@ class ResearchWorkspaceOrganizationService:
             collection
         )
 
+        self._record(
+
+            ResearchActivityType
+            .COLLECTION_CREATED,
+
+            metadata={
+
+                "collection_id":
+                    collection.id,
+
+                "collection_name":
+                    collection.name,
+            },
+        )
+
         return collection
 
     def update_collection(
@@ -346,6 +445,12 @@ class ResearchWorkspaceOrganizationService:
                 f"{collection_id}"
             )
 
+        old_name = collection.name
+
+        old_description = (
+            collection.description
+        )
+
         if name is not None:
 
             normalized_name = (
@@ -373,6 +478,21 @@ class ResearchWorkspaceOrganizationService:
                 or None
             )
 
+        changed = (
+
+            collection.name
+
+            != old_name
+
+            or collection.description
+
+            != old_description
+        )
+
+        if not changed:
+
+            return collection
+
         collection.updated_at = (
             self._now()
         )
@@ -380,6 +500,21 @@ class ResearchWorkspaceOrganizationService:
         self.collection_store.save_collection(
 
             collection
+        )
+
+        self._record(
+
+            ResearchActivityType
+            .COLLECTION_UPDATED,
+
+            metadata={
+
+                "collection_id":
+                    collection.id,
+
+                "collection_name":
+                    collection.name,
+            },
         )
 
         return collection
@@ -435,10 +570,33 @@ class ResearchWorkspaceOrganizationService:
             )
         )
 
-        self.collection_store.add_membership(
+        created = (
 
-            membership
+            self.collection_store
+            .add_membership(
+
+                membership
+            )
         )
+
+        if created:
+
+            self._record(
+
+                ResearchActivityType
+                .COLLECTION_SESSION_ADDED,
+
+                session_id=session_id,
+
+                metadata={
+
+                    "collection_id":
+                        collection.id,
+
+                    "collection_name":
+                        collection.name,
+                },
+            )
 
         return membership
 
@@ -452,7 +610,16 @@ class ResearchWorkspaceOrganizationService:
 
     ):
 
-        return (
+        collection = (
+
+            self.collection_store
+            .get_collection(
+
+                collection_id
+            )
+        )
+
+        removed = (
 
             self.collection_store
             .remove_membership(
@@ -463,6 +630,27 @@ class ResearchWorkspaceOrganizationService:
             )
         )
 
+        if removed and collection is not None:
+
+            self._record(
+
+                ResearchActivityType
+                .COLLECTION_SESSION_REMOVED,
+
+                session_id=session_id,
+
+                metadata={
+
+                    "collection_id":
+                        collection.id,
+
+                    "collection_name":
+                        collection.name,
+                },
+            )
+
+        return removed
+
     def delete_collection(
 
         self,
@@ -471,7 +659,16 @@ class ResearchWorkspaceOrganizationService:
 
     ):
 
-        return (
+        collection = (
+
+            self.collection_store
+            .get_collection(
+
+                collection_id
+            )
+        )
+
+        deleted = (
 
             self.collection_store
             .delete_collection(
@@ -479,6 +676,25 @@ class ResearchWorkspaceOrganizationService:
                 collection_id
             )
         )
+
+        if deleted and collection is not None:
+
+            self._record(
+
+                ResearchActivityType
+                .COLLECTION_DELETED,
+
+                metadata={
+
+                    "collection_id":
+                        collection.id,
+
+                    "collection_name":
+                        collection.name,
+                },
+            )
+
+        return deleted
 
     def collections_for_session(
 
