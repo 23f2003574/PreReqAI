@@ -1115,3 +1115,35 @@ Session discovery results include:
 Results are paginated and expose total count, returned count, next offset, and whether additional results exist.
 
 The query system is read-only and does not create profiles or modify research sessions while browsing them.
+
+## Research Session Comparison
+
+PreReqAI can derive structured comparisons between research sessions.
+
+Session comparison includes:
+
+- Lineage relationship
+- Whether the sessions belong to the same lineage
+- Lowest common ancestor session
+- Lineage distance
+- Paths from the common ancestor
+- First divergent lineage sessions
+- Historical checkpoint and immutable version origins for divergent branches
+- Domain-relevant session state differences
+- Workflow-step differences
+- Artifact differences
+- Knowledge-graph node differences
+- Knowledge-graph edge differences
+
+Supported lineage relationships include:
+
+- Same session
+- Ancestor
+- Descendant
+- Sibling
+- Related non-sibling branch (cousin)
+- Unrelated
+
+Unrelated sessions can still be compared by state, workflow, and artifacts. They simply do not have a common lineage ancestor or lineage distance.
+
+Comparisons are derived on demand and are not persisted separately. Persistent sessions, branch relationships, and artifacts remain the sources of truth.

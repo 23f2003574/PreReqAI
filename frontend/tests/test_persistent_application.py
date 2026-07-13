@@ -1258,3 +1258,93 @@ def test_session_discovery_query_works_after_restart(
 
         == "math-branch"
     )
+
+
+def test_session_comparison_reconstructs_after_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        "session-main"
+    )
+
+    checkpoint = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "root-step"
+        )
+    )
+
+    first_app.branch_research_checkpoint(
+
+        checkpoint.id,
+
+        branch_session_id=(
+            "session-a"
+        ),
+    )
+
+    first_app.branch_research_checkpoint(
+
+        checkpoint.id,
+
+        branch_session_id=(
+            "session-b"
+        ),
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    comparison = (
+
+        second_app
+        .compare_research_sessions(
+
+            "session-a",
+
+            "session-b",
+        )
+    )
+
+    assert (
+
+        comparison.relationship.value
+
+        == "sibling"
+    )
+
+    assert (
+
+        comparison
+        .common_ancestor_session_id
+
+        == "session-main"
+    )
+
+    assert comparison.lineage_distance == 2

@@ -28,6 +28,7 @@ from backend.session import (
     ResearchRuntimeResolver,
     ResearchSessionBranchManager,
     ResearchSessionComparator,
+    ResearchSessionLineageComparisonService,
     ResearchSessionLineageService,
     ResearchSessionManager,
     ResearchSessionProfileManager,
@@ -402,6 +403,28 @@ class PreReqAIApplication:
 
                 lineage_service=(
                     self.session_lineage_service
+                ),
+            )
+        )
+
+        self.session_lineage_comparison_service = (
+
+            ResearchSessionLineageComparisonService(
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                branch_store=(
+                    self.session_branch_store
+                ),
+
+                lineage_service=(
+                    self.session_lineage_service
+                ),
+
+                artifact_store=(
+                    self.artifact_store
                 ),
             )
         )
@@ -2468,4 +2491,29 @@ class PreReqAIApplication:
 
         return self.query_research_sessions(
             **options
+        )
+
+    def compare_research_sessions(
+
+        self,
+
+        first_session_id: str,
+
+        second_session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_comparison_service
+            .compare(
+
+                first_session_id=(
+                    first_session_id
+                ),
+
+                second_session_id=(
+                    second_session_id
+                ),
+            )
         )

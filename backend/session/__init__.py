@@ -364,4 +364,28 @@ from .research_session_sort_order import (
     ResearchSessionSortOrder,
 )
 
+from .research_session_relationship import (
+    ResearchSessionRelationship,
+)
+
+from .research_session_state_difference import (
+    ResearchSessionStateDifference,
+)
+
+from .research_session_collection_difference import (
+    ResearchSessionCollectionDifference,
+)
+
+from .research_session_divergence import (
+    ResearchSessionDivergence,
+)
+
+from .research_session_lineage_comparison import (
+    ResearchSessionLineageComparison,
+)
+
+from .research_session_lineage_comparison_service import (
+    ResearchSessionLineageComparisonService,
+)
+
 session_manager = SessionManager()
