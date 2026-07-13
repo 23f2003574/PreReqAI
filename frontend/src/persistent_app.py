@@ -78,4 +78,11 @@ def create_persistent_application(
                 "checkpoint_annotation_store"
             ]
         ),
+
+        session_branch_store=(
+
+            stores[
+                "session_branch_store"
+            ]
+        ),
     )

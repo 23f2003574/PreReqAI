@@ -15,6 +15,7 @@ from backend.session import (
     ResearchArtifactManager,
     ResearchArtifactRestorer,
     ResearchArtifactTypeMapper,
+    InMemoryResearchSessionBranchStore,
     ResearchCheckpointAnnotationManager,
     ResearchCheckpointManager,
     ResearchCheckpointReason,
@@ -24,6 +25,7 @@ from backend.session import (
     ResearchRecoveryPreviewManager,
     ResearchRuntimeRegistry,
     ResearchRuntimeResolver,
+    ResearchSessionBranchManager,
     ResearchSessionComparator,
     ResearchSessionManager,
     ResearchSessionRestorer,
@@ -53,6 +55,8 @@ class PreReqAIApplication:
         session_version_store=None,
 
         checkpoint_annotation_store=None,
+
+        session_branch_store=None,
 
     ):
 
@@ -284,6 +288,58 @@ class PreReqAIApplication:
 
                 annotation_store=(
                     self.checkpoint_annotation_store
+                ),
+            )
+        )
+
+        self.session_branch_store = (
+
+            session_branch_store
+
+            or (
+                InMemoryResearchSessionBranchStore()
+            )
+        )
+
+        self.session_branch_manager = (
+
+            ResearchSessionBranchManager(
+
+                checkpoint_store=(
+                    self.checkpoint_store
+                ),
+
+                checkpoint_manager=(
+                    self.checkpoint_manager
+                ),
+
+                version_manager=(
+                    self.session_version_manager
+                ),
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                session_restorer=(
+                    self.session_restorer
+                ),
+
+                branch_store=(
+                    self.session_branch_store
+                ),
+
+                workspace_factory=(
+
+                    lambda:
+                        create_visual_research_workspace(
+
+                            correlation_provider=(
+
+                                self
+                                .interaction_artifact_correlations
+                            )
+                        )
                 ),
             )
         )
@@ -1591,5 +1647,172 @@ class PreReqAIApplication:
                 ),
 
                 **query_options,
+            )
+        )
+
+    def branch_research_checkpoint(
+
+        self,
+
+        checkpoint_id: str,
+
+        branch_session_id:
+            str | None = None,
+
+        metadata:
+            dict | None = None,
+
+    ):
+
+        (
+            branch,
+            initial_checkpoint,
+            restored_workspace,
+
+        ) = (
+
+            self.session_branch_manager
+            .create_from_checkpoint(
+
+                checkpoint_id=(
+                    checkpoint_id
+                ),
+
+                branch_session_id=(
+                    branch_session_id
+                ),
+
+                metadata=metadata,
+            )
+        )
+
+        return {
+
+            "branch":
+                branch,
+
+            "initial_checkpoint":
+                initial_checkpoint,
+
+            "workspace":
+                restored_workspace,
+        }
+
+    def branch_and_activate_research_checkpoint(
+
+        self,
+
+        checkpoint_id: str,
+
+        branch_session_id:
+            str | None = None,
+
+        metadata:
+            dict | None = None,
+
+    ):
+
+        result = (
+
+            self.branch_research_checkpoint(
+
+                checkpoint_id=(
+                    checkpoint_id
+                ),
+
+                branch_session_id=(
+                    branch_session_id
+                ),
+
+                metadata=metadata,
+            )
+        )
+
+        branch = result[
+            "branch"
+        ]
+
+        version = (
+
+            self.get_research_session_version(
+
+                branch.source_version_id
+            )
+        )
+
+        self.active_session_id = (
+            branch.branch_session_id
+        )
+
+        self.workspace = (
+            result["workspace"]
+        )
+
+        if version is not None:
+
+            self.active_paper_id = (
+
+                version
+                .snapshot
+                .paper_id
+            )
+
+            self.active_paper_title = (
+
+                version
+                .snapshot
+                .paper_title
+            )
+
+        return result
+
+    def research_session_branch_origin(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_branch_store
+            .get_by_branch_session(
+
+                session_id
+            )
+        )
+
+    def research_session_branches(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_branch_store
+            .list_from_session(
+
+                session_id
+            )
+        )
+
+    def research_checkpoint_branches(
+
+        self,
+
+        checkpoint_id: str,
+
+    ):
+
+        return (
+
+            self.session_branch_store
+            .list_from_checkpoint(
+
+                checkpoint_id
             )
         )

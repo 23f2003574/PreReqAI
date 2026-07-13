@@ -22,6 +22,10 @@ from .json_research_session_version_store import (
     JsonResearchSessionVersionStore,
 )
 
+from .json_research_session_branch_store import (
+    JsonResearchSessionBranchStore,
+)
+
 from .research_persistence_config import (
     ResearchPersistenceConfig,
 )
@@ -91,6 +95,14 @@ class ResearchPersistenceFactory:
 
                     config
                     .checkpoint_annotations_path
+                )
+            ),
+
+            "session_branch_store": (
+
+                JsonResearchSessionBranchStore(
+
+                    config.session_branches_path
                 )
             ),
         }

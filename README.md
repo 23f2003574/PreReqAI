@@ -975,3 +975,38 @@ Paginated responses include:
 - The next offset when available
 
 Research history queries are read-only and do not modify session state, checkpoint history, immutable versions, or annotations.
+
+## Research Session Branching
+
+PreReqAI can create independent research sessions from immutable historical checkpoints.
+
+Branching differs from checkpoint recovery.
+
+Recovery changes the current trajectory while preserving history:
+
+```text
+A → B → C → Restore(A)
+```
+
+Branching preserves the original trajectory and creates a new independent session:
+
+```text
+A → B → C
+    │
+    └── A' → D → E
+```
+
+A branch records:
+
+- Source research session
+- Source checkpoint
+- Source immutable session version
+- New branch session
+- Branch metadata
+- Creation time
+
+The source checkpoint and immutable historical version are read-only during branch creation.
+
+Each new branch receives its own session identity and an initial `SESSION_BRANCHED` checkpoint describing its origin.
+
+Multiple independent branches can be created from the same historical checkpoint.

@@ -860,3 +860,87 @@ def test_research_history_query_works_after_restart(
 
         == checkpoint.id
     )
+
+
+def test_branched_session_survives_application_recreation(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        session_id="session-main",
+
+        paper_title="Historical State",
+    )
+
+    checkpoint = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-a"
+        )
+    )
+
+    first_app.branch_research_checkpoint(
+
+        checkpoint.id,
+
+        branch_session_id=(
+            "session-branch"
+        ),
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    branch_session = (
+
+        second_app
+        .get_research_session(
+
+            "session-branch"
+        )
+    )
+
+    origin = (
+
+        second_app
+        .research_session_branch_origin(
+
+            "session-branch"
+        )
+    )
+
+    assert branch_session is not None
+
+    assert origin is not None
+
+    assert (
+
+        origin.source_checkpoint_id
+
+        == checkpoint.id
+    )

@@ -280,4 +280,24 @@ from .research_history_query_service import (
     ResearchHistoryQueryService,
 )
 
+from .research_session_branch import (
+    ResearchSessionBranch,
+)
+
+from .research_session_branch_store import (
+    ResearchSessionBranchStore,
+)
+
+from .in_memory_research_session_branch_store import (
+    InMemoryResearchSessionBranchStore,
+)
+
+from .json_research_session_branch_store import (
+    JsonResearchSessionBranchStore,
+)
+
+from .research_session_branch_manager import (
+    ResearchSessionBranchManager,
+)
+
 session_manager = SessionManager()

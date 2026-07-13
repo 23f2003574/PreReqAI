@@ -52,6 +52,9 @@ class ResearchCheckpointPolicy:
 
                 ResearchCheckpointReason
                 .CHECKPOINT_RESTORED,
+
+                ResearchCheckpointReason
+                .SESSION_BRANCHED,
             }
         )
 

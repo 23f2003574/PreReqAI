@@ -51,3 +51,7 @@ class ResearchCheckpointReason(
     CHECKPOINT_RESTORED = (
         "checkpoint_restored"
     )
+
+    SESSION_BRANCHED = (
+        "session_branched"
+    )
