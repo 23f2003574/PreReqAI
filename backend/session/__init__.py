@@ -608,4 +608,28 @@ from .research_workspace_repair_planner import (
     ResearchWorkspaceRepairPlanner,
 )
 
+from .research_workspace_change_operation import (
+    ResearchWorkspaceChangeOperation,
+)
+
+from .research_workspace_change_event import (
+    ResearchWorkspaceChangeEvent,
+)
+
+from .research_workspace_subscription import (
+    ResearchWorkspaceSubscription,
+)
+
+from .research_workspace_event_bus import (
+    ResearchWorkspaceEventBus,
+)
+
+from .research_workspace_change_page import (
+    ResearchWorkspaceChangePage,
+)
+
+from .research_workspace_change_feed import (
+    ResearchWorkspaceChangeFeed,
+)
+
 session_manager = SessionManager()

@@ -1401,3 +1401,42 @@ Findings are classified by severity: info, warning, error, and critical. The aud
 Integrity reports can be converted into explicit repair plans. Repair actions are classified as safe, review required, or destructive.
 
 Only operations whose intent is unambiguous, such as removing exact duplicate relationships, are eligible for automatic repair. Ambiguous graph corruption, including lineage cycles and multiple-parent conflicts, is never repaired automatically. Repair planning is also read-only.
+
+## Reactive Research Workspace Change Feed
+
+PreReqAI exposes a transport-agnostic reactive change system for synchronizing external consumers with workspace mutations.
+
+The system includes:
+
+### Ordered Change Events
+
+Workspace changes receive monotonically increasing sequence numbers. Consumers can request all changes after a known sequence cursor without relying on timestamp ordering.
+
+### Cursor-Based Synchronization
+
+Change events can be queried using:
+
+- Sequence cursors
+- Page limits
+- Entity type filters
+- Operation filters
+
+This supports efficient incremental synchronization for future user interfaces and external integrations.
+
+### In-Process Event Subscriptions
+
+Consumers can subscribe to workspace changes and optionally filter subscriptions by entity type or change operation. Subscriber failures are isolated and do not invalidate successfully committed domain mutations.
+
+### Persistent Change History
+
+The workspace change feed can persist its event sequence and change history across application restarts. Sequence numbers remain monotonic after restart.
+
+### Import-Aware Synchronization
+
+Large snapshot imports emit a single summary change event after the import transaction succeeds. Failed imports emit no workspace change event.
+
+### Separation from Research Activity History
+
+The reactive workspace change feed is distinct from the human-readable research activity timeline. Research activity describes meaningful historical actions. Workspace change events provide machine-oriented synchronization signals for interfaces and integrations.
+
+Read-only operations, including workspace queries, comparisons, insights, snapshot export, import preview, integrity auditing, and repair planning, never emit workspace change events.

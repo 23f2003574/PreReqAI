@@ -13,6 +13,7 @@ from backend.session import (
     InMemoryResearchSessionStore,
     InMemoryResearchSessionVersionStore,
     InteractionArtifactCorrelationManager,
+    normalize_research_tag_name,
     ResearchActivityActorType,
     ResearchActivityRecorder,
     ResearchActivityService,
@@ -42,6 +43,7 @@ from backend.session import (
     ResearchSessionQuery,
     ResearchSessionQueryService,
     ResearchSessionRestorer,
+    ResearchSessionStatus,
     ResearchSessionSerializer,
     ResearchSessionVersionManager,
     ResearchSnapshotImportPlanner,
@@ -52,6 +54,9 @@ from backend.session import (
     ResearchSnapshotSerializer,
     ResearchSnapshotService,
     ResearchSnapshotValidator,
+    ResearchWorkspaceChangeFeed,
+    ResearchWorkspaceChangeOperation,
+    ResearchWorkspaceEventBus,
     ResearchWorkspaceInsightsService,
     ResearchWorkspaceIntegrityAuditor,
     ResearchWorkspaceOrganizationService,
@@ -90,6 +95,8 @@ class PreReqAIApplication:
         collection_store=None,
 
         activity_store=None,
+
+        research_workspace_change_feed_storage_path=None,
 
     ):
 
@@ -748,11 +755,172 @@ class PreReqAIApplication:
             ResearchWorkspaceRepairPlanner()
         )
 
+        self.research_workspace_event_bus = (
+
+            ResearchWorkspaceEventBus()
+        )
+
+        self.research_workspace_change_feed = (
+
+            ResearchWorkspaceChangeFeed(
+
+                storage_path=(
+
+                    research_workspace_change_feed_storage_path
+                ),
+
+                event_bus=(
+
+                    self
+                    .research_workspace_event_bus
+                ),
+            )
+        )
+
         self.active_session_id = None
 
         self.active_paper_id = None
 
         self.active_paper_title = None
+
+    def _record_workspace_change(
+
+        self,
+
+        operation,
+
+        entity_type,
+
+        entity_id=None,
+
+        related_entity_ids=None,
+
+        metadata=None,
+
+    ):
+
+        return (
+
+            self.research_workspace_change_feed
+            .append(
+
+                operation=(
+                    operation
+                ),
+
+                entity_type=(
+                    entity_type
+                ),
+
+                entity_id=(
+                    entity_id
+                ),
+
+                related_entity_ids=(
+
+                    related_entity_ids
+                ),
+
+                metadata=(
+                    metadata
+                ),
+            )
+        )
+
+    def subscribe_to_research_workspace_changes(
+
+        self,
+
+        callback,
+
+        entity_types=None,
+
+        operations=None,
+
+    ):
+
+        return (
+
+            self.research_workspace_event_bus
+            .subscribe(
+
+                callback=(
+                    callback
+                ),
+
+                entity_types=(
+                    entity_types
+                ),
+
+                operations=(
+                    operations
+                ),
+            )
+        )
+
+    def unsubscribe_from_research_workspace_changes(
+
+        self,
+
+        subscription_id,
+
+    ):
+
+        return (
+
+            self.research_workspace_event_bus
+            .unsubscribe(
+
+                subscription_id
+            )
+        )
+
+    def get_research_workspace_changes(
+
+        self,
+
+        after_sequence=0,
+
+        limit=100,
+
+        entity_types=None,
+
+        operations=None,
+
+    ):
+
+        return (
+
+            self.research_workspace_change_feed
+            .get_changes(
+
+                after_sequence=(
+                    after_sequence
+                ),
+
+                limit=limit,
+
+                entity_types=(
+                    entity_types
+                ),
+
+                operations=(
+                    operations
+                ),
+            )
+        )
+
+    def get_latest_research_workspace_change_sequence(
+
+        self,
+
+    ):
+
+        return (
+
+            self.research_workspace_change_feed
+            .latest_sequence
+        )
 
     def save_research_session(
 
@@ -1255,6 +1423,23 @@ class PreReqAIApplication:
                 ),
             )
 
+            self._record_workspace_change(
+
+                operation=(
+
+                    ResearchWorkspaceChangeOperation
+                    .CREATED
+                ),
+
+                entity_type=(
+                    "session"
+                ),
+
+                entity_id=(
+                    session_id
+                ),
+            )
+
         self.activity_recorder.record(
 
             ResearchActivityType
@@ -1303,7 +1488,7 @@ class PreReqAIApplication:
 
             return None
 
-        return (
+        checkpoint = (
 
             self.checkpoint_manager
             .checkpoint(
@@ -1329,6 +1514,32 @@ class PreReqAIApplication:
                 metadata=metadata,
             )
         )
+
+        if checkpoint is not None:
+
+            self._record_workspace_change(
+
+                operation=(
+
+                    ResearchWorkspaceChangeOperation
+                    .CREATED
+                ),
+
+                entity_type=(
+                    "checkpoint"
+                ),
+
+                entity_id=(
+                    checkpoint.id
+                ),
+
+                related_entity_ids=[
+
+                    checkpoint.session_id
+                ],
+            )
+
+        return checkpoint
 
     def checkpoint_workflow_progress(
 
@@ -2249,6 +2460,43 @@ class PreReqAIApplication:
             },
         )
 
+        self._record_workspace_change(
+
+            operation=(
+
+                ResearchWorkspaceChangeOperation
+                .CREATED
+            ),
+
+            entity_type=(
+                "session"
+            ),
+
+            entity_id=(
+                branch.branch_session_id
+            ),
+        )
+
+        self._record_workspace_change(
+
+            operation=(
+
+                ResearchWorkspaceChangeOperation
+                .CREATED
+            ),
+
+            entity_type=(
+                "branch"
+            ),
+
+            related_entity_ids=[
+
+                branch.source_session_id,
+
+                branch.branch_session_id,
+            ],
+        )
+
         return {
 
             "branch":
@@ -2701,7 +2949,7 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        profile = (
 
             self.session_profile_manager
             .update(
@@ -2713,6 +2961,30 @@ class PreReqAIApplication:
                 **changes,
             )
         )
+
+        self._record_workspace_change(
+
+            operation=(
+
+                ResearchWorkspaceChangeOperation
+                .UPDATED
+            ),
+
+            entity_type=(
+                "session_profile"
+            ),
+
+            entity_id=(
+                profile.session_id
+            ),
+
+            related_entity_ids=[
+
+                profile.session_id
+            ],
+        )
+
+        return profile
 
     def research_session_display_name(
 
@@ -2731,6 +3003,64 @@ class PreReqAIApplication:
             )
         )
 
+    def _record_lifecycle_change(
+
+        self,
+
+        session_id,
+
+        previous_profile,
+
+        updated_profile,
+
+    ):
+
+        self._record_workspace_change(
+
+            operation=(
+
+                ResearchWorkspaceChangeOperation
+                .UPDATED
+            ),
+
+            entity_type=(
+                "session"
+            ),
+
+            entity_id=(
+                session_id
+            ),
+
+            metadata={
+
+                "change":
+                    "lifecycle_state",
+
+                "previous_state":
+                    (
+
+                        previous_profile
+                        .status
+                        .value
+
+                        if previous_profile
+                        is not None
+
+                        else (
+
+                            ResearchSessionStatus
+                            .ACTIVE
+                            .value
+                        )
+                    ),
+
+                "current_state":
+                    updated_profile
+                    .status
+                    .value,
+            },
+        )
+
     def pause_research_session(
 
         self,
@@ -2739,7 +3069,15 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        previous_profile = (
+
+            self.research_session_profile(
+
+                session_id
+            )
+        )
+
+        updated_profile = (
 
             self.session_profile_manager
             .pause(
@@ -2747,6 +3085,17 @@ class PreReqAIApplication:
                 session_id
             )
         )
+
+        self._record_lifecycle_change(
+
+            session_id,
+
+            previous_profile,
+
+            updated_profile,
+        )
+
+        return updated_profile
 
     def resume_research_session(
 
@@ -2756,7 +3105,15 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        previous_profile = (
+
+            self.research_session_profile(
+
+                session_id
+            )
+        )
+
+        updated_profile = (
 
             self.session_profile_manager
             .resume(
@@ -2764,6 +3121,17 @@ class PreReqAIApplication:
                 session_id
             )
         )
+
+        self._record_lifecycle_change(
+
+            session_id,
+
+            previous_profile,
+
+            updated_profile,
+        )
+
+        return updated_profile
 
     def complete_research_session(
 
@@ -2773,7 +3141,15 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        previous_profile = (
+
+            self.research_session_profile(
+
+                session_id
+            )
+        )
+
+        updated_profile = (
 
             self.session_profile_manager
             .complete(
@@ -2781,6 +3157,17 @@ class PreReqAIApplication:
                 session_id
             )
         )
+
+        self._record_lifecycle_change(
+
+            session_id,
+
+            previous_profile,
+
+            updated_profile,
+        )
+
+        return updated_profile
 
     def archive_research_session(
 
@@ -3029,7 +3416,23 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        existing_tag_ids = {
+
+            assignment.tag_id
+
+            for assignment
+
+            in (
+
+                self.tag_store
+                .list_assignments_for_session(
+
+                    session_id
+                )
+            )
+        }
+
+        tag = (
 
             self.workspace_organization_service
             .tag_session(
@@ -3039,6 +3442,30 @@ class PreReqAIApplication:
                 tag_name,
             )
         )
+
+        if tag.id not in existing_tag_ids:
+
+            self._record_workspace_change(
+
+                operation=(
+
+                    ResearchWorkspaceChangeOperation
+                    .CREATED
+                ),
+
+                entity_type=(
+                    "tag_assignment"
+                ),
+
+                related_entity_ids=[
+
+                    session_id,
+
+                    tag.id,
+                ],
+            )
+
+        return tag
 
     def untag_research_session(
 
@@ -3050,7 +3477,19 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        existing_tag = (
+
+            self.tag_store
+            .get_tag_by_name(
+
+                normalize_research_tag_name(
+
+                    tag_name
+                )
+            )
+        )
+
+        removed = (
 
             self.workspace_organization_service
             .untag_session(
@@ -3060,6 +3499,35 @@ class PreReqAIApplication:
                 tag_name,
             )
         )
+
+        if (
+
+            removed
+
+            and existing_tag is not None
+        ):
+
+            self._record_workspace_change(
+
+                operation=(
+
+                    ResearchWorkspaceChangeOperation
+                    .DELETED
+                ),
+
+                entity_type=(
+                    "tag_assignment"
+                ),
+
+                related_entity_ids=[
+
+                    session_id,
+
+                    existing_tag.id,
+                ],
+            )
+
+        return removed
 
     def research_session_tags(
 
@@ -3134,7 +3602,16 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        existing_session_ids = set(
+
+            self.collection_store
+            .list_session_ids(
+
+                collection_id
+            )
+        )
+
+        membership = (
 
             self.workspace_organization_service
             .add_session_to_collection(
@@ -3144,6 +3621,35 @@ class PreReqAIApplication:
                 session_id,
             )
         )
+
+        if (
+
+            session_id
+
+            not in existing_session_ids
+        ):
+
+            self._record_workspace_change(
+
+                operation=(
+
+                    ResearchWorkspaceChangeOperation
+                    .CREATED
+                ),
+
+                entity_type=(
+                    "collection_membership"
+                ),
+
+                related_entity_ids=[
+
+                    collection_id,
+
+                    session_id,
+                ],
+            )
+
+        return membership
 
     def remove_research_session_from_collection(
 
@@ -3155,7 +3661,7 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        removed = (
 
             self.workspace_organization_service
             .remove_session_from_collection(
@@ -3165,6 +3671,30 @@ class PreReqAIApplication:
                 session_id,
             )
         )
+
+        if removed:
+
+            self._record_workspace_change(
+
+                operation=(
+
+                    ResearchWorkspaceChangeOperation
+                    .DELETED
+                ),
+
+                entity_type=(
+                    "collection_membership"
+                ),
+
+                related_entity_ids=[
+
+                    collection_id,
+
+                    session_id,
+                ],
+            )
+
+        return removed
 
     def delete_research_collection(
 
@@ -3530,7 +4060,7 @@ class PreReqAIApplication:
 
     ):
 
-        return (
+        result = (
 
             self.research_snapshot_import_service
             .import_snapshot(
@@ -3540,6 +4070,56 @@ class PreReqAIApplication:
                 strategy=strategy,
             )
         )
+
+        self._record_workspace_change(
+
+            operation=(
+
+                ResearchWorkspaceChangeOperation
+                .IMPORTED
+            ),
+
+            entity_type=(
+                "workspace_snapshot"
+            ),
+
+            entity_id=(
+                result.snapshot_id
+            ),
+
+            metadata={
+
+                "imported_sessions":
+                    result
+                    .imported_sessions,
+
+                "imported_checkpoints":
+                    result
+                    .imported_checkpoints,
+
+                "imported_versions":
+                    result
+                    .imported_versions,
+
+                "imported_branches":
+                    result
+                    .imported_branches,
+
+                "imported_tags":
+                    result
+                    .imported_tags,
+
+                "imported_collections":
+                    result
+                    .imported_collections,
+
+                "imported_activity_events":
+                    result
+                    .imported_activity_events,
+            },
+        )
+
+        return result
 
     def import_research_snapshot_json(
 

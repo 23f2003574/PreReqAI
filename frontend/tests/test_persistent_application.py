@@ -1925,3 +1925,244 @@ def test_persisted_workspace_passes_integrity_audit_after_restart(
     )
 
     assert report.is_healthy is True
+
+
+def test_workspace_change_feed_sequence_survives_restart(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+        "session-a"
+    )
+
+    first_checkpoint = (
+
+        first_app
+        .checkpoint_workflow_progress(
+            "step-a"
+        )
+    )
+
+    first_sequence = (
+
+        first_app
+        .get_latest_research_workspace_change_sequence()
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    assert (
+
+        second_app
+        .get_latest_research_workspace_change_sequence()
+
+        == first_sequence
+    )
+
+    second_app.activate_research_session(
+        "session-b"
+    )
+
+    page = (
+
+        second_app
+        .get_research_workspace_changes(
+
+            after_sequence=(
+                first_sequence
+            )
+        )
+    )
+
+    assert len(page.events) == 1
+
+    assert (
+
+        page.events[0].sequence
+
+        == first_sequence + 1
+    )
+
+    assert (
+
+        page.events[0].entity_id
+
+        == "session-b"
+    )
+
+    full_page = (
+
+        second_app
+        .get_research_workspace_changes(
+
+            after_sequence=0,
+
+            limit=100,
+        )
+    )
+
+    assert (
+
+        full_page.events[0]
+        .entity_id
+
+        == "session-a"
+    )
+
+    assert any(
+
+        event.entity_type
+        == "checkpoint"
+
+        and event.entity_id
+        == first_checkpoint.id
+
+        for event in full_page.events
+    )
+
+
+def test_failed_import_rollback_emits_no_workspace_change_event(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    source = (
+
+        create_persistent_application(
+
+            tmp_path
+
+            / "prereqai-source"
+        )
+    )
+
+    source.activate_research_session(
+        "session-a"
+    )
+
+    source.save_research_session(
+        "session-a"
+    )
+
+    checkpoint = (
+
+        source
+        .checkpoint_workflow_progress(
+            "step-a"
+        )
+    )
+
+    source.branch_research_checkpoint(
+
+        checkpoint.id,
+
+        branch_session_id=(
+            "session-b"
+        ),
+    )
+
+    snapshot = (
+
+        source
+        .export_research_workspace()
+    )
+
+    application = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    def failing_save(
+
+        *args,
+
+        **kwargs,
+
+    ):
+
+        raise RuntimeError(
+            "simulated failure"
+        )
+
+    application.session_version_store.save = (
+        failing_save
+    )
+
+    before = (
+
+        application
+        .get_latest_research_workspace_change_sequence()
+    )
+
+    with pytest.raises(
+        RuntimeError
+    ):
+
+        application.import_research_snapshot(
+
+            snapshot
+        )
+
+    page = (
+
+        application
+        .get_research_workspace_changes(
+
+            after_sequence=before
+        )
+    )
+
+    assert page.events == []
+
+    restarted = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    restarted_page = (
+
+        restarted
+        .get_research_workspace_changes(
+
+            after_sequence=before
+        )
+    )
+
+    assert restarted_page.events == []

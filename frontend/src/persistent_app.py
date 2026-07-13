@@ -113,4 +113,10 @@ def create_persistent_application(
                 "activity_store"
             ]
         ),
+
+        research_workspace_change_feed_storage_path=(
+
+            config
+            .research_workspace_changes_path
+        ),
     )
