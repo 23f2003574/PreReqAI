@@ -300,4 +300,20 @@ from .research_session_branch_manager import (
     ResearchSessionBranchManager,
 )
 
+from .research_session_lineage_node import (
+    ResearchSessionLineageNode,
+)
+
+from .research_session_lineage_path import (
+    ResearchSessionLineagePath,
+)
+
+from .research_session_lineage_service import (
+    ResearchSessionLineageService,
+)
+
+from .research_session_lineage_summary import (
+    ResearchSessionLineageSummary,
+)
+
 session_manager = SessionManager()

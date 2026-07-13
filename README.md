@@ -1010,3 +1010,34 @@ The source checkpoint and immutable historical version are read-only during bran
 Each new branch receives its own session identity and an initial `SESSION_BRANCHED` checkpoint describing its origin.
 
 Multiple independent branches can be created from the same historical checkpoint.
+
+## Research Session Lineage
+
+Research session branches form a rooted lineage forest.
+
+Each research session may have:
+
+- Zero or one direct parent session
+- Zero or many child sessions
+
+The lineage service derives graph relationships directly from persisted branch records.
+
+Supported lineage operations include:
+
+- Parent lookup
+- Direct child lookup
+- Ancestor traversal
+- Descendant traversal
+- Root resolution
+- Branch depth calculation
+- Root-to-session paths
+- Relationship detection
+- Ancestor checks
+- Lowest common ancestor discovery
+- Paths between related sessions
+- Nested lineage tree construction
+- Compact lineage summaries
+
+Lineage traversal includes cycle detection to prevent corrupted branch data from causing infinite traversal.
+
+The graph itself is not separately persisted. Branch relationships remain the single source of truth, while lineage structures are derived on demand.

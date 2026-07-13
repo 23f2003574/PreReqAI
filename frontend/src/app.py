@@ -27,6 +27,7 @@ from backend.session import (
     ResearchRuntimeResolver,
     ResearchSessionBranchManager,
     ResearchSessionComparator,
+    ResearchSessionLineageService,
     ResearchSessionManager,
     ResearchSessionRestorer,
     ResearchSessionSerializer,
@@ -341,6 +342,16 @@ class PreReqAIApplication:
                             )
                         )
                 ),
+            )
+        )
+
+        self.session_lineage_service = (
+
+            ResearchSessionLineageService(
+
+                branch_store=(
+                    self.session_branch_store
+                )
             )
         )
 
@@ -1814,5 +1825,242 @@ class PreReqAIApplication:
             .list_from_checkpoint(
 
                 checkpoint_id
+            )
+        )
+
+    def research_session_parent(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .parent_session_id(
+
+                session_id
+            )
+        )
+
+    def research_session_children(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .child_session_ids(
+
+                session_id
+            )
+        )
+
+    def research_session_ancestors(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .ancestor_session_ids(
+
+                session_id
+            )
+        )
+
+    def research_session_descendants(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .descendant_session_ids(
+
+                session_id
+            )
+        )
+
+    def research_session_root(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .root_session_id(
+
+                session_id
+            )
+        )
+
+    def research_session_depth(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .depth(
+
+                session_id
+            )
+        )
+
+    def research_sessions_are_related(
+
+        self,
+
+        first_session_id: str,
+
+        second_session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .are_related(
+
+                first_session_id,
+
+                second_session_id,
+            )
+        )
+
+    def research_session_is_ancestor(
+
+        self,
+
+        ancestor_session_id: str,
+
+        descendant_session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .is_ancestor(
+
+                ancestor_session_id,
+
+                descendant_session_id,
+            )
+        )
+
+    def research_session_lowest_common_ancestor(
+
+        self,
+
+        first_session_id: str,
+
+        second_session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .lowest_common_ancestor(
+
+                first_session_id,
+
+                second_session_id,
+            )
+        )
+
+    def research_session_path_from_root(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .path_from_root(
+
+                session_id
+            )
+        )
+
+    def research_session_path_between(
+
+        self,
+
+        first_session_id: str,
+
+        second_session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .path_between(
+
+                first_session_id,
+
+                second_session_id,
+            )
+        )
+
+    def research_session_lineage_tree(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .lineage_tree(
+
+                session_id
+            )
+        )
+
+    def research_session_lineage_summary(
+
+        self,
+
+        session_id: str,
+
+    ):
+
+        return (
+
+            self.session_lineage_service
+            .summarize(
+
+                session_id
             )
         )

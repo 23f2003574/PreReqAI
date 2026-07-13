@@ -486,3 +486,92 @@ def test_branch_and_source_can_evolve_independently():
 
         == "Branch State C"
     )
+
+
+def test_application_traverses_real_branch_lineage():
+
+    application = (
+        PreReqAIApplication()
+    )
+
+    application.activate_research_session(
+
+        "session-a"
+    )
+
+    checkpoint_a = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-a"
+        )
+    )
+
+    application.branch_research_checkpoint(
+
+        checkpoint_a.id,
+
+        branch_session_id=(
+            "session-b"
+        ),
+    )
+
+    application.activate_research_session(
+
+        "session-b"
+    )
+
+    checkpoint_b = (
+
+        application
+        .checkpoint_workflow_progress(
+
+            "step-b"
+        )
+    )
+
+    application.branch_research_checkpoint(
+
+        checkpoint_b.id,
+
+        branch_session_id=(
+            "session-c"
+        ),
+    )
+
+    assert (
+
+        application
+        .research_session_root(
+
+            "session-c"
+        )
+
+        == "session-a"
+    )
+
+    assert (
+
+        application
+        .research_session_ancestors(
+
+            "session-c"
+        )
+
+        == [
+            "session-b",
+            "session-a",
+        ]
+    )
+
+    assert (
+
+        application
+        .research_session_depth(
+
+            "session-c"
+        )
+
+        == 2
+    )

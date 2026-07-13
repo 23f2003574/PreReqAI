@@ -944,3 +944,109 @@ def test_branched_session_survives_application_recreation(
 
         == checkpoint.id
     )
+
+
+def test_lineage_traversal_survives_application_recreation(
+
+    tmp_path,
+
+):
+
+    data_directory = (
+
+        tmp_path
+
+        / "prereqai-data"
+    )
+
+    first_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    first_app.activate_research_session(
+
+        "session-a"
+    )
+
+    checkpoint_a = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-a"
+        )
+    )
+
+    first_app.branch_research_checkpoint(
+
+        checkpoint_a.id,
+
+        branch_session_id=(
+            "session-b"
+        ),
+    )
+
+    first_app.activate_research_session(
+
+        "session-b"
+    )
+
+    checkpoint_b = (
+
+        first_app
+        .checkpoint_workflow_progress(
+
+            "step-b"
+        )
+    )
+
+    first_app.branch_research_checkpoint(
+
+        checkpoint_b.id,
+
+        branch_session_id=(
+            "session-c"
+        ),
+    )
+
+    second_app = (
+
+        create_persistent_application(
+
+            data_directory
+        )
+    )
+
+    assert (
+
+        second_app
+        .research_session_root(
+
+            "session-c"
+        )
+
+        == "session-a"
+    )
+
+    assert (
+
+        second_app
+        .research_session_path_from_root(
+
+            "session-c"
+        )
+        .session_ids
+
+        == [
+
+            "session-a",
+
+            "session-b",
+
+            "session-c",
+        ]
+    )
