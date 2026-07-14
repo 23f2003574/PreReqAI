@@ -128,6 +128,8 @@ def create_bootstrap_projector(
 
     attention_projector=None,
 
+    action_projector=None,
+
 ):
 
     return (
@@ -189,6 +191,17 @@ def create_bootstrap_projector(
 
                     application
                     .research_workspace_attention_projector
+                )
+            ),
+
+            action_projector=(
+
+                action_projector
+
+                or (
+
+                    application
+                    .research_workspace_action_projector
                 )
             ),
         )

@@ -54,6 +54,8 @@ from backend.session import (
     ResearchSnapshotSerializer,
     ResearchSnapshotService,
     ResearchSnapshotValidator,
+    ResearchWorkspaceActionCatalog,
+    ResearchWorkspaceActionProjector,
     ResearchWorkspaceAttentionProjector,
     ResearchWorkspaceBootstrapProjector,
     ResearchWorkspaceCapabilities,
@@ -839,6 +841,43 @@ class PreReqAIApplication:
             )
         )
 
+        self.research_workspace_action_catalog = (
+
+            ResearchWorkspaceActionCatalog()
+        )
+
+        self.research_workspace_action_projector = (
+
+            ResearchWorkspaceActionProjector(
+
+                action_catalog=(
+
+                    self
+                    .research_workspace_action_catalog
+                ),
+
+                capability_registry=(
+
+                    self
+                    .research_workspace_capabilities
+                ),
+
+                readiness_assessor=(
+
+                    self
+                    .research_workspace_readiness_assessor
+                ),
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                profile_store=(
+                    self.session_profile_store
+                ),
+            )
+        )
+
         self.research_workspace_bootstrap_projector = (
 
             ResearchWorkspaceBootstrapProjector(
@@ -874,6 +913,12 @@ class PreReqAIApplication:
                     self
                     .research_workspace_attention_projector
                 ),
+
+                action_projector=(
+
+                    self
+                    .research_workspace_action_projector
+                ),
             )
         )
 
@@ -905,6 +950,12 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_attention_projector
+                ),
+
+                action_projector=(
+
+                    self
+                    .research_workspace_action_projector
                 ),
             )
         )

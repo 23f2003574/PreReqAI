@@ -587,7 +587,7 @@ class ResearchWorkspaceAttentionProjector:
                     actionable=True,
 
                     action=(
-                        "review_integrity_issue"
+                        "review_integrity"
                     ),
 
                     entity_type=(

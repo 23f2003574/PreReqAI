@@ -27,6 +27,8 @@ class ResearchWorkspaceGateway:
 
         attention_projector,
 
+        action_projector,
+
     ):
 
         self.application = (
@@ -47,6 +49,10 @@ class ResearchWorkspaceGateway:
 
         self.attention_projector = (
             attention_projector
+        )
+
+        self.action_projector = (
+            action_projector
         )
 
     def assess_readiness(self):
@@ -114,6 +120,52 @@ class ResearchWorkspaceGateway:
                 ),
 
                 limit=limit,
+            )
+        )
+
+    def list_workspace_actions(
+
+        self,
+
+        *,
+
+        include_unavailable=False,
+
+    ):
+
+        return (
+
+            self.action_projector
+            .project_workspace_actions(
+
+                include_unavailable=(
+                    include_unavailable
+                ),
+            )
+        )
+
+    def list_session_actions(
+
+        self,
+
+        session_id,
+
+        *,
+
+        include_unavailable=False,
+
+    ):
+
+        return (
+
+            self.action_projector
+            .project_session_actions(
+
+                session_id,
+
+                include_unavailable=(
+                    include_unavailable
+                ),
             )
         )
 

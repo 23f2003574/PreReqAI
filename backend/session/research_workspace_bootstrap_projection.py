@@ -11,6 +11,10 @@ from .research_session_list_item import (
     ResearchSessionListItem,
 )
 
+from .research_workspace_action_availability import (
+    ResearchWorkspaceActionAvailability,
+)
+
 from .research_workspace_attention_summary import (
     ResearchWorkspaceAttentionSummary,
 )
@@ -57,6 +61,12 @@ class ResearchWorkspaceBootstrapProjection:
         ),
     )
 
+    workspace_actions: list[
+        ResearchWorkspaceActionAvailability
+    ] = field(
+        default_factory=list,
+    )
+
     recent_sessions: list[
         ResearchSessionListItem
     ] = field(
@@ -96,6 +106,15 @@ class ResearchWorkspaceBootstrapProjection:
 
             "attention":
                 self.attention.to_dict(),
+
+            "workspace_actions": [
+
+                action.to_dict()
+
+                for action
+
+                in self.workspace_actions
+            ],
 
             "recent_sessions": [
 

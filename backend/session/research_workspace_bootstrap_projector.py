@@ -43,6 +43,8 @@ class ResearchWorkspaceBootstrapProjector:
 
         attention_projector,
 
+        action_projector,
+
     ):
 
         self.capability_registry = (
@@ -67,6 +69,10 @@ class ResearchWorkspaceBootstrapProjector:
 
         self.attention_projector = (
             attention_projector
+        )
+
+        self.action_projector = (
+            action_projector
         )
 
     def project(
@@ -135,6 +141,16 @@ class ResearchWorkspaceBootstrapProjector:
             )
         )
 
+        workspace_actions = (
+
+            self._load_workspace_actions(
+
+                readiness,
+
+                warnings,
+            )
+        )
+
         recent_sessions = (
 
             self._load_recent_sessions(
@@ -166,6 +182,10 @@ class ResearchWorkspaceBootstrapProjector:
                 overview=overview,
 
                 attention=attention,
+
+                workspace_actions=(
+                    workspace_actions
+                ),
 
                 recent_sessions=(
                     recent_sessions
@@ -237,6 +257,39 @@ class ResearchWorkspaceBootstrapProjector:
                     ]
                 ),
             )
+        )
+
+    def _load_workspace_actions(
+
+        self,
+
+        readiness,
+
+        warnings,
+
+    ):
+
+        try:
+
+            projection = (
+
+                self.action_projector
+                .project_workspace_actions(
+                    readiness=readiness,
+                )
+            )
+
+        except Exception:
+
+            warnings.append(
+                "Workspace actions could "
+                "not be loaded."
+            )
+
+            return []
+
+        return list(
+            projection.actions
         )
 
     def _load_recent_sessions(

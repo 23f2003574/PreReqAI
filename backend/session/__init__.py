@@ -688,6 +688,34 @@ from .research_workspace_attention_projector import (
     ResearchWorkspaceAttentionProjector,
 )
 
+from .research_workspace_action import (
+    ResearchWorkspaceAction,
+)
+
+from .research_workspace_action_scope import (
+    ResearchWorkspaceActionScope,
+)
+
+from .research_workspace_action_descriptor import (
+    ResearchWorkspaceActionDescriptor,
+)
+
+from .research_workspace_action_availability import (
+    ResearchWorkspaceActionAvailability,
+)
+
+from .research_workspace_action_projection import (
+    ResearchWorkspaceActionProjection,
+)
+
+from .research_workspace_action_catalog import (
+    ResearchWorkspaceActionCatalog,
+)
+
+from .research_workspace_action_projector import (
+    ResearchWorkspaceActionProjector,
+)
+
 from .research_workspace_bootstrap_projection import (
     ResearchWorkspaceBootstrapProjection,
 )
