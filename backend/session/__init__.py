@@ -859,6 +859,38 @@ from .research_workspace_consumer_projection_freshness_evaluator import (
     ResearchWorkspaceConsumerProjectionFreshnessEvaluator,
 )
 
+from .research_workspace_consumer_projection_provenance_node_kind import (
+    ResearchWorkspaceConsumerProjectionProvenanceNodeKind,
+)
+
+from .research_workspace_consumer_projection_source_provenance import (
+    ResearchWorkspaceConsumerProjectionSourceProvenance,
+)
+
+from .research_workspace_consumer_projection_derivation_provenance import (
+    ResearchWorkspaceConsumerProjectionDerivationProvenance,
+)
+
+from .research_workspace_consumer_projection_output_provenance import (
+    ResearchWorkspaceConsumerProjectionOutputProvenance,
+)
+
+from .research_workspace_consumer_projection_provenance_edge import (
+    ResearchWorkspaceConsumerProjectionProvenanceEdge,
+)
+
+from .research_workspace_consumer_projection_provenance_report import (
+    ResearchWorkspaceConsumerProjectionProvenanceReport,
+)
+
+from .research_workspace_consumer_projection_provenance_collector import (
+    ResearchWorkspaceConsumerProjectionProvenanceCollector,
+)
+
+from .research_workspace_consumer_projection_provenance_collector_factory import (
+    ResearchWorkspaceConsumerProjectionProvenanceCollectorFactory,
+)
+
 from .research_workspace_projection_context import (
     ResearchWorkspaceProjectionContext,
 )

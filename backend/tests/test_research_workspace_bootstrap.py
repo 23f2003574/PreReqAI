@@ -165,6 +165,8 @@ class FakeContextFactory:
 
         diagnostics=None,
 
+        provenance=None,
+
     ):
 
         return (
@@ -202,6 +204,8 @@ class FakeContextFactory:
                 ),
 
                 diagnostics=diagnostics,
+
+                provenance=provenance,
             )
         )
 

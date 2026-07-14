@@ -68,6 +68,7 @@ from backend.session import (
     ResearchWorkspaceConsumerProjectionExecutionPolicyRegistry,
     ResearchWorkspaceConsumerProjectionFreshnessEvaluator,
     ResearchWorkspaceConsumerProjectionFreshnessPolicyRegistry,
+    ResearchWorkspaceConsumerProjectionProvenanceCollectorFactory,
     ResearchWorkspaceEventBus,
     ResearchWorkspaceGateway,
     ResearchWorkspaceInsightsService,
@@ -883,6 +884,11 @@ class PreReqAIApplication:
             )
         )
 
+        self.research_workspace_consumer_projection_provenance_collector_factory = (
+
+            ResearchWorkspaceConsumerProjectionProvenanceCollectorFactory()
+        )
+
         self.research_workspace_projection_context_factory = (
 
             ResearchWorkspaceProjectionContextFactory(
@@ -1097,6 +1103,12 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_consumer_projection_execution_budget_factory
+                ),
+
+                provenance_collector_factory=(
+
+                    self
+                    .research_workspace_consumer_projection_provenance_collector_factory
                 ),
             )
         )

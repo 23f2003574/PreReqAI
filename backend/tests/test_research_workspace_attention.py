@@ -174,6 +174,8 @@ class FakeContextFactory:
 
         diagnostics=None,
 
+        provenance=None,
+
     ):
 
         return (
@@ -202,6 +204,8 @@ class FakeContextFactory:
                 profile_store=None,
 
                 diagnostics=diagnostics,
+
+                provenance=provenance,
             )
         )
 

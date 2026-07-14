@@ -105,6 +105,8 @@ class ResearchWorkspaceAttentionProjector:
 
         diagnostics=None,
 
+        provenance=None,
+
         category=None,
 
         minimum_severity=None,
@@ -130,6 +132,7 @@ class ResearchWorkspaceAttentionProjector:
                 self.context_factory
                 .create(
                     diagnostics=diagnostics,
+                    provenance=provenance,
                 )
             )
 
@@ -148,6 +151,8 @@ class ResearchWorkspaceAttentionProjector:
                 self._build_projection(
 
                     context,
+
+                    provenance=provenance,
 
                     category=category,
 
@@ -171,6 +176,8 @@ class ResearchWorkspaceAttentionProjector:
 
         *,
 
+        provenance,
+
         category,
 
         minimum_severity,
@@ -190,19 +197,23 @@ class ResearchWorkspaceAttentionProjector:
 
         items.extend(
             self._readiness_items(
-                readiness
+                context,
+                readiness,
+                provenance,
             )
         )
 
         items.extend(
             self._integrity_items(
-                context
+                context,
+                provenance,
             )
         )
 
         items.extend(
             self._stale_paused_session_items(
-                context
+                context,
+                provenance,
             )
         )
 
@@ -391,6 +402,81 @@ class ResearchWorkspaceAttentionProjector:
         )
 
     @staticmethod
+    def _record_attention_provenance(
+
+        provenance,
+
+        context,
+
+        *,
+
+        rule_name,
+
+        source_names,
+
+        attention_id,
+
+    ):
+        """
+        Records a derivation of an
+        attention item from its
+        contributing sources, unless
+        provenance tracking is disabled
+        or an attention item with this
+        identity was already registered
+        earlier in this operation — the
+        latter mirrors the item-level
+        deduplication that
+        `_deduplicate` performs later,
+        so two findings that collapse
+        onto the same attention_id
+        never attempt a second, illegal
+        output registration.
+        """
+
+        if provenance is None:
+
+            return
+
+        if (
+
+            provenance.get_output_node_id(
+
+                output_type=(
+                    "attention_item"
+                ),
+
+                output_key=attention_id,
+
+            )
+
+            is not None
+        ):
+
+            return
+
+        input_node_ids = tuple(
+
+            context
+            .get_source_provenance_node_id(
+                source_name
+            )
+
+            for source_name in source_names
+        )
+
+        provenance.record_derivation(
+
+            rule_name=rule_name,
+
+            input_node_ids=input_node_ids,
+
+            output_type="attention_item",
+
+            output_key=attention_id,
+        )
+
+    @staticmethod
     def _normalize_category(
 
         category,
@@ -440,7 +526,11 @@ class ResearchWorkspaceAttentionProjector:
 
         self,
 
+        context,
+
         readiness,
+
+        provenance,
 
     ):
 
@@ -463,6 +553,25 @@ class ResearchWorkspaceAttentionProjector:
                     "conditions require "
                     "attention."
                 )
+            )
+
+            self._record_attention_provenance(
+
+                provenance,
+
+                context,
+
+                rule_name=(
+                    "attention.readiness_degraded_rule"
+                ),
+
+                source_names=(
+                    "workspace.readiness",
+                ),
+
+                attention_id=(
+                    "readiness:degraded"
+                ),
             )
 
             return [
@@ -528,6 +637,25 @@ class ResearchWorkspaceAttentionProjector:
                 )
             )
 
+            self._record_attention_provenance(
+
+                provenance,
+
+                context,
+
+                rule_name=(
+                    "attention.readiness_unavailable_rule"
+                ),
+
+                source_names=(
+                    "workspace.readiness",
+                ),
+
+                attention_id=(
+                    "readiness:unavailable"
+                ),
+            )
+
             return [
 
                 ResearchWorkspaceAttentionItem(
@@ -579,6 +707,8 @@ class ResearchWorkspaceAttentionProjector:
 
         context,
 
+        provenance,
+
     ):
 
         report = (
@@ -610,15 +740,36 @@ class ResearchWorkspaceAttentionProjector:
                 or "workspace"
             )
 
+            attention_id = (
+
+                "integrity:"
+                f"{finding.code}:"
+                f"{entity_suffix}"
+            )
+
+            self._record_attention_provenance(
+
+                provenance,
+
+                context,
+
+                rule_name=(
+                    "attention.integrity_review_rule"
+                ),
+
+                source_names=(
+                    "workspace.integrity",
+                ),
+
+                attention_id=attention_id,
+            )
+
             items.append(
 
                 ResearchWorkspaceAttentionItem(
 
                     attention_id=(
-
-                        "integrity:"
-                        f"{finding.code}:"
-                        f"{entity_suffix}"
+                        attention_id
                     ),
 
                     category=(
@@ -666,6 +817,8 @@ class ResearchWorkspaceAttentionProjector:
 
         context,
 
+        provenance,
+
     ):
 
         insights = (
@@ -690,14 +843,35 @@ class ResearchWorkspaceAttentionProjector:
 
                 continue
 
+            attention_id = (
+                "research_session:"
+                "stale_paused:"
+                f"{summary.session_id}"
+            )
+
+            self._record_attention_provenance(
+
+                provenance,
+
+                context,
+
+                rule_name=(
+                    "attention.stale_paused_session_rule"
+                ),
+
+                source_names=(
+                    "workspace.insights",
+                ),
+
+                attention_id=attention_id,
+            )
+
             items.append(
 
                 ResearchWorkspaceAttentionItem(
 
                     attention_id=(
-                        "research_session:"
-                        "stale_paused:"
-                        f"{summary.session_id}"
+                        attention_id
                     ),
 
                     category=(

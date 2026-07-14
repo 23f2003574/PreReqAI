@@ -93,6 +93,8 @@ class ResearchWorkspaceProjectionContextFactory:
 
         diagnostics=None,
 
+        provenance=None,
+
     ):
 
         return (
@@ -164,5 +166,7 @@ class ResearchWorkspaceProjectionContextFactory:
                 ),
 
                 utc_clock=self._utc_clock,
+
+                provenance=provenance,
             )
         )

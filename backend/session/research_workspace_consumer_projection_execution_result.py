@@ -23,3 +23,5 @@ class ResearchWorkspaceConsumerProjectionExecutionResult:
     diagnostics: (
         ResearchWorkspaceConsumerProjectionDiagnosticReport
     )
+
+    provenance: object = None

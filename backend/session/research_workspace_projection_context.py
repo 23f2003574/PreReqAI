@@ -72,6 +72,8 @@ class ResearchWorkspaceProjectionContext:
 
         observed_at=None,
 
+        provenance=None,
+
     ):
 
         self._capability_registry = (
@@ -137,6 +139,10 @@ class ResearchWorkspaceProjectionContext:
             observed_at
 
             or self._utc_clock.now()
+        )
+
+        self._provenance = (
+            provenance
         )
 
         self._recent_activity_freshness = (
@@ -282,6 +288,71 @@ class ResearchWorkspaceProjectionContext:
                 key=key,
             )
 
+    def _register_source_provenance(
+
+        self,
+
+        source_name,
+
+        *,
+
+        source_timestamp=None,
+
+        freshness_status=None,
+
+    ):
+
+        if self._provenance is None:
+
+            return None
+
+        return (
+
+            self._provenance
+            .register_source(
+
+                source_name=(
+                    source_name
+                ),
+
+                source_timestamp=(
+                    source_timestamp
+                ),
+
+                freshness_status=(
+                    freshness_status
+                ),
+            )
+        )
+
+    def get_source_provenance_node_id(
+
+        self,
+
+        source_name,
+
+    ):
+        """
+        Returns the request-scoped
+        provenance node ID for a named
+        source, registering it (with no
+        timestamp/freshness metadata) if
+        it has not already been resolved
+        through this context. Idempotent
+        — safe to call from projectors
+        building derivation edges without
+        needing the context to track a
+        separate provenance identity per
+        getter.
+        """
+
+        return (
+
+            self._register_source_provenance(
+                source_name
+            )
+        )
+
     def get_capabilities(self):
 
         if (
@@ -300,6 +371,10 @@ class ResearchWorkspaceProjectionContext:
                     self._capability_registry
                     .list_capabilities,
                 )
+            )
+
+            self._register_source_provenance(
+                "workspace.capabilities"
             )
 
         else:
@@ -330,6 +405,10 @@ class ResearchWorkspaceProjectionContext:
                 )
             )
 
+            self._register_source_provenance(
+                "workspace.readiness"
+            )
+
         else:
 
             self._record_reuse(
@@ -356,6 +435,10 @@ class ResearchWorkspaceProjectionContext:
                     self._integrity_auditor
                     .audit,
                 )
+            )
+
+            self._register_source_provenance(
+                "workspace.integrity"
             )
 
         else:
@@ -407,6 +490,10 @@ class ResearchWorkspaceProjectionContext:
                         )
                     ),
                 )
+            )
+
+            self._register_source_provenance(
+                "workspace.insights"
             )
 
         else:
@@ -588,6 +675,28 @@ class ResearchWorkspaceProjectionContext:
                             evaluation
                         ),
                     )
+                )
+
+            if evaluation is not None:
+
+                self._register_source_provenance(
+
+                    _RECENT_ACTIVITY_FRESHNESS_SOURCE,
+
+                    source_timestamp=(
+                        evaluation
+                        .source_timestamp
+                    ),
+
+                    freshness_status=(
+                        evaluation.status
+                    ),
+                )
+
+            else:
+
+                self._register_source_provenance(
+                    _RECENT_ACTIVITY_FRESHNESS_SOURCE
                 )
 
             self._recent_activity_freshness = (

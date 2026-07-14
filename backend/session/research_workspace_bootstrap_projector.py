@@ -93,6 +93,8 @@ class ResearchWorkspaceBootstrapProjector:
 
         diagnostics=None,
 
+        provenance=None,
+
         budget=None,
 
         recent_session_limit=5,
@@ -124,6 +126,7 @@ class ResearchWorkspaceBootstrapProjector:
                 self.context_factory
                 .create(
                     diagnostics=diagnostics,
+                    provenance=provenance,
                 )
             )
 
@@ -189,6 +192,8 @@ class ResearchWorkspaceBootstrapProjector:
                             context,
 
                             diagnostics,
+
+                            provenance,
 
                             warnings,
                         )
@@ -522,6 +527,8 @@ class ResearchWorkspaceBootstrapProjector:
 
         diagnostics,
 
+        provenance,
+
         warnings,
 
     ):
@@ -537,6 +544,10 @@ class ResearchWorkspaceBootstrapProjector:
 
                     diagnostics=(
                         diagnostics
+                    ),
+
+                    provenance=(
+                        provenance
                     ),
                 )
             )

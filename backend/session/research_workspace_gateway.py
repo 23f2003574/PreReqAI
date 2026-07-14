@@ -45,6 +45,8 @@ class ResearchWorkspaceGateway:
 
         execution_budget_factory,
 
+        provenance_collector_factory,
+
     ):
 
         self.application = (
@@ -93,6 +95,10 @@ class ResearchWorkspaceGateway:
 
         self.execution_budget_factory = (
             execution_budget_factory
+        )
+
+        self.provenance_collector_factory = (
+            provenance_collector_factory
         )
 
     def _create_budget(
@@ -145,11 +151,22 @@ class ResearchWorkspaceGateway:
             )
         )
 
+        provenance = (
+
+            self.provenance_collector_factory
+            .create(
+                operation_name=(
+                    "workspace.bootstrap"
+                ),
+            )
+        )
+
         context = (
 
             self.context_factory
             .create(
                 diagnostics=collector,
+                provenance=provenance,
             )
         )
 
@@ -168,6 +185,8 @@ class ResearchWorkspaceGateway:
                 context=context,
 
                 diagnostics=collector,
+
+                provenance=provenance,
 
                 budget=budget,
 
@@ -189,6 +208,10 @@ class ResearchWorkspaceGateway:
 
                 diagnostics=(
                     collector.finalize()
+                ),
+
+                provenance=(
+                    provenance.build_report()
                 ),
             )
         )
@@ -219,11 +242,22 @@ class ResearchWorkspaceGateway:
             )
         )
 
+        provenance = (
+
+            self.provenance_collector_factory
+            .create(
+                operation_name=(
+                    "workspace.attention"
+                ),
+            )
+        )
+
         context = (
 
             self.context_factory
             .create(
                 diagnostics=collector,
+                provenance=provenance,
             )
         )
 
@@ -235,6 +269,8 @@ class ResearchWorkspaceGateway:
                 context=context,
 
                 diagnostics=collector,
+
+                provenance=provenance,
 
                 category=category,
 
@@ -258,6 +294,10 @@ class ResearchWorkspaceGateway:
 
                 diagnostics=(
                     collector.finalize()
+                ),
+
+                provenance=(
+                    provenance.build_report()
                 ),
             )
         )
