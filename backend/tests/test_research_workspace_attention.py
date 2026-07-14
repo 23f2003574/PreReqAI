@@ -10,6 +10,7 @@ from backend.session import (
     ResearchWorkspaceAttentionCategory,
     ResearchWorkspaceAttentionProjector,
     ResearchWorkspaceAttentionSeverity,
+    ResearchWorkspaceProjectionContext,
     ResearchWorkspaceReadinessAssessment,
     ResearchWorkspaceReadinessStatus,
 )
@@ -139,6 +140,62 @@ class FakeInsightsService:
         )
 
 
+class FakeContextFactory:
+
+    def __init__(
+
+        self,
+
+        readiness_assessor,
+
+        integrity_auditor,
+
+        insights_service,
+
+    ):
+
+        self._readiness_assessor = (
+            readiness_assessor
+        )
+
+        self._integrity_auditor = (
+            integrity_auditor
+        )
+
+        self._insights_service = (
+            insights_service
+        )
+
+    def create(self):
+
+        return (
+
+            ResearchWorkspaceProjectionContext(
+
+                capability_registry=None,
+
+                readiness_assessor=(
+
+                    self._readiness_assessor
+                ),
+
+                integrity_auditor=(
+
+                    self._integrity_auditor
+                ),
+
+                insights_service=(
+
+                    self._insights_service
+                ),
+
+                session_manager=None,
+
+                profile_store=None,
+            )
+        )
+
+
 def dormant_summary(
 
     session_id="session-842",
@@ -180,9 +237,9 @@ def create_projector(
 
 ):
 
-    return (
+    context_factory = (
 
-        ResearchWorkspaceAttentionProjector(
+        FakeContextFactory(
 
             readiness_assessor=(
 
@@ -210,6 +267,16 @@ def create_projector(
                 FakeInsightsService(
                     dormant_sessions
                 )
+            ),
+        )
+    )
+
+    return (
+
+        ResearchWorkspaceAttentionProjector(
+
+            context_factory=(
+                context_factory
             ),
         )
     )

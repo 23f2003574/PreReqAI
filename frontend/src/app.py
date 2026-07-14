@@ -66,6 +66,7 @@ from backend.session import (
     ResearchWorkspaceInsightsService,
     ResearchWorkspaceIntegrityAuditor,
     ResearchWorkspaceOrganizationService,
+    ResearchWorkspaceProjectionContextFactory,
     ResearchWorkspaceReadinessAssessor,
     ResearchWorkspaceRepairPlanner,
 )
@@ -817,9 +818,15 @@ class PreReqAIApplication:
             )
         )
 
-        self.research_workspace_attention_projector = (
+        self.research_workspace_projection_context_factory = (
 
-            ResearchWorkspaceAttentionProjector(
+            ResearchWorkspaceProjectionContextFactory(
+
+                capability_registry=(
+
+                    self
+                    .research_workspace_capabilities
+                ),
 
                 readiness_assessor=(
 
@@ -837,6 +844,26 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_insights_service
+                ),
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                profile_store=(
+                    self.session_profile_store
+                ),
+            )
+        )
+
+        self.research_workspace_attention_projector = (
+
+            ResearchWorkspaceAttentionProjector(
+
+                context_factory=(
+
+                    self
+                    .research_workspace_projection_context_factory
                 ),
             )
         )
@@ -856,24 +883,10 @@ class PreReqAIApplication:
                     .research_workspace_action_catalog
                 ),
 
-                capability_registry=(
+                context_factory=(
 
                     self
-                    .research_workspace_capabilities
-                ),
-
-                readiness_assessor=(
-
-                    self
-                    .research_workspace_readiness_assessor
-                ),
-
-                session_manager=(
-                    self.session_manager
-                ),
-
-                profile_store=(
-                    self.session_profile_store
+                    .research_workspace_projection_context_factory
                 ),
             )
         )
@@ -882,22 +895,10 @@ class PreReqAIApplication:
 
             ResearchWorkspaceBootstrapProjector(
 
-                capability_registry=(
+                context_factory=(
 
                     self
-                    .research_workspace_capabilities
-                ),
-
-                readiness_assessor=(
-
-                    self
-                    .research_workspace_readiness_assessor
-                ),
-
-                insights_service=(
-
-                    self
-                    .research_workspace_insights_service
+                    .research_workspace_projection_context_factory
                 ),
 
                 discovery_service=(
@@ -956,6 +957,12 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_action_projector
+                ),
+
+                context_factory=(
+
+                    self
+                    .research_workspace_projection_context_factory
                 ),
             )
         )

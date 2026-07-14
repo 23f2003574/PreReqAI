@@ -688,6 +688,14 @@ from .research_workspace_attention_projector import (
     ResearchWorkspaceAttentionProjector,
 )
 
+from .research_workspace_projection_context import (
+    ResearchWorkspaceProjectionContext,
+)
+
+from .research_workspace_projection_context_factory import (
+    ResearchWorkspaceProjectionContextFactory,
+)
+
 from .research_workspace_action import (
     ResearchWorkspaceAction,
 )

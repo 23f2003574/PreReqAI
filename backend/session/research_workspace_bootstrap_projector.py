@@ -31,11 +31,7 @@ class ResearchWorkspaceBootstrapProjector:
 
         self,
 
-        capability_registry,
-
-        readiness_assessor,
-
-        insights_service,
+        context_factory,
 
         discovery_service,
 
@@ -47,16 +43,8 @@ class ResearchWorkspaceBootstrapProjector:
 
     ):
 
-        self.capability_registry = (
-            capability_registry
-        )
-
-        self.readiness_assessor = (
-            readiness_assessor
-        )
-
-        self.insights_service = (
-            insights_service
+        self.context_factory = (
+            context_factory
         )
 
         self.discovery_service = (
@@ -78,6 +66,10 @@ class ResearchWorkspaceBootstrapProjector:
     def project(
 
         self,
+
+        *,
+
+        context=None,
 
         recent_session_limit=5,
 
@@ -101,33 +93,30 @@ class ResearchWorkspaceBootstrapProjector:
                 "limit cannot be negative"
             )
 
+        if context is None:
+
+            context = (
+
+                self.context_factory
+                .create()
+            )
+
         warnings = []
 
         capabilities = (
 
-            self.capability_registry
-            .list_capabilities()
+            context.get_capabilities()
         )
 
         readiness = (
 
-            self.readiness_assessor
-            .assess()
+            context.get_readiness()
         )
 
         overview = (
 
-            self.insights_service
-            .build_insights(
-
-                top_tag_limit=0,
-
-                collection_limit=0,
-
-                recent_session_limit=0,
-
-                dormant_session_limit=0,
-            )
+            context
+            .get_workspace_insights()
             .overview
         )
 
@@ -135,7 +124,7 @@ class ResearchWorkspaceBootstrapProjector:
 
             self._load_attention_summary(
 
-                readiness,
+                context,
 
                 warnings,
             )
@@ -145,7 +134,7 @@ class ResearchWorkspaceBootstrapProjector:
 
             self._load_workspace_actions(
 
-                readiness,
+                context,
 
                 warnings,
             )
@@ -203,7 +192,7 @@ class ResearchWorkspaceBootstrapProjector:
 
         self,
 
-        readiness,
+        context,
 
         warnings,
 
@@ -215,7 +204,7 @@ class ResearchWorkspaceBootstrapProjector:
 
                 self.attention_projector
                 .project(
-                    readiness=readiness,
+                    context=context,
                 )
             )
 
@@ -263,7 +252,7 @@ class ResearchWorkspaceBootstrapProjector:
 
         self,
 
-        readiness,
+        context,
 
         warnings,
 
@@ -275,7 +264,7 @@ class ResearchWorkspaceBootstrapProjector:
 
                 self.action_projector
                 .project_workspace_actions(
-                    readiness=readiness,
+                    context=context,
                 )
             )
 

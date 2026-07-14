@@ -127,13 +127,7 @@ class ResearchWorkspaceActionProjector:
 
         action_catalog,
 
-        capability_registry,
-
-        readiness_assessor,
-
-        session_manager,
-
-        profile_store,
+        context_factory,
 
     ):
 
@@ -141,20 +135,8 @@ class ResearchWorkspaceActionProjector:
             action_catalog
         )
 
-        self.capability_registry = (
-            capability_registry
-        )
-
-        self.readiness_assessor = (
-            readiness_assessor
-        )
-
-        self.session_manager = (
-            session_manager
-        )
-
-        self.profile_store = (
-            profile_store
+        self.context_factory = (
+            context_factory
         )
 
     def project_workspace_actions(
@@ -163,7 +145,7 @@ class ResearchWorkspaceActionProjector:
 
         *,
 
-        readiness=None,
+        context=None,
 
         include_unavailable=False,
 
@@ -171,13 +153,23 @@ class ResearchWorkspaceActionProjector:
 
     ):
 
-        if readiness is None:
+        if context is None:
 
-            readiness = (
+            context = (
 
-                self.readiness_assessor
-                .assess()
+                self.context_factory
+                .create()
             )
+
+        capabilities = (
+
+            context.get_capabilities()
+        )
+
+        readiness = (
+
+            context.get_readiness()
+        )
 
         descriptors = (
 
@@ -195,6 +187,8 @@ class ResearchWorkspaceActionProjector:
             self._evaluate_workspace_action(
 
                 descriptor,
+
+                capabilities,
 
                 readiness,
             )
@@ -229,7 +223,7 @@ class ResearchWorkspaceActionProjector:
 
         *,
 
-        readiness=None,
+        context=None,
 
         include_unavailable=False,
 
@@ -237,11 +231,17 @@ class ResearchWorkspaceActionProjector:
 
     ):
 
+        if context is None:
+
+            context = (
+
+                self.context_factory
+                .create()
+            )
+
         session = (
 
-            self.session_manager
-            .load_session(
-
+            context.get_session(
                 session_id
             )
         )
@@ -254,18 +254,19 @@ class ResearchWorkspaceActionProjector:
                 f"not exist: {session_id}"
             )
 
-        if readiness is None:
+        capabilities = (
 
-            readiness = (
+            context.get_capabilities()
+        )
 
-                self.readiness_assessor
-                .assess()
-            )
+        readiness = (
+
+            context.get_readiness()
+        )
 
         profile = (
 
-            self.profile_store
-            .get(
+            context.get_session_profile(
                 session_id
             )
         )
@@ -305,6 +306,8 @@ class ResearchWorkspaceActionProjector:
             self._evaluate_session_action(
 
                 descriptor,
+
+                capabilities,
 
                 readiness,
 
@@ -381,11 +384,35 @@ class ResearchWorkspaceActionProjector:
             ),
         )
 
+    @staticmethod
+    def _capability_supported(
+
+        capabilities,
+
+        capability,
+
+    ):
+
+        for descriptor in capabilities:
+
+            if (
+
+                descriptor.name
+
+                == capability.value
+            ):
+
+                return descriptor.enabled
+
+        return False
+
     def _capability_block_reason(
 
         self,
 
         descriptor,
+
+        capabilities,
 
     ):
 
@@ -395,10 +422,11 @@ class ResearchWorkspaceActionProjector:
 
         if (
 
-            self.capability_registry
-            .supports(
+            self._capability_supported(
 
-                descriptor.capability
+                capabilities,
+
+                descriptor.capability,
             )
         ):
 
@@ -450,6 +478,8 @@ class ResearchWorkspaceActionProjector:
 
         descriptor,
 
+        capabilities,
+
         readiness,
 
     ):
@@ -457,7 +487,10 @@ class ResearchWorkspaceActionProjector:
         reason = (
 
             self._capability_block_reason(
-                descriptor
+
+                descriptor,
+
+                capabilities,
             )
 
             or self._readiness_block_reason(
@@ -492,6 +525,8 @@ class ResearchWorkspaceActionProjector:
 
         descriptor,
 
+        capabilities,
+
         readiness,
 
         status,
@@ -503,7 +538,10 @@ class ResearchWorkspaceActionProjector:
         reason = (
 
             self._capability_block_reason(
-                descriptor
+
+                descriptor,
+
+                capabilities,
             )
 
             or self._readiness_block_reason(

@@ -67,9 +67,6 @@ _INTEGRITY_SEVERITY_MAP = {
 }
 
 
-_DORMANT_SESSION_LOOKUP_LIMIT = 50
-
-
 class ResearchWorkspaceAttentionProjector:
     """
     Derives a unified, read-only collection
@@ -82,30 +79,12 @@ class ResearchWorkspaceAttentionProjector:
 
         self,
 
-        readiness_assessor,
-
-        integrity_auditor,
-
-        insights_service,
-
-        stale_paused_session_days=30,
+        context_factory,
 
     ):
 
-        self.readiness_assessor = (
-            readiness_assessor
-        )
-
-        self.integrity_auditor = (
-            integrity_auditor
-        )
-
-        self.insights_service = (
-            insights_service
-        )
-
-        self.stale_paused_session_days = (
-            stale_paused_session_days
+        self.context_factory = (
+            context_factory
         )
 
     def project(
@@ -114,7 +93,7 @@ class ResearchWorkspaceAttentionProjector:
 
         *,
 
-        readiness=None,
+        context=None,
 
         category=None,
 
@@ -134,13 +113,18 @@ class ResearchWorkspaceAttentionProjector:
                 "be negative"
             )
 
-        if readiness is None:
+        if context is None:
 
-            readiness = (
+            context = (
 
-                self.readiness_assessor
-                .assess()
+                self.context_factory
+                .create()
             )
+
+        readiness = (
+
+            context.get_readiness()
+        )
 
         items = []
 
@@ -151,11 +135,15 @@ class ResearchWorkspaceAttentionProjector:
         )
 
         items.extend(
-            self._integrity_items()
+            self._integrity_items(
+                context
+            )
         )
 
         items.extend(
-            self._stale_paused_session_items()
+            self._stale_paused_session_items(
+                context
+            )
         )
 
         items = self._deduplicate(
@@ -525,12 +513,18 @@ class ResearchWorkspaceAttentionProjector:
 
         return []
 
-    def _integrity_items(self):
+    def _integrity_items(
+
+        self,
+
+        context,
+
+    ):
 
         report = (
 
-            self.integrity_auditor
-            .audit()
+            context
+            .get_integrity_report()
         )
 
         items = []
@@ -606,29 +600,18 @@ class ResearchWorkspaceAttentionProjector:
 
         return items
 
-    def _stale_paused_session_items(self):
+    def _stale_paused_session_items(
+
+        self,
+
+        context,
+
+    ):
 
         insights = (
 
-            self.insights_service
-            .build_insights(
-
-                top_tag_limit=0,
-
-                collection_limit=0,
-
-                recent_session_limit=0,
-
-                dormant_session_limit=(
-                    _DORMANT_SESSION_LOOKUP_LIMIT
-                ),
-
-                dormant_after_days=(
-
-                    self
-                    .stale_paused_session_days
-                ),
-            )
+            context
+            .get_workspace_insights()
         )
 
         items = []

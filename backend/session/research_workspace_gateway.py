@@ -29,6 +29,8 @@ class ResearchWorkspaceGateway:
 
         action_projector,
 
+        context_factory,
+
     ):
 
         self.application = (
@@ -55,6 +57,10 @@ class ResearchWorkspaceGateway:
             action_projector
         )
 
+        self.context_factory = (
+            context_factory
+        )
+
     def assess_readiness(self):
 
         return (
@@ -73,10 +79,18 @@ class ResearchWorkspaceGateway:
 
     ):
 
+        context = (
+
+            self.context_factory
+            .create()
+        )
+
         return (
 
             self.bootstrap_projector
             .project(
+
+                context=context,
 
                 recent_session_limit=(
                     recent_session_limit
@@ -104,10 +118,18 @@ class ResearchWorkspaceGateway:
 
     ):
 
+        context = (
+
+            self.context_factory
+            .create()
+        )
+
         return (
 
             self.attention_projector
             .project(
+
+                context=context,
 
                 category=category,
 
@@ -133,10 +155,18 @@ class ResearchWorkspaceGateway:
 
     ):
 
+        context = (
+
+            self.context_factory
+            .create()
+        )
+
         return (
 
             self.action_projector
             .project_workspace_actions(
+
+                context=context,
 
                 include_unavailable=(
                     include_unavailable
@@ -156,12 +186,20 @@ class ResearchWorkspaceGateway:
 
     ):
 
+        context = (
+
+            self.context_factory
+            .create()
+        )
+
         return (
 
             self.action_projector
             .project_session_actions(
 
                 session_id,
+
+                context=context,
 
                 include_unavailable=(
                     include_unavailable

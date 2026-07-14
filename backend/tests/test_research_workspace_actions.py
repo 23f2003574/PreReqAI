@@ -5,6 +5,7 @@ from backend.session import (
     ResearchWorkspaceActionScope,
     ResearchWorkspaceAttentionCategory,
     ResearchWorkspaceCapability,
+    ResearchWorkspaceProjectionContext,
     ResearchWorkspaceReadinessAssessment,
     ResearchWorkspaceReadinessStatus,
 )
@@ -70,6 +71,89 @@ class FakeReadinessAssessor:
         return self.assessment
 
 
+class FakeContextFactory:
+
+    def __init__(
+
+        self,
+
+        capability_registry,
+
+        readiness_assessor,
+
+        integrity_auditor,
+
+        insights_service,
+
+        session_manager,
+
+        profile_store,
+
+    ):
+
+        self._capability_registry = (
+            capability_registry
+        )
+
+        self._readiness_assessor = (
+            readiness_assessor
+        )
+
+        self._integrity_auditor = (
+            integrity_auditor
+        )
+
+        self._insights_service = (
+            insights_service
+        )
+
+        self._session_manager = (
+            session_manager
+        )
+
+        self._profile_store = (
+            profile_store
+        )
+
+    def create(self):
+
+        return (
+
+            ResearchWorkspaceProjectionContext(
+
+                capability_registry=(
+
+                    self._capability_registry
+                ),
+
+                readiness_assessor=(
+
+                    self._readiness_assessor
+                ),
+
+                integrity_auditor=(
+
+                    self._integrity_auditor
+                ),
+
+                insights_service=(
+
+                    self._insights_service
+                ),
+
+                session_manager=(
+
+                    self._session_manager
+                ),
+
+                profile_store=(
+
+                    self._profile_store
+                ),
+            )
+        )
+
+
 def create_projector(
 
     application,
@@ -80,13 +164,9 @@ def create_projector(
 
 ):
 
-    return (
+    context_factory = (
 
-        ResearchWorkspaceActionProjector(
-
-            action_catalog=(
-                ResearchWorkspaceActionCatalog()
-            ),
+        FakeContextFactory(
 
             capability_registry=(
 
@@ -113,12 +193,38 @@ def create_projector(
                 )
             ),
 
+            integrity_auditor=(
+
+                application
+                .research_workspace_integrity_auditor
+            ),
+
+            insights_service=(
+
+                application
+                .research_workspace_insights_service
+            ),
+
             session_manager=(
                 application.session_manager
             ),
 
             profile_store=(
                 application.session_profile_store
+            ),
+        )
+    )
+
+    return (
+
+        ResearchWorkspaceActionProjector(
+
+            action_catalog=(
+                ResearchWorkspaceActionCatalog()
+            ),
+
+            context_factory=(
+                context_factory
             ),
         )
     )
