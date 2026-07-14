@@ -24,6 +24,8 @@ EXPECTED_PUBLIC_METHODS = {
 
     "assess_readiness",
 
+    "get_bootstrap",
+
     "create_session",
 
     "get_session",
@@ -256,6 +258,8 @@ def test_gateway_create_session_delegates_to_application():
             capabilities=capabilities,
 
             readiness_assessor=Mock(),
+
+            bootstrap_projector=Mock(),
         )
     )
 
@@ -309,6 +313,8 @@ def test_gateway_search_sessions_delegates_to_application():
             capabilities=capabilities,
 
             readiness_assessor=Mock(),
+
+            bootstrap_projector=Mock(),
         )
     )
 
@@ -339,6 +345,8 @@ def test_gateway_compare_sessions_delegates_to_application():
             capabilities=capabilities,
 
             readiness_assessor=Mock(),
+
+            bootstrap_projector=Mock(),
         )
     )
 
@@ -375,6 +383,8 @@ def test_gateway_export_workspace_delegates_to_application():
             capabilities=capabilities,
 
             readiness_assessor=Mock(),
+
+            bootstrap_projector=Mock(),
         )
     )
 
@@ -401,6 +411,8 @@ def test_gateway_import_snapshot_delegates_to_application():
             capabilities=capabilities,
 
             readiness_assessor=Mock(),
+
+            bootstrap_projector=Mock(),
         )
     )
 
@@ -449,6 +461,8 @@ def test_gateway_audit_workspace_delegates_to_application():
             capabilities=capabilities,
 
             readiness_assessor=Mock(),
+
+            bootstrap_projector=Mock(),
         )
     )
 
@@ -475,6 +489,8 @@ def test_gateway_get_changes_delegates_to_application():
             capabilities=capabilities,
 
             readiness_assessor=Mock(),
+
+            bootstrap_projector=Mock(),
         )
     )
 

@@ -664,6 +664,14 @@ from .research_workspace_readiness_assessor import (
     ResearchWorkspaceReadinessAssessor,
 )
 
+from .research_workspace_bootstrap_projection import (
+    ResearchWorkspaceBootstrapProjection,
+)
+
+from .research_workspace_bootstrap_projector import (
+    ResearchWorkspaceBootstrapProjector,
+)
+
 from .research_workspace_gateway import (
     ResearchWorkspaceGateway,
 )

@@ -23,6 +23,8 @@ class ResearchWorkspaceGateway:
 
         readiness_assessor,
 
+        bootstrap_projector,
+
     ):
 
         self.application = (
@@ -37,12 +39,41 @@ class ResearchWorkspaceGateway:
             readiness_assessor
         )
 
+        self.bootstrap_projector = (
+            bootstrap_projector
+        )
+
     def assess_readiness(self):
 
         return (
 
             self.readiness_assessor
             .assess()
+        )
+
+    def get_bootstrap(
+
+        self,
+
+        recent_session_limit=5,
+
+        recent_activity_limit=10,
+
+    ):
+
+        return (
+
+            self.bootstrap_projector
+            .project(
+
+                recent_session_limit=(
+                    recent_session_limit
+                ),
+
+                recent_activity_limit=(
+                    recent_activity_limit
+                ),
+            )
         )
 
     def list_capabilities(self):

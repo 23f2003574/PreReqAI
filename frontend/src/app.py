@@ -54,6 +54,7 @@ from backend.session import (
     ResearchSnapshotSerializer,
     ResearchSnapshotService,
     ResearchSnapshotValidator,
+    ResearchWorkspaceBootstrapProjector,
     ResearchWorkspaceCapabilities,
     ResearchWorkspaceChangeFeed,
     ResearchWorkspaceChangeOperation,
@@ -813,6 +814,38 @@ class PreReqAIApplication:
             )
         )
 
+        self.research_workspace_bootstrap_projector = (
+
+            ResearchWorkspaceBootstrapProjector(
+
+                capability_registry=(
+
+                    self
+                    .research_workspace_capabilities
+                ),
+
+                readiness_assessor=(
+
+                    self
+                    .research_workspace_readiness_assessor
+                ),
+
+                insights_service=(
+
+                    self
+                    .research_workspace_insights_service
+                ),
+
+                discovery_service=(
+                    self.session_query_service
+                ),
+
+                activity_service=(
+                    self.research_activity_service
+                ),
+            )
+        )
+
         self.research_workspace = (
 
             ResearchWorkspaceGateway(
@@ -829,6 +862,12 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_readiness_assessor
+                ),
+
+                bootstrap_projector=(
+
+                    self
+                    .research_workspace_bootstrap_projector
                 ),
             )
         )
