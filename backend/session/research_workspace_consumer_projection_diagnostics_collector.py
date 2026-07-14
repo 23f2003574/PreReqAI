@@ -2,6 +2,10 @@ from contextlib import (
     contextmanager,
 )
 
+from .research_workspace_consumer_projection_budget_decision import (
+    ResearchWorkspaceConsumerProjectionBudgetDecision,
+)
+
 from .research_workspace_consumer_projection_diagnostic_failure import (
     ResearchWorkspaceConsumerProjectionDiagnosticFailure,
 )
@@ -98,6 +102,8 @@ class ResearchWorkspaceConsumerProjectionDiagnosticsCollector:
         self._input_order = []
 
         self._stages = []
+
+        self._budget_admissions = []
 
     def _ensure_open(self):
 
@@ -226,6 +232,20 @@ class ResearchWorkspaceConsumerProjectionDiagnosticsCollector:
         ][
             "reuse_count"
         ] += 1
+
+    def record_budget_admission(
+
+        self,
+
+        admission,
+
+    ):
+
+        self._ensure_open()
+
+        self._budget_admissions.append(
+            admission
+        )
 
     @contextmanager
     def stage(
@@ -440,12 +460,29 @@ class ResearchWorkspaceConsumerProjectionDiagnosticsCollector:
             in self._stages
         )
 
+        has_budget_skip = any(
+
+            admission.decision
+
+            == ResearchWorkspaceConsumerProjectionBudgetDecision
+            .SKIP
+
+            for admission
+
+            in self._budget_admissions
+        )
+
         overall_status = (
 
             ResearchWorkspaceConsumerProjectionDiagnosticStatus
             .DEGRADED
 
-            if has_unsuccessful_stage
+            if (
+
+                has_unsuccessful_stage
+
+                or has_budget_skip
+            )
 
             else (
 
@@ -472,6 +509,10 @@ class ResearchWorkspaceConsumerProjectionDiagnosticsCollector:
 
                 stages=list(
                     self._stages
+                ),
+
+                budget_decisions=list(
+                    self._budget_admissions
                 ),
             )
         )

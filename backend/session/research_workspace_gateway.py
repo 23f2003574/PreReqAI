@@ -41,6 +41,10 @@ class ResearchWorkspaceGateway:
 
         diagnostics_factory,
 
+        execution_policy_registry,
+
+        execution_budget_factory,
+
     ):
 
         self.application = (
@@ -83,6 +87,42 @@ class ResearchWorkspaceGateway:
             diagnostics_factory
         )
 
+        self.execution_policy_registry = (
+            execution_policy_registry
+        )
+
+        self.execution_budget_factory = (
+            execution_budget_factory
+        )
+
+    def _create_budget(
+
+        self,
+
+        operation_name,
+
+    ):
+
+        policy = (
+
+            self.execution_policy_registry
+            .get_policy(
+                operation_name
+            )
+        )
+
+        if policy is None:
+
+            return None
+
+        return (
+
+            self.execution_budget_factory
+            .create(
+                policy=policy,
+            )
+        )
+
     def diagnose_bootstrap(
 
         self,
@@ -113,6 +153,13 @@ class ResearchWorkspaceGateway:
             )
         )
 
+        budget = (
+
+            self._create_budget(
+                "workspace.bootstrap"
+            )
+        )
+
         projection = (
 
             self.bootstrap_projector
@@ -121,6 +168,8 @@ class ResearchWorkspaceGateway:
                 context=context,
 
                 diagnostics=collector,
+
+                budget=budget,
 
                 recent_session_limit=(
                     recent_session_limit
@@ -414,12 +463,21 @@ class ResearchWorkspaceGateway:
             .create()
         )
 
+        budget = (
+
+            self._create_budget(
+                "workspace.bootstrap"
+            )
+        )
+
         return (
 
             self.bootstrap_projector
             .project(
 
                 context=context,
+
+                budget=budget,
 
                 recent_session_limit=(
                     recent_session_limit

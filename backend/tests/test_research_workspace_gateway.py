@@ -292,6 +292,10 @@ def test_gateway_create_session_delegates_to_application():
             consumer_contract_manifest_provider=Mock(),
 
             diagnostics_factory=Mock(),
+
+            execution_policy_registry=Mock(),
+
+            execution_budget_factory=Mock(),
         )
     )
 
@@ -359,6 +363,10 @@ def test_gateway_search_sessions_delegates_to_application():
             consumer_contract_manifest_provider=Mock(),
 
             diagnostics_factory=Mock(),
+
+            execution_policy_registry=Mock(),
+
+            execution_budget_factory=Mock(),
         )
     )
 
@@ -403,6 +411,10 @@ def test_gateway_compare_sessions_delegates_to_application():
             consumer_contract_manifest_provider=Mock(),
 
             diagnostics_factory=Mock(),
+
+            execution_policy_registry=Mock(),
+
+            execution_budget_factory=Mock(),
         )
     )
 
@@ -453,6 +465,10 @@ def test_gateway_export_workspace_delegates_to_application():
             consumer_contract_manifest_provider=Mock(),
 
             diagnostics_factory=Mock(),
+
+            execution_policy_registry=Mock(),
+
+            execution_budget_factory=Mock(),
         )
     )
 
@@ -493,6 +509,10 @@ def test_gateway_import_snapshot_delegates_to_application():
             consumer_contract_manifest_provider=Mock(),
 
             diagnostics_factory=Mock(),
+
+            execution_policy_registry=Mock(),
+
+            execution_budget_factory=Mock(),
         )
     )
 
@@ -555,6 +575,10 @@ def test_gateway_audit_workspace_delegates_to_application():
             consumer_contract_manifest_provider=Mock(),
 
             diagnostics_factory=Mock(),
+
+            execution_policy_registry=Mock(),
+
+            execution_budget_factory=Mock(),
         )
     )
 
@@ -595,6 +619,10 @@ def test_gateway_get_changes_delegates_to_application():
             consumer_contract_manifest_provider=Mock(),
 
             diagnostics_factory=Mock(),
+
+            execution_policy_registry=Mock(),
+
+            execution_budget_factory=Mock(),
         )
     )
 

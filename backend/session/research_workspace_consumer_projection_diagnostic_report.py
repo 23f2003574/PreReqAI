@@ -3,6 +3,10 @@ from dataclasses import (
     field,
 )
 
+from .research_workspace_consumer_projection_budget_admission import (
+    ResearchWorkspaceConsumerProjectionBudgetAdmission,
+)
+
 from .research_workspace_consumer_projection_diagnostic_status import (
     ResearchWorkspaceConsumerProjectionDiagnosticStatus,
 )
@@ -44,6 +48,12 @@ class ResearchWorkspaceConsumerProjectionDiagnosticReport:
         default_factory=list,
     )
 
+    budget_decisions: list[
+        ResearchWorkspaceConsumerProjectionBudgetAdmission
+    ] = field(
+        default_factory=list,
+    )
+
     def to_dict(self):
 
         return {
@@ -73,5 +83,14 @@ class ResearchWorkspaceConsumerProjectionDiagnosticReport:
                 for stage
 
                 in self.stages
+            ],
+
+            "budget_decisions": [
+
+                admission.to_dict()
+
+                for admission
+
+                in self.budget_decisions
             ],
         }

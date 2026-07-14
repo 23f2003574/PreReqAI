@@ -64,6 +64,8 @@ from backend.session import (
     ResearchWorkspaceConsumerContractManifestProvider,
     ResearchWorkspaceConsumerContractRegistry,
     ResearchWorkspaceConsumerProjectionDiagnosticsFactory,
+    ResearchWorkspaceConsumerProjectionExecutionBudgetFactory,
+    ResearchWorkspaceConsumerProjectionExecutionPolicyRegistry,
     ResearchWorkspaceEventBus,
     ResearchWorkspaceGateway,
     ResearchWorkspaceInsightsService,
@@ -839,6 +841,23 @@ class PreReqAIApplication:
             )
         )
 
+        self.research_workspace_consumer_projection_execution_policy_registry = (
+
+            ResearchWorkspaceConsumerProjectionExecutionPolicyRegistry()
+        )
+
+        self.research_workspace_consumer_projection_execution_budget_factory = (
+
+            ResearchWorkspaceConsumerProjectionExecutionBudgetFactory(
+
+                clock=(
+
+                    self
+                    .research_workspace_monotonic_clock
+                ),
+            )
+        )
+
         self.research_workspace_projection_context_factory = (
 
             ResearchWorkspaceProjectionContextFactory(
@@ -1025,6 +1044,18 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_consumer_projection_diagnostics_factory
+                ),
+
+                execution_policy_registry=(
+
+                    self
+                    .research_workspace_consumer_projection_execution_policy_registry
+                ),
+
+                execution_budget_factory=(
+
+                    self
+                    .research_workspace_consumer_projection_execution_budget_factory
                 ),
             )
         )

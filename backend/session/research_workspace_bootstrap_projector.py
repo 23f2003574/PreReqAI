@@ -22,6 +22,10 @@ from .research_workspace_consumer_projection_diagnostics_stage_helper import (
     stage_or_noop,
 )
 
+from .research_workspace_consumer_projection_execution_coordinator import (
+    ResearchWorkspaceConsumerProjectionExecutionCoordinator,
+)
+
 
 _ATTENTION_PREVIEW_LIMIT = 3
 
@@ -81,6 +85,8 @@ class ResearchWorkspaceBootstrapProjector:
 
         diagnostics=None,
 
+        budget=None,
+
         recent_session_limit=5,
 
         recent_activity_limit=10,
@@ -113,6 +119,16 @@ class ResearchWorkspaceBootstrapProjector:
                 )
             )
 
+        coordinator = (
+
+            ResearchWorkspaceConsumerProjectionExecutionCoordinator(
+
+                budget=budget,
+
+                diagnostics=diagnostics,
+            )
+        )
+
         warnings = []
 
         capabilities = (
@@ -127,60 +143,239 @@ class ResearchWorkspaceBootstrapProjector:
 
         overview = (
 
-            self._load_overview(
-                context,
+            coordinator.execute_stage(
 
-                diagnostics,
+                name=(
+                    "workspace.bootstrap.overview"
+                ),
+
+                operation=(
+
+                    lambda: (
+
+                        self._load_overview(
+
+                            context,
+
+                            diagnostics,
+                        )
+                    )
+                ),
             )
         )
 
         attention = (
 
-            self._load_attention_summary(
+            coordinator.execute_stage(
 
-                context,
+                name=(
+                    "workspace.attention.project"
+                ),
 
-                diagnostics,
+                operation=(
 
-                warnings,
+                    lambda: (
+
+                        self._load_attention_summary(
+
+                            context,
+
+                            diagnostics,
+
+                            warnings,
+                        )
+                    )
+                ),
+
+                on_skip=(
+
+                    lambda: (
+
+                        self._skip_attention_summary(
+                            warnings
+                        )
+                    )
+                ),
             )
         )
 
         workspace_actions = (
 
-            self._load_workspace_actions(
+            coordinator.execute_stage(
 
-                context,
+                name=(
+                    "workspace.actions.project"
+                ),
 
-                diagnostics,
+                operation=(
 
-                warnings,
+                    lambda: (
+
+                        self._load_workspace_actions(
+
+                            context,
+
+                            diagnostics,
+
+                            warnings,
+                        )
+                    )
+                ),
+
+                on_skip=(
+
+                    lambda: (
+
+                        self._skip_workspace_actions(
+                            warnings
+                        )
+                    )
+                ),
             )
         )
 
         recent_sessions = (
 
-            self._load_recent_sessions(
+            coordinator.execute_stage(
 
-                recent_session_limit,
+                name=(
+                    "workspace.bootstrap.recent_sessions"
+                ),
 
-                diagnostics,
+                operation=(
 
-                warnings,
+                    lambda: (
+
+                        self._load_recent_sessions(
+
+                            recent_session_limit,
+
+                            diagnostics,
+
+                            warnings,
+                        )
+                    )
+                ),
+
+                on_skip=(
+
+                    lambda: (
+
+                        self._skip_recent_sessions(
+                            warnings
+                        )
+                    )
+                ),
             )
         )
 
         recent_activity = (
 
-            self._load_recent_activity(
+            coordinator.execute_stage(
 
-                recent_activity_limit,
+                name=(
+                    "workspace.bootstrap.recent_activity"
+                ),
 
-                diagnostics,
+                operation=(
 
-                warnings,
+                    lambda: (
+
+                        self._load_recent_activity(
+
+                            recent_activity_limit,
+
+                            diagnostics,
+
+                            warnings,
+                        )
+                    )
+                ),
+
+                on_skip=(
+
+                    lambda: (
+
+                        self._skip_recent_activity(
+                            warnings
+                        )
+                    )
+                ),
             )
         )
+
+        return (
+
+            coordinator.execute_stage(
+
+                name=(
+                    "workspace.bootstrap.assemble"
+                ),
+
+                operation=(
+
+                    lambda: (
+
+                        self._assemble(
+
+                            context,
+
+                            diagnostics,
+
+                            capabilities=capabilities,
+
+                            readiness=readiness,
+
+                            overview=overview,
+
+                            attention=attention,
+
+                            workspace_actions=(
+                                workspace_actions
+                            ),
+
+                            recent_sessions=(
+                                recent_sessions
+                            ),
+
+                            recent_activity=(
+                                recent_activity
+                            ),
+
+                            warnings=warnings,
+                        )
+                    )
+                ),
+            )
+        )
+
+    def _assemble(
+
+        self,
+
+        context,
+
+        diagnostics,
+
+        *,
+
+        capabilities,
+
+        readiness,
+
+        overview,
+
+        attention,
+
+        workspace_actions,
+
+        recent_sessions,
+
+        recent_activity,
+
+        warnings,
+
+    ):
 
         with stage_or_noop(
 
@@ -219,6 +414,68 @@ class ResearchWorkspaceBootstrapProjector:
                     warnings=warnings,
                 )
             )
+
+    @staticmethod
+    def _skip_attention_summary(
+
+        warnings,
+
+    ):
+
+        warnings.append(
+            "Attention summary was "
+            "skipped due to the "
+            "execution budget."
+        )
+
+        return (
+            ResearchWorkspaceAttentionSummary()
+        )
+
+    @staticmethod
+    def _skip_workspace_actions(
+
+        warnings,
+
+    ):
+
+        warnings.append(
+            "Workspace actions were "
+            "skipped due to the "
+            "execution budget."
+        )
+
+        return []
+
+    @staticmethod
+    def _skip_recent_sessions(
+
+        warnings,
+
+    ):
+
+        warnings.append(
+            "Recent sessions were "
+            "skipped due to the "
+            "execution budget."
+        )
+
+        return []
+
+    @staticmethod
+    def _skip_recent_activity(
+
+        warnings,
+
+    ):
+
+        warnings.append(
+            "Recent activity was "
+            "skipped due to the "
+            "execution budget."
+        )
+
+        return []
 
     def _load_overview(
 

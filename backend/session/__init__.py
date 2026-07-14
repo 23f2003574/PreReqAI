@@ -761,6 +761,51 @@ from .research_workspace_consumer_projection_diagnostic_report import (
     ResearchWorkspaceConsumerProjectionDiagnosticReport,
 )
 
+from .research_workspace_consumer_projection_stage_requirement import (
+    ResearchWorkspaceConsumerProjectionStageRequirement,
+)
+
+from .research_workspace_consumer_projection_budget_decision import (
+    ResearchWorkspaceConsumerProjectionBudgetDecision,
+)
+
+from .research_workspace_consumer_projection_budget_decision_reason import (
+    ResearchWorkspaceConsumerProjectionBudgetDecisionReason,
+)
+
+from .research_workspace_consumer_projection_stage_budget_policy import (
+    ResearchWorkspaceConsumerProjectionStageBudgetPolicy,
+)
+
+from .research_workspace_consumer_projection_execution_policy import (
+    ResearchWorkspaceConsumerProjectionExecutionPolicy,
+)
+
+from .research_workspace_consumer_projection_execution_policy_registry import (
+    DEFAULT_CONSUMER_PROJECTION_POLICIES,
+    ResearchWorkspaceConsumerProjectionExecutionPolicyRegistry,
+)
+
+from .research_workspace_consumer_projection_budget_snapshot import (
+    ResearchWorkspaceConsumerProjectionBudgetSnapshot,
+)
+
+from .research_workspace_consumer_projection_budget_admission import (
+    ResearchWorkspaceConsumerProjectionBudgetAdmission,
+)
+
+from .research_workspace_consumer_projection_execution_budget import (
+    ResearchWorkspaceConsumerProjectionExecutionBudget,
+)
+
+from .research_workspace_consumer_projection_execution_budget_factory import (
+    ResearchWorkspaceConsumerProjectionExecutionBudgetFactory,
+)
+
+from .research_workspace_consumer_projection_execution_coordinator import (
+    ResearchWorkspaceConsumerProjectionExecutionCoordinator,
+)
+
 from .research_workspace_consumer_projection_diagnostics_stage_helper import (
     stage_or_noop,
 )
