@@ -6,6 +6,10 @@ from .research_workspace_consumer_projection_execution_result import (
     ResearchWorkspaceConsumerProjectionExecutionResult,
 )
 
+from .research_workspace_consumer_projection_fingerprint_snapshot import (
+    ResearchWorkspaceConsumerProjectionFingerprintSnapshot,
+)
+
 
 class ResearchWorkspaceGateway:
     """
@@ -46,6 +50,12 @@ class ResearchWorkspaceGateway:
         execution_budget_factory,
 
         provenance_collector_factory,
+
+        fingerprint_service=None,
+
+        receipt_builder=None,
+
+        receipt_verifier=None,
 
     ):
 
@@ -101,6 +111,18 @@ class ResearchWorkspaceGateway:
             provenance_collector_factory
         )
 
+        self._fingerprint_service = (
+            fingerprint_service
+        )
+
+        self._receipt_builder = (
+            receipt_builder
+        )
+
+        self._receipt_verifier = (
+            receipt_verifier
+        )
+
     def _create_budget(
 
         self,
@@ -126,6 +148,54 @@ class ResearchWorkspaceGateway:
             self.execution_budget_factory
             .create(
                 policy=policy,
+            )
+        )
+
+    def _build_receipt_if_enabled(
+
+        self,
+
+        *,
+        execution_id,
+        observed_at,
+        projection_name,
+        contract_version,
+        diagnostic_report,
+        provenance_report,
+        budget_snapshot,
+
+    ):
+
+        if self._receipt_builder is None:
+
+            return None
+
+        if self._fingerprint_service is None:
+
+            return None
+
+        # Build fingerprint snapshot
+        fingerprint_snapshot = (
+            self._fingerprint_service
+            .fingerprint(
+                projection_name=projection_name,
+                projection=None,  # Will be set by caller
+                contract_version=contract_version,
+            )
+        )
+
+        # Build receipt
+        return (
+            self._receipt_builder
+            .build(
+                execution_id=execution_id,
+                observed_at=observed_at,
+                projection_name=projection_name,
+                contract_version=contract_version,
+                fingerprint_snapshot=fingerprint_snapshot,
+                diagnostic_report=diagnostic_report,
+                provenance_report=provenance_report,
+                budget_snapshot=budget_snapshot,
             )
         )
 
@@ -200,19 +270,56 @@ class ResearchWorkspaceGateway:
             )
         )
 
+        diagnostic_report = (
+            collector.finalize()
+        )
+
+        provenance_report = (
+            provenance.build_report()
+        )
+
+        budget_snapshot = (
+            budget.snapshot()
+            if budget
+            else None
+        )
+
+        # Build receipt if services are configured
+        receipt = self._build_receipt_if_enabled(
+            execution_id="bootstrap-exec",  # TODO: Use proper execution ID
+            observed_at=context.observed_at,
+            projection_name="workspace.bootstrap",
+            contract_version="1.0",  # TODO: Get from contract registry
+            diagnostic_report=diagnostic_report,
+            provenance_report=provenance_report,
+            budget_snapshot=budget_snapshot,
+        )
+
+        # Build fingerprint snapshot if service is configured
+        fingerprint_snapshot = None
+        if self._fingerprint_service is not None:
+            fingerprint_snapshot = (
+                self._fingerprint_service
+                .fingerprint(
+                    projection_name="workspace.bootstrap",
+                    projection=projection,
+                    contract_version="1.0",  # TODO: Get from contract registry
+                )
+            )
+
         return (
 
             ResearchWorkspaceConsumerProjectionExecutionResult(
 
                 projection=projection,
 
-                diagnostics=(
-                    collector.finalize()
-                ),
+                diagnostics=diagnostic_report,
 
-                provenance=(
-                    provenance.build_report()
-                ),
+                provenance=provenance_report,
+
+                fingerprint=fingerprint_snapshot,
+
+                receipt=receipt,
             )
         )
 

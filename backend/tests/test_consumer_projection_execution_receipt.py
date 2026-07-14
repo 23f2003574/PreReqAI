@@ -12,8 +12,7 @@ from backend.session import (
     ResearchWorkspaceConsumerProjectionBudgetSummary,
     ResearchWorkspaceConsumerProjectionBudgetSummarySummarizer,
     ResearchWorkspaceConsumerProjectionDiagnosticsCollector,
-    ResearchWorkspaceConsumerProjectionDiagnosticsReport,
-    ResearchWorkspaceConsumerProjectionDiagnosticsStageHelper,
+    ResearchWorkspaceConsumerProjectionDiagnosticReport,
     ResearchWorkspaceConsumerProjectionDiagnosticsStatus,
     ResearchWorkspaceConsumerProjectionDiagnosticsSummary,
     ResearchWorkspaceConsumerProjectionDiagnosticsSummarizer,
@@ -265,7 +264,7 @@ class TestDiagnosticsSummarizer:
     """Test diagnostics summarizer."""
 
     def test_summarize_stage_count(self):
-        report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -288,7 +287,7 @@ class TestDiagnosticsSummarizer:
         assert summary.stage_count == 5
 
     def test_summarize_degraded_stage_count(self):
-        report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -315,7 +314,7 @@ class TestDiagnosticsSummarizer:
         assert summary.degraded_stage_count == 1
 
     def test_summarize_reused_resolution_count(self):
-        report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -338,7 +337,7 @@ class TestDiagnosticsSummarizer:
         assert summary.reused_resolution_count == 3
 
     def test_summarize_total_duration(self):
-        report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=42.5,
@@ -354,7 +353,7 @@ class TestFreshnessSummarizer:
     """Test freshness summarizer."""
 
     def test_summarize_fresh_sources(self):
-        report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -388,7 +387,7 @@ class TestFreshnessSummarizer:
         assert summary.fresh_source_count == 3
 
     def test_summarize_stale_usable_sources(self):
-        report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -421,7 +420,7 @@ class TestFreshnessSummarizer:
         assert summary.stale_usable_source_count == 1
 
     def test_summarize_expired_sources(self):
-        report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -454,7 +453,7 @@ class TestFreshnessSummarizer:
         assert summary.expired_source_count == 1
 
     def test_summarize_unknown_sources(self):
-        report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -490,7 +489,7 @@ class TestBudgetSummarizer:
             exhausted=False,
         )
 
-        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -525,7 +524,7 @@ class TestBudgetSummarizer:
             exhausted=False,
         )
 
-        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -559,7 +558,7 @@ class TestBudgetSummarizer:
             exhausted=True,
         )
 
-        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -582,7 +581,7 @@ class TestBudgetSummarizer:
             exhausted=False,
         )
 
-        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="test",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -1169,7 +1168,7 @@ class TestReceiptBuilder:
             ),
         )
 
-        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="workspace.bootstrap",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -1214,7 +1213,7 @@ class TestReceiptBuilder:
             ),
         )
 
-        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="workspace.bootstrap",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -1274,7 +1273,7 @@ class TestReceiptVerifier:
             ),
         )
 
-        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="workspace.bootstrap",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -1330,7 +1329,7 @@ class TestReceiptVerifier:
             ),
         )
 
-        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="workspace.bootstrap",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -1389,7 +1388,7 @@ class TestReceiptVerifier:
             ),
         )
 
-        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="workspace.bootstrap",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,
@@ -1459,7 +1458,7 @@ class TestReceiptVerifier:
             ),
         )
 
-        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticsReport(
+        diagnostic_report = ResearchWorkspaceConsumerProjectionDiagnosticReport(
             operation_name="workspace.bootstrap",
             status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
             duration_ms=100.0,

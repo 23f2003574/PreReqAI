@@ -1,25 +1,31 @@
 from dataclasses import (
     dataclass,
-    field,
+)
+
+from .research_workspace_capability import (
+    ResearchWorkspaceCapability,
 )
 
 
-@dataclass
+@dataclass(frozen=True)
 class ResearchWorkspaceCapabilityDescriptor:
     """
     Describes one high-level workspace
     capability and its public operations.
+
+    Frozen to ensure immutability.
     """
 
-    name: str
+    capability: (
+        ResearchWorkspaceCapability
+    )
 
     description: str
 
-    operations: list[
-        str
-    ] = field(
-        default_factory=list,
-    )
+    operations: tuple[
+        str,
+        ...
+    ]
 
     version: str = (
         "1.0"
@@ -31,8 +37,8 @@ class ResearchWorkspaceCapabilityDescriptor:
 
         return {
 
-            "name":
-                self.name,
+            "capability":
+                self.capability.value,
 
             "description":
                 self.description,

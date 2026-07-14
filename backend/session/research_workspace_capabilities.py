@@ -28,9 +28,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .SESSIONS.value
+                        .SESSIONS
                     ),
 
                     description=(
@@ -40,7 +40,7 @@ class ResearchWorkspaceCapabilities:
                         "research sessions."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "create_session",
 
@@ -53,7 +53,7 @@ class ResearchWorkspaceCapabilities:
                         "update_lifecycle_state",
 
                         "create_checkpoint",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -61,9 +61,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .DISCOVERY.value
+                        .DISCOVERY
                     ),
 
                     description=(
@@ -72,10 +72,10 @@ class ResearchWorkspaceCapabilities:
                         "and paginate research sessions."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "search_sessions",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -83,9 +83,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .LINEAGE.value
+                        .LINEAGE
                     ),
 
                     description=(
@@ -94,7 +94,7 @@ class ResearchWorkspaceCapabilities:
                         "branches and inspect lineage."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "branch_session",
 
@@ -103,7 +103,7 @@ class ResearchWorkspaceCapabilities:
                         "get_ancestors",
 
                         "get_descendants",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -111,9 +111,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .COMPARISON.value
+                        .COMPARISON
                     ),
 
                     description=(
@@ -123,10 +123,10 @@ class ResearchWorkspaceCapabilities:
                         "divergence."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "compare_sessions",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -134,9 +134,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .ORGANIZATION.value
+                        .ORGANIZATION
                     ),
 
                     description=(
@@ -145,7 +145,7 @@ class ResearchWorkspaceCapabilities:
                         "tags and collections."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "create_tag",
 
@@ -158,7 +158,7 @@ class ResearchWorkspaceCapabilities:
                         "add_collection_member",
 
                         "remove_collection_member",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -166,9 +166,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .ACTIVITY.value
+                        .ACTIVITY
                     ),
 
                     description=(
@@ -177,10 +177,10 @@ class ResearchWorkspaceCapabilities:
                         "research activity history."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "get_activity",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -188,9 +188,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .INSIGHTS.value
+                        .INSIGHTS
                     ),
 
                     description=(
@@ -199,10 +199,10 @@ class ResearchWorkspaceCapabilities:
                         "research statistics and insights."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "get_workspace_insights",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -210,9 +210,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .SNAPSHOTS.value
+                        .SNAPSHOTS
                     ),
 
                     description=(
@@ -221,12 +221,12 @@ class ResearchWorkspaceCapabilities:
                         "workspace snapshots."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "export_workspace",
 
                         "serialize_snapshot",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -234,9 +234,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .IMPORT.value
+                        .IMPORT
                     ),
 
                     description=(
@@ -245,12 +245,12 @@ class ResearchWorkspaceCapabilities:
                         "import portable snapshots."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "preview_import",
 
                         "import_snapshot",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -258,9 +258,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .INTEGRITY.value
+                        .INTEGRITY
                     ),
 
                     description=(
@@ -269,12 +269,12 @@ class ResearchWorkspaceCapabilities:
                         "and plan repairs."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "audit_workspace",
 
                         "plan_repairs",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -282,9 +282,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .CHANGE_FEED.value
+                        .CHANGE_FEED
                     ),
 
                     description=(
@@ -293,12 +293,12 @@ class ResearchWorkspaceCapabilities:
                         "changes using sequence cursors."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "get_changes",
 
                         "get_latest_change_sequence",
-                    ],
+                    ),
                 ),
 
             ResearchWorkspaceCapability
@@ -306,9 +306,9 @@ class ResearchWorkspaceCapabilities:
 
                 ResearchWorkspaceCapabilityDescriptor(
 
-                    name=(
+                    capability=(
                         ResearchWorkspaceCapability
-                        .SUBSCRIPTIONS.value
+                        .SUBSCRIPTIONS
                     ),
 
                     description=(
@@ -317,12 +317,12 @@ class ResearchWorkspaceCapabilities:
                         "workspace change notifications."
                     ),
 
-                    operations=[
+                    operations=(
 
                         "subscribe",
 
                         "unsubscribe",
-                    ],
+                    ),
                 ),
         }
 

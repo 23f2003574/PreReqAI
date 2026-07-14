@@ -1087,4 +1087,8 @@ from .research_workspace_consumer_projection_execution_receipt_verifier import (
     ResearchWorkspaceConsumerProjectionExecutionReceiptVerifier,
 )
 
+from .research_workspace_consumer_projection_execution_receipt_formatter import (
+    ResearchWorkspaceConsumerProjectionExecutionReceiptFormatter,
+)
+
 session_manager = SessionManager()
