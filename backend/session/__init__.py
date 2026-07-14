@@ -939,4 +939,80 @@ from .research_workspace_gateway import (
     ResearchWorkspaceGateway,
 )
 
+from .research_workspace_consumer_projection_fingerprint_algorithm import (
+    ResearchWorkspaceConsumerProjectionFingerprintAlgorithm,
+)
+
+from .research_workspace_consumer_projection_fingerprint import (
+    ResearchWorkspaceConsumerProjectionFingerprint,
+)
+
+from .research_workspace_consumer_projection_section_fingerprint import (
+    ResearchWorkspaceConsumerProjectionSectionFingerprint,
+)
+
+from .research_workspace_consumer_projection_fingerprint_snapshot import (
+    ResearchWorkspaceConsumerProjectionFingerprintSnapshot,
+)
+
+from .research_workspace_consumer_projection_change_status import (
+    ResearchWorkspaceConsumerProjectionChangeStatus,
+)
+
+from .research_workspace_consumer_projection_section_change_status import (
+    ResearchWorkspaceConsumerProjectionSectionChangeStatus,
+)
+
+from .research_workspace_consumer_projection_section_change import (
+    ResearchWorkspaceConsumerProjectionSectionChange,
+)
+
+from .research_workspace_consumer_projection_change_report import (
+    ResearchWorkspaceConsumerProjectionChangeReport,
+)
+
+from .research_workspace_consumer_projection_fingerprint_errors import (
+    ResearchWorkspaceConsumerProjectionFingerprintError,
+    ResearchWorkspaceUnsupportedCanonicalValueError,
+    ResearchWorkspaceNaiveDatetimeCanonicalizationError,
+    ResearchWorkspaceProjectionFingerprintPolicyNotFoundError,
+    ResearchWorkspaceIncomparableProjectionSnapshotsError,
+)
+
+from .research_workspace_consumer_projection_fingerprint_policy import (
+    ResearchWorkspaceConsumerProjectionFingerprintPolicy,
+)
+
+from .research_workspace_consumer_projection_canonicalizer import (
+    ResearchWorkspaceConsumerProjectionCanonicalizer,
+)
+
+from .research_workspace_consumer_projection_fingerprint_service import (
+    ResearchWorkspaceConsumerProjectionFingerprintService,
+)
+
+from .research_workspace_consumer_projection_change_detector import (
+    ResearchWorkspaceConsumerProjectionChangeDetector,
+)
+
+from .research_workspace_consumer_projection_fingerprint_policy_registry import (
+    ResearchWorkspaceConsumerProjectionFingerprintPolicyRegistry,
+)
+
+from .research_workspace_bootstrap_fingerprint_policy import (
+    ResearchWorkspaceBootstrapFingerprintPolicy,
+)
+
+from .research_workspace_attention_fingerprint_policy import (
+    ResearchWorkspaceAttentionFingerprintPolicy,
+)
+
+from .research_workspace_action_fingerprint_policy import (
+    ResearchWorkspaceActionFingerprintPolicy,
+)
+
+from .research_workspace_readiness_fingerprint_policy import (
+    ResearchWorkspaceReadinessFingerprintPolicy,
+)
+
 session_manager = SessionManager()
