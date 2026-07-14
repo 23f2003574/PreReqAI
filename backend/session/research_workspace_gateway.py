@@ -21,6 +21,8 @@ class ResearchWorkspaceGateway:
 
         capabilities,
 
+        readiness_assessor,
+
     ):
 
         self.application = (
@@ -29,6 +31,18 @@ class ResearchWorkspaceGateway:
 
         self.capabilities = (
             capabilities
+        )
+
+        self.readiness_assessor = (
+            readiness_assessor
+        )
+
+    def assess_readiness(self):
+
+        return (
+
+            self.readiness_assessor
+            .assess()
         )
 
     def list_capabilities(self):

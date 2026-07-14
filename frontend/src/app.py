@@ -62,6 +62,7 @@ from backend.session import (
     ResearchWorkspaceInsightsService,
     ResearchWorkspaceIntegrityAuditor,
     ResearchWorkspaceOrganizationService,
+    ResearchWorkspaceReadinessAssessor,
     ResearchWorkspaceRepairPlanner,
 )
 
@@ -784,6 +785,34 @@ class PreReqAIApplication:
             ResearchWorkspaceCapabilities()
         )
 
+        self.research_workspace_readiness_assessor = (
+
+            ResearchWorkspaceReadinessAssessor(
+
+                capability_registry=(
+
+                    self
+                    .research_workspace_capabilities
+                ),
+
+                session_manager=(
+                    self.session_manager
+                ),
+
+                integrity_auditor=(
+
+                    self
+                    .research_workspace_integrity_auditor
+                ),
+
+                change_feed=(
+
+                    self
+                    .research_workspace_change_feed
+                ),
+            )
+        )
+
         self.research_workspace = (
 
             ResearchWorkspaceGateway(
@@ -794,6 +823,12 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_capabilities
+                ),
+
+                readiness_assessor=(
+
+                    self
+                    .research_workspace_readiness_assessor
                 ),
             )
         )
