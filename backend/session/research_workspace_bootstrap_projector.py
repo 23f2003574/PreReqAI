@@ -6,9 +6,16 @@ from .research_session_sort_order import (
     ResearchSessionSortOrder,
 )
 
+from .research_workspace_attention_summary import (
+    ResearchWorkspaceAttentionSummary,
+)
+
 from .research_workspace_bootstrap_projection import (
     ResearchWorkspaceBootstrapProjection,
 )
+
+
+_ATTENTION_PREVIEW_LIMIT = 3
 
 
 class ResearchWorkspaceBootstrapProjector:
@@ -16,7 +23,8 @@ class ResearchWorkspaceBootstrapProjector:
     Assembles a bounded, frontend-ready
     startup context from the existing
     capability, readiness, insights,
-    discovery, and activity systems.
+    discovery, activity, and attention
+    systems.
     """
 
     def __init__(
@@ -32,6 +40,8 @@ class ResearchWorkspaceBootstrapProjector:
         discovery_service,
 
         activity_service,
+
+        attention_projector,
 
     ):
 
@@ -53,6 +63,10 @@ class ResearchWorkspaceBootstrapProjector:
 
         self.activity_service = (
             activity_service
+        )
+
+        self.attention_projector = (
+            attention_projector
         )
 
     def project(
@@ -111,6 +125,16 @@ class ResearchWorkspaceBootstrapProjector:
             .overview
         )
 
+        attention = (
+
+            self._load_attention_summary(
+
+                readiness,
+
+                warnings,
+            )
+        )
+
         recent_sessions = (
 
             self._load_recent_sessions(
@@ -141,6 +165,8 @@ class ResearchWorkspaceBootstrapProjector:
 
                 overview=overview,
 
+                attention=attention,
+
                 recent_sessions=(
                     recent_sessions
                 ),
@@ -150,6 +176,66 @@ class ResearchWorkspaceBootstrapProjector:
                 ),
 
                 warnings=warnings,
+            )
+        )
+
+    def _load_attention_summary(
+
+        self,
+
+        readiness,
+
+        warnings,
+
+    ):
+
+        try:
+
+            projection = (
+
+                self.attention_projector
+                .project(
+                    readiness=readiness,
+                )
+            )
+
+        except Exception:
+
+            warnings.append(
+                "Attention summary could "
+                "not be computed."
+            )
+
+            return (
+                ResearchWorkspaceAttentionSummary()
+            )
+
+        return (
+
+            ResearchWorkspaceAttentionSummary(
+
+                total_count=(
+                    projection.total_count
+                ),
+
+                actionable_count=(
+                    projection.actionable_count
+                ),
+
+                critical_count=(
+                    projection.critical_count
+                ),
+
+                high_count=(
+                    projection.high_count
+                ),
+
+                top_items=list(
+
+                    projection.items[
+                        :_ATTENTION_PREVIEW_LIMIT
+                    ]
+                ),
             )
         )
 

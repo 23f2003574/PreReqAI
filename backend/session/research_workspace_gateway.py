@@ -25,6 +25,8 @@ class ResearchWorkspaceGateway:
 
         bootstrap_projector,
 
+        attention_projector,
+
     ):
 
         self.application = (
@@ -41,6 +43,10 @@ class ResearchWorkspaceGateway:
 
         self.bootstrap_projector = (
             bootstrap_projector
+        )
+
+        self.attention_projector = (
+            attention_projector
         )
 
     def assess_readiness(self):
@@ -73,6 +79,41 @@ class ResearchWorkspaceGateway:
                 recent_activity_limit=(
                     recent_activity_limit
                 ),
+            )
+        )
+
+    def get_attention(
+
+        self,
+
+        *,
+
+        category=None,
+
+        minimum_severity=None,
+
+        actionable_only=False,
+
+        limit=None,
+
+    ):
+
+        return (
+
+            self.attention_projector
+            .project(
+
+                category=category,
+
+                minimum_severity=(
+                    minimum_severity
+                ),
+
+                actionable_only=(
+                    actionable_only
+                ),
+
+                limit=limit,
             )
         )
 

@@ -664,6 +664,30 @@ from .research_workspace_readiness_assessor import (
     ResearchWorkspaceReadinessAssessor,
 )
 
+from .research_workspace_attention_severity import (
+    ResearchWorkspaceAttentionSeverity,
+)
+
+from .research_workspace_attention_category import (
+    ResearchWorkspaceAttentionCategory,
+)
+
+from .research_workspace_attention_item import (
+    ResearchWorkspaceAttentionItem,
+)
+
+from .research_workspace_attention_projection import (
+    ResearchWorkspaceAttentionProjection,
+)
+
+from .research_workspace_attention_summary import (
+    ResearchWorkspaceAttentionSummary,
+)
+
+from .research_workspace_attention_projector import (
+    ResearchWorkspaceAttentionProjector,
+)
+
 from .research_workspace_bootstrap_projection import (
     ResearchWorkspaceBootstrapProjection,
 )

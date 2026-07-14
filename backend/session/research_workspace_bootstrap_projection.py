@@ -11,6 +11,10 @@ from .research_session_list_item import (
     ResearchSessionListItem,
 )
 
+from .research_workspace_attention_summary import (
+    ResearchWorkspaceAttentionSummary,
+)
+
 from .research_workspace_capability_descriptor import (
     ResearchWorkspaceCapabilityDescriptor,
 )
@@ -43,6 +47,14 @@ class ResearchWorkspaceBootstrapProjection:
 
     overview: (
         ResearchWorkspaceOverview
+    )
+
+    attention: (
+        ResearchWorkspaceAttentionSummary
+    ) = field(
+        default_factory=(
+            ResearchWorkspaceAttentionSummary
+        ),
     )
 
     recent_sessions: list[
@@ -81,6 +93,9 @@ class ResearchWorkspaceBootstrapProjection:
 
             "overview":
                 self.overview.to_dict(),
+
+            "attention":
+                self.attention.to_dict(),
 
             "recent_sessions": [
 

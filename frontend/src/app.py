@@ -54,6 +54,7 @@ from backend.session import (
     ResearchSnapshotSerializer,
     ResearchSnapshotService,
     ResearchSnapshotValidator,
+    ResearchWorkspaceAttentionProjector,
     ResearchWorkspaceBootstrapProjector,
     ResearchWorkspaceCapabilities,
     ResearchWorkspaceChangeFeed,
@@ -814,6 +815,30 @@ class PreReqAIApplication:
             )
         )
 
+        self.research_workspace_attention_projector = (
+
+            ResearchWorkspaceAttentionProjector(
+
+                readiness_assessor=(
+
+                    self
+                    .research_workspace_readiness_assessor
+                ),
+
+                integrity_auditor=(
+
+                    self
+                    .research_workspace_integrity_auditor
+                ),
+
+                insights_service=(
+
+                    self
+                    .research_workspace_insights_service
+                ),
+            )
+        )
+
         self.research_workspace_bootstrap_projector = (
 
             ResearchWorkspaceBootstrapProjector(
@@ -843,6 +868,12 @@ class PreReqAIApplication:
                 activity_service=(
                     self.research_activity_service
                 ),
+
+                attention_projector=(
+
+                    self
+                    .research_workspace_attention_projector
+                ),
             )
         )
 
@@ -868,6 +899,12 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_bootstrap_projector
+                ),
+
+                attention_projector=(
+
+                    self
+                    .research_workspace_attention_projector
                 ),
             )
         )
