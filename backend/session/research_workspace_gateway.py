@@ -31,6 +31,10 @@ class ResearchWorkspaceGateway:
 
         context_factory,
 
+        consumer_contract_registry,
+
+        consumer_contract_manifest_provider,
+
     ):
 
         self.application = (
@@ -59,6 +63,77 @@ class ResearchWorkspaceGateway:
 
         self.context_factory = (
             context_factory
+        )
+
+        self.consumer_contract_registry = (
+            consumer_contract_registry
+        )
+
+        self.consumer_contract_manifest_provider = (
+            consumer_contract_manifest_provider
+        )
+
+    def get_consumer_contract_manifest(
+
+        self,
+
+        *,
+
+        scope=None,
+
+        stability=None,
+
+    ):
+
+        return (
+
+            self
+            .consumer_contract_manifest_provider
+            .get_manifest(
+
+                scope=scope,
+
+                stability=stability,
+            )
+        )
+
+    def get_consumer_contract(
+
+        self,
+
+        contract_id,
+
+    ):
+
+        return (
+
+            self
+            .consumer_contract_registry
+            .get_contract(
+                contract_id
+            )
+        )
+
+    def check_consumer_contract_compatibility(
+
+        self,
+
+        contract_id,
+
+        requested_version,
+
+    ):
+
+        return (
+
+            self
+            .consumer_contract_registry
+            .check_compatibility(
+
+                contract_id,
+
+                requested_version,
+            )
         )
 
     def assess_readiness(self):

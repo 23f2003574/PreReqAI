@@ -688,6 +688,51 @@ from .research_workspace_attention_projector import (
     ResearchWorkspaceAttentionProjector,
 )
 
+from .research_workspace_consumer_contract_id import (
+    ResearchWorkspaceConsumerContractId,
+)
+
+from .research_workspace_consumer_contract_scope import (
+    ResearchWorkspaceConsumerContractScope,
+)
+
+from .research_workspace_consumer_contract_stability import (
+    ResearchWorkspaceConsumerContractStability,
+)
+
+from .research_workspace_consumer_contract_version import (
+    ResearchWorkspaceConsumerContractVersion,
+)
+
+from .research_workspace_consumer_contract_parameter_type import (
+    ResearchWorkspaceConsumerContractParameterType,
+)
+
+from .research_workspace_consumer_contract_parameter import (
+    ResearchWorkspaceConsumerContractParameter,
+)
+
+from .research_workspace_consumer_contract_descriptor import (
+    ResearchWorkspaceConsumerContractDescriptor,
+)
+
+from .research_workspace_consumer_contract_compatibility import (
+    ResearchWorkspaceConsumerContractCompatibility,
+)
+
+from .research_workspace_consumer_contract_registry import (
+    DEFAULT_RESEARCH_WORKSPACE_CONTRACTS,
+    ResearchWorkspaceConsumerContractRegistry,
+)
+
+from .research_workspace_consumer_contract_manifest import (
+    ResearchWorkspaceConsumerContractManifest,
+)
+
+from .research_workspace_consumer_contract_manifest_provider import (
+    ResearchWorkspaceConsumerContractManifestProvider,
+)
+
 from .research_workspace_projection_context import (
     ResearchWorkspaceProjectionContext,
 )

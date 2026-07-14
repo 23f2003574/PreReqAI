@@ -61,6 +61,8 @@ from backend.session import (
     ResearchWorkspaceCapabilities,
     ResearchWorkspaceChangeFeed,
     ResearchWorkspaceChangeOperation,
+    ResearchWorkspaceConsumerContractManifestProvider,
+    ResearchWorkspaceConsumerContractRegistry,
     ResearchWorkspaceEventBus,
     ResearchWorkspaceGateway,
     ResearchWorkspaceInsightsService,
@@ -923,6 +925,23 @@ class PreReqAIApplication:
             )
         )
 
+        self.research_workspace_consumer_contract_registry = (
+
+            ResearchWorkspaceConsumerContractRegistry()
+        )
+
+        self.research_workspace_consumer_contract_manifest_provider = (
+
+            ResearchWorkspaceConsumerContractManifestProvider(
+
+                contract_registry=(
+
+                    self
+                    .research_workspace_consumer_contract_registry
+                ),
+            )
+        )
+
         self.research_workspace = (
 
             ResearchWorkspaceGateway(
@@ -963,6 +982,18 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_projection_context_factory
+                ),
+
+                consumer_contract_registry=(
+
+                    self
+                    .research_workspace_consumer_contract_registry
+                ),
+
+                consumer_contract_manifest_provider=(
+
+                    self
+                    .research_workspace_consumer_contract_manifest_provider
                 ),
             )
         )

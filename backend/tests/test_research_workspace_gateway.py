@@ -32,6 +32,12 @@ EXPECTED_PUBLIC_METHODS = {
 
     "list_session_actions",
 
+    "get_consumer_contract_manifest",
+
+    "get_consumer_contract",
+
+    "check_consumer_contract_compatibility",
+
     "create_session",
 
     "get_session",
@@ -272,6 +278,10 @@ def test_gateway_create_session_delegates_to_application():
             action_projector=Mock(),
 
             context_factory=Mock(),
+
+            consumer_contract_registry=Mock(),
+
+            consumer_contract_manifest_provider=Mock(),
         )
     )
 
@@ -333,6 +343,10 @@ def test_gateway_search_sessions_delegates_to_application():
             action_projector=Mock(),
 
             context_factory=Mock(),
+
+            consumer_contract_registry=Mock(),
+
+            consumer_contract_manifest_provider=Mock(),
         )
     )
 
@@ -371,6 +385,10 @@ def test_gateway_compare_sessions_delegates_to_application():
             action_projector=Mock(),
 
             context_factory=Mock(),
+
+            consumer_contract_registry=Mock(),
+
+            consumer_contract_manifest_provider=Mock(),
         )
     )
 
@@ -415,6 +433,10 @@ def test_gateway_export_workspace_delegates_to_application():
             action_projector=Mock(),
 
             context_factory=Mock(),
+
+            consumer_contract_registry=Mock(),
+
+            consumer_contract_manifest_provider=Mock(),
         )
     )
 
@@ -449,6 +471,10 @@ def test_gateway_import_snapshot_delegates_to_application():
             action_projector=Mock(),
 
             context_factory=Mock(),
+
+            consumer_contract_registry=Mock(),
+
+            consumer_contract_manifest_provider=Mock(),
         )
     )
 
@@ -505,6 +531,10 @@ def test_gateway_audit_workspace_delegates_to_application():
             action_projector=Mock(),
 
             context_factory=Mock(),
+
+            consumer_contract_registry=Mock(),
+
+            consumer_contract_manifest_provider=Mock(),
         )
     )
 
@@ -539,6 +569,10 @@ def test_gateway_get_changes_delegates_to_application():
             action_projector=Mock(),
 
             context_factory=Mock(),
+
+            consumer_contract_registry=Mock(),
+
+            consumer_contract_manifest_provider=Mock(),
         )
     )
 
