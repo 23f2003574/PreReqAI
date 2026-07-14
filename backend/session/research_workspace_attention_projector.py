@@ -18,6 +18,14 @@ from .research_workspace_attention_severity import (
     ResearchWorkspaceAttentionSeverity,
 )
 
+from .research_workspace_consumer_projection_diagnostic_stage_kind import (
+    ResearchWorkspaceConsumerProjectionDiagnosticStageKind,
+)
+
+from .research_workspace_consumer_projection_diagnostics_stage_helper import (
+    stage_or_noop,
+)
+
 from .research_workspace_readiness_status import (
     ResearchWorkspaceReadinessStatus,
 )
@@ -95,6 +103,8 @@ class ResearchWorkspaceAttentionProjector:
 
         context=None,
 
+        diagnostics=None,
+
         category=None,
 
         minimum_severity=None,
@@ -118,8 +128,58 @@ class ResearchWorkspaceAttentionProjector:
             context = (
 
                 self.context_factory
-                .create()
+                .create(
+                    diagnostics=diagnostics,
+                )
             )
+
+        with stage_or_noop(
+
+            diagnostics,
+
+            "workspace.attention.project",
+
+            ResearchWorkspaceConsumerProjectionDiagnosticStageKind
+            .PROJECTION,
+        ):
+
+            return (
+
+                self._build_projection(
+
+                    context,
+
+                    category=category,
+
+                    minimum_severity=(
+                        minimum_severity
+                    ),
+
+                    actionable_only=(
+                        actionable_only
+                    ),
+
+                    limit=limit,
+                )
+            )
+
+    def _build_projection(
+
+        self,
+
+        context,
+
+        *,
+
+        category,
+
+        minimum_severity,
+
+        actionable_only,
+
+        limit,
+
+    ):
 
         readiness = (
 

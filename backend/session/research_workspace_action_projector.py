@@ -18,6 +18,14 @@ from .research_workspace_action_scope import (
     ResearchWorkspaceActionScope,
 )
 
+from .research_workspace_consumer_projection_diagnostic_stage_kind import (
+    ResearchWorkspaceConsumerProjectionDiagnosticStageKind,
+)
+
+from .research_workspace_consumer_projection_diagnostics_stage_helper import (
+    stage_or_noop,
+)
+
 from .research_workspace_readiness_status import (
     ResearchWorkspaceReadinessStatus,
 )
@@ -147,6 +155,8 @@ class ResearchWorkspaceActionProjector:
 
         context=None,
 
+        diagnostics=None,
+
         include_unavailable=False,
 
         mutating_only=False,
@@ -158,8 +168,50 @@ class ResearchWorkspaceActionProjector:
             context = (
 
                 self.context_factory
-                .create()
+                .create(
+                    diagnostics=diagnostics,
+                )
             )
+
+        with stage_or_noop(
+
+            diagnostics,
+
+            "workspace.actions.project",
+
+            ResearchWorkspaceConsumerProjectionDiagnosticStageKind
+            .PROJECTION,
+        ):
+
+            return (
+
+                self._build_workspace_actions_projection(
+
+                    context,
+
+                    include_unavailable=(
+                        include_unavailable
+                    ),
+
+                    mutating_only=(
+                        mutating_only
+                    ),
+                )
+            )
+
+    def _build_workspace_actions_projection(
+
+        self,
+
+        context,
+
+        *,
+
+        include_unavailable,
+
+        mutating_only,
+
+    ):
 
         capabilities = (
 
@@ -225,6 +277,8 @@ class ResearchWorkspaceActionProjector:
 
         context=None,
 
+        diagnostics=None,
+
         include_unavailable=False,
 
         mutating_only=False,
@@ -236,8 +290,54 @@ class ResearchWorkspaceActionProjector:
             context = (
 
                 self.context_factory
-                .create()
+                .create(
+                    diagnostics=diagnostics,
+                )
             )
+
+        with stage_or_noop(
+
+            diagnostics,
+
+            "session.actions.project",
+
+            ResearchWorkspaceConsumerProjectionDiagnosticStageKind
+            .PROJECTION,
+        ):
+
+            return (
+
+                self._build_session_actions_projection(
+
+                    session_id,
+
+                    context,
+
+                    include_unavailable=(
+                        include_unavailable
+                    ),
+
+                    mutating_only=(
+                        mutating_only
+                    ),
+                )
+            )
+
+    def _build_session_actions_projection(
+
+        self,
+
+        session_id,
+
+        context,
+
+        *,
+
+        include_unavailable,
+
+        mutating_only,
+
+    ):
 
         session = (
 

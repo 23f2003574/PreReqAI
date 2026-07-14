@@ -239,7 +239,15 @@ class FakeContextFactory:
 
         self._context = context
 
-    def create(self):
+    def create(
+
+        self,
+
+        *,
+
+        diagnostics=None,
+
+    ):
 
         return self._context
 

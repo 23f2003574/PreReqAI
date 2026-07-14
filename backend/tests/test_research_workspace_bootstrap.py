@@ -157,7 +157,15 @@ class FakeContextFactory:
             profile_store
         )
 
-    def create(self):
+    def create(
+
+        self,
+
+        *,
+
+        diagnostics=None,
+
+    ):
 
         return (
 
@@ -192,6 +200,8 @@ class FakeContextFactory:
 
                     self._profile_store
                 ),
+
+                diagnostics=diagnostics,
             )
         )
 

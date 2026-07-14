@@ -2,6 +2,10 @@ from .research_snapshot_import_strategy import (
     ResearchSnapshotImportStrategy,
 )
 
+from .research_workspace_consumer_projection_execution_result import (
+    ResearchWorkspaceConsumerProjectionExecutionResult,
+)
+
 
 class ResearchWorkspaceGateway:
     """
@@ -34,6 +38,8 @@ class ResearchWorkspaceGateway:
         consumer_contract_registry,
 
         consumer_contract_manifest_provider,
+
+        diagnostics_factory,
 
     ):
 
@@ -71,6 +77,254 @@ class ResearchWorkspaceGateway:
 
         self.consumer_contract_manifest_provider = (
             consumer_contract_manifest_provider
+        )
+
+        self.diagnostics_factory = (
+            diagnostics_factory
+        )
+
+    def diagnose_bootstrap(
+
+        self,
+
+        *,
+
+        recent_session_limit=5,
+
+        recent_activity_limit=10,
+
+    ):
+
+        collector = (
+
+            self.diagnostics_factory
+            .create(
+                operation_name=(
+                    "workspace.bootstrap"
+                ),
+            )
+        )
+
+        context = (
+
+            self.context_factory
+            .create(
+                diagnostics=collector,
+            )
+        )
+
+        projection = (
+
+            self.bootstrap_projector
+            .project(
+
+                context=context,
+
+                diagnostics=collector,
+
+                recent_session_limit=(
+                    recent_session_limit
+                ),
+
+                recent_activity_limit=(
+                    recent_activity_limit
+                ),
+            )
+        )
+
+        return (
+
+            ResearchWorkspaceConsumerProjectionExecutionResult(
+
+                projection=projection,
+
+                diagnostics=(
+                    collector.finalize()
+                ),
+            )
+        )
+
+    def diagnose_attention(
+
+        self,
+
+        *,
+
+        category=None,
+
+        minimum_severity=None,
+
+        actionable_only=False,
+
+        limit=None,
+
+    ):
+
+        collector = (
+
+            self.diagnostics_factory
+            .create(
+                operation_name=(
+                    "workspace.attention"
+                ),
+            )
+        )
+
+        context = (
+
+            self.context_factory
+            .create(
+                diagnostics=collector,
+            )
+        )
+
+        projection = (
+
+            self.attention_projector
+            .project(
+
+                context=context,
+
+                diagnostics=collector,
+
+                category=category,
+
+                minimum_severity=(
+                    minimum_severity
+                ),
+
+                actionable_only=(
+                    actionable_only
+                ),
+
+                limit=limit,
+            )
+        )
+
+        return (
+
+            ResearchWorkspaceConsumerProjectionExecutionResult(
+
+                projection=projection,
+
+                diagnostics=(
+                    collector.finalize()
+                ),
+            )
+        )
+
+    def diagnose_workspace_actions(
+
+        self,
+
+        *,
+
+        include_unavailable=False,
+
+    ):
+
+        collector = (
+
+            self.diagnostics_factory
+            .create(
+                operation_name=(
+                    "workspace.actions"
+                ),
+            )
+        )
+
+        context = (
+
+            self.context_factory
+            .create(
+                diagnostics=collector,
+            )
+        )
+
+        projection = (
+
+            self.action_projector
+            .project_workspace_actions(
+
+                context=context,
+
+                diagnostics=collector,
+
+                include_unavailable=(
+                    include_unavailable
+                ),
+            )
+        )
+
+        return (
+
+            ResearchWorkspaceConsumerProjectionExecutionResult(
+
+                projection=projection,
+
+                diagnostics=(
+                    collector.finalize()
+                ),
+            )
+        )
+
+    def diagnose_session_actions(
+
+        self,
+
+        session_id,
+
+        *,
+
+        include_unavailable=False,
+
+    ):
+
+        collector = (
+
+            self.diagnostics_factory
+            .create(
+                operation_name=(
+                    "session.actions"
+                ),
+            )
+        )
+
+        context = (
+
+            self.context_factory
+            .create(
+                diagnostics=collector,
+            )
+        )
+
+        projection = (
+
+            self.action_projector
+            .project_session_actions(
+
+                session_id,
+
+                context=context,
+
+                diagnostics=collector,
+
+                include_unavailable=(
+                    include_unavailable
+                ),
+            )
+        )
+
+        return (
+
+            ResearchWorkspaceConsumerProjectionExecutionResult(
+
+                projection=projection,
+
+                diagnostics=(
+                    collector.finalize()
+                ),
+            )
         )
 
     def get_consumer_contract_manifest(

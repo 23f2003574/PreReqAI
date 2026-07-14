@@ -1,3 +1,16 @@
+from .research_workspace_consumer_projection_diagnostic_failure import (
+    ResearchWorkspaceConsumerProjectionDiagnosticFailure,
+)
+
+from .research_workspace_consumer_projection_diagnostic_status import (
+    ResearchWorkspaceConsumerProjectionDiagnosticStatus,
+)
+
+from .research_workspace_monotonic_clock import (
+    ResearchWorkspaceMonotonicClock,
+)
+
+
 _UNRESOLVED = object()
 
 
@@ -30,6 +43,10 @@ class ResearchWorkspaceProjectionContext:
         insights_dormant_session_limit=50,
 
         insights_dormant_after_days=30,
+
+        clock=None,
+
+        diagnostics=None,
 
     ):
 
@@ -65,6 +82,17 @@ class ResearchWorkspaceProjectionContext:
             insights_dormant_after_days
         )
 
+        self._clock = (
+
+            clock
+
+            or ResearchWorkspaceMonotonicClock()
+        )
+
+        self._diagnostics = (
+            diagnostics
+        )
+
         self._capabilities = (
             _UNRESOLVED
         )
@@ -85,6 +113,116 @@ class ResearchWorkspaceProjectionContext:
 
         self._profiles_by_id = {}
 
+    def _record_and_resolve(
+
+        self,
+
+        name,
+
+        resolver,
+
+        key=None,
+
+    ):
+
+        if self._diagnostics is None:
+
+            return resolver()
+
+        started_at = (
+            self._clock.now()
+        )
+
+        try:
+
+            value = resolver()
+
+        except Exception as error:
+
+            duration_seconds = (
+
+                self._clock.now()
+
+                - started_at
+            )
+
+            self._diagnostics.record_input_resolution(
+
+                name=name,
+
+                key=key,
+
+                duration_seconds=(
+                    duration_seconds
+                ),
+
+                status=(
+
+                    ResearchWorkspaceConsumerProjectionDiagnosticStatus
+                    .FAILED
+                ),
+
+                failure=(
+
+                    ResearchWorkspaceConsumerProjectionDiagnosticFailure(
+
+                        error_type=(
+
+                            type(
+                                error
+                            ).__name__
+                        ),
+                    )
+                ),
+            )
+
+            raise
+
+        duration_seconds = (
+
+            self._clock.now()
+
+            - started_at
+        )
+
+        self._diagnostics.record_input_resolution(
+
+            name=name,
+
+            key=key,
+
+            duration_seconds=(
+                duration_seconds
+            ),
+
+            status=(
+
+                ResearchWorkspaceConsumerProjectionDiagnosticStatus
+                .SUCCEEDED
+            ),
+        )
+
+        return value
+
+    def _record_reuse(
+
+        self,
+
+        name,
+
+        key=None,
+
+    ):
+
+        if self._diagnostics is not None:
+
+            self._diagnostics.record_input_reuse(
+
+                name=name,
+
+                key=key,
+            )
+
     def get_capabilities(self):
 
         if (
@@ -96,8 +234,19 @@ class ResearchWorkspaceProjectionContext:
 
             self._capabilities = (
 
-                self._capability_registry
-                .list_capabilities()
+                self._record_and_resolve(
+
+                    "workspace.capabilities",
+
+                    self._capability_registry
+                    .list_capabilities,
+                )
+            )
+
+        else:
+
+            self._record_reuse(
+                "workspace.capabilities"
             )
 
         return self._capabilities
@@ -113,8 +262,19 @@ class ResearchWorkspaceProjectionContext:
 
             self._readiness = (
 
-                self._readiness_assessor
-                .assess()
+                self._record_and_resolve(
+
+                    "workspace.readiness",
+
+                    self._readiness_assessor
+                    .assess,
+                )
+            )
+
+        else:
+
+            self._record_reuse(
+                "workspace.readiness"
             )
 
         return self._readiness
@@ -130,8 +290,19 @@ class ResearchWorkspaceProjectionContext:
 
             self._integrity_report = (
 
-                self._integrity_auditor
-                .audit()
+                self._record_and_resolve(
+
+                    "workspace.integrity",
+
+                    self._integrity_auditor
+                    .audit,
+                )
+            )
+
+        else:
+
+            self._record_reuse(
+                "workspace.integrity"
             )
 
         return self._integrity_report
@@ -147,27 +318,42 @@ class ResearchWorkspaceProjectionContext:
 
             self._workspace_insights = (
 
-                self._insights_service
-                .build_insights(
+                self._record_and_resolve(
 
-                    top_tag_limit=0,
+                    "workspace.insights",
 
-                    collection_limit=0,
-
-                    recent_session_limit=0,
-
-                    dormant_session_limit=(
+                    lambda: (
 
                         self
-                        ._insights_dormant_session_limit
-                    ),
+                        ._insights_service
+                        .build_insights(
 
-                    dormant_after_days=(
+                            top_tag_limit=0,
 
-                        self
-                        ._insights_dormant_after_days
+                            collection_limit=0,
+
+                            recent_session_limit=0,
+
+                            dormant_session_limit=(
+
+                                self
+                                ._insights_dormant_session_limit
+                            ),
+
+                            dormant_after_days=(
+
+                                self
+                                ._insights_dormant_after_days
+                            ),
+                        )
                     ),
                 )
+            )
+
+        else:
+
+            self._record_reuse(
+                "workspace.insights"
             )
 
         return self._workspace_insights
@@ -191,10 +377,30 @@ class ResearchWorkspaceProjectionContext:
                 session_id
             ] = (
 
-                self._session_manager
-                .load_session(
-                    session_id
+                self._record_and_resolve(
+
+                    "session",
+
+                    lambda: (
+
+                        self
+                        ._session_manager
+                        .load_session(
+                            session_id
+                        )
+                    ),
+
+                    key=session_id,
                 )
+            )
+
+        else:
+
+            self._record_reuse(
+
+                "session",
+
+                key=session_id,
             )
 
         return (
@@ -223,10 +429,30 @@ class ResearchWorkspaceProjectionContext:
                 session_id
             ] = (
 
-                self._profile_store
-                .get(
-                    session_id
+                self._record_and_resolve(
+
+                    "session_profile",
+
+                    lambda: (
+
+                        self
+                        ._profile_store
+                        .get(
+                            session_id
+                        )
+                    ),
+
+                    key=session_id,
                 )
+            )
+
+        else:
+
+            self._record_reuse(
+
+                "session_profile",
+
+                key=session_id,
             )
 
         return (

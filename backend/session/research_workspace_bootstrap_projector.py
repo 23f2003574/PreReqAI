@@ -14,6 +14,14 @@ from .research_workspace_bootstrap_projection import (
     ResearchWorkspaceBootstrapProjection,
 )
 
+from .research_workspace_consumer_projection_diagnostic_stage_kind import (
+    ResearchWorkspaceConsumerProjectionDiagnosticStageKind,
+)
+
+from .research_workspace_consumer_projection_diagnostics_stage_helper import (
+    stage_or_noop,
+)
+
 
 _ATTENTION_PREVIEW_LIMIT = 3
 
@@ -71,6 +79,8 @@ class ResearchWorkspaceBootstrapProjector:
 
         context=None,
 
+        diagnostics=None,
+
         recent_session_limit=5,
 
         recent_activity_limit=10,
@@ -98,7 +108,9 @@ class ResearchWorkspaceBootstrapProjector:
             context = (
 
                 self.context_factory
-                .create()
+                .create(
+                    diagnostics=diagnostics,
+                )
             )
 
         warnings = []
@@ -115,9 +127,11 @@ class ResearchWorkspaceBootstrapProjector:
 
         overview = (
 
-            context
-            .get_workspace_insights()
-            .overview
+            self._load_overview(
+                context,
+
+                diagnostics,
+            )
         )
 
         attention = (
@@ -125,6 +139,8 @@ class ResearchWorkspaceBootstrapProjector:
             self._load_attention_summary(
 
                 context,
+
+                diagnostics,
 
                 warnings,
             )
@@ -136,6 +152,8 @@ class ResearchWorkspaceBootstrapProjector:
 
                 context,
 
+                diagnostics,
+
                 warnings,
             )
         )
@@ -145,6 +163,8 @@ class ResearchWorkspaceBootstrapProjector:
             self._load_recent_sessions(
 
                 recent_session_limit,
+
+                diagnostics,
 
                 warnings,
             )
@@ -156,43 +176,84 @@ class ResearchWorkspaceBootstrapProjector:
 
                 recent_activity_limit,
 
+                diagnostics,
+
                 warnings,
             )
         )
 
-        return (
+        with stage_or_noop(
 
-            ResearchWorkspaceBootstrapProjection(
+            diagnostics,
 
-                capabilities=capabilities,
+            "workspace.bootstrap.assemble",
 
-                readiness=readiness,
+            ResearchWorkspaceConsumerProjectionDiagnosticStageKind
+            .ASSEMBLY,
+        ):
 
-                overview=overview,
+            return (
 
-                attention=attention,
+                ResearchWorkspaceBootstrapProjection(
 
-                workspace_actions=(
-                    workspace_actions
-                ),
+                    capabilities=capabilities,
 
-                recent_sessions=(
-                    recent_sessions
-                ),
+                    readiness=readiness,
 
-                recent_activity=(
-                    recent_activity
-                ),
+                    overview=overview,
 
-                warnings=warnings,
+                    attention=attention,
+
+                    workspace_actions=(
+                        workspace_actions
+                    ),
+
+                    recent_sessions=(
+                        recent_sessions
+                    ),
+
+                    recent_activity=(
+                        recent_activity
+                    ),
+
+                    warnings=warnings,
+                )
             )
-        )
+
+    def _load_overview(
+
+        self,
+
+        context,
+
+        diagnostics,
+
+    ):
+
+        with stage_or_noop(
+
+            diagnostics,
+
+            "workspace.bootstrap.overview",
+
+            ResearchWorkspaceConsumerProjectionDiagnosticStageKind
+            .ASSEMBLY,
+        ):
+
+            return (
+
+                context
+                .get_workspace_insights()
+                .overview
+            )
 
     def _load_attention_summary(
 
         self,
 
         context,
+
+        diagnostics,
 
         warnings,
 
@@ -204,7 +265,12 @@ class ResearchWorkspaceBootstrapProjector:
 
                 self.attention_projector
                 .project(
+
                     context=context,
+
+                    diagnostics=(
+                        diagnostics
+                    ),
                 )
             )
 
@@ -254,6 +320,8 @@ class ResearchWorkspaceBootstrapProjector:
 
         context,
 
+        diagnostics,
+
         warnings,
 
     ):
@@ -264,7 +332,12 @@ class ResearchWorkspaceBootstrapProjector:
 
                 self.action_projector
                 .project_workspace_actions(
+
                     context=context,
+
+                    diagnostics=(
+                        diagnostics
+                    ),
                 )
             )
 
@@ -287,6 +360,8 @@ class ResearchWorkspaceBootstrapProjector:
 
         limit,
 
+        diagnostics,
+
         warnings,
 
     ):
@@ -295,38 +370,55 @@ class ResearchWorkspaceBootstrapProjector:
 
             return []
 
-        try:
+        with stage_or_noop(
 
-            page = (
+            diagnostics,
 
-                self.discovery_service
-                .query(
+            "workspace.bootstrap.recent_sessions",
 
-                    ResearchSessionQuery(
+            ResearchWorkspaceConsumerProjectionDiagnosticStageKind
+            .ASSEMBLY,
 
-                        sort_order=(
+        ) as stage:
 
-                            ResearchSessionSortOrder
-                            .UPDATED_NEWEST
-                        ),
+            try:
 
-                        limit=limit,
+                page = (
+
+                    self.discovery_service
+                    .query(
+
+                        ResearchSessionQuery(
+
+                            sort_order=(
+
+                                ResearchSessionSortOrder
+                                .UPDATED_NEWEST
+                            ),
+
+                            limit=limit,
+                        )
                     )
                 )
+
+            except Exception:
+
+                warnings.append(
+                    "Recent sessions could "
+                    "not be loaded."
+                )
+
+                stage.mark_degraded(
+                    reason_code=(
+                        "recent_sessions_unavailable"
+                    ),
+                )
+
+                return []
+
+            return list(
+                page.items
             )
-
-        except Exception:
-
-            warnings.append(
-                "Recent sessions could "
-                "not be loaded."
-            )
-
-            return []
-
-        return list(
-            page.items
-        )
 
     def _load_recent_activity(
 
@@ -334,6 +426,8 @@ class ResearchWorkspaceBootstrapProjector:
 
         limit,
 
+        diagnostics,
+
         warnings,
 
     ):
@@ -342,28 +436,45 @@ class ResearchWorkspaceBootstrapProjector:
 
             return []
 
-        try:
+        with stage_or_noop(
 
-            page = (
+            diagnostics,
 
-                self.activity_service
-                .recent_activity(
+            "workspace.bootstrap.recent_activity",
 
-                    page=1,
+            ResearchWorkspaceConsumerProjectionDiagnosticStageKind
+            .ASSEMBLY,
 
-                    page_size=limit,
+        ) as stage:
+
+            try:
+
+                page = (
+
+                    self.activity_service
+                    .recent_activity(
+
+                        page=1,
+
+                        page_size=limit,
+                    )
                 )
+
+            except Exception:
+
+                warnings.append(
+                    "Recent activity could "
+                    "not be loaded."
+                )
+
+                stage.mark_degraded(
+                    reason_code=(
+                        "recent_activity_unavailable"
+                    ),
+                )
+
+                return []
+
+            return list(
+                page.items
             )
-
-        except Exception:
-
-            warnings.append(
-                "Recent activity could "
-                "not be loaded."
-            )
-
-            return []
-
-        return list(
-            page.items
-        )

@@ -31,6 +31,8 @@ class ResearchWorkspaceProjectionContextFactory:
 
         insights_dormant_after_days=30,
 
+        clock=None,
+
     ):
 
         self._capability_registry = (
@@ -65,7 +67,17 @@ class ResearchWorkspaceProjectionContextFactory:
             insights_dormant_after_days
         )
 
-    def create(self):
+        self._clock = clock
+
+    def create(
+
+        self,
+
+        *,
+
+        diagnostics=None,
+
+    ):
 
         return (
 
@@ -118,5 +130,9 @@ class ResearchWorkspaceProjectionContextFactory:
                     self
                     ._insights_dormant_after_days
                 ),
+
+                clock=self._clock,
+
+                diagnostics=diagnostics,
             )
         )

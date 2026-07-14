@@ -733,6 +733,50 @@ from .research_workspace_consumer_contract_manifest_provider import (
     ResearchWorkspaceConsumerContractManifestProvider,
 )
 
+from .research_workspace_monotonic_clock import (
+    ResearchWorkspaceMonotonicClock,
+)
+
+from .research_workspace_consumer_projection_diagnostic_status import (
+    ResearchWorkspaceConsumerProjectionDiagnosticStatus,
+)
+
+from .research_workspace_consumer_projection_diagnostic_stage_kind import (
+    ResearchWorkspaceConsumerProjectionDiagnosticStageKind,
+)
+
+from .research_workspace_consumer_projection_diagnostic_failure import (
+    ResearchWorkspaceConsumerProjectionDiagnosticFailure,
+)
+
+from .research_workspace_consumer_projection_input_diagnostic import (
+    ResearchWorkspaceConsumerProjectionInputDiagnostic,
+)
+
+from .research_workspace_consumer_projection_stage_diagnostic import (
+    ResearchWorkspaceConsumerProjectionStageDiagnostic,
+)
+
+from .research_workspace_consumer_projection_diagnostic_report import (
+    ResearchWorkspaceConsumerProjectionDiagnosticReport,
+)
+
+from .research_workspace_consumer_projection_diagnostics_stage_helper import (
+    stage_or_noop,
+)
+
+from .research_workspace_consumer_projection_diagnostics_collector import (
+    ResearchWorkspaceConsumerProjectionDiagnosticsCollector,
+)
+
+from .research_workspace_consumer_projection_diagnostics_factory import (
+    ResearchWorkspaceConsumerProjectionDiagnosticsFactory,
+)
+
+from .research_workspace_consumer_projection_execution_result import (
+    ResearchWorkspaceConsumerProjectionExecutionResult,
+)
+
 from .research_workspace_projection_context import (
     ResearchWorkspaceProjectionContext,
 )

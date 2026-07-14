@@ -63,10 +63,12 @@ from backend.session import (
     ResearchWorkspaceChangeOperation,
     ResearchWorkspaceConsumerContractManifestProvider,
     ResearchWorkspaceConsumerContractRegistry,
+    ResearchWorkspaceConsumerProjectionDiagnosticsFactory,
     ResearchWorkspaceEventBus,
     ResearchWorkspaceGateway,
     ResearchWorkspaceInsightsService,
     ResearchWorkspaceIntegrityAuditor,
+    ResearchWorkspaceMonotonicClock,
     ResearchWorkspaceOrganizationService,
     ResearchWorkspaceProjectionContextFactory,
     ResearchWorkspaceReadinessAssessor,
@@ -820,6 +822,23 @@ class PreReqAIApplication:
             )
         )
 
+        self.research_workspace_monotonic_clock = (
+
+            ResearchWorkspaceMonotonicClock()
+        )
+
+        self.research_workspace_consumer_projection_diagnostics_factory = (
+
+            ResearchWorkspaceConsumerProjectionDiagnosticsFactory(
+
+                clock=(
+
+                    self
+                    .research_workspace_monotonic_clock
+                ),
+            )
+        )
+
         self.research_workspace_projection_context_factory = (
 
             ResearchWorkspaceProjectionContextFactory(
@@ -854,6 +873,12 @@ class PreReqAIApplication:
 
                 profile_store=(
                     self.session_profile_store
+                ),
+
+                clock=(
+
+                    self
+                    .research_workspace_monotonic_clock
                 ),
             )
         )
@@ -994,6 +1019,12 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_consumer_contract_manifest_provider
+                ),
+
+                diagnostics_factory=(
+
+                    self
+                    .research_workspace_consumer_projection_diagnostics_factory
                 ),
             )
         )

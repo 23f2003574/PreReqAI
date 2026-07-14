@@ -166,7 +166,15 @@ class FakeContextFactory:
             insights_service
         )
 
-    def create(self):
+    def create(
+
+        self,
+
+        *,
+
+        diagnostics=None,
+
+    ):
 
         return (
 
@@ -192,6 +200,8 @@ class FakeContextFactory:
                 session_manager=None,
 
                 profile_store=None,
+
+                diagnostics=diagnostics,
             )
         )
 
