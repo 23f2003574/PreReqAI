@@ -1015,4 +1015,76 @@ from .research_workspace_readiness_fingerprint_policy import (
     ResearchWorkspaceReadinessFingerprintPolicy,
 )
 
+from .research_workspace_consumer_projection_execution_status import (
+    ResearchWorkspaceConsumerProjectionExecutionStatus,
+)
+
+from .research_workspace_consumer_projection_identity import (
+    ResearchWorkspaceConsumerProjectionIdentity,
+)
+
+from .research_workspace_consumer_projection_diagnostics_summary import (
+    ResearchWorkspaceConsumerProjectionDiagnosticsSummary,
+)
+
+from .research_workspace_consumer_projection_freshness_summary import (
+    ResearchWorkspaceConsumerProjectionFreshnessSummary,
+)
+
+from .research_workspace_consumer_projection_budget_summary import (
+    ResearchWorkspaceConsumerProjectionBudgetSummary,
+)
+
+from .research_workspace_consumer_projection_provenance_summary import (
+    ResearchWorkspaceConsumerProjectionProvenanceSummary,
+)
+
+from .research_workspace_consumer_projection_execution_receipt import (
+    ResearchWorkspaceConsumerProjectionExecutionReceipt,
+)
+
+from .research_workspace_consumer_projection_receipt_verification_status import (
+    ResearchWorkspaceConsumerProjectionReceiptVerificationStatus,
+)
+
+from .research_workspace_consumer_projection_receipt_verification_issue_code import (
+    ResearchWorkspaceConsumerProjectionReceiptVerificationIssueCode,
+)
+
+from .research_workspace_consumer_projection_receipt_verification_issue import (
+    ResearchWorkspaceConsumerProjectionReceiptVerificationIssue,
+)
+
+from .research_workspace_consumer_projection_receipt_verification_report import (
+    ResearchWorkspaceConsumerProjectionReceiptVerificationReport,
+)
+
+from .research_workspace_consumer_projection_diagnostics_summarizer import (
+    ResearchWorkspaceConsumerProjectionDiagnosticsSummarizer,
+)
+
+from .research_workspace_consumer_projection_freshness_summarizer import (
+    ResearchWorkspaceConsumerProjectionFreshnessSummarizer,
+)
+
+from .research_workspace_consumer_projection_budget_summarizer import (
+    ResearchWorkspaceConsumerProjectionBudgetSummarySummarizer,
+)
+
+from .research_workspace_consumer_projection_provenance_summarizer import (
+    ResearchWorkspaceConsumerProjectionProvenanceSummarizer,
+)
+
+from .research_workspace_consumer_projection_execution_outcome_resolver import (
+    ResearchWorkspaceConsumerProjectionExecutionOutcomeResolver,
+)
+
+from .research_workspace_consumer_projection_execution_receipt_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionReceiptBuilder,
+)
+
+from .research_workspace_consumer_projection_execution_receipt_verifier import (
+    ResearchWorkspaceConsumerProjectionExecutionReceiptVerifier,
+)
+
 session_manager = SessionManager()
