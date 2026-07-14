@@ -822,6 +822,43 @@ from .research_workspace_consumer_projection_execution_result import (
     ResearchWorkspaceConsumerProjectionExecutionResult,
 )
 
+from .research_workspace_utc_clock import (
+    ResearchWorkspaceUtcClock,
+)
+
+from .research_workspace_consumer_projection_freshness_status import (
+    ResearchWorkspaceConsumerProjectionFreshnessStatus,
+)
+
+from .research_workspace_consumer_projection_freshness_reason import (
+    ResearchWorkspaceConsumerProjectionFreshnessReason,
+)
+
+from .research_workspace_consumer_projection_freshness_policy import (
+    ResearchWorkspaceConsumerProjectionFreshnessPolicy,
+)
+
+from .research_workspace_consumer_projection_freshness_policy_registry import (
+    DEFAULT_CONSUMER_PROJECTION_FRESHNESS_POLICIES,
+    ResearchWorkspaceConsumerProjectionFreshnessPolicyRegistry,
+)
+
+from .research_workspace_consumer_projection_freshness_evaluation import (
+    ResearchWorkspaceConsumerProjectionFreshnessEvaluation,
+)
+
+from .research_workspace_consumer_projection_freshness_policy_not_found_error import (
+    ResearchWorkspaceConsumerProjectionFreshnessPolicyNotFoundError,
+)
+
+from .research_workspace_consumer_projection_unusable_freshness_error import (
+    ResearchWorkspaceConsumerProjectionUnusableFreshnessError,
+)
+
+from .research_workspace_consumer_projection_freshness_evaluator import (
+    ResearchWorkspaceConsumerProjectionFreshnessEvaluator,
+)
+
 from .research_workspace_projection_context import (
     ResearchWorkspaceProjectionContext,
 )

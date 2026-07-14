@@ -33,6 +33,12 @@ class ResearchWorkspaceProjectionContextFactory:
 
         clock=None,
 
+        activity_service=None,
+
+        freshness_evaluator=None,
+
+        utc_clock=None,
+
     ):
 
         self._capability_registry = (
@@ -68,6 +74,16 @@ class ResearchWorkspaceProjectionContextFactory:
         )
 
         self._clock = clock
+
+        self._activity_service = (
+            activity_service
+        )
+
+        self._freshness_evaluator = (
+            freshness_evaluator
+        )
+
+        self._utc_clock = utc_clock
 
     def create(
 
@@ -134,5 +150,19 @@ class ResearchWorkspaceProjectionContextFactory:
                 clock=self._clock,
 
                 diagnostics=diagnostics,
+
+                activity_service=(
+
+                    self
+                    ._activity_service
+                ),
+
+                freshness_evaluator=(
+
+                    self
+                    ._freshness_evaluator
+                ),
+
+                utc_clock=self._utc_clock,
             )
         )

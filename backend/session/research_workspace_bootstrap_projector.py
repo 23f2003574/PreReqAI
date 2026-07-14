@@ -26,6 +26,14 @@ from .research_workspace_consumer_projection_execution_coordinator import (
     ResearchWorkspaceConsumerProjectionExecutionCoordinator,
 )
 
+from .research_workspace_consumer_projection_freshness_status import (
+    ResearchWorkspaceConsumerProjectionFreshnessStatus,
+)
+
+from .research_workspace_consumer_projection_unusable_freshness_error import (
+    ResearchWorkspaceConsumerProjectionUnusableFreshnessError,
+)
+
 
 _ATTENTION_PREVIEW_LIMIT = 3
 
@@ -284,6 +292,8 @@ class ResearchWorkspaceBootstrapProjector:
                         self._load_recent_activity(
 
                             recent_activity_limit,
+
+                            context,
 
                             diagnostics,
 
@@ -683,6 +693,8 @@ class ResearchWorkspaceBootstrapProjector:
 
         limit,
 
+        context,
+
         diagnostics,
 
         warnings,
@@ -703,6 +715,31 @@ class ResearchWorkspaceBootstrapProjector:
             .ASSEMBLY,
 
         ) as stage:
+
+            freshness = None
+
+            try:
+
+                freshness = (
+
+                    context
+                    .get_recent_activity_freshness()
+                )
+
+            except ResearchWorkspaceConsumerProjectionUnusableFreshnessError:
+
+                warnings.append(
+                    "Recent activity data "
+                    "is too stale to use."
+                )
+
+                stage.mark_degraded(
+                    reason_code=(
+                        "source_data_unusable_due_to_staleness"
+                    ),
+                )
+
+                return []
 
             try:
 
@@ -731,6 +768,22 @@ class ResearchWorkspaceBootstrapProjector:
                 )
 
                 return []
+
+            if (
+
+                freshness is not None
+
+                and freshness.status
+
+                == ResearchWorkspaceConsumerProjectionFreshnessStatus
+                .STALE
+            ):
+
+                stage.mark_degraded(
+                    reason_code=(
+                        "stale_source_used"
+                    ),
+                )
 
             return list(
                 page.items

@@ -156,6 +156,8 @@ class ResearchWorkspaceConsumerProjectionDiagnosticsCollector:
                 "status": status,
 
                 "failure": failure,
+
+                "freshness": None,
             }
 
             self._input_order.append(
@@ -221,6 +223,8 @@ class ResearchWorkspaceConsumerProjectionDiagnosticsCollector:
                 ),
 
                 "failure": None,
+
+                "freshness": None,
             }
 
             self._input_order.append(
@@ -232,6 +236,61 @@ class ResearchWorkspaceConsumerProjectionDiagnosticsCollector:
         ][
             "reuse_count"
         ] += 1
+
+    def record_input_freshness(
+
+        self,
+
+        *,
+
+        name,
+
+        freshness,
+
+        key=None,
+
+    ):
+
+        self._ensure_open()
+
+        entry_key = (
+            name,
+
+            key,
+        )
+
+        if entry_key not in self._inputs:
+
+            self._inputs[
+                entry_key
+            ] = {
+
+                "resolution_count": 0,
+
+                "reuse_count": 0,
+
+                "duration_seconds": 0.0,
+
+                "status": (
+
+                    ResearchWorkspaceConsumerProjectionDiagnosticStatus
+                    .SUCCEEDED
+                ),
+
+                "failure": None,
+
+                "freshness": None,
+            }
+
+            self._input_order.append(
+                entry_key
+            )
+
+        self._inputs[
+            entry_key
+        ][
+            "freshness"
+        ] = freshness
 
     def record_budget_admission(
 
@@ -444,6 +503,12 @@ class ResearchWorkspaceConsumerProjectionDiagnosticsCollector:
                         data[
                             "failure"
                         ]
+                    ),
+
+                    freshness=(
+                        data.get(
+                            "freshness"
+                        )
                     ),
                 )
             )

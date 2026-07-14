@@ -66,6 +66,8 @@ from backend.session import (
     ResearchWorkspaceConsumerProjectionDiagnosticsFactory,
     ResearchWorkspaceConsumerProjectionExecutionBudgetFactory,
     ResearchWorkspaceConsumerProjectionExecutionPolicyRegistry,
+    ResearchWorkspaceConsumerProjectionFreshnessEvaluator,
+    ResearchWorkspaceConsumerProjectionFreshnessPolicyRegistry,
     ResearchWorkspaceEventBus,
     ResearchWorkspaceGateway,
     ResearchWorkspaceInsightsService,
@@ -75,6 +77,7 @@ from backend.session import (
     ResearchWorkspaceProjectionContextFactory,
     ResearchWorkspaceReadinessAssessor,
     ResearchWorkspaceRepairPlanner,
+    ResearchWorkspaceUtcClock,
 )
 
 
@@ -858,6 +861,28 @@ class PreReqAIApplication:
             )
         )
 
+        self.research_workspace_utc_clock = (
+
+            ResearchWorkspaceUtcClock()
+        )
+
+        self.research_workspace_consumer_projection_freshness_policy_registry = (
+
+            ResearchWorkspaceConsumerProjectionFreshnessPolicyRegistry()
+        )
+
+        self.research_workspace_consumer_projection_freshness_evaluator = (
+
+            ResearchWorkspaceConsumerProjectionFreshnessEvaluator(
+
+                policy_registry=(
+
+                    self
+                    .research_workspace_consumer_projection_freshness_policy_registry
+                ),
+            )
+        )
+
         self.research_workspace_projection_context_factory = (
 
             ResearchWorkspaceProjectionContextFactory(
@@ -898,6 +923,22 @@ class PreReqAIApplication:
 
                     self
                     .research_workspace_monotonic_clock
+                ),
+
+                activity_service=(
+                    self.research_activity_service
+                ),
+
+                freshness_evaluator=(
+
+                    self
+                    .research_workspace_consumer_projection_freshness_evaluator
+                ),
+
+                utc_clock=(
+
+                    self
+                    .research_workspace_utc_clock
                 ),
             )
         )

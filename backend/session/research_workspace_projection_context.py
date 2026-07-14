@@ -6,12 +6,28 @@ from .research_workspace_consumer_projection_diagnostic_status import (
     ResearchWorkspaceConsumerProjectionDiagnosticStatus,
 )
 
+from .research_workspace_consumer_projection_unusable_freshness_error import (
+    ResearchWorkspaceConsumerProjectionUnusableFreshnessError,
+)
+
+from .research_workspace_consumer_projection_freshness_status import (
+    ResearchWorkspaceConsumerProjectionFreshnessStatus,
+)
+
 from .research_workspace_monotonic_clock import (
     ResearchWorkspaceMonotonicClock,
 )
 
+from .research_workspace_utc_clock import (
+    ResearchWorkspaceUtcClock,
+)
+
 
 _UNRESOLVED = object()
+
+_RECENT_ACTIVITY_FRESHNESS_SOURCE = (
+    "workspace.recent_activity"
+)
 
 
 class ResearchWorkspaceProjectionContext:
@@ -47,6 +63,14 @@ class ResearchWorkspaceProjectionContext:
         clock=None,
 
         diagnostics=None,
+
+        activity_service=None,
+
+        freshness_evaluator=None,
+
+        utc_clock=None,
+
+        observed_at=None,
 
     ):
 
@@ -93,6 +117,36 @@ class ResearchWorkspaceProjectionContext:
             diagnostics
         )
 
+        self._activity_service = (
+            activity_service
+        )
+
+        self._freshness_evaluator = (
+            freshness_evaluator
+        )
+
+        self._utc_clock = (
+
+            utc_clock
+
+            or ResearchWorkspaceUtcClock()
+        )
+
+        self._observed_at = (
+
+            observed_at
+
+            or self._utc_clock.now()
+        )
+
+        self._recent_activity_freshness = (
+            _UNRESOLVED
+        )
+
+        self._recent_activity_freshness_error = (
+            None
+        )
+
         self._capabilities = (
             _UNRESOLVED
         )
@@ -112,6 +166,11 @@ class ResearchWorkspaceProjectionContext:
         self._sessions_by_id = {}
 
         self._profiles_by_id = {}
+
+    @property
+    def observed_at(self):
+
+        return self._observed_at
 
     def _record_and_resolve(
 
@@ -460,4 +519,151 @@ class ResearchWorkspaceProjectionContext:
             self._profiles_by_id[
                 session_id
             ]
+        )
+
+    def get_recent_activity_freshness(self):
+        """
+        Evaluates how current the most
+        recent workspace activity event
+        is. Returns None if freshness
+        evaluation is not configured or
+        no activity exists yet — neither
+        case is a freshness rejection.
+        Raises
+        ResearchWorkspaceConsumerProjectionUnusableFreshnessError
+        if the latest activity is too old
+        under policy; that rejection is
+        memoized and re-raised on later
+        calls within the same operation
+        rather than re-evaluated.
+        """
+
+        if (
+
+            self._recent_activity_freshness
+
+            is _UNRESOLVED
+        ):
+
+            evaluation = (
+
+                self._record_and_resolve(
+
+                    _RECENT_ACTIVITY_FRESHNESS_SOURCE,
+
+                    self._evaluate_recent_activity_freshness,
+                )
+            )
+
+            if self._diagnostics is not None:
+
+                self._diagnostics.record_input_freshness(
+
+                    name=(
+                        _RECENT_ACTIVITY_FRESHNESS_SOURCE
+                    ),
+
+                    freshness=evaluation,
+                )
+
+            if (
+
+                evaluation is not None
+
+                and evaluation.status
+
+                == ResearchWorkspaceConsumerProjectionFreshnessStatus
+                .UNUSABLE
+            ):
+
+                self._recent_activity_freshness_error = (
+
+                    ResearchWorkspaceConsumerProjectionUnusableFreshnessError(
+
+                        source_name=(
+                            _RECENT_ACTIVITY_FRESHNESS_SOURCE
+                        ),
+
+                        evaluation=(
+                            evaluation
+                        ),
+                    )
+                )
+
+            self._recent_activity_freshness = (
+                evaluation
+            )
+
+        else:
+
+            self._record_reuse(
+                _RECENT_ACTIVITY_FRESHNESS_SOURCE
+            )
+
+        if (
+
+            self._recent_activity_freshness_error
+
+            is not None
+        ):
+
+            raise (
+                self._recent_activity_freshness_error
+            )
+
+        return (
+            self._recent_activity_freshness
+        )
+
+    def _evaluate_recent_activity_freshness(self):
+
+        if (
+
+            self._activity_service is None
+
+            or self._freshness_evaluator
+
+            is None
+        ):
+
+            return None
+
+        page = (
+
+            self._activity_service
+            .recent_activity(
+
+                page=1,
+
+                page_size=1,
+            )
+        )
+
+        if not page.items:
+
+            return None
+
+        latest_timestamp = (
+
+            page.items[0]
+            .occurred_at
+        )
+
+        return (
+
+            self._freshness_evaluator
+            .evaluate(
+
+                source_name=(
+                    _RECENT_ACTIVITY_FRESHNESS_SOURCE
+                ),
+
+                source_timestamp=(
+                    latest_timestamp
+                ),
+
+                evaluated_at=(
+                    self._observed_at
+                ),
+            )
         )

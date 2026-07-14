@@ -10,6 +10,10 @@ from .research_workspace_consumer_projection_diagnostic_status import (
     ResearchWorkspaceConsumerProjectionDiagnosticStatus,
 )
 
+from .research_workspace_consumer_projection_freshness_evaluation import (
+    ResearchWorkspaceConsumerProjectionFreshnessEvaluation,
+)
+
 
 @dataclass
 class ResearchWorkspaceConsumerProjectionInputDiagnostic:
@@ -40,6 +44,11 @@ class ResearchWorkspaceConsumerProjectionInputDiagnostic:
         | None
     )
 
+    freshness: (
+        ResearchWorkspaceConsumerProjectionFreshnessEvaluation
+        | None
+    ) = None
+
     def to_dict(self):
 
         return {
@@ -67,6 +76,17 @@ class ResearchWorkspaceConsumerProjectionInputDiagnostic:
                 self.failure.to_dict()
 
                 if self.failure
+
+                is not None
+
+                else None
+            ),
+
+            "freshness": (
+
+                self.freshness.to_dict()
+
+                if self.freshness
 
                 is not None
 
