@@ -1183,4 +1183,16 @@ from .research_workspace_consumer_projection_health_transition_explainer import 
     ResearchWorkspaceConsumerProjectionHealthTransitionExplainer,
 )
 
+from .research_workspace_consumer_projection_health_transition_impact import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionImpact,
+)
+
+from .research_workspace_consumer_projection_health_transition_impact_summary import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionImpactSummary,
+)
+
+from .research_workspace_consumer_projection_health_transition_impact_summarizer import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionImpactSummarizer,
+)
+
 session_manager = SessionManager()
