@@ -1211,4 +1211,16 @@ from .research_workspace_consumer_projection_health_transition_assessor import (
     ResearchWorkspaceConsumerProjectionHealthTransitionAssessor,
 )
 
+from .research_workspace_consumer_projection_health_transition_recommendation_kind import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationKind,
+)
+
+from .research_workspace_consumer_projection_health_transition_recommendation import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionRecommendation,
+)
+
+from .research_workspace_consumer_projection_health_transition_recommendation_resolver import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationResolver,
+)
+
 session_manager = SessionManager()
