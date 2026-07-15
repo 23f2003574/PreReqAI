@@ -1235,4 +1235,20 @@ from .research_workspace_consumer_projection_health_transition_response_priority
     ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriorityResolver,
 )
 
+from .research_workspace_consumer_projection_health_transition_response_directive import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirective,
+)
+
+from .research_workspace_consumer_projection_health_transition_response_directive_error import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirectiveError,
+)
+
+from .research_workspace_consumer_projection_health_transition_response_directive_builder import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirectiveBuilder,
+)
+
+from .research_workspace_consumer_projection_health_transition_response_planner import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanner,
+)
+
 session_manager = SessionManager()
