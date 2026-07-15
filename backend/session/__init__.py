@@ -1111,4 +1111,24 @@ from .research_workspace_consumer_projection_execution_receipt_comparator import
     ResearchWorkspaceConsumerProjectionExecutionReceiptComparator,
 )
 
+from .research_workspace_consumer_projection_quality_signal_code import (
+    ResearchWorkspaceConsumerProjectionQualitySignalCode,
+)
+
+from .research_workspace_consumer_projection_quality_signal_severity import (
+    ResearchWorkspaceConsumerProjectionQualitySignalSeverity,
+)
+
+from .research_workspace_consumer_projection_quality_signal import (
+    ResearchWorkspaceConsumerProjectionQualitySignal,
+)
+
+from .research_workspace_consumer_projection_quality_signal_report import (
+    ResearchWorkspaceConsumerProjectionQualitySignalReport,
+)
+
+from .research_workspace_consumer_projection_quality_signal_extractor import (
+    ResearchWorkspaceConsumerProjectionQualitySignalExtractor,
+)
+
 session_manager = SessionManager()
