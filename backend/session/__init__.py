@@ -1131,4 +1131,20 @@ from .research_workspace_consumer_projection_quality_signal_extractor import (
     ResearchWorkspaceConsumerProjectionQualitySignalExtractor,
 )
 
+from .research_workspace_consumer_projection_execution_health import (
+    ResearchWorkspaceConsumerProjectionExecutionHealth,
+)
+
+from .research_workspace_consumer_projection_execution_health_summary import (
+    ResearchWorkspaceConsumerProjectionExecutionHealthSummary,
+)
+
+from .research_workspace_consumer_projection_execution_health_summarizer import (
+    ResearchWorkspaceConsumerProjectionExecutionHealthSummarizer,
+)
+
+from .research_workspace_consumer_projection_execution_health_analyzer import (
+    ResearchWorkspaceConsumerProjectionExecutionHealthAnalyzer,
+)
+
 session_manager = SessionManager()
