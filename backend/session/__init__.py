@@ -1195,4 +1195,20 @@ from .research_workspace_consumer_projection_health_transition_impact_summarizer
     ResearchWorkspaceConsumerProjectionHealthTransitionImpactSummarizer,
 )
 
+from .research_workspace_consumer_projection_health_transition_assessment_kind import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentKind,
+)
+
+from .research_workspace_consumer_projection_health_transition_assessment import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionAssessment,
+)
+
+from .research_workspace_consumer_projection_health_transition_assessment_error import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentError,
+)
+
+from .research_workspace_consumer_projection_health_transition_assessor import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionAssessor,
+)
+
 session_manager = SessionManager()
