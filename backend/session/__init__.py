@@ -1223,4 +1223,16 @@ from .research_workspace_consumer_projection_health_transition_recommendation_re
     ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationResolver,
 )
 
+from .research_workspace_consumer_projection_health_transition_response_priority import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriority,
+)
+
+from .research_workspace_consumer_projection_health_transition_response_priority_result import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriorityResult,
+)
+
+from .research_workspace_consumer_projection_health_transition_response_priority_resolver import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriorityResolver,
+)
+
 session_manager = SessionManager()
