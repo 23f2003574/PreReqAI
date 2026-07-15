@@ -1147,4 +1147,24 @@ from .research_workspace_consumer_projection_execution_health_analyzer import (
     ResearchWorkspaceConsumerProjectionExecutionHealthAnalyzer,
 )
 
+from .research_workspace_consumer_projection_health_transition_kind import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionKind,
+)
+
+from .research_workspace_consumer_projection_health_transition_error import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionError,
+)
+
+from .research_workspace_consumer_projection_execution_health_transition import (
+    ResearchWorkspaceConsumerProjectionExecutionHealthTransition,
+)
+
+from .research_workspace_consumer_projection_execution_health_transition_analyzer import (
+    ResearchWorkspaceConsumerProjectionExecutionHealthTransitionAnalyzer,
+)
+
+from .research_workspace_consumer_projection_execution_health_transition_evaluator import (
+    ResearchWorkspaceConsumerProjectionExecutionHealthTransitionEvaluator,
+)
+
 session_manager = SessionManager()
