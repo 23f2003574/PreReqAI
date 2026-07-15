@@ -1091,4 +1091,24 @@ from .research_workspace_consumer_projection_execution_receipt_formatter import 
     ResearchWorkspaceConsumerProjectionExecutionReceiptFormatter,
 )
 
+from .research_workspace_consumer_projection_receipt_change_kind import (
+    ResearchWorkspaceConsumerProjectionReceiptChangeKind,
+)
+
+from .research_workspace_consumer_projection_receipt_field_change import (
+    ResearchWorkspaceConsumerProjectionReceiptFieldChange,
+)
+
+from .research_workspace_consumer_projection_execution_receipt_comparison import (
+    ResearchWorkspaceConsumerProjectionExecutionReceiptComparison,
+)
+
+from .research_workspace_consumer_projection_receipt_comparison_error import (
+    ResearchWorkspaceConsumerProjectionReceiptComparisonError,
+)
+
+from .research_workspace_consumer_projection_execution_receipt_comparator import (
+    ResearchWorkspaceConsumerProjectionExecutionReceiptComparator,
+)
+
 session_manager = SessionManager()
