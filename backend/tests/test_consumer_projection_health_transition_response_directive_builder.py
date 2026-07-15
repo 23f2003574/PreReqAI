@@ -1,15 +1,11 @@
 import pytest
 
 from backend.session import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionAssessment,
     ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentKind,
-    ResearchWorkspaceConsumerProjectionHealthTransitionImpact,
-    ResearchWorkspaceConsumerProjectionHealthTransitionKind,
     ResearchWorkspaceConsumerProjectionHealthTransitionRecommendation,
     ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationKind,
     ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirectiveBuilder,
     ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirectiveError,
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanner,
     ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriority,
     ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriorityResult,
 )
@@ -47,55 +43,6 @@ def _make_priority_result(
         recommendation=recommendation,
         priority=priority,
     )
-
-
-def _make_assessment(
-    *,
-    projection_name="workspace.bootstrap",
-    previous_execution_id="exec-1",
-    current_execution_id="exec-2",
-    transition=ResearchWorkspaceConsumerProjectionHealthTransitionKind.UNCHANGED,
-    impact=ResearchWorkspaceConsumerProjectionHealthTransitionImpact.NONE,
-    assessment=ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentKind.STABLE,
-):
-    return ResearchWorkspaceConsumerProjectionHealthTransitionAssessment(
-        projection_name=projection_name,
-        previous_execution_id=previous_execution_id,
-        current_execution_id=current_execution_id,
-        transition=transition,
-        impact=impact,
-        assessment=assessment,
-    )
-
-
-class _RecordingRecommendationResolver:
-    def __init__(self, recommendation_to_return):
-        self._recommendation_to_return = recommendation_to_return
-        self.received_assessment = None
-
-    def resolve(self, assessment):
-        self.received_assessment = assessment
-        return self._recommendation_to_return
-
-
-class _RecordingPriorityResolver:
-    def __init__(self, priority_to_return):
-        self._priority_to_return = priority_to_return
-        self.received_recommendation = None
-
-    def resolve(self, recommendation):
-        self.received_recommendation = recommendation
-        return self._priority_to_return
-
-
-class _RecordingDirectiveBuilder:
-    def __init__(self, directive_to_return):
-        self._directive_to_return = directive_to_return
-        self.received_args = None
-
-    def build(self, recommendation, priority):
-        self.received_args = (recommendation, priority)
-        return self._directive_to_return
 
 
 NO_ACTION = ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationKind.NO_ACTION
@@ -323,72 +270,8 @@ class TestArchitecturalBoundaries:
         assert directive.action_recommended is True
 
 
-class TestResponsePlanner:
-    """Test the optional assessment-to-directive composition planner."""
-
-    def test_planner_delegates_to_existing_services(self):
-        assessment = _make_assessment()
-
-        fake_recommendation = _make_recommendation(recommendation=REVIEW_CHANGES)
-        fake_priority = _make_priority_result(
-            recommendation=REVIEW_CHANGES, priority=MEDIUM
-        )
-        fake_directive = object()
-
-        recommendation_resolver = _RecordingRecommendationResolver(
-            recommendation_to_return=fake_recommendation
-        )
-        priority_resolver = _RecordingPriorityResolver(
-            priority_to_return=fake_priority
-        )
-        directive_builder = _RecordingDirectiveBuilder(
-            directive_to_return=fake_directive
-        )
-
-        planner = ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanner(
-            recommendation_resolver=recommendation_resolver,
-            priority_resolver=priority_resolver,
-            directive_builder=directive_builder,
-        )
-
-        result = planner.plan(assessment)
-
-        assert recommendation_resolver.received_assessment is assessment
-        assert priority_resolver.received_recommendation is fake_recommendation
-        assert directive_builder.received_args == (
-            fake_recommendation,
-            fake_priority,
-        )
-        assert result is fake_directive
-
-    def test_planner_does_not_duplicate_mapping_logic(self):
-        assessment = _make_assessment(
-            assessment=ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentKind.ESCALATED
-        )
-
-        planner = ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanner()
-        actual = planner.plan(assessment)
-
-        expected_recommendation = planner._recommendation_resolver.resolve(
-            assessment
-        )
-        expected_priority = planner._priority_resolver.resolve(
-            expected_recommendation
-        )
-        expected = planner._directive_builder.build(
-            expected_recommendation, expected_priority
-        )
-
-        assert actual == expected
-
-    def test_planner_uses_default_services_when_not_provided(self):
-        assessment = _make_assessment(
-            assessment=ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentKind.ESCALATED
-        )
-
-        planner = ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanner()
-        directive = planner.plan(assessment)
-
-        assert directive.recommendation == PRIORITIZE_REVIEW
-        assert directive.priority == URGENT
-        assert directive.action_recommended is True
+# The end-to-end ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanner
+# now composes through the full pipeline (recommendation -> priority ->
+# directive -> rationale -> package) and returns a response package as
+# of Commit #12 - its tests live in
+# test_consumer_projection_health_transition_response_package_builder.py.

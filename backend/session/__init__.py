@@ -1267,4 +1267,16 @@ from .research_workspace_consumer_projection_health_transition_response_rational
     ResearchWorkspaceConsumerProjectionHealthTransitionResponseRationaleBuilder,
 )
 
+from .research_workspace_consumer_projection_health_transition_response_package import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackage,
+)
+
+from .research_workspace_consumer_projection_health_transition_response_package_error import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackageError,
+)
+
+from .research_workspace_consumer_projection_health_transition_response_package_builder import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackageBuilder,
+)
+
 session_manager = SessionManager()
