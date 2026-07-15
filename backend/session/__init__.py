@@ -1167,4 +1167,20 @@ from .research_workspace_consumer_projection_execution_health_transition_evaluat
     ResearchWorkspaceConsumerProjectionExecutionHealthTransitionEvaluator,
 )
 
+from .research_workspace_consumer_projection_health_signal_change import (
+    ResearchWorkspaceConsumerProjectionHealthSignalChange,
+)
+
+from .research_workspace_consumer_projection_health_transition_explanation import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionExplanation,
+)
+
+from .research_workspace_consumer_projection_health_transition_explanation_error import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionExplanationError,
+)
+
+from .research_workspace_consumer_projection_health_transition_explainer import (
+    ResearchWorkspaceConsumerProjectionHealthTransitionExplainer,
+)
+
 session_manager = SessionManager()
