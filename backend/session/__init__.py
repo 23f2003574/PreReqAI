@@ -1431,4 +1431,16 @@ from .research_workspace_consumer_projection_readiness_directive_builder import 
     ResearchWorkspaceConsumerProjectionReadinessDirectiveBuilder,
 )
 
+from .research_workspace_consumer_projection_readiness_reason_code import (
+    ResearchWorkspaceConsumerProjectionReadinessReasonCode,
+)
+
+from .research_workspace_consumer_projection_readiness_rationale import (
+    ResearchWorkspaceConsumerProjectionReadinessRationale,
+)
+
+from .research_workspace_consumer_projection_readiness_rationale_builder import (
+    ResearchWorkspaceConsumerProjectionReadinessRationaleBuilder,
+)
+
 session_manager = SessionManager()
