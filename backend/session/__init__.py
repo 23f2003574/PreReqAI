@@ -1351,4 +1351,20 @@ from .research_workspace_consumer_projection_readiness_transition_analyzer impor
     ResearchWorkspaceConsumerProjectionReadinessTransitionAnalyzer,
 )
 
+from .research_workspace_consumer_projection_readiness_issue_change import (
+    ResearchWorkspaceConsumerProjectionReadinessIssueChange,
+)
+
+from .research_workspace_consumer_projection_readiness_explanation_error import (
+    ResearchWorkspaceConsumerProjectionReadinessExplanationError,
+)
+
+from .research_workspace_consumer_projection_readiness_transition_explanation import (
+    ResearchWorkspaceConsumerProjectionReadinessTransitionExplanation,
+)
+
+from .research_workspace_consumer_projection_readiness_transition_explainer import (
+    ResearchWorkspaceConsumerProjectionReadinessTransitionExplainer,
+)
+
 session_manager = SessionManager()
