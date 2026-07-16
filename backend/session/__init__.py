@@ -1455,4 +1455,16 @@ from .research_workspace_consumer_projection_readiness_response_package_builder 
     ResearchWorkspaceConsumerProjectionReadinessResponsePackageBuilder,
 )
 
+from .research_workspace_consumer_projection_readiness_decision_snapshot import (
+    ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshot,
+)
+
+from .research_workspace_consumer_projection_readiness_decision_snapshot_error import (
+    ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshotError,
+)
+
+from .research_workspace_consumer_projection_readiness_decision_snapshot_builder import (
+    ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshotBuilder,
+)
+
 session_manager = SessionManager()
