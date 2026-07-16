@@ -1419,4 +1419,16 @@ from .research_workspace_consumer_projection_readiness_priority_resolver import 
     ResearchWorkspaceConsumerProjectionReadinessPriorityResolver,
 )
 
+from .research_workspace_consumer_projection_readiness_directive import (
+    ResearchWorkspaceConsumerProjectionReadinessDirective,
+)
+
+from .research_workspace_consumer_projection_readiness_directive_error import (
+    ResearchWorkspaceConsumerProjectionReadinessDirectiveError,
+)
+
+from .research_workspace_consumer_projection_readiness_directive_builder import (
+    ResearchWorkspaceConsumerProjectionReadinessDirectiveBuilder,
+)
+
 session_manager = SessionManager()
