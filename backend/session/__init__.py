@@ -1443,4 +1443,16 @@ from .research_workspace_consumer_projection_readiness_rationale_builder import 
     ResearchWorkspaceConsumerProjectionReadinessRationaleBuilder,
 )
 
+from .research_workspace_consumer_projection_readiness_response_package import (
+    ResearchWorkspaceConsumerProjectionReadinessResponsePackage,
+)
+
+from .research_workspace_consumer_projection_readiness_response_package_error import (
+    ResearchWorkspaceConsumerProjectionReadinessResponsePackageError,
+)
+
+from .research_workspace_consumer_projection_readiness_response_package_builder import (
+    ResearchWorkspaceConsumerProjectionReadinessResponsePackageBuilder,
+)
+
 session_manager = SessionManager()
