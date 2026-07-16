@@ -1395,4 +1395,16 @@ from .research_workspace_consumer_projection_readiness_assessor import (
     ResearchWorkspaceConsumerProjectionReadinessAssessor,
 )
 
+from .research_workspace_consumer_projection_readiness_recommendation import (
+    ResearchWorkspaceConsumerProjectionReadinessRecommendation,
+)
+
+from .research_workspace_consumer_projection_readiness_recommendation_report import (
+    ResearchWorkspaceConsumerProjectionReadinessRecommendationReport,
+)
+
+from .research_workspace_consumer_projection_readiness_recommendation_resolver import (
+    ResearchWorkspaceConsumerProjectionReadinessRecommendationResolver,
+)
+
 session_manager = SessionManager()
