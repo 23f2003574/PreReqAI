@@ -1407,4 +1407,16 @@ from .research_workspace_consumer_projection_readiness_recommendation_resolver i
     ResearchWorkspaceConsumerProjectionReadinessRecommendationResolver,
 )
 
+from .research_workspace_consumer_projection_readiness_priority import (
+    ResearchWorkspaceConsumerProjectionReadinessPriority,
+)
+
+from .research_workspace_consumer_projection_readiness_priority_report import (
+    ResearchWorkspaceConsumerProjectionReadinessPriorityReport,
+)
+
+from .research_workspace_consumer_projection_readiness_priority_resolver import (
+    ResearchWorkspaceConsumerProjectionReadinessPriorityResolver,
+)
+
 session_manager = SessionManager()
