@@ -1327,4 +1327,12 @@ from .research_workspace_consumer_projection_readiness_evaluator import (
     ResearchWorkspaceConsumerProjectionReadinessEvaluator,
 )
 
+from .research_workspace_consumer_projection_readiness_summary import (
+    ResearchWorkspaceConsumerProjectionReadinessSummary,
+)
+
+from .research_workspace_consumer_projection_readiness_summarizer import (
+    ResearchWorkspaceConsumerProjectionReadinessSummarizer,
+)
+
 session_manager = SessionManager()
