@@ -1379,4 +1379,20 @@ from .research_workspace_consumer_projection_readiness_impact_summarizer import 
     ResearchWorkspaceConsumerProjectionReadinessImpactSummarizer,
 )
 
+from .research_workspace_consumer_projection_readiness_assessment import (
+    ResearchWorkspaceConsumerProjectionReadinessAssessment,
+)
+
+from .research_workspace_consumer_projection_readiness_assessment_error import (
+    ResearchWorkspaceConsumerProjectionReadinessAssessmentError,
+)
+
+from .research_workspace_consumer_projection_readiness_assessment_report import (
+    ResearchWorkspaceConsumerProjectionReadinessAssessmentReport,
+)
+
+from .research_workspace_consumer_projection_readiness_assessor import (
+    ResearchWorkspaceConsumerProjectionReadinessAssessor,
+)
+
 session_manager = SessionManager()
