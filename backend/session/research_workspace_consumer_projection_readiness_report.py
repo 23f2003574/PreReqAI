@@ -10,6 +10,10 @@ from .research_workspace_consumer_projection_readiness_issue import (
     ResearchWorkspaceConsumerProjectionReadinessIssue,
 )
 
+from .research_workspace_consumer_projection_readiness_reason import (
+    ResearchWorkspaceConsumerProjectionReadinessReason,
+)
+
 
 @dataclass(frozen=True)
 class ResearchWorkspaceConsumerProjectionReadinessReport:
@@ -21,6 +25,7 @@ class ResearchWorkspaceConsumerProjectionReadinessReport:
         projection_name: Identifies the evaluated projection
         readiness: The overall readiness classification
         executable: Whether execution can proceed at all
+        reason: The single primary cause of the readiness classification
         issues: Every distinct problem detected during evaluation
     """
 
@@ -31,6 +36,10 @@ class ResearchWorkspaceConsumerProjectionReadinessReport:
     )
 
     executable: bool
+
+    reason: (
+        ResearchWorkspaceConsumerProjectionReadinessReason
+    )
 
     issues: tuple[
         ResearchWorkspaceConsumerProjectionReadinessIssue,
@@ -49,6 +58,7 @@ class ResearchWorkspaceConsumerProjectionReadinessReport:
             "projection_name": self.projection_name,
             "readiness": self.readiness.value,
             "executable": self.executable,
+            "reason": self.reason.value,
             "issues": [
                 issue.to_dict()
                 for issue in self.issues

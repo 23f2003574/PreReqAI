@@ -10,6 +10,10 @@ from .research_workspace_consumer_projection_readiness_issue import (
     ResearchWorkspaceConsumerProjectionReadinessIssue,
 )
 
+from .research_workspace_consumer_projection_readiness_reason import (
+    ResearchWorkspaceConsumerProjectionReadinessReason,
+)
+
 from .research_workspace_consumer_projection_readiness_report import (
     ResearchWorkspaceConsumerProjectionReadinessReport,
 )
@@ -51,6 +55,7 @@ class ResearchWorkspaceConsumerProjectionReadinessEvaluator:
         seen_issues = set()
         blocked = False
         degraded = False
+        block_reason = None
 
         def add_issue(code, message):
             nonlocal blocked, degraded
@@ -66,50 +71,63 @@ class ResearchWorkspaceConsumerProjectionReadinessEvaluator:
                     )
                 )
 
+        def block(code, message, reason):
+            nonlocal blocked, block_reason
+
+            add_issue(code, message)
+            blocked = True
+
+            if block_reason is None:
+                block_reason = reason
+
+        def degrade(code, message):
+            nonlocal degraded
+
+            add_issue(code, message)
+            degraded = True
+
         if not plan.enabled:
-            add_issue(
+            block(
                 "projection_disabled",
                 f"projection '{plan.projection_name}' is disabled",
+                ResearchWorkspaceConsumerProjectionReadinessReason.EXECUTION_DISABLED,
             )
-            blocked = True
 
         for dependency in plan.required_dependencies:
             if not dependency.satisfied:
-                add_issue(
+                block(
                     "missing_dependency",
                     f"required dependency '{dependency.name}' "
                     "is not satisfied",
+                    ResearchWorkspaceConsumerProjectionReadinessReason.REQUIRED_DEPENDENCY_MISSING,
                 )
-                blocked = True
             elif dependency.degraded:
-                add_issue(
+                degrade(
                     "degraded_dependency",
                     f"required dependency '{dependency.name}' is "
                     "satisfied via a degraded path",
                 )
-                degraded = True
 
         for source in plan.required_sources:
             if source.expired:
-                add_issue(
+                block(
                     "expired_source",
                     f"required source '{source.name}' has expired",
+                    ResearchWorkspaceConsumerProjectionReadinessReason.REQUIRED_SOURCE_UNAVAILABLE,
                 )
-                blocked = True
             elif source.stale_usable:
-                add_issue(
+                degrade(
                     "stale_usable_source",
                     f"required source '{source.name}' is stale "
                     "but usable",
                 )
-                degraded = True
 
         if not plan.budget_available:
-            add_issue(
+            block(
                 "budget_exhausted",
                 "execution budget is exhausted",
+                ResearchWorkspaceConsumerProjectionReadinessReason.BUDGET_EXHAUSTED,
             )
-            blocked = True
 
         for stage in plan.stages:
             if stage.will_execute:
@@ -119,26 +137,32 @@ class ResearchWorkspaceConsumerProjectionReadinessEvaluator:
                 stage.requirement
                 == ResearchWorkspaceConsumerProjectionStageRequirement.MANDATORY
             ):
-                add_issue(
+                block(
                     "mandatory_stage_impossible",
                     f"mandatory stage '{stage.name}' cannot execute",
+                    ResearchWorkspaceConsumerProjectionReadinessReason.REQUIRED_DEPENDENCY_MISSING,
                 )
-                blocked = True
             else:
-                add_issue(
+                degrade(
                     "optional_stage_skipped",
                     f"optional stage '{stage.name}' will be skipped",
                 )
-                degraded = True
 
         if blocked:
             readiness = ResearchWorkspaceConsumerProjectionReadiness.BLOCKED
+            reason = block_reason
         elif degraded:
             readiness = (
                 ResearchWorkspaceConsumerProjectionReadiness.DEGRADED_READY
             )
+            reason = (
+                ResearchWorkspaceConsumerProjectionReadinessReason.OPTIONAL_CONSTRAINTS_PRESENT
+            )
         else:
             readiness = ResearchWorkspaceConsumerProjectionReadiness.READY
+            reason = (
+                ResearchWorkspaceConsumerProjectionReadinessReason.ALL_REQUIREMENTS_MET
+            )
 
         return ResearchWorkspaceConsumerProjectionReadinessReport(
             projection_name=plan.projection_name,
@@ -147,5 +171,6 @@ class ResearchWorkspaceConsumerProjectionReadinessEvaluator:
                 readiness
                 != ResearchWorkspaceConsumerProjectionReadiness.BLOCKED
             ),
+            reason=reason,
             issues=tuple(issues),
         )

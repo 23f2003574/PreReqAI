@@ -1315,6 +1315,10 @@ from .research_workspace_consumer_projection_readiness_issue import (
     ResearchWorkspaceConsumerProjectionReadinessIssue,
 )
 
+from .research_workspace_consumer_projection_readiness_reason import (
+    ResearchWorkspaceConsumerProjectionReadinessReason,
+)
+
 from .research_workspace_consumer_projection_readiness_report import (
     ResearchWorkspaceConsumerProjectionReadinessReport,
 )

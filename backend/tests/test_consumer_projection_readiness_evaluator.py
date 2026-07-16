@@ -5,6 +5,7 @@ from backend.session import (
     ResearchWorkspaceConsumerProjectionExecutionPlanStage,
     ResearchWorkspaceConsumerProjectionReadiness,
     ResearchWorkspaceConsumerProjectionReadinessEvaluator,
+    ResearchWorkspaceConsumerProjectionReadinessReason,
     ResearchWorkspaceConsumerProjectionStageRequirement,
 )
 
@@ -15,6 +16,25 @@ OPTIONAL = ResearchWorkspaceConsumerProjectionStageRequirement.OPTIONAL
 READY = ResearchWorkspaceConsumerProjectionReadiness.READY
 DEGRADED_READY = ResearchWorkspaceConsumerProjectionReadiness.DEGRADED_READY
 BLOCKED = ResearchWorkspaceConsumerProjectionReadiness.BLOCKED
+
+ALL_REQUIREMENTS_MET = (
+    ResearchWorkspaceConsumerProjectionReadinessReason.ALL_REQUIREMENTS_MET
+)
+OPTIONAL_CONSTRAINTS_PRESENT = (
+    ResearchWorkspaceConsumerProjectionReadinessReason.OPTIONAL_CONSTRAINTS_PRESENT
+)
+REQUIRED_DEPENDENCY_MISSING = (
+    ResearchWorkspaceConsumerProjectionReadinessReason.REQUIRED_DEPENDENCY_MISSING
+)
+REQUIRED_SOURCE_UNAVAILABLE = (
+    ResearchWorkspaceConsumerProjectionReadinessReason.REQUIRED_SOURCE_UNAVAILABLE
+)
+EXECUTION_DISABLED = (
+    ResearchWorkspaceConsumerProjectionReadinessReason.EXECUTION_DISABLED
+)
+BUDGET_EXHAUSTED_REASON = (
+    ResearchWorkspaceConsumerProjectionReadinessReason.BUDGET_EXHAUSTED
+)
 
 
 def _make_plan(
@@ -73,6 +93,7 @@ class TestHealthyPlan:
         assert report.readiness == READY
         assert report.executable is True
         assert report.issues == ()
+        assert report.reason == ALL_REQUIREMENTS_MET
 
 
 class TestOptionalDegradation:
@@ -100,6 +121,7 @@ class TestOptionalDegradation:
             report.issues[0].message
             == "optional stage 'enrich' will be skipped"
         )
+        assert report.reason == OPTIONAL_CONSTRAINTS_PRESENT
 
     def test_degraded_dependency_produces_degraded_ready(self):
         plan = _make_plan(
@@ -118,6 +140,7 @@ class TestOptionalDegradation:
         assert report.readiness == DEGRADED_READY
         assert report.executable is True
         assert report.issues[0].code == "degraded_dependency"
+        assert report.reason == OPTIONAL_CONSTRAINTS_PRESENT
 
     def test_stale_usable_source_produces_degraded_ready(self):
         plan = _make_plan(
@@ -136,6 +159,7 @@ class TestOptionalDegradation:
         assert report.readiness == DEGRADED_READY
         assert report.executable is True
         assert report.issues[0].code == "stale_usable_source"
+        assert report.reason == OPTIONAL_CONSTRAINTS_PRESENT
 
 
 class TestMissingDependency:
@@ -157,6 +181,7 @@ class TestMissingDependency:
         assert report.readiness == BLOCKED
         assert report.executable is False
         assert report.issues[0].code == "missing_dependency"
+        assert report.reason == REQUIRED_DEPENDENCY_MISSING
 
 
 class TestExpiredRequiredSource:
@@ -178,6 +203,7 @@ class TestExpiredRequiredSource:
         assert report.readiness == BLOCKED
         assert report.executable is False
         assert report.issues[0].code == "expired_source"
+        assert report.reason == REQUIRED_SOURCE_UNAVAILABLE
 
     def test_budget_exhausted_produces_blocked(self):
         plan = _make_plan(budget_available=False)
@@ -188,6 +214,7 @@ class TestExpiredRequiredSource:
         assert report.readiness == BLOCKED
         assert report.executable is False
         assert report.issues[0].code == "budget_exhausted"
+        assert report.reason == BUDGET_EXHAUSTED_REASON
 
     def test_disabled_projection_produces_blocked(self):
         plan = _make_plan(enabled=False)
@@ -198,6 +225,7 @@ class TestExpiredRequiredSource:
         assert report.readiness == BLOCKED
         assert report.executable is False
         assert report.issues[0].code == "projection_disabled"
+        assert report.reason == EXECUTION_DISABLED
 
     def test_impossible_mandatory_stage_produces_blocked(self):
         plan = _make_plan(
@@ -216,6 +244,7 @@ class TestExpiredRequiredSource:
         assert report.readiness == BLOCKED
         assert report.executable is False
         assert report.issues[0].code == "mandatory_stage_impossible"
+        assert report.reason == REQUIRED_DEPENDENCY_MISSING
 
 
 class TestMultipleIssues:
@@ -248,6 +277,127 @@ class TestMultipleIssues:
             "expired_source",
             "budget_exhausted",
         ]
+        assert report.reason == REQUIRED_DEPENDENCY_MISSING
+
+
+class TestReasonResolution:
+    """The primary reason follows the documented blocking priority:
+
+    EXECUTION_DISABLED > REQUIRED_DEPENDENCY_MISSING >
+    REQUIRED_SOURCE_UNAVAILABLE > BUDGET_EXHAUSTED
+
+    Issues stay a complete list of everything detected; reason is
+    only the single highest-priority cause.
+    """
+
+    def _blocked_everything_plan(self):
+        return _make_plan(
+            enabled=False,
+            required_dependencies=(
+                ResearchWorkspaceConsumerProjectionExecutionPlanDependency(
+                    name="cache",
+                    satisfied=False,
+                ),
+            ),
+            required_sources=(
+                ResearchWorkspaceConsumerProjectionExecutionPlanSource(
+                    name="arxiv",
+                    expired=True,
+                ),
+            ),
+            budget_available=False,
+        )
+
+    def test_disabled_projection_has_highest_priority(self):
+        plan = self._blocked_everything_plan()
+
+        evaluator = ResearchWorkspaceConsumerProjectionReadinessEvaluator()
+        report = evaluator.evaluate(plan)
+
+        assert report.reason == EXECUTION_DISABLED
+
+    def test_missing_dependency_outranks_source_and_budget(self):
+        plan = _make_plan(
+            required_dependencies=(
+                ResearchWorkspaceConsumerProjectionExecutionPlanDependency(
+                    name="cache",
+                    satisfied=False,
+                ),
+            ),
+            required_sources=(
+                ResearchWorkspaceConsumerProjectionExecutionPlanSource(
+                    name="arxiv",
+                    expired=True,
+                ),
+            ),
+            budget_available=False,
+        )
+
+        evaluator = ResearchWorkspaceConsumerProjectionReadinessEvaluator()
+        report = evaluator.evaluate(plan)
+
+        assert report.reason == REQUIRED_DEPENDENCY_MISSING
+
+    def test_missing_source_outranks_budget(self):
+        plan = _make_plan(
+            required_sources=(
+                ResearchWorkspaceConsumerProjectionExecutionPlanSource(
+                    name="arxiv",
+                    expired=True,
+                ),
+            ),
+            budget_available=False,
+        )
+
+        evaluator = ResearchWorkspaceConsumerProjectionReadinessEvaluator()
+        report = evaluator.evaluate(plan)
+
+        assert report.reason == REQUIRED_SOURCE_UNAVAILABLE
+
+    def test_budget_exhausted_is_the_reason_when_nothing_else_blocks(self):
+        plan = _make_plan(budget_available=False)
+
+        evaluator = ResearchWorkspaceConsumerProjectionReadinessEvaluator()
+        report = evaluator.evaluate(plan)
+
+        assert report.reason == BUDGET_EXHAUSTED_REASON
+
+    def test_issues_remain_the_complete_list_regardless_of_reason(self):
+        plan = self._blocked_everything_plan()
+
+        evaluator = ResearchWorkspaceConsumerProjectionReadinessEvaluator()
+        report = evaluator.evaluate(plan)
+
+        codes = [issue.code for issue in report.issues]
+
+        assert codes == [
+            "projection_disabled",
+            "missing_dependency",
+            "expired_source",
+            "budget_exhausted",
+        ]
+        assert report.reason == EXECUTION_DISABLED
+
+    def test_only_one_primary_reason_is_returned(self):
+        plan = self._blocked_everything_plan()
+
+        evaluator = ResearchWorkspaceConsumerProjectionReadinessEvaluator()
+        report = evaluator.evaluate(plan)
+
+        assert isinstance(
+            report.reason,
+            ResearchWorkspaceConsumerProjectionReadinessReason,
+        )
+
+    def test_reason_resolution_is_stable_across_repeated_evaluations(self):
+        plan = self._blocked_everything_plan()
+
+        evaluator = ResearchWorkspaceConsumerProjectionReadinessEvaluator()
+
+        first = evaluator.evaluate(plan)
+        second = evaluator.evaluate(plan)
+
+        assert first.reason == second.reason == EXECUTION_DISABLED
 
 
 class TestDuplicateIssues:
@@ -455,6 +605,7 @@ class TestArchitecturalBoundaries:
             "projection_name",
             "readiness",
             "executable",
+            "reason",
             "issues",
             "blocked",
         }
