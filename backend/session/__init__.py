@@ -1291,4 +1291,36 @@ from .research_workspace_consumer_projection_health_transition_response_plan_sna
     ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanSnapshotBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_plan_dependency import (
+    ResearchWorkspaceConsumerProjectionExecutionPlanDependency,
+)
+
+from .research_workspace_consumer_projection_execution_plan_source import (
+    ResearchWorkspaceConsumerProjectionExecutionPlanSource,
+)
+
+from .research_workspace_consumer_projection_execution_plan_stage import (
+    ResearchWorkspaceConsumerProjectionExecutionPlanStage,
+)
+
+from .research_workspace_consumer_projection_execution_plan import (
+    ResearchWorkspaceConsumerProjectionExecutionPlan,
+)
+
+from .research_workspace_consumer_projection_readiness import (
+    ResearchWorkspaceConsumerProjectionReadiness,
+)
+
+from .research_workspace_consumer_projection_readiness_issue import (
+    ResearchWorkspaceConsumerProjectionReadinessIssue,
+)
+
+from .research_workspace_consumer_projection_readiness_report import (
+    ResearchWorkspaceConsumerProjectionReadinessReport,
+)
+
+from .research_workspace_consumer_projection_readiness_evaluator import (
+    ResearchWorkspaceConsumerProjectionReadinessEvaluator,
+)
+
 session_manager = SessionManager()
