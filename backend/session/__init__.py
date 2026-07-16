@@ -1335,4 +1335,20 @@ from .research_workspace_consumer_projection_readiness_summarizer import (
     ResearchWorkspaceConsumerProjectionReadinessSummarizer,
 )
 
+from .research_workspace_consumer_projection_readiness_transition import (
+    ResearchWorkspaceConsumerProjectionReadinessTransition,
+)
+
+from .research_workspace_consumer_projection_readiness_transition_error import (
+    ResearchWorkspaceConsumerProjectionReadinessTransitionError,
+)
+
+from .research_workspace_consumer_projection_readiness_transition_report import (
+    ResearchWorkspaceConsumerProjectionReadinessTransitionReport,
+)
+
+from .research_workspace_consumer_projection_readiness_transition_analyzer import (
+    ResearchWorkspaceConsumerProjectionReadinessTransitionAnalyzer,
+)
+
 session_manager = SessionManager()
