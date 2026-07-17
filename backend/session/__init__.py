@@ -1499,4 +1499,20 @@ from .research_workspace_consumer_projection_execution_decision_resolver import 
     ResearchWorkspaceConsumerProjectionExecutionDecisionResolver,
 )
 
+from .research_workspace_consumer_projection_execution_gate_status import (
+    ResearchWorkspaceConsumerProjectionExecutionGateStatus,
+)
+
+from .research_workspace_consumer_projection_execution_gate_reason import (
+    ResearchWorkspaceConsumerProjectionExecutionGateReason,
+)
+
+from .research_workspace_consumer_projection_execution_gate_report import (
+    ResearchWorkspaceConsumerProjectionExecutionGateReport,
+)
+
+from .research_workspace_consumer_projection_execution_gate_resolver import (
+    ResearchWorkspaceConsumerProjectionExecutionGateResolver,
+)
+
 session_manager = SessionManager()
