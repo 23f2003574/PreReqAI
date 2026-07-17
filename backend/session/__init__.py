@@ -1631,4 +1631,16 @@ from .research_workspace_consumer_projection_execution_consumer_response_builder
     ResearchWorkspaceConsumerProjectionExecutionConsumerResponseBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_decision_package import (
+    ResearchWorkspaceConsumerProjectionExecutionDecisionPackage,
+)
+
+from .research_workspace_consumer_projection_execution_decision_package_error import (
+    ResearchWorkspaceConsumerProjectionExecutionDecisionPackageError,
+)
+
+from .research_workspace_consumer_projection_execution_decision_package_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionDecisionPackageBuilder,
+)
+
 session_manager = SessionManager()
