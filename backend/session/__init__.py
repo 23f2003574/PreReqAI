@@ -1483,4 +1483,20 @@ from .research_workspace_consumer_projection_execution_eligibility_evaluator imp
     ResearchWorkspaceConsumerProjectionExecutionEligibilityEvaluator,
 )
 
+from .research_workspace_consumer_projection_execution_decision import (
+    ResearchWorkspaceConsumerProjectionExecutionDecision,
+)
+
+from .research_workspace_consumer_projection_execution_decision_reason import (
+    ResearchWorkspaceConsumerProjectionExecutionDecisionReason,
+)
+
+from .research_workspace_consumer_projection_execution_decision_report import (
+    ResearchWorkspaceConsumerProjectionExecutionDecisionReport,
+)
+
+from .research_workspace_consumer_projection_execution_decision_resolver import (
+    ResearchWorkspaceConsumerProjectionExecutionDecisionResolver,
+)
+
 session_manager = SessionManager()
