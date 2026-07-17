@@ -1547,4 +1547,20 @@ from .research_workspace_consumer_projection_execution_verdict_resolver import (
     ResearchWorkspaceConsumerProjectionExecutionVerdictResolver,
 )
 
+from .research_workspace_consumer_projection_execution_outcome import (
+    ResearchWorkspaceConsumerProjectionExecutionOutcome,
+)
+
+from .research_workspace_consumer_projection_execution_outcome_reason import (
+    ResearchWorkspaceConsumerProjectionExecutionOutcomeReason,
+)
+
+from .research_workspace_consumer_projection_execution_outcome_report import (
+    ResearchWorkspaceConsumerProjectionExecutionOutcomeReport,
+)
+
+from .research_workspace_consumer_projection_verdict_outcome_resolver import (
+    ResearchWorkspaceConsumerProjectionVerdictOutcomeResolver,
+)
+
 session_manager = SessionManager()
