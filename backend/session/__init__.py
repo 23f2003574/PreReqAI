@@ -1515,4 +1515,20 @@ from .research_workspace_consumer_projection_execution_gate_resolver import (
     ResearchWorkspaceConsumerProjectionExecutionGateResolver,
 )
 
+from .research_workspace_consumer_projection_execution_authorization import (
+    ResearchWorkspaceConsumerProjectionExecutionAuthorization,
+)
+
+from .research_workspace_consumer_projection_execution_authorization_reason import (
+    ResearchWorkspaceConsumerProjectionExecutionAuthorizationReason,
+)
+
+from .research_workspace_consumer_projection_execution_authorization_report import (
+    ResearchWorkspaceConsumerProjectionExecutionAuthorizationReport,
+)
+
+from .research_workspace_consumer_projection_execution_authorization_resolver import (
+    ResearchWorkspaceConsumerProjectionExecutionAuthorizationResolver,
+)
+
 session_manager = SessionManager()
