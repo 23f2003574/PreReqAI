@@ -1611,4 +1611,16 @@ from .research_workspace_consumer_projection_execution_lifecycle_resolver import
     ResearchWorkspaceConsumerProjectionExecutionLifecycleResolver,
 )
 
+from .research_workspace_consumer_projection_execution_readiness_snapshot import (
+    ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshot,
+)
+
+from .research_workspace_consumer_projection_execution_readiness_snapshot_error import (
+    ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshotError,
+)
+
+from .research_workspace_consumer_projection_execution_readiness_snapshot_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshotBuilder,
+)
+
 session_manager = SessionManager()
