@@ -1563,4 +1563,12 @@ from .research_workspace_consumer_projection_verdict_outcome_resolver import (
     ResearchWorkspaceConsumerProjectionVerdictOutcomeResolver,
 )
 
+from .research_workspace_consumer_projection_execution_summary import (
+    ResearchWorkspaceConsumerProjectionExecutionSummary,
+)
+
+from .research_workspace_consumer_projection_execution_summary_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionSummaryBuilder,
+)
+
 session_manager = SessionManager()
