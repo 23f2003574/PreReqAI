@@ -1571,4 +1571,16 @@ from .research_workspace_consumer_projection_execution_summary_builder import (
     ResearchWorkspaceConsumerProjectionExecutionSummaryBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_snapshot import (
+    ResearchWorkspaceConsumerProjectionExecutionSnapshot,
+)
+
+from .research_workspace_consumer_projection_execution_snapshot_error import (
+    ResearchWorkspaceConsumerProjectionExecutionSnapshotError,
+)
+
+from .research_workspace_consumer_projection_execution_snapshot_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionSnapshotBuilder,
+)
+
 session_manager = SessionManager()
