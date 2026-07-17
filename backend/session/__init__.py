@@ -1595,4 +1595,20 @@ from .research_workspace_consumer_projection_execution_audit_record_builder impo
     ResearchWorkspaceConsumerProjectionExecutionAuditRecordBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_lifecycle_state import (
+    ResearchWorkspaceConsumerProjectionExecutionLifecycleState,
+)
+
+from .research_workspace_consumer_projection_execution_lifecycle_reason import (
+    ResearchWorkspaceConsumerProjectionExecutionLifecycleReason,
+)
+
+from .research_workspace_consumer_projection_execution_lifecycle_report import (
+    ResearchWorkspaceConsumerProjectionExecutionLifecycleReport,
+)
+
+from .research_workspace_consumer_projection_execution_lifecycle_resolver import (
+    ResearchWorkspaceConsumerProjectionExecutionLifecycleResolver,
+)
+
 session_manager = SessionManager()
