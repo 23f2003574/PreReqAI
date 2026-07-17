@@ -1623,4 +1623,12 @@ from .research_workspace_consumer_projection_execution_readiness_snapshot_builde
     ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshotBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_consumer_response import (
+    ResearchWorkspaceConsumerProjectionExecutionConsumerResponse,
+)
+
+from .research_workspace_consumer_projection_execution_consumer_response_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionConsumerResponseBuilder,
+)
+
 session_manager = SessionManager()
