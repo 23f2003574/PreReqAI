@@ -1467,4 +1467,20 @@ from .research_workspace_consumer_projection_readiness_decision_snapshot_builder
     ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshotBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_eligibility import (
+    ResearchWorkspaceConsumerProjectionExecutionEligibility,
+)
+
+from .research_workspace_consumer_projection_execution_eligibility_reason import (
+    ResearchWorkspaceConsumerProjectionExecutionEligibilityReason,
+)
+
+from .research_workspace_consumer_projection_execution_eligibility_report import (
+    ResearchWorkspaceConsumerProjectionExecutionEligibilityReport,
+)
+
+from .research_workspace_consumer_projection_execution_eligibility_evaluator import (
+    ResearchWorkspaceConsumerProjectionExecutionEligibilityEvaluator,
+)
+
 session_manager = SessionManager()
