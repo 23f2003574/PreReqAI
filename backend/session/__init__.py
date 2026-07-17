@@ -1531,4 +1531,20 @@ from .research_workspace_consumer_projection_execution_authorization_resolver im
     ResearchWorkspaceConsumerProjectionExecutionAuthorizationResolver,
 )
 
+from .research_workspace_consumer_projection_execution_verdict import (
+    ResearchWorkspaceConsumerProjectionExecutionVerdict,
+)
+
+from .research_workspace_consumer_projection_execution_verdict_reason import (
+    ResearchWorkspaceConsumerProjectionExecutionVerdictReason,
+)
+
+from .research_workspace_consumer_projection_execution_verdict_report import (
+    ResearchWorkspaceConsumerProjectionExecutionVerdictReport,
+)
+
+from .research_workspace_consumer_projection_execution_verdict_resolver import (
+    ResearchWorkspaceConsumerProjectionExecutionVerdictResolver,
+)
+
 session_manager = SessionManager()
