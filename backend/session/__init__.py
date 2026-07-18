@@ -1711,4 +1711,12 @@ from .research_workspace_consumer_projection_execution_capability_classification
     ResearchWorkspaceConsumerProjectionExecutionCapabilityClassificationResolver,
 )
 
+from .research_workspace_consumer_projection_execution_capability_descriptor import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityDescriptor,
+)
+
+from .research_workspace_consumer_projection_execution_capability_descriptor_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityDescriptorBuilder,
+)
+
 session_manager = SessionManager()
