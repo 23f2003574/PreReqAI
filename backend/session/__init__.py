@@ -1699,4 +1699,16 @@ from .research_workspace_consumer_projection_execution_capability_profile_builde
     ResearchWorkspaceConsumerProjectionExecutionCapabilityProfileBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_capability_classification import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityClassification,
+)
+
+from .research_workspace_consumer_projection_execution_capability_classification_report import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityClassificationReport,
+)
+
+from .research_workspace_consumer_projection_execution_capability_classification_resolver import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityClassificationResolver,
+)
+
 session_manager = SessionManager()
