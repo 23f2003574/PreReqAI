@@ -1643,4 +1643,20 @@ from .research_workspace_consumer_projection_execution_decision_package_builder 
     ResearchWorkspaceConsumerProjectionExecutionDecisionPackageBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_capability import (
+    ResearchWorkspaceConsumerProjectionExecutionCapability,
+)
+
+from .research_workspace_consumer_projection_execution_capability_reason import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityReason,
+)
+
+from .research_workspace_consumer_projection_execution_capability_report import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityReport,
+)
+
+from .research_workspace_consumer_projection_execution_capability_resolver import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityResolver,
+)
+
 session_manager = SessionManager()
