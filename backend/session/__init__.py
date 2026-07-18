@@ -1719,4 +1719,16 @@ from .research_workspace_consumer_projection_execution_capability_descriptor_bui
     ResearchWorkspaceConsumerProjectionExecutionCapabilityDescriptorBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_capability_snapshot_package import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackage,
+)
+
+from .research_workspace_consumer_projection_execution_capability_snapshot_package_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackageError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_snapshot_package_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackageBuilder,
+)
+
 session_manager = SessionManager()
