@@ -1691,4 +1691,12 @@ from .research_workspace_consumer_projection_execution_capability_package_builde
     ResearchWorkspaceConsumerProjectionExecutionCapabilityPackageBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_capability_profile import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityProfile,
+)
+
+from .research_workspace_consumer_projection_execution_capability_profile_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityProfileBuilder,
+)
+
 session_manager = SessionManager()
