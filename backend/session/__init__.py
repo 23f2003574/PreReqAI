@@ -1767,4 +1767,12 @@ from .research_workspace_consumer_projection_execution_capability_decision_snaps
     ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSnapshotBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_capability_consumer_response import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityConsumerResponse,
+)
+
+from .research_workspace_consumer_projection_execution_capability_consumer_response_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityConsumerResponseBuilder,
+)
+
 session_manager = SessionManager()
