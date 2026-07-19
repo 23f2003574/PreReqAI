@@ -1807,4 +1807,12 @@ from .research_workspace_consumer_projection_execution_capability_registry_snaps
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistrySnapshotBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_query_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryQueryError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_query_service import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryQueryService,
+)
+
 session_manager = SessionManager()
