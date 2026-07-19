@@ -1787,4 +1787,12 @@ from .research_workspace_consumer_projection_execution_capability_decision_packa
     ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionPackageBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistry,
+)
+
 session_manager = SessionManager()
