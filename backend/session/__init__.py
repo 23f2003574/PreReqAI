@@ -1859,4 +1859,12 @@ from .research_workspace_consumer_projection_execution_capability_registry_diff_
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryDiffEngine,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_merge_plan import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergePlan,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_merge_planner import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergePlanner,
+)
+
 session_manager = SessionManager()
