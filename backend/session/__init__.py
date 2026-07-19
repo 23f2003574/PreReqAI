@@ -1919,4 +1919,12 @@ from .research_workspace_consumer_projection_execution_capability_registry_trans
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidator,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_transaction_coordinator_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionCoordinatorError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_transaction_coordinator import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionCoordinator,
+)
+
 session_manager = SessionManager()
