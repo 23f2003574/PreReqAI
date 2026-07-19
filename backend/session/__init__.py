@@ -1907,4 +1907,16 @@ from .research_workspace_consumer_projection_execution_capability_registry_trans
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionExecutor,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_transaction_validation_report import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidationReport,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_transaction_validation_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidationError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_transaction_validator import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidator,
+)
+
 session_manager = SessionManager()
