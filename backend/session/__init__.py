@@ -1887,4 +1887,24 @@ from .research_workspace_consumer_projection_execution_capability_registry_merge
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeExecutor,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_transaction_operation import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionOperation,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_transaction_entry import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionEntry,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_transaction import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransaction,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_transaction_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_transaction_executor import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionExecutor,
+)
+
 session_manager = SessionManager()
