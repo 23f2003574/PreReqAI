@@ -1879,4 +1879,12 @@ from .research_workspace_consumer_projection_execution_capability_registry_merge
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidator,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_merge_execution_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeExecutionError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_merge_executor import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeExecutor,
+)
+
 session_manager = SessionManager()
