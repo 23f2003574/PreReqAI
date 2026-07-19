@@ -1815,4 +1815,16 @@ from .research_workspace_consumer_projection_execution_capability_registry_query
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryQueryService,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_export import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExport,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_export_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExportError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_exporter import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExporter,
+)
+
 session_manager = SessionManager()
