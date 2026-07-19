@@ -1851,4 +1851,12 @@ from .research_workspace_consumer_projection_execution_capability_registry_healt
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryHealthAnalyzer,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_diff import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryDiff,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_diff_engine import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryDiffEngine,
+)
+
 session_manager = SessionManager()
