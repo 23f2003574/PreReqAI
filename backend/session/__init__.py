@@ -1827,4 +1827,16 @@ from .research_workspace_consumer_projection_execution_capability_registry_expor
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExporter,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_validation_report import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidationReport,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_validation_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidationError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_validator import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidator,
+)
+
 session_manager = SessionManager()
