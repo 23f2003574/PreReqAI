@@ -1867,4 +1867,16 @@ from .research_workspace_consumer_projection_execution_capability_registry_merge
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergePlanner,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_merge_validation_report import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidationReport,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_merge_validation_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidationError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_merge_validator import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidator,
+)
+
 session_manager = SessionManager()
