@@ -1975,4 +1975,16 @@ from .research_workspace_consumer_projection_execution_capability_registry_event
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationResultBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_event_publication_session_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSessionError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_event_publication_session import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSession,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_event_publication_session_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSessionBuilder,
+)
+
 session_manager = SessionManager()
