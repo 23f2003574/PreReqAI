@@ -1987,4 +1987,16 @@ from .research_workspace_consumer_projection_execution_capability_registry_event
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSessionBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistory,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBuilder,
+)
+
 session_manager = SessionManager()
