@@ -2023,4 +2023,12 @@ from .research_workspace_consumer_projection_execution_capability_registry_event
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryReader,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_navigator_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryNavigatorError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_navigator import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryNavigator,
+)
+
 session_manager = SessionManager()
