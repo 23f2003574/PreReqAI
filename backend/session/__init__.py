@@ -1927,4 +1927,12 @@ from .research_workspace_consumer_projection_execution_capability_registry_trans
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionCoordinator,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_event_publisher_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublisherError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_event_publisher import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublisher,
+)
+
 session_manager = SessionManager()
