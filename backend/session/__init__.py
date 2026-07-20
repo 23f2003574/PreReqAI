@@ -1951,4 +1951,16 @@ from .research_workspace_consumer_projection_execution_capability_registry_event
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatcher,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_event_dispatch_result_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResultError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_event_dispatch_result import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResult,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_event_dispatch_result_builder import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResultBuilder,
+)
+
 session_manager = SessionManager()
