@@ -2067,4 +2067,12 @@ from .research_workspace_consumer_projection_execution_capability_registry_event
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionBuilder,
 )
 
+from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_registry_error import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionRegistryError,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_registry import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionRegistry,
+)
+
 session_manager = SessionManager()
