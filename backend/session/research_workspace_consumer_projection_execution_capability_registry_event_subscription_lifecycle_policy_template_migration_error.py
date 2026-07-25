@@ -1,0 +1,10 @@
+class ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationError(
+    ValueError
+):
+    """
+    Raised when a consumer projection execution capability registry
+    event subscription lifecycle policy cannot be planned for
+    migration, or cannot be migrated between template versions.
+    """
+
+    pass
