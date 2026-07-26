@@ -25,7 +25,9 @@ class ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscri
         profile_id: The identifier of the profile this instance was
             instantiated from
         version: The identifier of the published version this
-            instance was instantiated from
+            instance was instantiated from, or None if the instance
+            was parameterized directly from a profile without
+            reference to a specific published version
         policy_identifiers: An immutable, order-preserving tuple of
             the lifecycle policy identifiers grouped under the
             instantiated version
@@ -35,7 +37,10 @@ class ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscri
 
     profile_id: str
 
-    version: str
+    version: (
+        str
+        | None
+    )
 
     policy_identifiers: tuple[
         str,
