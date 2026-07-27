@@ -91,8 +91,8 @@ class ResearchWorkspaceConsumerProjectionExecutionReceiptFormatter:
         value = receipt.identity.fingerprint.value
 
         # Truncate fingerprint value for compactness
-        if len(value) > 8:
-            value = value[:8] + "..."
+        if len(value) > 7:
+            value = value[:7] + "..."
 
         return f"Fingerprint: {algorithm}:{value}"
 
