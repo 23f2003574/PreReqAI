@@ -1,0 +1,40 @@
+from dataclasses import (
+    dataclass,
+)
+
+from typing import Any
+
+
+@dataclass(frozen=True)
+class ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameter:
+    """
+    Immutable description of a single configurable parameter a
+    consumer projection execution capability registry event
+    subscription lifecycle policy profile binding template exposes.
+
+    The parameter is a value object only. It performs no validation,
+    no defaulting, and no application. Validation, defaulting, and
+    application are the responsibility of a parameterization service.
+
+    A default_value of None is treated as "no default supplied"; a
+    parameter with no default must either be optional or have a
+    value supplied at instantiation time.
+
+    Attributes:
+        name: The parameter's unique name within its template's
+            parameter set
+        type: The Python type a supplied value must be an instance
+            of, or None to accept any type
+        required: Whether a value must be present, either supplied
+            or defaulted, for this parameter
+        default_value: The value used when the parameter is omitted,
+            or None if the parameter has no default
+    """
+
+    name: str
+
+    type: type | None
+
+    required: bool
+
+    default_value: Any
