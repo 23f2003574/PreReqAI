@@ -2,9 +2,16 @@ from dataclasses import (
     replace,
 )
 
+from datetime import (
+    datetime,
+    timezone,
+)
+
 from threading import (
     RLock,
 )
+
+from uuid import uuid4
 
 from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline_error import (
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineError,
@@ -12,6 +19,10 @@ from .research_workspace_consumer_projection_execution_capability_registry_event
 
 from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline import (
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipeline,
+)
+
+from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_event import (
+    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEvent,
 )
 
 from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline_status import (
@@ -58,7 +69,7 @@ class ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscri
       lock
     """
 
-    def __init__(self, stage_executors=None):
+    def __init__(self, stage_executors=None, event_bus=None):
         """
         Args:
             stage_executors: A mapping from stage type ("validation",
@@ -66,9 +77,15 @@ class ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscri
                 accepting (workspace_id, configuration) that performs
                 the stage. A stage type used by a pipeline but absent
                 from this mapping fails the stage when it runs
+            event_bus: An optional consumer projection execution
+                capability registry event subscription lifecycle
+                policy profile binding workspace pipeline event bus.
+                When given, a "stage_completed" event is published to
+                it after every stage that finishes successfully
         """
 
         self._stage_executors = dict(stage_executors) if stage_executors else {}
+        self._event_bus = event_bus
         self._pipelines = {}
         self._progress = {}
         self._control = {}
@@ -266,6 +283,18 @@ class ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscri
                     ) from error
 
                 self._progress[pipeline_id] = index + 1
+
+                if self._event_bus is not None:
+                    self._event_bus.publish(
+                        ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEvent(
+                            event_id=str(uuid4()),
+                            pipeline_id=pipeline_id,
+                            stage_id=stage.stage_id,
+                            event_type="stage_completed",
+                            timestamp=datetime.now(timezone.utc),
+                            payload={},
+                        )
+                    )
 
                 if control["cancel_requested"]:
                     self._pipelines[pipeline_id] = replace(self._pipelines[pipeline_id], status=ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineStatus.CANCELLED)
