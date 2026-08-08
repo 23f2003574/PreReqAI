@@ -5708,4 +5708,16 @@ from .execution_artifact_bundle_service import (
     ExecutionArtifactBundleService,
 )
 
+from .execution_artifact_bundle_promotion_error import (
+    ExecutionArtifactBundlePromotionError,
+)
+
+from .artifact_bundle_promotion import (
+    ArtifactBundlePromotion,
+)
+
+from .execution_artifact_bundle_promotion_service import (
+    ExecutionArtifactBundlePromotionService,
+)
+
 session_manager = SessionManager()
