@@ -5636,4 +5636,16 @@ from .execution_artifact_retention_service import (
     ExecutionArtifactRetentionService,
 )
 
+from .execution_artifact_promotion_error import (
+    ExecutionArtifactPromotionError,
+)
+
+from .artifact_promotion import (
+    ArtifactPromotion,
+)
+
+from .execution_artifact_promotion_service import (
+    ExecutionArtifactPromotionService,
+)
+
 session_manager = SessionManager()
