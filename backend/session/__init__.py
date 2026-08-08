@@ -5664,4 +5664,20 @@ from .execution_artifact_access_service import (
     ExecutionArtifactAccessService,
 )
 
+from .execution_artifact_dependency_error import (
+    ExecutionArtifactDependencyError,
+)
+
+from .artifact_dependency import (
+    ArtifactDependency,
+)
+
+from .artifact_dependency_result import (
+    ArtifactDependencyResult,
+)
+
+from .execution_artifact_dependency_service import (
+    ExecutionArtifactDependencyService,
+)
+
 session_manager = SessionManager()
