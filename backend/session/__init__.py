@@ -5680,4 +5680,16 @@ from .execution_artifact_dependency_service import (
     ExecutionArtifactDependencyService,
 )
 
+from .execution_artifact_lineage_error import (
+    ExecutionArtifactLineageError,
+)
+
+from .artifact_lineage import (
+    ArtifactLineage,
+)
+
+from .execution_artifact_lineage_service import (
+    ExecutionArtifactLineageService,
+)
+
 session_manager = SessionManager()
