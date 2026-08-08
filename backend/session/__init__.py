@@ -5732,4 +5732,20 @@ from .execution_artifact_bundle_integrity_service import (
     ExecutionArtifactBundleIntegrityService,
 )
 
+from .execution_artifact_bundle_manifest_error import (
+    ExecutionArtifactBundleManifestError,
+)
+
+from .artifact_bundle_manifest_entry import (
+    ArtifactBundleManifestEntry,
+)
+
+from .artifact_bundle_manifest import (
+    ArtifactBundleManifest,
+)
+
+from .execution_artifact_bundle_manifest_service import (
+    ExecutionArtifactBundleManifestService,
+)
+
 session_manager = SessionManager()
