@@ -5648,4 +5648,20 @@ from .execution_artifact_promotion_service import (
     ExecutionArtifactPromotionService,
 )
 
+from .execution_artifact_access_error import (
+    ExecutionArtifactAccessError,
+)
+
+from .artifact_permission import (
+    ArtifactPermission,
+)
+
+from .artifact_access_result import (
+    ArtifactAccessResult,
+)
+
+from .execution_artifact_access_service import (
+    ExecutionArtifactAccessService,
+)
+
 session_manager = SessionManager()
