@@ -5580,4 +5580,20 @@ from .execution_artifact_service import (
     ExecutionArtifactService,
 )
 
+from .execution_artifact_metadata_error import (
+    ExecutionArtifactMetadataError,
+)
+
+from .execution_artifact_metadata import (
+    ExecutionArtifactMetadata,
+)
+
+from .execution_artifact_tag import (
+    ExecutionArtifactTag,
+)
+
+from .execution_artifact_metadata_service import (
+    ExecutionArtifactMetadataService,
+)
+
 session_manager = SessionManager()
