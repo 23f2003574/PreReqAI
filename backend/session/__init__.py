@@ -5568,4 +5568,16 @@ from .research_workspace_consumer_projection_execution_capability_registry_event
     ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAuditService,
 )
 
+from .execution_artifact_error import (
+    ExecutionArtifactError,
+)
+
+from .execution_artifact import (
+    ExecutionArtifact,
+)
+
+from .execution_artifact_service import (
+    ExecutionArtifactService,
+)
+
 session_manager = SessionManager()
