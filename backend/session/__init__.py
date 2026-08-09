@@ -5824,4 +5824,16 @@ from .execution_artifact_encryption_service import (
     ExecutionArtifactEncryptionService,
 )
 
+from .execution_artifact_compression_error import (
+    ExecutionArtifactCompressionError,
+)
+
+from .execution_artifact_compression import (
+    ExecutionArtifactCompression,
+)
+
+from .execution_artifact_compression_service import (
+    ExecutionArtifactCompressionService,
+)
+
 session_manager = SessionManager()
