@@ -5944,4 +5944,16 @@ from .execution_artifact_cache_service import (
     ExecutionArtifactCacheService,
 )
 
+from .execution_artifact_prefetch_error import (
+    ExecutionArtifactPrefetchError,
+)
+
+from .execution_artifact_prefetch import (
+    ExecutionArtifactPrefetch,
+)
+
+from .execution_artifact_prefetch_service import (
+    ExecutionArtifactPrefetchService,
+)
+
 session_manager = SessionManager()
