@@ -6040,4 +6040,16 @@ from .execution_artifact_consumption_health_service import (
     ExecutionArtifactConsumptionHealthService,
 )
 
+from .execution_artifact_consumption_audit_error import (
+    ExecutionArtifactConsumptionAuditError,
+)
+
+from .execution_artifact_consumption_audit_event import (
+    ExecutionArtifactConsumptionAuditEvent,
+)
+
+from .execution_artifact_consumption_audit_service import (
+    ExecutionArtifactConsumptionAuditService,
+)
+
 session_manager = SessionManager()
