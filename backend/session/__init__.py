@@ -6004,4 +6004,16 @@ from .execution_artifact_consumption_validation_service import (
     ExecutionArtifactConsumptionValidationService,
 )
 
+from .execution_artifact_consumption_reconciliation_error import (
+    ExecutionArtifactConsumptionReconciliationError,
+)
+
+from .execution_artifact_consumption_diff import (
+    ExecutionArtifactConsumptionDiff,
+)
+
+from .execution_artifact_consumption_reconciliation_service import (
+    ExecutionArtifactConsumptionReconciliationService,
+)
+
 session_manager = SessionManager()
