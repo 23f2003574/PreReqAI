@@ -5980,4 +5980,16 @@ from .execution_artifact_consumption_lease_service import (
     ExecutionArtifactConsumptionLeaseService,
 )
 
+from .execution_artifact_consumption_snapshot_error import (
+    ExecutionArtifactConsumptionSnapshotError,
+)
+
+from .execution_artifact_consumption_snapshot import (
+    ExecutionArtifactConsumptionSnapshot,
+)
+
+from .execution_artifact_consumption_snapshot_service import (
+    ExecutionArtifactConsumptionSnapshotService,
+)
+
 session_manager = SessionManager()
