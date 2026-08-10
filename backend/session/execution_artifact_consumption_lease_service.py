@@ -76,6 +76,7 @@ class ExecutionArtifactConsumptionLeaseService:
         self._leases_by_id = {}
         self._lease_id_by_key = {}
         self._lease_ids_in_order = []
+        self._lease_ids_by_consumption = {}
         self._lock = RLock()
 
     def acquire(self, consumption_id: str, artifact_id: str) -> ExecutionArtifactConsumptionLease:
@@ -119,8 +120,28 @@ class ExecutionArtifactConsumptionLeaseService:
             self._leases_by_id[lease_id] = lease
             self._lease_id_by_key[key] = lease_id
             self._lease_ids_in_order.append(lease_id)
+            self._lease_ids_by_consumption.setdefault(consumption_id, []).append(lease_id)
 
             return lease
+
+    def for_consumption(self, consumption_id: str) -> list:
+        """
+        List every lease ever acquired for a consumption session, in
+        the order they were acquired, each reflecting its current
+        status.
+
+        Raises:
+            ExecutionArtifactConsumptionLeaseError: If consumption_id
+                is None or blank
+        """
+
+        self._validate_id(consumption_id, "consumption ID")
+
+        with self._lock:
+            return [
+                self._leases_by_id[lease_id]
+                for lease_id in self._lease_ids_by_consumption.get(consumption_id, [])
+            ]
 
     def renew(self, lease_id: str) -> ExecutionArtifactConsumptionLease:
         """
