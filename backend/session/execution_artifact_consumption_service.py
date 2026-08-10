@@ -196,6 +196,20 @@ class ExecutionArtifactConsumptionService:
                 for consumption_id in self._active_ids_by_consumer.get(consumer, [])
             ]
 
+    def get(self, consumption_id: str) -> ExecutionArtifactConsumptionSession:
+        """
+        Look up a consumption session's current record.
+
+        Raises:
+            ExecutionArtifactConsumptionError: If consumption_id is
+                None or blank, or no session is known under it
+        """
+
+        self._validate_id(consumption_id, "consumption ID")
+
+        with self._lock:
+            return self._resolve(consumption_id)
+
     def _ensure_active(self, session: ExecutionArtifactConsumptionSession) -> None:
         if session.status != "ACTIVE":
             raise ExecutionArtifactConsumptionError(
