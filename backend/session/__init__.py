@@ -5992,4 +5992,16 @@ from .execution_artifact_consumption_snapshot_service import (
     ExecutionArtifactConsumptionSnapshotService,
 )
 
+from .execution_artifact_consumption_validation_error import (
+    ExecutionArtifactConsumptionValidationError,
+)
+
+from .execution_artifact_consumption_validation import (
+    ExecutionArtifactConsumptionValidation,
+)
+
+from .execution_artifact_consumption_validation_service import (
+    ExecutionArtifactConsumptionValidationService,
+)
+
 session_manager = SessionManager()
