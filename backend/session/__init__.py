@@ -6136,4 +6136,16 @@ from .execution_observation_health_service import (
     ExecutionObservationHealthService,
 )
 
+from .execution_observation_health_transition_error import (
+    ExecutionObservationHealthTransitionError,
+)
+
+from .execution_observation_health_transition import (
+    ExecutionObservationHealthTransition,
+)
+
+from .execution_observation_health_history_service import (
+    ExecutionObservationHealthHistoryService,
+)
+
 session_manager = SessionManager()
