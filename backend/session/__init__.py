@@ -6052,4 +6052,16 @@ from .execution_artifact_consumption_audit_service import (
     ExecutionArtifactConsumptionAuditService,
 )
 
+from .execution_observation_event_error import (
+    ExecutionObservationEventError,
+)
+
+from .execution_observation_event import (
+    ExecutionObservationEvent,
+)
+
+from .execution_observation_event_service import (
+    ExecutionObservationEventService,
+)
+
 session_manager = SessionManager()
