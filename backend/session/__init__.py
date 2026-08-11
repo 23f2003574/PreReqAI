@@ -6088,4 +6088,16 @@ from .execution_observation_trace_service import (
     ExecutionObservationTraceService,
 )
 
+from .execution_observation_error_error import (
+    ExecutionObservationErrorError,
+)
+
+from .execution_observation_error import (
+    ExecutionObservationError,
+)
+
+from .execution_observation_error_service import (
+    ExecutionObservationErrorService,
+)
+
 session_manager = SessionManager()
