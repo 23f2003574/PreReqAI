@@ -6064,4 +6064,16 @@ from .execution_observation_event_service import (
     ExecutionObservationEventService,
 )
 
+from .execution_observation_metric_error import (
+    ExecutionObservationMetricError,
+)
+
+from .execution_observation_metric import (
+    ExecutionObservationMetric,
+)
+
+from .execution_observation_metric_service import (
+    ExecutionObservationMetricService,
+)
+
 session_manager = SessionManager()
