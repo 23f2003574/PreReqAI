@@ -6392,4 +6392,16 @@ from .execution_secret_access_service import (
     ExecutionSecretAccessService,
 )
 
+from .execution_secret_rotation_error import (
+    ExecutionSecretRotationError,
+)
+
+from .execution_secret_rotation import (
+    ExecutionSecretRotation,
+)
+
+from .execution_secret_rotation_service import (
+    ExecutionSecretRotationService,
+)
+
 session_manager = SessionManager()
