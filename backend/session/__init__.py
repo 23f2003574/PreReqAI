@@ -6416,4 +6416,16 @@ from .execution_secret_lease_service import (
     ExecutionSecretLeaseService,
 )
 
+from .execution_secret_revocation_error import (
+    ExecutionSecretRevocationError,
+)
+
+from .execution_secret_revocation import (
+    ExecutionSecretRevocation,
+)
+
+from .execution_secret_revocation_service import (
+    ExecutionSecretRevocationService,
+)
+
 session_manager = SessionManager()
