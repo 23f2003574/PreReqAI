@@ -6328,4 +6328,16 @@ from .execution_recovery_rollback_service import (
     ExecutionRecoveryRollbackService,
 )
 
+from .execution_recovery_journal_entry_error import (
+    ExecutionRecoveryJournalEntryError,
+)
+
+from .execution_recovery_journal_entry import (
+    ExecutionRecoveryJournalEntry,
+)
+
+from .execution_recovery_journal_service import (
+    ExecutionRecoveryJournalService,
+)
+
 session_manager = SessionManager()
