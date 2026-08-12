@@ -6316,4 +6316,16 @@ from .execution_recovery_gate_service import (
     ExecutionRecoveryGateService,
 )
 
+from .execution_recovery_rollback_error import (
+    ExecutionRecoveryRollbackError,
+)
+
+from .execution_recovery_rollback import (
+    ExecutionRecoveryRollback,
+)
+
+from .execution_recovery_rollback_service import (
+    ExecutionRecoveryRollbackService,
+)
+
 session_manager = SessionManager()
