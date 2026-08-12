@@ -6428,4 +6428,20 @@ from .execution_secret_revocation_service import (
     ExecutionSecretRevocationService,
 )
 
+from .execution_secret_audit_error import (
+    ExecutionSecretAuditError,
+)
+
+from .execution_secret_audit_operation import (
+    ExecutionSecretAuditOperation,
+)
+
+from .execution_secret_audit_event import (
+    ExecutionSecretAuditEvent,
+)
+
+from .execution_secret_audit_service import (
+    ExecutionSecretAuditService,
+)
+
 session_manager = SessionManager()
