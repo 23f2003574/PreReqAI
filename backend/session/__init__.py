@@ -6364,4 +6364,16 @@ from .execution_recovery_completion_service import (
     ExecutionRecoveryCompletionService,
 )
 
+from .execution_secret_error import (
+    ExecutionSecretError,
+)
+
+from .execution_secret import (
+    ExecutionSecret,
+)
+
+from .execution_secret_service import (
+    ExecutionSecretService,
+)
+
 session_manager = SessionManager()
