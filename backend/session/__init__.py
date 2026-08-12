@@ -6340,4 +6340,16 @@ from .execution_recovery_journal_service import (
     ExecutionRecoveryJournalService,
 )
 
+from .execution_recovery_replay_error import (
+    ExecutionRecoveryReplayError,
+)
+
+from .execution_recovery_replay import (
+    ExecutionRecoveryReplay,
+)
+
+from .execution_recovery_replay_service import (
+    ExecutionRecoveryReplayService,
+)
+
 session_manager = SessionManager()
