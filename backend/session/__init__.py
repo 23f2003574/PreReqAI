@@ -6352,4 +6352,16 @@ from .execution_recovery_replay_service import (
     ExecutionRecoveryReplayService,
 )
 
+from .execution_recovery_result_error import (
+    ExecutionRecoveryResultError,
+)
+
+from .execution_recovery_result import (
+    ExecutionRecoveryResult,
+)
+
+from .execution_recovery_completion_service import (
+    ExecutionRecoveryCompletionService,
+)
+
 session_manager = SessionManager()
