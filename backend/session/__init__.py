@@ -6564,4 +6564,16 @@ from .execution_policy_evaluation_service import (
     ExecutionPolicyEvaluationService,
 )
 
+from .execution_policy_assignment_error import (
+    ExecutionPolicyAssignmentError,
+)
+
+from .execution_policy_assignment import (
+    ExecutionPolicyAssignment,
+)
+
+from .execution_policy_assignment_service import (
+    ExecutionPolicyAssignmentService,
+)
+
 session_manager = SessionManager()
