@@ -6696,4 +6696,16 @@ from .execution_policy_risk_report_service import (
     ExecutionPolicyRiskReportService,
 )
 
+from .execution_approval_error import (
+    ExecutionApprovalError,
+)
+
+from .execution_approval_request import (
+    ExecutionApprovalRequest,
+)
+
+from .execution_approval_service import (
+    ExecutionApprovalService,
+)
+
 session_manager = SessionManager()
