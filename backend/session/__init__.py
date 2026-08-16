@@ -6876,4 +6876,16 @@ from .execution_job_priority_service import (
     ExecutionJobPriorityService,
 )
 
+from .execution_job_dependency_error import (
+    ExecutionJobDependencyError,
+)
+
+from .execution_job_dependency import (
+    ExecutionJobDependency,
+)
+
+from .execution_job_dependency_service import (
+    ExecutionJobDependencyService,
+)
+
 session_manager = SessionManager()
