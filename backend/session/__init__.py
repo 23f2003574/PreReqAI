@@ -6912,4 +6912,16 @@ from .execution_resource_reservation_service import (
     ExecutionResourceReservationService,
 )
 
+from .execution_fair_scheduling_error import (
+    ExecutionFairSchedulingError,
+)
+
+from .execution_scheduling_credit import (
+    ExecutionSchedulingCredit,
+)
+
+from .execution_fair_scheduling_service import (
+    ExecutionFairSchedulingService,
+)
+
 session_manager = SessionManager()
