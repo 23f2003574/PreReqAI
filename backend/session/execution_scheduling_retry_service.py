@@ -32,13 +32,17 @@ class ExecutionSchedulingRetryService:
     Behavior:
     - configure() sets the retry policy for a scope
     - retry() records one more attempt for a job against the scope's
-      policy. A disabled policy rejects every attempt. An attempt that
-      would exceed max_attempts instead hands the job off to the
-      dead-letter service and returns None; every attempt before that
-      returns the datetime of the next retry, backoff_seconds * 2 **
-      (attempt_number - 1) after now
-    - Once a job has been handed off, further retry() calls on it are
-      rejected; it is no longer this service's to manage
+      policy. A disabled policy rejects every attempt. Every attempt
+      up to max_attempts returns the datetime of the next retry,
+      backoff_seconds * 2 ** (attempt_number - 1) after now. Once
+      max_attempts is reached, every further retry() call instead
+      reports the job to the dead-letter service and returns None;
+      the dead-letter service may have its own threshold across
+      repeated reports, so this can take more than one call
+    - A job becomes permanently handed off only once the dead-letter
+      service actually accepts it (a truthy return from move()).
+      Once that happens, further retry() calls on it are rejected;
+      it is no longer this service's to manage
 
     The service is:
     - Thread-safe: All mutation and reads are guarded by an internal
@@ -110,19 +114,21 @@ class ExecutionSchedulingRetryService:
                     f"Cannot retry job ID {job_id!r}: it was already handed off to the dead-letter queue."
                 )
 
-            attempt_number = (state["attempts"] if state is not None else 0) + 1
+            attempts_so_far = state["attempts"] if state is not None else 0
 
-            if attempt_number > policy.max_attempts:
+            if attempts_so_far >= policy.max_attempts:
+                record = self._dead_letter_service.move(job_id, "max scheduling retry attempts exceeded")
+
                 self._state_by_job[job_id] = {
                     "scope_id": scope_id,
-                    "attempts": attempt_number - 1,
+                    "attempts": attempts_so_far,
                     "next_retry_at": None,
-                    "exhausted": True,
+                    "exhausted": record is not None,
                 }
 
-                self._dead_letter_service.move(job_id, "max scheduling retry attempts exceeded")
-
                 return None
+
+            attempt_number = attempts_so_far + 1
 
             backoff = policy.backoff_seconds * (2 ** (attempt_number - 1))
             next_retry_at = datetime.now(timezone.utc) + timedelta(seconds=backoff)

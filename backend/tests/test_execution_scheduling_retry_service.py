@@ -3,6 +3,10 @@ from datetime import (
     timezone,
 )
 
+from types import (
+    SimpleNamespace,
+)
+
 import pytest
 
 from backend.session import (
@@ -18,7 +22,7 @@ class _FakeDeadLetterService:
 
     def move(self, job_id, reason):
         self.moved.append((job_id, reason))
-        return None
+        return SimpleNamespace(job_id=job_id, reason=reason)
 
 
 def _build():
