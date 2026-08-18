@@ -7176,4 +7176,16 @@ from .execution_network_endpoint_service import (
     ExecutionNetworkEndpointService,
 )
 
+from .execution_network_endpoint_health_error import (
+    ExecutionNetworkEndpointHealthError,
+)
+
+from .execution_network_endpoint_health import (
+    ExecutionNetworkEndpointHealth,
+)
+
+from .execution_network_endpoint_health_service import (
+    ExecutionNetworkEndpointHealthService,
+)
+
 session_manager = SessionManager()
