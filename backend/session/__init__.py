@@ -7260,4 +7260,16 @@ from .execution_network_connection_pool_service import (
     ExecutionNetworkConnectionPoolService,
 )
 
+from .execution_network_circuit_error import (
+    ExecutionNetworkCircuitError,
+)
+
+from .execution_network_circuit import (
+    ExecutionNetworkCircuit,
+)
+
+from .execution_network_circuit_breaker_service import (
+    ExecutionNetworkCircuitBreakerService,
+)
+
 session_manager = SessionManager()
