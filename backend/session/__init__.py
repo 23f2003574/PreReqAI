@@ -7284,4 +7284,16 @@ from .execution_network_failover_service import (
     ExecutionNetworkFailoverService,
 )
 
+from .execution_network_traffic_shaper_error import (
+    ExecutionNetworkTrafficShaperError,
+)
+
+from .execution_network_traffic_shaper import (
+    ExecutionNetworkTrafficShaper,
+)
+
+from .execution_network_traffic_shaping_service import (
+    ExecutionNetworkTrafficShapingService,
+)
+
 session_manager = SessionManager()
