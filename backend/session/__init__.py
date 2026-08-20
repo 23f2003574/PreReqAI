@@ -7507,4 +7507,16 @@ from .workspace_execution_artifact_metadata_service import (
     WorkspaceExecutionArtifactMetadataService,
 )
 
+from .workspace_execution_artifact_version_error import (
+    WorkspaceExecutionArtifactVersionError,
+)
+
+from .workspace_execution_artifact_version import (
+    WorkspaceExecutionArtifactVersion,
+)
+
+from .workspace_execution_artifact_version_service import (
+    WorkspaceExecutionArtifactVersionService,
+)
+
 session_manager = SessionManager()
