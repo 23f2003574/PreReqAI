@@ -7495,4 +7495,16 @@ from .execution_artifact_registry_service import (
     ExecutionArtifactRegistryService,
 )
 
+from .workspace_execution_artifact_metadata_error import (
+    WorkspaceExecutionArtifactMetadataError,
+)
+
+from .workspace_execution_artifact_metadata import (
+    WorkspaceExecutionArtifactMetadata,
+)
+
+from .workspace_execution_artifact_metadata_service import (
+    WorkspaceExecutionArtifactMetadataService,
+)
+
 session_manager = SessionManager()
