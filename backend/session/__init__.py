@@ -7519,4 +7519,16 @@ from .workspace_execution_artifact_version_service import (
     WorkspaceExecutionArtifactVersionService,
 )
 
+from .execution_artifact_manifest_error import (
+    ExecutionArtifactManifestError,
+)
+
+from .execution_artifact_manifest import (
+    ExecutionArtifactManifest,
+)
+
+from .execution_artifact_manifest_service import (
+    ExecutionArtifactManifestService,
+)
+
 session_manager = SessionManager()
