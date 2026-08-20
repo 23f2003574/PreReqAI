@@ -7585,4 +7585,17 @@ from .workspace_execution_artifact_retention_service import (
     WorkspaceExecutionArtifactRetentionService,
 )
 
+from .execution_artifact_garbage_collection_error import (
+    ExecutionArtifactGarbageCollectionError,
+)
+
+from .execution_artifact_garbage_record import (
+    REASON_RETENTION_EXPIRED as ARTIFACT_GARBAGE_REASON_RETENTION_EXPIRED,
+    ExecutionArtifactGarbageRecord,
+)
+
+from .execution_artifact_garbage_collection_service import (
+    ExecutionArtifactGarbageCollectionService,
+)
+
 session_manager = SessionManager()
