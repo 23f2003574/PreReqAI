@@ -7476,4 +7476,23 @@ from .execution_storage_orchestration_service import (
     ExecutionStorageOrchestrationService,
 )
 
+from .workspace_execution_artifact_error import (
+    WorkspaceExecutionArtifactError,
+)
+
+from .workspace_execution_artifact import (
+    ARTIFACT_TYPE_FILE,
+    ARTIFACT_TYPE_DIRECTORY,
+    ARTIFACT_TYPE_MODEL,
+    ARTIFACT_TYPE_DATASET,
+    ARTIFACT_TYPES,
+    STATUS_ACTIVE,
+    STATUS_REMOVED,
+    WorkspaceExecutionArtifact,
+)
+
+from .execution_artifact_registry_service import (
+    ExecutionArtifactRegistryService,
+)
+
 session_manager = SessionManager()
