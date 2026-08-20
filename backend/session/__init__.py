@@ -7613,4 +7613,19 @@ from .workspace_execution_artifact_distribution_service import (
     WorkspaceExecutionArtifactDistributionService,
 )
 
+from .execution_artifact_distribution_failover_error import (
+    ExecutionArtifactDistributionFailoverError,
+)
+
+from .execution_artifact_distribution_failover import (
+    STATUS_FAILED as ARTIFACT_DISTRIBUTION_FAILOVER_STATUS_FAILED,
+    STATUS_REGISTERED as ARTIFACT_DISTRIBUTION_FAILOVER_STATUS_REGISTERED,
+    STATUS_SUCCEEDED as ARTIFACT_DISTRIBUTION_FAILOVER_STATUS_SUCCEEDED,
+    ExecutionArtifactDistributionFailover,
+)
+
+from .execution_artifact_distribution_failover_service import (
+    ExecutionArtifactDistributionFailoverService,
+)
+
 session_manager = SessionManager()
