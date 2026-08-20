@@ -7531,4 +7531,16 @@ from .execution_artifact_manifest_service import (
     ExecutionArtifactManifestService,
 )
 
+from .workspace_execution_artifact_lineage_error import (
+    WorkspaceExecutionArtifactLineageError,
+)
+
+from .workspace_execution_artifact_lineage import (
+    WorkspaceExecutionArtifactLineage,
+)
+
+from .workspace_execution_artifact_lineage_service import (
+    WorkspaceExecutionArtifactLineageService,
+)
+
 session_manager = SessionManager()
