@@ -50,6 +50,8 @@ class ExecutionAlertService:
     - resolve() is idempotent: resolving an already-RESOLVED alert
       simply returns it unchanged
     - active() reports a runtime's currently-OPEN alerts
+    - all_active() reports every currently-OPEN alert across every
+      runtime
     - history() reports every alert ever triggered for a runtime,
       oldest to newest
     - get() reports a single alert by alert_id
@@ -121,6 +123,17 @@ class ExecutionAlertService:
                 for alert in self._alerts_by_id.values()
                 if alert.runtime_id == runtime_id and alert.status == STATUS_OPEN
             ]
+
+        return tuple(sorted(matching, key=lambda alert: alert.triggered_at))
+
+    def all_active(self) -> tuple:
+        """
+        Every currently-OPEN alert across every runtime, oldest to
+        newest.
+        """
+
+        with self._lock:
+            matching = [alert for alert in self._alerts_by_id.values() if alert.status == STATUS_OPEN]
 
         return tuple(sorted(matching, key=lambda alert: alert.triggered_at))
 
