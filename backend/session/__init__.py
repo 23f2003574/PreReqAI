@@ -7691,4 +7691,22 @@ from .execution_event_service import (
     ExecutionEventService,
 )
 
+from .execution_trace_error import (
+    ExecutionTraceError,
+)
+
+from .execution_trace import (
+    STATUSES as EXECUTION_TRACE_STATUSES,
+    STATUS_ACTIVE as EXECUTION_TRACE_STATUS_ACTIVE,
+    STATUS_CANCELLED as EXECUTION_TRACE_STATUS_CANCELLED,
+    STATUS_COMPLETED as EXECUTION_TRACE_STATUS_COMPLETED,
+    STATUS_FAILED as EXECUTION_TRACE_STATUS_FAILED,
+    TERMINAL_STATUSES as EXECUTION_TRACE_TERMINAL_STATUSES,
+    ExecutionTrace,
+)
+
+from .execution_trace_service import (
+    ExecutionTraceService,
+)
+
 session_manager = SessionManager()
