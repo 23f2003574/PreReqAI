@@ -7674,4 +7674,21 @@ from .execution_metrics_service import (
     ExecutionMetricsService,
 )
 
+from .execution_observability_event_error import (
+    ExecutionObservabilityEventError,
+)
+
+from .execution_observability_event import (
+    SEVERITIES as EXECUTION_EVENT_SEVERITIES,
+    SEVERITY_DEBUG as EXECUTION_EVENT_SEVERITY_DEBUG,
+    SEVERITY_ERROR as EXECUTION_EVENT_SEVERITY_ERROR,
+    SEVERITY_INFO as EXECUTION_EVENT_SEVERITY_INFO,
+    SEVERITY_WARNING as EXECUTION_EVENT_SEVERITY_WARNING,
+    ExecutionObservabilityEvent,
+)
+
+from .execution_event_service import (
+    ExecutionEventService,
+)
+
 session_manager = SessionManager()
