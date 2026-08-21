@@ -29,6 +29,8 @@ class ExecutionMetricsService:
       a given name, or None if it has never been recorded
     - history() reports every metric recorded for a runtime and name,
       oldest to newest
+    - all() reports every metric recorded for a runtime, across all
+      names, oldest to newest
     - aggregate() computes the mean value across a runtime's recorded
       metrics of a given name
     - A metric recorded against one runtime never appears in another
@@ -102,6 +104,22 @@ class ExecutionMetricsService:
         matching = [metric for metric in recorded if metric.name == name]
 
         return tuple(sorted(matching, key=lambda metric: metric.recorded_at))
+
+    def all(self, runtime_id: str) -> tuple:
+        """
+        Every metric recorded for runtime_id, across all names,
+        oldest to newest.
+
+        Raises:
+            ExecutionMetricError: If runtime_id is None or blank
+        """
+
+        self._validate_text(runtime_id, "runtime ID")
+
+        with self._lock:
+            recorded = list(self._metrics_by_runtime.get(runtime_id, []))
+
+        return tuple(sorted(recorded, key=lambda metric: metric.recorded_at))
 
     def aggregate(self, runtime_id: str, name: str) -> float:
         """
