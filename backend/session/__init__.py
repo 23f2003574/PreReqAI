@@ -7811,4 +7811,19 @@ from .execution_alert_deduplication_service import (
     ExecutionAlertDeduplicationService,
 )
 
+from .execution_observability_alert_correlation_error import (
+    ExecutionObservabilityAlertCorrelationError,
+)
+
+from .execution_observability_alert_correlation import (
+    STATUS_ACTIVE as EXECUTION_ALERT_CORRELATION_STATUS_ACTIVE,
+    STATUS_RESOLVED as EXECUTION_ALERT_CORRELATION_STATUS_RESOLVED,
+    STATUSES as EXECUTION_ALERT_CORRELATION_STATUSES,
+    ExecutionObservabilityAlertCorrelation,
+)
+
+from .execution_alert_correlation_service import (
+    ExecutionAlertCorrelationService,
+)
+
 session_manager = SessionManager()
