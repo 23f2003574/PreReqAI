@@ -52,6 +52,7 @@ class ExecutionAlertService:
     - active() reports a runtime's currently-OPEN alerts
     - history() reports every alert ever triggered for a runtime,
       oldest to newest
+    - get() reports a single alert by alert_id
 
     The service is:
     - Thread-safe: All mutation and reads are guarded by an internal
@@ -169,6 +170,20 @@ class ExecutionAlertService:
             ]
 
         return tuple(sorted(matching, key=lambda alert: alert.triggered_at))
+
+    def get(self, alert_id: str) -> ExecutionObservabilityAlert:
+        """
+        The alert registered under alert_id.
+
+        Raises:
+            ExecutionObservabilityAlertError: If alert_id is None or
+                blank, or no alert is registered under it
+        """
+
+        self._validate_text(alert_id, "alert ID")
+
+        with self._lock:
+            return self._resolve(alert_id)
 
     def _resolve_triggered_rule(self, runtime_id: str, rule_id: str):
         triggered_rules = self._alert_rule_service.evaluate(runtime_id)
