@@ -37,6 +37,15 @@ from .usage import (
     InvalidUsageError,
     UnknownRequestError,
 )
+from .cost import (
+    LLMModelPricing,
+    LLMCostEstimate,
+    LLMCostService,
+    InvalidPricingError,
+    PricingAlreadyRegisteredError,
+    UnknownPricingError,
+    CurrencyMismatchError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -74,4 +83,11 @@ __all__ = [
     "LLMUsageService",
     "InvalidUsageError",
     "UnknownRequestError",
+    "LLMModelPricing",
+    "LLMCostEstimate",
+    "LLMCostService",
+    "InvalidPricingError",
+    "PricingAlreadyRegisteredError",
+    "UnknownPricingError",
+    "CurrencyMismatchError",
 ]
