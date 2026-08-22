@@ -31,6 +31,12 @@ from .templates import (
     DisabledTemplateError,
     UnknownTemplateError,
 )
+from .usage import (
+    LLMUsageRecord,
+    LLMUsageService,
+    InvalidUsageError,
+    UnknownRequestError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -64,4 +70,8 @@ __all__ = [
     "MissingVariableError",
     "DisabledTemplateError",
     "UnknownTemplateError",
+    "LLMUsageRecord",
+    "LLMUsageService",
+    "InvalidUsageError",
+    "UnknownRequestError",
 ]
