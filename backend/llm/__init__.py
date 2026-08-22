@@ -72,6 +72,12 @@ from .fallback import (
     NoFallbackPolicyError,
     UnknownFallbackRequestError,
 )
+from .audit import (
+    LLMRequestAudit,
+    LLMRequestAuditService,
+    DuplicateAuditRequestError,
+    UnknownAuditRequestError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -134,4 +140,8 @@ __all__ = [
     "LLMFallbackRoutingService",
     "NoFallbackPolicyError",
     "UnknownFallbackRequestError",
+    "LLMRequestAudit",
+    "LLMRequestAuditService",
+    "DuplicateAuditRequestError",
+    "UnknownAuditRequestError",
 ]
