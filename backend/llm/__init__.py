@@ -10,6 +10,13 @@ from .config import (
     UnknownProviderError,
     ProviderAlreadyRegisteredError,
 )
+from .routing import (
+    LLMRouteRequest,
+    LLMRoute,
+    ProviderCapabilityProfile,
+    LLMModelRoutingService,
+    NoEligibleModelError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -28,4 +35,9 @@ __all__ = [
     "MissingCredentialsError",
     "UnknownProviderError",
     "ProviderAlreadyRegisteredError",
+    "LLMRouteRequest",
+    "LLMRoute",
+    "ProviderCapabilityProfile",
+    "LLMModelRoutingService",
+    "NoEligibleModelError",
 ]
