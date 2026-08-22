@@ -23,6 +23,14 @@ from .context import (
     LLMContextService,
     UnknownContextError,
 )
+from .templates import (
+    LLMPromptTemplate,
+    LLMPromptTemplateService,
+    InvalidTemplateError,
+    MissingVariableError,
+    DisabledTemplateError,
+    UnknownTemplateError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -50,4 +58,10 @@ __all__ = [
     "LLMContextItem",
     "LLMContextService",
     "UnknownContextError",
+    "LLMPromptTemplate",
+    "LLMPromptTemplateService",
+    "InvalidTemplateError",
+    "MissingVariableError",
+    "DisabledTemplateError",
+    "UnknownTemplateError",
 ]
