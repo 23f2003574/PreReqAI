@@ -46,6 +46,13 @@ from .cost import (
     UnknownPricingError,
     CurrencyMismatchError,
 )
+from .budget import (
+    LLMRequestBudget,
+    LLMBudgetService,
+    InvalidBudgetError,
+    UnknownBudgetError,
+    BudgetExceededError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -90,4 +97,9 @@ __all__ = [
     "PricingAlreadyRegisteredError",
     "UnknownPricingError",
     "CurrencyMismatchError",
+    "LLMRequestBudget",
+    "LLMBudgetService",
+    "InvalidBudgetError",
+    "UnknownBudgetError",
+    "BudgetExceededError",
 ]
