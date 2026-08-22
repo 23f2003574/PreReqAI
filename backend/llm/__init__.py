@@ -78,6 +78,11 @@ from .audit import (
     DuplicateAuditRequestError,
     UnknownAuditRequestError,
 )
+from .orchestration import (
+    LLMRequestDecision,
+    LLMRequestOrchestrationService,
+    UnknownDecisionError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -144,4 +149,7 @@ __all__ = [
     "LLMRequestAuditService",
     "DuplicateAuditRequestError",
     "UnknownAuditRequestError",
+    "LLMRequestDecision",
+    "LLMRequestOrchestrationService",
+    "UnknownDecisionError",
 ]
