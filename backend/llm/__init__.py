@@ -57,6 +57,14 @@ from .response_cache import (
     LLMCacheEntry,
     LLMResponseCacheService,
 )
+from .retry import (
+    LLMRetryPolicy,
+    InvalidRetryPolicyError,
+    LLMRetryService,
+    TransientLLMError,
+    PermanentLLMError,
+    RetryExhaustedError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -108,4 +116,10 @@ __all__ = [
     "BudgetExceededError",
     "LLMCacheEntry",
     "LLMResponseCacheService",
+    "LLMRetryPolicy",
+    "InvalidRetryPolicyError",
+    "LLMRetryService",
+    "TransientLLMError",
+    "PermanentLLMError",
+    "RetryExhaustedError",
 ]
