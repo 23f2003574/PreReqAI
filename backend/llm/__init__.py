@@ -65,6 +65,13 @@ from .retry import (
     PermanentLLMError,
     RetryExhaustedError,
 )
+from .fallback import (
+    LLMFallbackPolicy,
+    InvalidFallbackPolicyError,
+    LLMFallbackRoutingService,
+    NoFallbackPolicyError,
+    UnknownFallbackRequestError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -122,4 +129,9 @@ __all__ = [
     "TransientLLMError",
     "PermanentLLMError",
     "RetryExhaustedError",
+    "LLMFallbackPolicy",
+    "InvalidFallbackPolicyError",
+    "LLMFallbackRoutingService",
+    "NoFallbackPolicyError",
+    "UnknownFallbackRequestError",
 ]
