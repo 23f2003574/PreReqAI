@@ -53,6 +53,10 @@ from .budget import (
     UnknownBudgetError,
     BudgetExceededError,
 )
+from .response_cache import (
+    LLMCacheEntry,
+    LLMResponseCacheService,
+)
 
 __all__ = [
     "LLMRequest",
@@ -102,4 +106,6 @@ __all__ = [
     "InvalidBudgetError",
     "UnknownBudgetError",
     "BudgetExceededError",
+    "LLMCacheEntry",
+    "LLMResponseCacheService",
 ]
