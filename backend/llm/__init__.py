@@ -17,6 +17,12 @@ from .routing import (
     LLMModelRoutingService,
     NoEligibleModelError,
 )
+from .context import (
+    LLMContext,
+    LLMContextItem,
+    LLMContextService,
+    UnknownContextError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -40,4 +46,8 @@ __all__ = [
     "ProviderCapabilityProfile",
     "LLMModelRoutingService",
     "NoEligibleModelError",
+    "LLMContext",
+    "LLMContextItem",
+    "LLMContextService",
+    "UnknownContextError",
 ]
