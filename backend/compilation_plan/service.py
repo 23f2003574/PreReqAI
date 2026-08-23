@@ -250,6 +250,10 @@ class LLMCompilationPlanningService:
         except KeyError:
             raise UnknownPlanError(plan_id)
 
+    def get(self, plan_id: str) -> LLMCompilationPlan:
+        """The full stored plan -- lets downstream commits reuse candidates/schemas/endpoints."""
+        return self._get(plan_id)
+
     def validate(self, plan_id: str) -> bool:
         plan = self._get(plan_id)
         analysis = self._notebook_analysis_service.get_by_notebook(plan.notebook_id)
