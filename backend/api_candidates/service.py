@@ -191,6 +191,10 @@ class LLMAPICandidateService:
         except KeyError:
             raise UnknownCandidateError(candidate_id)
 
+    def get(self, candidate_id: str) -> LLMAPICandidate:
+        """The full stored candidate -- lets downstream commits reuse it directly."""
+        return self._get(candidate_id)
+
     def inputs(self, candidate_id: str) -> list:
         return list(self._get(candidate_id).inputs)
 

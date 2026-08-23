@@ -48,6 +48,7 @@ class LLMNotebookAnalysisService:
             task="notebook_analysis", required_capabilities=["chat"]
         )
         self._analyses = {}
+        self._latest_by_notebook = {}
         self._request_counter = 0
 
     @staticmethod
@@ -156,6 +157,7 @@ class LLMNotebookAnalysisService:
             generated_at=datetime.now(timezone.utc),
         )
         self._analyses[analysis.analysis_id] = analysis
+        self._latest_by_notebook[notebook_id] = analysis.analysis_id
         return analysis
 
     def _get(self, analysis_id: str) -> LLMNotebookAnalysis:
@@ -167,6 +169,14 @@ class LLMNotebookAnalysisService:
     def get(self, analysis_id: str) -> LLMNotebookAnalysis:
         """The full stored analysis -- lets downstream commits reuse cells/imports/functions."""
         return self._get(analysis_id)
+
+    def get_by_notebook(self, notebook_id: str) -> LLMNotebookAnalysis:
+        """The most recently produced analysis for a notebook_id."""
+        try:
+            analysis_id = self._latest_by_notebook[notebook_id]
+        except KeyError:
+            raise UnknownAnalysisError(notebook_id)
+        return self._analyses[analysis_id]
 
     def functions(self, analysis_id: str) -> list:
         return list(self._get(analysis_id).functions)
