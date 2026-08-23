@@ -164,6 +164,10 @@ class LLMNotebookAnalysisService:
         except KeyError:
             raise UnknownAnalysisError(analysis_id)
 
+    def get(self, analysis_id: str) -> LLMNotebookAnalysis:
+        """The full stored analysis -- lets downstream commits reuse cells/imports/functions."""
+        return self._get(analysis_id)
+
     def functions(self, analysis_id: str) -> list:
         return list(self._get(analysis_id).functions)
 
