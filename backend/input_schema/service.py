@@ -296,8 +296,12 @@ class LLMInputSchemaService:
 
         return True
 
-    def fields(self, candidate_id: str) -> list:
+    def get(self, candidate_id: str) -> LLMInputSchema:
+        """The full stored schema -- lets downstream commits reuse types/required/defaults/constraints."""
         try:
-            return list(self._schemas[candidate_id].fields)
+            return self._schemas[candidate_id]
         except KeyError:
             raise UnknownSchemaError(candidate_id)
+
+    def fields(self, candidate_id: str) -> list:
+        return list(self.get(candidate_id).fields)

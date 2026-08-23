@@ -396,8 +396,12 @@ class LLMOutputSchemaService:
 
         return True
 
-    def fields(self, candidate_id: str) -> list:
+    def get(self, candidate_id: str) -> LLMOutputSchema:
+        """The full stored schema -- lets downstream commits reuse types/nullable/structure."""
         try:
-            return list(self._schemas[candidate_id].fields)
+            return self._schemas[candidate_id]
         except KeyError:
             raise UnknownOutputSchemaError(candidate_id)
+
+    def fields(self, candidate_id: str) -> list:
+        return list(self.get(candidate_id).fields)
