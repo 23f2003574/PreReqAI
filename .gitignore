@@ -29,6 +29,3 @@ cache/
 
 # Local PreReqAI research persistence
 .prereqai/
-
-# NotebookAPICompiler output (regenerated from compilation plans, not source)
-backend/generated/*.py
