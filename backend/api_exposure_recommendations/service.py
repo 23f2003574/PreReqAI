@@ -185,6 +185,14 @@ class LLMAPIExposureService:
         self._recommendations_by_notebook.setdefault(intent.notebook_id, []).extend(created)
         return created
 
+    def notebook_id_for(self, recommendation_id: str) -> str:
+        """The notebook_id this recommendation was produced for -- lets downstream commits
+        resolve back to the notebook without a redundant field on the recommendation itself."""
+        try:
+            return self._notebook_by_recommendation[recommendation_id]
+        except KeyError:
+            raise UnknownRecommendationError(recommendation_id)
+
     def validate(self, recommendation: LLMAPIExposureRecommendation) -> bool:
         try:
             notebook_id = self._notebook_by_recommendation[recommendation.recommendation_id]
