@@ -114,6 +114,7 @@ class LLMAPISchemaReviewService:
             task="api_schema_review", required_capabilities=["chat"]
         )
         self._reviews_by_id = {}
+        self._latest_review_by_recommendation = {}
         self._request_counter = 0
         self._review_counter = 0
 
@@ -270,6 +271,7 @@ class LLMAPISchemaReviewService:
             confidence=confidence,
         )
         self._reviews_by_id[review.review_id] = review
+        self._latest_review_by_recommendation[recommendation.recommendation_id] = review.review_id
         return review
 
     def _get(self, review_id: str) -> LLMAPISchemaReview:
@@ -283,3 +285,12 @@ class LLMAPISchemaReviewService:
 
     def approved(self, review_id: str) -> bool:
         return self._get(review_id).status == APPROVED
+
+    def review_for(self, recommendation_id: str) -> LLMAPISchemaReview:
+        """The most recent review for this recommendation -- lets downstream commits
+        check approval status without tracking review_id themselves."""
+        try:
+            review_id = self._latest_review_by_recommendation[recommendation_id]
+        except KeyError:
+            raise UnknownReviewError(recommendation_id)
+        return self._reviews_by_id[review_id]
