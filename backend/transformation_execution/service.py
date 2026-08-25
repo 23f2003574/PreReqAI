@@ -131,6 +131,10 @@ class LLMTransformationExecutionService:
         except KeyError:
             raise UnknownExecutionError(execution_id)
 
+    def get(self, execution_id: str) -> LLMTransformationExecution:
+        """The full stored execution -- lets downstream commits reuse diff_id/applied_cells."""
+        return self._get(execution_id)
+
     def status(self, execution_id: str) -> str:
         return self._get(execution_id).status
 
