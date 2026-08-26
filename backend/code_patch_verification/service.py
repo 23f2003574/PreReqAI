@@ -136,3 +136,6 @@ class LLMCodePatchVerificationService:
 
     def blocking(self, execution_id: str) -> bool:
         return any(finding["blocking"] for finding in self._get(execution_id).findings)
+
+    def syntax(self, execution_id: str) -> bool:
+        return self._get(execution_id).syntax_valid
