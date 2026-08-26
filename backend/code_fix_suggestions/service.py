@@ -197,3 +197,6 @@ class LLMCodeFixSuggestionService:
 
     def suggestions(self, review_id: str) -> list:
         return list(self._suggestions_by_review.get(review_id, []))
+
+    def get(self, suggestion_id: str) -> LLMCodeFixSuggestion:
+        return self._get(suggestion_id)
