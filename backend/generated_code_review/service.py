@@ -70,6 +70,10 @@ class UnknownReviewError(KeyError):
     """Raised when findings()/blocking() is called for a review_id that was never produced."""
 
 
+class UnknownGeneratedOutputError(KeyError):
+    """Raised when get_generated_output() is called for a job_id that was never reviewed."""
+
+
 def _validate_generated_output(generated_output) -> None:
     if not isinstance(generated_output, CompilerJobResult):
         raise InvalidGeneratedOutputError(
@@ -169,6 +173,7 @@ class LLMGeneratedCodeReviewService:
             task="generated_code_review", required_capabilities=["chat"]
         )
         self._reviews = {}
+        self._generated_output_by_job = {}
         self._request_counter = 0
         self._review_counter = 0
 
@@ -249,6 +254,7 @@ class LLMGeneratedCodeReviewService:
     def review(self, generated_output: CompilerJobResult) -> LLMGeneratedCodeReview:
         _validate_generated_output(generated_output)
         job_id = generated_output.job_id
+        self._generated_output_by_job[job_id] = generated_output
 
         if generated_output.status != COMPILER_SUCCEEDED:
             findings = [
@@ -309,3 +315,15 @@ class LLMGeneratedCodeReviewService:
 
     def blocking(self, review_id: str) -> bool:
         return any(finding["severity"] == CRITICAL for finding in self.findings(review_id))
+
+    def get(self, review_id: str) -> LLMGeneratedCodeReview:
+        return self._get(review_id)
+
+    def get_generated_output(self, job_id: str) -> CompilerJobResult:
+        """The exact, live CompilerJobResult a prior review() call was given for
+        this job -- the only real "generated code" this codebase has, so later
+        commits can locate it without a new store or file format."""
+        try:
+            return self._generated_output_by_job[job_id]
+        except KeyError:
+            raise UnknownGeneratedOutputError(job_id)

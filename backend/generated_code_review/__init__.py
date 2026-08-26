@@ -18,6 +18,7 @@ from .service import (
     InvalidGeneratedOutputError,
     LLMGeneratedCodeReviewService,
     MalformedGeneratedCodeReviewResponseError,
+    UnknownGeneratedOutputError,
     UnknownReviewError,
 )
 
@@ -40,4 +41,5 @@ __all__ = [
     "InvalidGeneratedOutputError",
     "MalformedGeneratedCodeReviewResponseError",
     "UnknownReviewError",
+    "UnknownGeneratedOutputError",
 ]
