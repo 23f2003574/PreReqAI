@@ -205,3 +205,6 @@ class LLMCodePatchService:
             else:
                 lines.append(f"REMOVE {operation['location']}")
         return lines
+
+    def get(self, plan_id: str) -> LLMCodePatchPlan:
+        return self._get(plan_id)
