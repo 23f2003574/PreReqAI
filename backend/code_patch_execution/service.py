@@ -190,6 +190,9 @@ class LLMCodePatchExecutionService:
     def status(self, execution_id: str) -> str:
         return self._get(execution_id).status
 
+    def get(self, execution_id: str) -> LLMCodePatchExecution:
+        return self._get(execution_id)
+
     def rollback(self, execution_id: str) -> LLMCodePatchExecution:
         execution = self._get(execution_id)
         if execution.status != SUCCEEDED:
