@@ -96,6 +96,12 @@ from .tool_validation import (
     LLMToolValidationService,
     ToolArgumentValidationError,
 )
+from .tool_invocation import (
+    LLMToolInvocationPlan,
+    LLMToolInvocationService,
+    MalformedToolCallError,
+    UnknownToolPlanError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -174,4 +180,8 @@ __all__ = [
     "LLMToolValidationError",
     "LLMToolValidationService",
     "ToolArgumentValidationError",
+    "LLMToolInvocationPlan",
+    "LLMToolInvocationService",
+    "MalformedToolCallError",
+    "UnknownToolPlanError",
 ]
