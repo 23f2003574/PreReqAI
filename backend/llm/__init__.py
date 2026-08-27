@@ -110,6 +110,13 @@ from .tool_permissions import (
     LLMToolPermissionService,
     UnknownToolPolicyError,
 )
+from .tool_execution import (
+    ExecutionNotSucceededError,
+    InvalidToolHandlerError,
+    LLMToolExecution,
+    LLMToolExecutionService,
+    UnknownExecutionError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -198,4 +205,9 @@ __all__ = [
     "InvalidToolPolicyError",
     "DuplicateToolPolicyError",
     "UnknownToolPolicyError",
+    "LLMToolExecution",
+    "LLMToolExecutionService",
+    "UnknownExecutionError",
+    "ExecutionNotSucceededError",
+    "InvalidToolHandlerError",
 ]
