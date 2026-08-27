@@ -83,6 +83,14 @@ from .orchestration import (
     LLMRequestOrchestrationService,
     UnknownDecisionError,
 )
+from .tools import (
+    DisabledToolError,
+    DuplicateToolNameError,
+    InvalidToolDefinitionError,
+    LLMToolDefinition,
+    LLMToolRegistryService,
+    UnknownToolError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -152,4 +160,10 @@ __all__ = [
     "LLMRequestDecision",
     "LLMRequestOrchestrationService",
     "UnknownDecisionError",
+    "LLMToolDefinition",
+    "LLMToolRegistryService",
+    "InvalidToolDefinitionError",
+    "DuplicateToolNameError",
+    "UnknownToolError",
+    "DisabledToolError",
 ]
