@@ -128,6 +128,10 @@ from .tool_conversation import (
     LLMToolConversationRequest,
     LLMToolConversationService,
 )
+from .tool_audit import (
+    LLMToolAudit,
+    LLMToolAuditService,
+)
 
 __all__ = [
     "LLMRequest",
@@ -228,4 +232,6 @@ __all__ = [
     "LLMToolConversationAction",
     "LLMToolConversationService",
     "ConversationOrderError",
+    "LLMToolAudit",
+    "LLMToolAuditService",
 ]
