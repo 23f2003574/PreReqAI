@@ -133,6 +133,12 @@ from .tool_audit import (
     LLMToolAuditService,
 )
 from .tool_idempotency import LLMToolIdempotencyService
+from .tool_control import (
+    ExecutionAlreadyCompletedError,
+    InvalidTimeoutError,
+    LLMToolExecutionControlService,
+    UnknownControlledExecutionError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -236,4 +242,8 @@ __all__ = [
     "LLMToolAudit",
     "LLMToolAuditService",
     "LLMToolIdempotencyService",
+    "LLMToolExecutionControlService",
+    "InvalidTimeoutError",
+    "UnknownControlledExecutionError",
+    "ExecutionAlreadyCompletedError",
 ]

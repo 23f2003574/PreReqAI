@@ -1,9 +1,13 @@
 from .models import (
+    CANCELLED,
     DENIED,
     FAILED,
     REJECTED,
+    RUNNING,
     STATUSES,
     SUCCEEDED,
+    TERMINAL_STATUSES,
+    TIMED_OUT,
     LLMToolExecution,
 )
 from .service import (
@@ -19,7 +23,11 @@ __all__ = [
     "FAILED",
     "DENIED",
     "REJECTED",
+    "RUNNING",
+    "TIMED_OUT",
+    "CANCELLED",
     "STATUSES",
+    "TERMINAL_STATUSES",
     "LLMToolExecutionService",
     "UnknownExecutionError",
     "ExecutionNotSucceededError",
