@@ -139,6 +139,7 @@ from .tool_control import (
     LLMToolExecutionControlService,
     UnknownControlledExecutionError,
 )
+from .tool_retry import LLMToolRetryPolicy, LLMToolRetryService
 
 __all__ = [
     "LLMRequest",
@@ -246,4 +247,6 @@ __all__ = [
     "InvalidTimeoutError",
     "UnknownControlledExecutionError",
     "ExecutionAlreadyCompletedError",
+    "LLMToolRetryPolicy",
+    "LLMToolRetryService",
 ]

@@ -95,6 +95,11 @@ class LLMToolExecutionControlService:
         self._counter = 0
         self._lock = RLock()
 
+    @property
+    def execution_service(self) -> LLMToolExecutionService:
+        """The Commit #5 engine this service puts a deadline in front of."""
+        return self._execution_service
+
     # -- helpers -----------------------------------------------------------
 
     @staticmethod
