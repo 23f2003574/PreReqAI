@@ -122,6 +122,12 @@ from .tool_results import (
     LLMToolResult,
     LLMToolResultService,
 )
+from .tool_conversation import (
+    ConversationOrderError,
+    LLMToolConversationAction,
+    LLMToolConversationRequest,
+    LLMToolConversationService,
+)
 
 __all__ = [
     "LLMRequest",
@@ -218,4 +224,8 @@ __all__ = [
     "LLMToolResult",
     "LLMToolResultService",
     "InvalidToolResultError",
+    "LLMToolConversationRequest",
+    "LLMToolConversationAction",
+    "LLMToolConversationService",
+    "ConversationOrderError",
 ]
