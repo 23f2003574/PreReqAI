@@ -102,6 +102,14 @@ from .tool_invocation import (
     MalformedToolCallError,
     UnknownToolPlanError,
 )
+from .tool_permissions import (
+    DuplicateToolPolicyError,
+    InvalidToolPolicyError,
+    LLMToolAuthorization,
+    LLMToolPermissionPolicy,
+    LLMToolPermissionService,
+    UnknownToolPolicyError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -184,4 +192,10 @@ __all__ = [
     "LLMToolInvocationService",
     "MalformedToolCallError",
     "UnknownToolPlanError",
+    "LLMToolPermissionPolicy",
+    "LLMToolAuthorization",
+    "LLMToolPermissionService",
+    "InvalidToolPolicyError",
+    "DuplicateToolPolicyError",
+    "UnknownToolPolicyError",
 ]
