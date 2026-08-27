@@ -91,6 +91,11 @@ from .tools import (
     LLMToolRegistryService,
     UnknownToolError,
 )
+from .tool_validation import (
+    LLMToolValidationError,
+    LLMToolValidationService,
+    ToolArgumentValidationError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -166,4 +171,7 @@ __all__ = [
     "DuplicateToolNameError",
     "UnknownToolError",
     "DisabledToolError",
+    "LLMToolValidationError",
+    "LLMToolValidationService",
+    "ToolArgumentValidationError",
 ]

@@ -5,6 +5,7 @@ from .service import (
     InvalidToolDefinitionError,
     LLMToolRegistryService,
     UnknownToolError,
+    validate_input_schema,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "DuplicateToolNameError",
     "UnknownToolError",
     "DisabledToolError",
+    "validate_input_schema",
 ]

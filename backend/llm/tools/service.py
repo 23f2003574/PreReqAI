@@ -20,6 +20,38 @@ class DisabledToolError(Exception):
     """Raised when a disabled tool is looked up via get_invocable()."""
 
 
+def validate_input_schema(input_schema):
+    """Structural check for a tool's JSON Schema input_schema.
+
+    Module-level so that both this registry and LLMToolValidationService
+    (backend.llm.tool_validation) enforce the same structural rules from a
+    single definition rather than keeping two copies in step. Raises
+    InvalidToolDefinitionError; returns None on success.
+    """
+    if not isinstance(input_schema, dict) or not input_schema:
+        raise InvalidToolDefinitionError(
+            "input_schema is required and must be a non-empty JSON Schema object"
+        )
+
+    if input_schema.get("type") != "object":
+        raise InvalidToolDefinitionError("input_schema.type must be 'object'")
+
+    properties = input_schema.get("properties")
+    if not isinstance(properties, dict):
+        raise InvalidToolDefinitionError("input_schema.properties must be an object")
+
+    required = input_schema.get("required", [])
+    if not isinstance(required, list) or not all(isinstance(r, str) for r in required):
+        raise InvalidToolDefinitionError("input_schema.required must be a list of strings")
+
+    unknown_required = sorted(set(required) - set(properties))
+    if unknown_required:
+        raise InvalidToolDefinitionError(
+            f"input_schema.required references undeclared propert"
+            f"{'y' if len(unknown_required) == 1 else 'ies'}: {unknown_required}"
+        )
+
+
 class LLMToolRegistryService:
     """Catalogs the tools an LLM is permitted to call via tool-use/function-calling.
 
@@ -36,31 +68,6 @@ class LLMToolRegistryService:
         self._id_by_name = {}
         self._tool_counter = 0
 
-    @staticmethod
-    def _validate_input_schema(input_schema):
-        if not isinstance(input_schema, dict) or not input_schema:
-            raise InvalidToolDefinitionError(
-                "input_schema is required and must be a non-empty JSON Schema object"
-            )
-
-        if input_schema.get("type") != "object":
-            raise InvalidToolDefinitionError("input_schema.type must be 'object'")
-
-        properties = input_schema.get("properties")
-        if not isinstance(properties, dict):
-            raise InvalidToolDefinitionError("input_schema.properties must be an object")
-
-        required = input_schema.get("required", [])
-        if not isinstance(required, list) or not all(isinstance(r, str) for r in required):
-            raise InvalidToolDefinitionError("input_schema.required must be a list of strings")
-
-        unknown_required = sorted(set(required) - set(properties))
-        if unknown_required:
-            raise InvalidToolDefinitionError(
-                f"input_schema.required references undeclared propert"
-                f"{'y' if len(unknown_required) == 1 else 'ies'}: {unknown_required}"
-            )
-
     def register(
         self, name: str, description: str, input_schema: dict, enabled: bool = True
     ) -> LLMToolDefinition:
@@ -73,7 +80,7 @@ class LLMToolRegistryService:
         if name in self._id_by_name:
             raise DuplicateToolNameError(f"tool name {name!r} is already registered")
 
-        self._validate_input_schema(input_schema)
+        validate_input_schema(input_schema)
 
         self._tool_counter += 1
         tool = LLMToolDefinition(
