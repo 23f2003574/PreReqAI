@@ -146,6 +146,11 @@ from .tool_metrics import (
     LLMToolMetricsService,
     UnknownToolMetricError,
 )
+from .tool_orchestration import (
+    LLMToolCallDecision,
+    LLMToolCallingOrchestrationService,
+    UnknownToolCallDecisionError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -259,4 +264,7 @@ __all__ = [
     "LLMToolMetricsService",
     "InvalidToolMetricError",
     "UnknownToolMetricError",
+    "LLMToolCallDecision",
+    "LLMToolCallingOrchestrationService",
+    "UnknownToolCallDecisionError",
 ]

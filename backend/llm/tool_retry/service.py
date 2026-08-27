@@ -53,6 +53,7 @@ class LLMToolRetryService:
         policy: LLMToolRetryPolicy = None,
         audit_service=None,
         sleeper=time.sleep,
+        idempotency_service=None,
     ):
         """
         Args:
@@ -65,6 +66,10 @@ class LLMToolRetryService:
                 the trail shows the retries rather than hiding them
             sleeper: Injectable sleep, so a test can assert the schedule
                 without waiting on it
+            idempotency_service: Commit #9's service. Without it, an attempt
+                made with no timeout would reach the bare Commit #5 engine
+                and skip idempotency entirely -- so when a caller wants both
+                retries and de-duplication on untimed calls, it belongs here
         """
         if control_service is None and execution_service is None:
             raise ValueError(
@@ -73,6 +78,7 @@ class LLMToolRetryService:
             )
         self._control_service = control_service
         self._execution_service = execution_service
+        self._idempotency_service = idempotency_service
         self._policy = policy or DEFAULT_POLICY
         self._audit_service = audit_service
         self._sleep = sleeper
@@ -160,6 +166,11 @@ class LLMToolRetryService:
             if self._control_service is None:
                 raise ValueError("a control_service is required to honour a timeout")
             return self._control_service.execute_with_timeout(plan, subject, timeout)
+
+        # An untimed attempt must still pass through Commit #9 when one is
+        # wired, or a duplicate call would run the tool again.
+        if self._idempotency_service is not None:
+            return self._idempotency_service.execute_once(plan, subject)
 
         service = self._execution_service or self._control_service.execution_service
         return service.execute(plan, subject)
