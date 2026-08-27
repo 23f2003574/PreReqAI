@@ -117,6 +117,11 @@ from .tool_execution import (
     LLMToolExecutionService,
     UnknownExecutionError,
 )
+from .tool_results import (
+    InvalidToolResultError,
+    LLMToolResult,
+    LLMToolResultService,
+)
 
 __all__ = [
     "LLMRequest",
@@ -210,4 +215,7 @@ __all__ = [
     "UnknownExecutionError",
     "ExecutionNotSucceededError",
     "InvalidToolHandlerError",
+    "LLMToolResult",
+    "LLMToolResultService",
+    "InvalidToolResultError",
 ]

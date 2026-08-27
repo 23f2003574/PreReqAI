@@ -5,6 +5,19 @@ class UnknownContextError(KeyError):
     """Raised when looking up a context_id that has not been created."""
 
 
+def estimate_text_tokens(text) -> int:
+    """This project's deterministic token estimate for a piece of text.
+
+    Module-level so that anything sizing content against a token budget --
+    this service, and backend.llm.tool_results -- measures it the same way
+    from a single definition rather than keeping copies of the formula in
+    step.
+    """
+    if not text:
+        return 0
+    return max(1, (len(text) + 3) // 4)
+
+
 class LLMContextService:
     """Assembles the structured context (system + prioritized items) for an LLM call.
 
@@ -64,19 +77,13 @@ class LLMContextService:
 
         raise KeyError(f"no context item {item_id!r} in context {context_id!r}")
 
-    @staticmethod
-    def _estimate_text_tokens(text) -> int:
-        if not text:
-            return 0
-        return max(1, (len(text) + 3) // 4)
-
     def estimate_tokens(self, context_id) -> int:
         """Deterministic token estimate for everything currently in the context."""
         context = self._get(context_id)
 
-        total = self._estimate_text_tokens(context.system)
+        total = estimate_text_tokens(context.system)
         for item in context.messages:
-            total += self._estimate_text_tokens(item.content)
+            total += estimate_text_tokens(item.content)
         return total
 
     def build(self, context_id) -> dict:
@@ -88,7 +95,7 @@ class LLMContextService:
         """
         context = self._get(context_id)
 
-        system_tokens = self._estimate_text_tokens(context.system)
+        system_tokens = estimate_text_tokens(context.system)
         budget = context.token_budget
 
         if budget is not None and system_tokens > budget:
@@ -107,7 +114,7 @@ class LLMContextService:
         kept_indices = set()
         used_tokens = 0
         for index, item in ranked:
-            item_tokens = self._estimate_text_tokens(item.content)
+            item_tokens = estimate_text_tokens(item.content)
             if remaining_budget is not None and used_tokens + item_tokens > remaining_budget:
                 continue
             kept_indices.add(index)
