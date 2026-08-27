@@ -132,6 +132,7 @@ from .tool_audit import (
     LLMToolAudit,
     LLMToolAuditService,
 )
+from .tool_idempotency import LLMToolIdempotencyService
 
 __all__ = [
     "LLMRequest",
@@ -234,4 +235,5 @@ __all__ = [
     "ConversationOrderError",
     "LLMToolAudit",
     "LLMToolAuditService",
+    "LLMToolIdempotencyService",
 ]

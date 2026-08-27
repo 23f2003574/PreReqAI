@@ -11,6 +11,8 @@ from .service import (
     LLMToolInvocationService,
     MalformedToolCallError,
     UnknownToolPlanError,
+    extract_tool_call_arguments,
+    normalize_tool_call,
 )
 
 __all__ = [
@@ -24,4 +26,6 @@ __all__ = [
     "LLMToolInvocationService",
     "MalformedToolCallError",
     "UnknownToolPlanError",
+    "normalize_tool_call",
+    "extract_tool_call_arguments",
 ]

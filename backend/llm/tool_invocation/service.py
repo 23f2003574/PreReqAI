@@ -32,6 +32,56 @@ class UnknownToolPlanError(KeyError):
     """Raised when validate()/preview()/get() is called for an unknown plan_id."""
 
 
+def normalize_tool_call(tool_call) -> dict:
+    """Accept a tool-call dict, or the JSON string an LLMResponse carries.
+
+    Providers hand back tool calls as {"name": ..., "arguments": {...}}
+    (optionally with an "id" and the model's own "rationale"). The same
+    object often reaches a caller as JSON text in LLMResponse.content,
+    so that form is accepted too -- LLMResponse itself is left alone
+    rather than grown a tool_calls field it does not have.
+    """
+    if isinstance(tool_call, str):
+        try:
+            tool_call = json.loads(tool_call)
+        except (TypeError, ValueError) as exc:
+            raise MalformedToolCallError(f"tool call is not valid JSON: {exc}")
+
+    if not isinstance(tool_call, dict):
+        raise MalformedToolCallError(
+            f"tool call must be an object, got {type(tool_call).__name__}"
+        )
+
+    name = tool_call.get("name")
+    if not name or not isinstance(name, str):
+        raise MalformedToolCallError("tool call must name a tool")
+
+    if "arguments" in tool_call and not isinstance(tool_call["arguments"], (dict, str)):
+        raise MalformedToolCallError(
+            f"tool call arguments must be an object, got "
+            f"{type(tool_call['arguments']).__name__}"
+        )
+
+    return tool_call
+
+
+def extract_tool_call_arguments(tool_call: dict):
+    """Pull the argument payload out of a call, JSON-decoding it if needed.
+
+    Some providers nest arguments as a JSON string. A string that will
+    not decode is returned as-is so schema validation reports it as a
+    non-object payload rather than this method raising -- the call
+    itself is well-formed, its arguments simply are not.
+    """
+    arguments = tool_call.get("arguments", {})
+    if isinstance(arguments, str):
+        try:
+            arguments = json.loads(arguments)
+        except (TypeError, ValueError):
+            return arguments
+    return arguments
+
+
 class LLMToolInvocationService:
     """Turns one LLM-produced tool call into a validated execution plan (Commit #3).
 
@@ -58,56 +108,6 @@ class LLMToolInvocationService:
         self._validation_service = validation_service or LLMToolValidationService(registry)
         self._plans = {}
         self._plan_counter = 0
-
-    @staticmethod
-    def _normalize_call(tool_call) -> dict:
-        """Accept a tool-call dict, or the JSON string an LLMResponse carries.
-
-        Providers hand back tool calls as {"name": ..., "arguments": {...}}
-        (optionally with an "id" and the model's own "rationale"). The same
-        object often reaches a caller as JSON text in LLMResponse.content,
-        so that form is accepted too -- LLMResponse itself is left alone
-        rather than grown a tool_calls field it does not have.
-        """
-        if isinstance(tool_call, str):
-            try:
-                tool_call = json.loads(tool_call)
-            except (TypeError, ValueError) as exc:
-                raise MalformedToolCallError(f"tool call is not valid JSON: {exc}")
-
-        if not isinstance(tool_call, dict):
-            raise MalformedToolCallError(
-                f"tool call must be an object, got {type(tool_call).__name__}"
-            )
-
-        name = tool_call.get("name")
-        if not name or not isinstance(name, str):
-            raise MalformedToolCallError("tool call must name a tool")
-
-        if "arguments" in tool_call and not isinstance(tool_call["arguments"], (dict, str)):
-            raise MalformedToolCallError(
-                f"tool call arguments must be an object, got "
-                f"{type(tool_call['arguments']).__name__}"
-            )
-
-        return tool_call
-
-    @staticmethod
-    def _extract_arguments(tool_call: dict):
-        """Pull the argument payload out of a call, JSON-decoding it if needed.
-
-        Some providers nest arguments as a JSON string. A string that will
-        not decode is returned as-is so schema validation reports it as a
-        non-object payload rather than this method raising -- the call
-        itself is well-formed, its arguments simply are not.
-        """
-        arguments = tool_call.get("arguments", {})
-        if isinstance(arguments, str):
-            try:
-                arguments = json.loads(arguments)
-            except (TypeError, ValueError):
-                return arguments
-        return arguments
 
     def _rationale(self, tool_call: dict, tool_name: str, errors: list) -> str:
         """The model's own rationale when it gave one, else a stated fallback.
@@ -171,9 +171,9 @@ class LLMToolInvocationService:
 
     def plan(self, tool_call) -> LLMToolInvocationPlan:
         """Record one tool call as a READY or REJECTED plan. Executes nothing."""
-        tool_call = self._normalize_call(tool_call)
+        tool_call = normalize_tool_call(tool_call)
         tool_name = tool_call["name"]
-        arguments = self._extract_arguments(tool_call)
+        arguments = extract_tool_call_arguments(tool_call)
 
         errors = self._check(tool_name, arguments)
 
