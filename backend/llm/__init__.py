@@ -140,6 +140,12 @@ from .tool_control import (
     UnknownControlledExecutionError,
 )
 from .tool_retry import LLMToolRetryPolicy, LLMToolRetryService
+from .tool_metrics import (
+    InvalidToolMetricError,
+    LLMToolExecutionMetrics,
+    LLMToolMetricsService,
+    UnknownToolMetricError,
+)
 
 __all__ = [
     "LLMRequest",
@@ -249,4 +255,8 @@ __all__ = [
     "ExecutionAlreadyCompletedError",
     "LLMToolRetryPolicy",
     "LLMToolRetryService",
+    "LLMToolExecutionMetrics",
+    "LLMToolMetricsService",
+    "InvalidToolMetricError",
+    "UnknownToolMetricError",
 ]
