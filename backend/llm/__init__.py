@@ -68,6 +68,11 @@ from .context_injection import (
     CONTEXT_ROLE,
     LLMContextInjectionService,
 )
+from .context_snapshot import (
+    LLMContextSnapshot,
+    LLMContextSnapshotService,
+    UnknownSnapshotError,
+)
 from .templates import (
     LLMPromptTemplate,
     LLMPromptTemplateService,
@@ -254,6 +259,9 @@ __all__ = [
     "SecretProvenanceError",
     "CONTEXT_ROLE",
     "LLMContextInjectionService",
+    "LLMContextSnapshot",
+    "LLMContextSnapshotService",
+    "UnknownSnapshotError",
     "LLMPromptTemplate",
     "LLMPromptTemplateService",
     "InvalidTemplateError",
