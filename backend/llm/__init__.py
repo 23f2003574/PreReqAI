@@ -44,6 +44,10 @@ from .context_version import (
     LLMContextVersionStore,
     UnknownContextVersionError,
 )
+from .context_retrieval import (
+    LLMContextMatch,
+    LLMContextRetrievalService,
+)
 from .templates import (
     LLMPromptTemplate,
     LLMPromptTemplateService,
@@ -216,6 +220,8 @@ __all__ = [
     "DuplicateVersionError",
     "LLMContextVersionService",
     "UnknownContextVersionError",
+    "LLMContextMatch",
+    "LLMContextRetrievalService",
     "LLMPromptTemplate",
     "LLMPromptTemplateService",
     "InvalidTemplateError",
