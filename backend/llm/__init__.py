@@ -81,6 +81,16 @@ from .context_freshness import (
     LLMContextFreshness,
     LLMContextFreshnessService,
 )
+from .context_refresh import (
+    ACTIONABLE,
+    REFRESH_PLAN_STATUSES,
+    UNRESOLVABLE,
+    InvalidRefreshPlanError,
+    LLMContextRefreshPlan,
+    LLMContextRefreshService,
+    NothingToRefreshError,
+    UnknownRefreshPlanError,
+)
 from .templates import (
     LLMPromptTemplate,
     LLMPromptTemplateService,
@@ -276,6 +286,14 @@ __all__ = [
     "STALE",
     "UNKNOWN",
     "FRESHNESS_STATUSES",
+    "LLMContextRefreshPlan",
+    "ACTIONABLE",
+    "UNRESOLVABLE",
+    "REFRESH_PLAN_STATUSES",
+    "LLMContextRefreshService",
+    "UnknownRefreshPlanError",
+    "NothingToRefreshError",
+    "InvalidRefreshPlanError",
     "LLMPromptTemplate",
     "LLMPromptTemplateService",
     "InvalidTemplateError",
