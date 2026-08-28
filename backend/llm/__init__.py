@@ -35,6 +35,15 @@ from .project_context import (
     SecretContentError,
     UnknownProjectContextError,
 )
+from .context_version import (
+    DuplicateVersionError,
+    InMemoryLLMContextVersionStore,
+    JsonLLMContextVersionStore,
+    LLMContextVersion,
+    LLMContextVersionService,
+    LLMContextVersionStore,
+    UnknownContextVersionError,
+)
 from .templates import (
     LLMPromptTemplate,
     LLMPromptTemplateService,
@@ -200,6 +209,13 @@ __all__ = [
     "InvalidContextTypeError",
     "InvalidContentError",
     "SecretContentError",
+    "LLMContextVersion",
+    "LLMContextVersionStore",
+    "InMemoryLLMContextVersionStore",
+    "JsonLLMContextVersionStore",
+    "DuplicateVersionError",
+    "LLMContextVersionService",
+    "UnknownContextVersionError",
     "LLMPromptTemplate",
     "LLMPromptTemplateService",
     "InvalidTemplateError",
