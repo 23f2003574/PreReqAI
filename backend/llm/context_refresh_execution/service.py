@@ -132,7 +132,7 @@ class LLMContextRefreshExecutionService:
     # -- internals ------------------------------------------------------
 
     def _apply_action(self, context_id: str, action: dict) -> bool:
-        new_content = self._resolve_current_content(action)
+        new_content, resolved_version = self._resolve_current_source(action)
         if new_content is _MISSING:
             return False
 
@@ -142,43 +142,65 @@ class LLMContextRefreshExecutionService:
             # existing context is left exactly as it was
             return False
 
-        self.version_service.snapshot(context_id)
+        new_version = self.version_service.snapshot(context_id)
+
+        # A context_version source that IS this same context (refreshing a
+        # context from its own version history) makes the snapshot just
+        # taken the definitive marker for "this content, this version" --
+        # use its number, since it has already superseded the one resolved
+        # a moment earlier. Any other source's version (another context's
+        # history, a research artifact, or none for a project_context
+        # source) is unaffected by this context's own bookkeeping, so the
+        # freshly resolved value stands. Without this distinction, a
+        # self-referential context_version refresh would immediately
+        # re-report as stale: the snapshot above always moves this
+        # context's own "latest" one step past whatever was resolved.
+        source_version = (
+            new_version.version
+            if action["source_type"] == "context_version" and action["source_id"] == context_id
+            else resolved_version
+        )
 
         self.provenance_service.attach(
             context_id,
             {
                 "source_type": action["source_type"],
                 "source_id": action["source_id"],
-                "source_version": action.get("current_version"),
+                "source_version": source_version,
                 "excerpt": f"refreshed from {action['source_type']} {action['source_id']}",
             },
         )
         return True
 
-    def _resolve_current_content(self, action: dict):
+    def _resolve_current_source(self, action: dict):
+        """(content, version) currently held by action's source, or (_MISSING, None)."""
         source_type = action["source_type"]
         source_id = action["source_id"]
 
         if source_type == "context_version":
             version_service = self.provenance_service.version_service
             if version_service is None:
-                return _MISSING
+                return _MISSING, None
             try:
-                return version_service.latest(source_id).content
+                latest = version_service.latest(source_id)
             except UnknownContextVersionError:
-                return _MISSING
+                return _MISSING, None
+            return latest.content, latest.version
 
         if source_type == "research_artifact":
             artifact_store = self.provenance_service.artifact_store
             if artifact_store is None:
-                return _MISSING
+                return _MISSING, None
             artifact = artifact_store.get(source_id)
-            return _MISSING if artifact is None else artifact.content
+            if artifact is None:
+                return _MISSING, None
+            return artifact.content, artifact.version
 
         if source_type == "project_context":
             try:
-                return self.context_service.get(source_id).content
+                source = self.context_service.get(source_id)
             except UnknownProjectContextError:
-                return _MISSING
+                return _MISSING, None
+            return source.content, None
 
-        return _MISSING
+        return _MISSING, None

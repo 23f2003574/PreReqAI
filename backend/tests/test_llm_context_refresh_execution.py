@@ -129,7 +129,10 @@ def test_provenance_preservation():
     newest = sources_after[-1]
     assert newest.source_type == "context_version"
     assert newest.source_id == context.context_id
-    assert newest.source_version == v2.version
+    # self-referential context_version source: the recorded version must
+    # match this context's actual latest version right now, not the value
+    # that was "latest" back when the plan was made
+    assert newest.source_version == p["version"].latest(context.context_id).version
 
 
 def test_partial_refresh_failure():
