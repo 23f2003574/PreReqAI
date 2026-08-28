@@ -48,6 +48,10 @@ from .context_retrieval import (
     LLMContextMatch,
     LLMContextRetrievalService,
 )
+from .context_selection import (
+    LLMContextSelectionService,
+    MixedScopeError,
+)
 from .templates import (
     LLMPromptTemplate,
     LLMPromptTemplateService,
@@ -222,6 +226,8 @@ __all__ = [
     "UnknownContextVersionError",
     "LLMContextMatch",
     "LLMContextRetrievalService",
+    "LLMContextSelectionService",
+    "MixedScopeError",
     "LLMPromptTemplate",
     "LLMPromptTemplateService",
     "InvalidTemplateError",

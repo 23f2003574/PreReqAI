@@ -7,11 +7,11 @@ from .models import LLMContextMatch
 _TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
 
 
-def _tokenize(text: str) -> list:
+def tokenize(text: str) -> list:
     return _TOKEN_PATTERN.findall(text.lower())
 
 
-def _searchable_text(value) -> str:
+def searchable_text(value) -> str:
     """Render content/metadata as one flat string to tokenize.
 
     Uses the project's JSON rendering convention (json.dumps(sort_keys=True,
@@ -20,6 +20,26 @@ def _searchable_text(value) -> str:
     format.
     """
     return json.dumps(value, sort_keys=True, default=str)
+
+
+def score_context(context, query: str) -> LLMContextMatch:
+    """Score one context's relevance to a query.
+
+    Module-level and reused as-is by Commit #4's LLMContextSelectionService,
+    so relevance is judged identically whether context is being ranked for
+    retrieval or scored for selection.
+    """
+    query_tokens = tokenize(query)
+    if not query_tokens:
+        return LLMContextMatch(context=context, score=0.0, reason="no query terms")
+
+    haystack = set(tokenize(searchable_text(context.content))) | set(
+        tokenize(searchable_text(context.metadata))
+    )
+    matched = sorted(token for token in set(query_tokens) if token in haystack)
+    score = len(matched) / len(set(query_tokens))
+    reason = f"matched terms={matched}" if matched else "no matching terms"
+    return LLMContextMatch(context=context, score=round(score, 6), reason=reason)
 
 
 class LLMContextRetrievalService:
@@ -37,27 +57,14 @@ class LLMContextRetrievalService:
     def __init__(self, context_service: LLMProjectContextService):
         self.context_service = context_service
 
-    def _match(self, context, query_tokens: list) -> LLMContextMatch:
-        if not query_tokens:
-            return LLMContextMatch(context=context, score=0.0, reason="no query terms")
-
-        haystack = set(_tokenize(_searchable_text(context.content))) | set(
-            _tokenize(_searchable_text(context.metadata))
-        )
-        matched = sorted(token for token in set(query_tokens) if token in haystack)
-        score = len(matched) / len(set(query_tokens))
-        reason = f"matched terms={matched}" if matched else "no matching terms"
-        return LLMContextMatch(context=context, score=round(score, 6), reason=reason)
-
     def rank(self, scope_id: str, query: str) -> list:
         """Every context in scope_id, ranked best-first, in a deterministic order."""
         if not isinstance(query, str):
             raise ValueError("query must be a string")
 
         contexts = self.context_service.list(scope_id)
-        query_tokens = _tokenize(query)
 
-        matches = [self._match(context, query_tokens) for context in contexts]
+        matches = [score_context(context, query) for context in contexts]
         matches.sort(
             key=lambda match: (
                 -match.score,
