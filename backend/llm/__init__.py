@@ -52,6 +52,10 @@ from .context_selection import (
     LLMContextSelectionService,
     MixedScopeError,
 )
+from .context_compaction import (
+    PROTECTED_CONTEXT_TYPES,
+    LLMContextCompactionService,
+)
 from .templates import (
     LLMPromptTemplate,
     LLMPromptTemplateService,
@@ -228,6 +232,8 @@ __all__ = [
     "LLMContextRetrievalService",
     "LLMContextSelectionService",
     "MixedScopeError",
+    "LLMContextCompactionService",
+    "PROTECTED_CONTEXT_TYPES",
     "LLMPromptTemplate",
     "LLMPromptTemplateService",
     "InvalidTemplateError",

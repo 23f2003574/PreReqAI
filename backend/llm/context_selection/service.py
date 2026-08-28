@@ -13,11 +13,20 @@ class MixedScopeError(ValueError):
     """
 
 
-def _content_tokens(context) -> int:
-    """Token estimate for a context's content, using the project's own estimator."""
+def content_text(context) -> str:
+    """A context's content rendered as one string, the project's JSON convention."""
     content = context.content
-    text = content if isinstance(content, str) else json.dumps(content, sort_keys=True, default=str)
-    return estimate_text_tokens(text)
+    return content if isinstance(content, str) else json.dumps(content, sort_keys=True, default=str)
+
+
+def content_tokens(context) -> int:
+    """Token estimate for a context's content, using the project's own estimator.
+
+    Module-level and reused as-is by Commit #5's LLMContextCompactionService,
+    so a context's size is judged identically whether it is being fit into a
+    selection or compacted afterward.
+    """
+    return estimate_text_tokens(content_text(context))
 
 
 class LLMContextSelectionService:
@@ -63,7 +72,7 @@ class LLMContextSelectionService:
         selected = []
         used_tokens = 0
         for context in ranked:
-            item_tokens = _content_tokens(context)
+            item_tokens = content_tokens(context)
             if used_tokens + item_tokens > token_budget:
                 continue
             selected.append(context)
