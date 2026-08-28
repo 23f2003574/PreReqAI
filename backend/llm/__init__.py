@@ -64,6 +64,10 @@ from .context_provenance import (
     SecretProvenanceError,
     UnknownProvenanceError,
 )
+from .context_injection import (
+    CONTEXT_ROLE,
+    LLMContextInjectionService,
+)
 from .templates import (
     LLMPromptTemplate,
     LLMPromptTemplateService,
@@ -248,6 +252,8 @@ __all__ = [
     "UnknownProvenanceError",
     "InvalidSourceError",
     "SecretProvenanceError",
+    "CONTEXT_ROLE",
+    "LLMContextInjectionService",
     "LLMPromptTemplate",
     "LLMPromptTemplateService",
     "InvalidTemplateError",
