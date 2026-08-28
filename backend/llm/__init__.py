@@ -115,6 +115,17 @@ from .context_refresh_validation import (
     LLMContextRefreshValidation,
     LLMContextRefreshValidationService,
 )
+from .context_refresh_orchestration import (
+    ACTIVATED,
+    DECISION_OUTCOMES,
+    NOOP_FRESH,
+    PLANNING_FAILED,
+    REFRESH_FAILED,
+    VALIDATION_FAILED,
+    ActivationRefusedError,
+    LLMContextRefreshDecision,
+    LLMContextRefreshOrchestrationService,
+)
 from .templates import (
     LLMPromptTemplate,
     LLMPromptTemplateService,
@@ -338,6 +349,15 @@ __all__ = [
     "INCOMPLETE_REFRESH",
     "UNVERIFIABLE_FRESHNESS",
     "LLMContextRefreshValidationService",
+    "LLMContextRefreshDecision",
+    "NOOP_FRESH",
+    "PLANNING_FAILED",
+    "REFRESH_FAILED",
+    "VALIDATION_FAILED",
+    "ACTIVATED",
+    "DECISION_OUTCOMES",
+    "LLMContextRefreshOrchestrationService",
+    "ActivationRefusedError",
     "LLMPromptTemplate",
     "LLMPromptTemplateService",
     "InvalidTemplateError",
