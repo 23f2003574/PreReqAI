@@ -73,6 +73,14 @@ from .context_snapshot import (
     LLMContextSnapshotService,
     UnknownSnapshotError,
 )
+from .context_freshness import (
+    FRESH,
+    FRESHNESS_STATUSES,
+    STALE,
+    UNKNOWN,
+    LLMContextFreshness,
+    LLMContextFreshnessService,
+)
 from .templates import (
     LLMPromptTemplate,
     LLMPromptTemplateService,
@@ -262,6 +270,12 @@ __all__ = [
     "LLMContextSnapshot",
     "LLMContextSnapshotService",
     "UnknownSnapshotError",
+    "LLMContextFreshness",
+    "LLMContextFreshnessService",
+    "FRESH",
+    "STALE",
+    "UNKNOWN",
+    "FRESHNESS_STATUSES",
     "LLMPromptTemplate",
     "LLMPromptTemplateService",
     "InvalidTemplateError",
