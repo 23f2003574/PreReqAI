@@ -56,6 +56,14 @@ from .context_compaction import (
     PROTECTED_CONTEXT_TYPES,
     LLMContextCompactionService,
 )
+from .context_provenance import (
+    VALID_SOURCE_TYPES,
+    InvalidSourceError,
+    LLMContextProvenance,
+    LLMContextProvenanceService,
+    SecretProvenanceError,
+    UnknownProvenanceError,
+)
 from .templates import (
     LLMPromptTemplate,
     LLMPromptTemplateService,
@@ -234,6 +242,12 @@ __all__ = [
     "MixedScopeError",
     "LLMContextCompactionService",
     "PROTECTED_CONTEXT_TYPES",
+    "LLMContextProvenance",
+    "VALID_SOURCE_TYPES",
+    "LLMContextProvenanceService",
+    "UnknownProvenanceError",
+    "InvalidSourceError",
+    "SecretProvenanceError",
     "LLMPromptTemplate",
     "LLMPromptTemplateService",
     "InvalidTemplateError",
