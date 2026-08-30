@@ -73,6 +73,9 @@ class LLMEvaluationDatasetRunService:
         except KeyError:
             raise UnknownEvaluationDatasetRunError(dataset_run_id)
 
+    def get(self, dataset_run_id: str) -> LLMEvaluationDatasetRun:
+        return self._get(dataset_run_id)
+
     def status(self, dataset_run_id: str) -> str:
         return self._get(dataset_run_id).status
 
