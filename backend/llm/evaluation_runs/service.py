@@ -69,7 +69,7 @@ class LLMEvaluationRunService:
         self._history = {}
         self._run_counter = 0
 
-    def run(self, case_id: str) -> LLMEvaluationRun:
+    def run(self, case_id: str, preferred_provider: str = None) -> LLMEvaluationRun:
         case = self._case_service.get(case_id)
         if not case.enabled:
             raise DisabledEvaluationCaseError(f"case {case_id!r} is disabled")
@@ -79,7 +79,9 @@ class LLMEvaluationRunService:
         request_id = f"{run_id}-{case_id}"
 
         route_request = LLMRouteRequest(
-            task=case.task_type, required_capabilities=list(self._required_capabilities)
+            task=case.task_type,
+            required_capabilities=list(self._required_capabilities),
+            preferred_provider=preferred_provider,
         )
 
         self._context_service.create(request_id)

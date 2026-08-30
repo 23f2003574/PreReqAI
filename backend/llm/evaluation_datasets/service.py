@@ -68,6 +68,16 @@ class LLMEvaluationDatasetService:
         self._datasets[dataset.dataset_id] = dataset
         return dataset
 
+    def enable(self, dataset_id: str) -> LLMEvaluationDataset:
+        dataset = self.get(dataset_id)
+        dataset.enabled = True
+        return dataset
+
+    def disable(self, dataset_id: str) -> LLMEvaluationDataset:
+        dataset = self.get(dataset_id)
+        dataset.enabled = False
+        return dataset
+
     def get(self, dataset_id: str) -> LLMEvaluationDataset:
         try:
             return self._datasets[dataset_id]
