@@ -128,9 +128,15 @@ class LLMObservabilityHealthService:
             return DEGRADED
         return HEALTHY
 
-    def assess(self, scope, period) -> dict:
-        """The full assessment for scope over period: status, findings, timestamp."""
-        summary = self._dashboard_service.summary(scope, period)
+    def assess(self, scope, period, summary: dict = None) -> dict:
+        """The full assessment for scope over period: status, findings, timestamp.
+
+        Pass summary (Commit #9's own summary(scope, period) result) when a
+        caller already fetched it, so it is never computed twice; omit it
+        to have this method fetch it itself.
+        """
+        if summary is None:
+            summary = self._dashboard_service.summary(scope, period)
         reliability = summary["provider_reliability"]
 
         findings = []

@@ -52,10 +52,17 @@ class LLMObservabilityReportService:
         payload["detected_at"] = anomaly.detected_at.isoformat()
         return payload
 
-    def generate(self, scope, period) -> dict:
-        """A JSON-safe report dict for scope over period; reuses Commit #9 verbatim."""
+    def generate(self, scope, period, summary: dict = None) -> dict:
+        """A JSON-safe report dict for scope over period; reuses Commit #9 verbatim.
+
+        Pass summary when a caller already fetched it (e.g. an
+        orchestrator composing several services over the same period) so
+        it is never computed twice; omit it to have this method fetch it
+        itself.
+        """
         start, end = period
-        summary = self._dashboard_service.summary(scope, period)
+        if summary is None:
+            summary = self._dashboard_service.summary(scope, period)
 
         return {
             "scope": scope,
