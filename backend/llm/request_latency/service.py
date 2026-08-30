@@ -54,6 +54,17 @@ class LLMRequestLatencyService:
         except KeyError:
             raise UnknownRequestLatencyError(request_id)
 
+    def records(self, scope: str = None) -> tuple:
+        """Every recorded latency, or just scope's if it names one request_id.
+
+        Unlike get(), a scope with nothing recorded yields an empty tuple
+        rather than raising.
+        """
+        if scope is None:
+            return tuple(self._latencies.values())
+        latency = self._latencies.get(scope)
+        return (latency,) if latency is not None else ()
+
     def aggregate(self, provider: str, model: str) -> dict:
         """Deterministic latency stats for one provider/model pair.
 

@@ -72,6 +72,17 @@ class LLMRequestErrorService:
         except KeyError:
             raise UnknownRequestErrorMetricError(request_id)
 
+    def records(self, scope: str = None) -> tuple:
+        """Every recorded error, or just scope's if it names one request_id.
+
+        Unlike get(), a scope with nothing recorded yields an empty tuple
+        rather than raising.
+        """
+        if scope is None:
+            return tuple(self._errors.values())
+        metric = self._errors.get(scope)
+        return (metric,) if metric is not None else ()
+
     def aggregate(self, provider: str, model: str) -> dict:
         """Deterministic error stats for one provider/model pair."""
         matches = [
