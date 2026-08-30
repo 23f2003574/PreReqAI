@@ -58,6 +58,10 @@ class LLMBudgetService:
 
         return budget
 
+    def get(self, scope_id) -> LLMRequestBudget:
+        """Read-only fetch of scope_id's current budget state."""
+        return self._get(scope_id)
+
     def _get(self, scope_id) -> LLMRequestBudget:
         try:
             return self._budgets[scope_id]
