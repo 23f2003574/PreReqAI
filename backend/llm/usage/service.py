@@ -99,6 +99,34 @@ class LLMUsageService:
         """
         return tuple(self._scoped_records(scope_id))
 
+    def purge_before(self, cutoff, scope_id: str = None) -> int:
+        """Remove records recorded before cutoff, narrowed to scope_id if given.
+
+        Returns how many records were removed. Deterministic and explicit --
+        called only when a caller names an exact cutoff, never on a timer.
+        """
+        removed = 0
+        for request_id in list(self._by_request):
+            if scope_id is not None and request_id != scope_id:
+                continue
+            kept = [record for record in self._by_request[request_id] if record.recorded_at >= cutoff]
+            removed += len(self._by_request[request_id]) - len(kept)
+            if kept:
+                self._by_request[request_id] = kept
+            else:
+                del self._by_request[request_id]
+
+        if scope_id is None:
+            self._records = [record for record in self._records if record.recorded_at >= cutoff]
+        else:
+            self._records = [
+                record
+                for record in self._records
+                if record.request_id != scope_id or record.recorded_at >= cutoff
+            ]
+
+        return removed
+
     def _scoped_records(self, scope_id) -> list:
         if scope_id is None:
             return list(self._records)

@@ -83,6 +83,23 @@ class LLMRequestErrorService:
         metric = self._errors.get(scope)
         return (metric,) if metric is not None else ()
 
+    def purge_before(self, cutoff, scope: str = None) -> int:
+        """Remove error metrics recorded before cutoff, narrowed to scope if given.
+
+        Returns how many were removed.
+        """
+        to_remove = [
+            request_id
+            for request_id, metric in self._errors.items()
+            if (scope is None or request_id == scope) and metric.recorded_at < cutoff
+        ]
+        for request_id in to_remove:
+            del self._errors[request_id]
+            for ids in self._by_type.values():
+                if request_id in ids:
+                    ids.remove(request_id)
+        return len(to_remove)
+
     def aggregate(self, provider: str, model: str) -> dict:
         """Deterministic error stats for one provider/model pair."""
         matches = [

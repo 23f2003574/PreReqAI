@@ -65,6 +65,20 @@ class LLMRequestLatencyService:
         latency = self._latencies.get(scope)
         return (latency,) if latency is not None else ()
 
+    def purge_before(self, cutoff, scope: str = None) -> int:
+        """Remove latencies recorded before cutoff, narrowed to scope if given.
+
+        Returns how many were removed.
+        """
+        to_remove = [
+            request_id
+            for request_id, latency in self._latencies.items()
+            if (scope is None or request_id == scope) and latency.recorded_at < cutoff
+        ]
+        for request_id in to_remove:
+            del self._latencies[request_id]
+        return len(to_remove)
+
     def aggregate(self, provider: str, model: str) -> dict:
         """Deterministic latency stats for one provider/model pair.
 
