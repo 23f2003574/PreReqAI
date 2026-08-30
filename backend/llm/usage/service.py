@@ -90,6 +90,15 @@ class LLMUsageService:
             raise UnknownRequestError(request_id)
         return tuple(records)
 
+    def records(self, scope_id: str = None) -> tuple:
+        """Every normalized record for scope_id, or all of them if omitted.
+
+        Unlike get(), an unrecognized scope_id yields an empty tuple rather
+        than raising -- a scope with nothing recorded is a valid, empty
+        result, not an error.
+        """
+        return tuple(self._scoped_records(scope_id))
+
     def _scoped_records(self, scope_id) -> list:
         if scope_id is None:
             return list(self._records)
