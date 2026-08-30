@@ -19,6 +19,10 @@ from .models import (
 SUCCEEDED = "succeeded"
 
 
+class UnknownUsageAnomalyError(KeyError):
+    """Raised when looking up an anomaly_id that was never detect()'d."""
+
+
 class LLMUsageAnomalyService:
     """Detects spikes by comparing a period's metrics against its own recent history.
 
@@ -149,6 +153,12 @@ class LLMUsageAnomalyService:
             self._by_scope_metric.setdefault((scope, anomaly.metric), []).append(anomaly.anomaly_id)
 
         return results
+
+    def get(self, anomaly_id: str) -> LLMUsageAnomaly:
+        try:
+            return self._anomalies[anomaly_id]
+        except KeyError:
+            raise UnknownUsageAnomalyError(anomaly_id)
 
     def by_metric(self, scope, metric: str) -> list:
         """Every anomaly ever detect()'d for this exact scope/metric, in order."""

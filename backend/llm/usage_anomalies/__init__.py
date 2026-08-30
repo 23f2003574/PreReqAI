@@ -12,11 +12,12 @@ from .models import (
     InvalidUsageAnomalyError,
     LLMUsageAnomaly,
 )
-from .service import LLMUsageAnomalyService
+from .service import LLMUsageAnomalyService, UnknownUsageAnomalyError
 
 __all__ = [
     "LLMUsageAnomaly",
     "LLMUsageAnomalyService",
+    "UnknownUsageAnomalyError",
     "TOKENS",
     "COST",
     "LATENCY",
