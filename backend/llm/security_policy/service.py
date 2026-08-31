@@ -77,7 +77,7 @@ class LLMSecurityPolicyService:
         )
 
     @staticmethod
-    def _combine(findings: list, sensitive_action: str) -> LLMPolicyDecision:
+    def _combine(findings: list, sensitive_action: str, policy_ids: list) -> LLMPolicyDecision:
         """Combine one direction's security findings with its sensitive-data
         action into a single decision.
 
@@ -108,7 +108,11 @@ class LLMSecurityPolicyService:
             if sensitive_action == BLOCK:
                 reasons.append("sensitive-data policy requires BLOCK")
             return LLMPolicyDecision(
-                action=BLOCK, blocking=True, security_findings=findings, reason="; ".join(reasons)
+                action=BLOCK,
+                blocking=True,
+                security_findings=findings,
+                policy_ids=policy_ids,
+                reason="; ".join(reasons),
             )
 
         if sensitive_action == REDACT:
@@ -116,10 +120,13 @@ class LLMSecurityPolicyService:
                 action=REDACT,
                 blocking=False,
                 security_findings=findings,
+                policy_ids=policy_ids,
                 reason="sensitive-data policy requires REDACT",
             )
 
-        return LLMPolicyDecision(action=ALLOW, blocking=False, security_findings=findings, reason="")
+        return LLMPolicyDecision(
+            action=ALLOW, blocking=False, security_findings=findings, policy_ids=policy_ids, reason=""
+        )
 
     def check_input(self, request: LLMRequest) -> LLMPolicyDecision:
         """Read-only: validate() Commit #1's findings, then Commit #4's
@@ -127,7 +134,8 @@ class LLMSecurityPolicyService:
         """
         findings = self._input_security.findings(request)
         sensitive_action = self._sensitive_data_policy.evaluate(request)
-        return self._combine(findings, sensitive_action)
+        policy_ids = self._sensitive_data_policy.applicable_policy_ids(request)
+        return self._combine(findings, sensitive_action, policy_ids)
 
     def check_output(self, response: LLMResponse) -> LLMPolicyDecision:
         """Read-only: Commit #2's findings, then Commit #4's sensitive-data
@@ -135,7 +143,8 @@ class LLMSecurityPolicyService:
         """
         findings = self._output_security.findings(response)
         sensitive_action = self._sensitive_data_policy.evaluate(response)
-        return self._combine(findings, sensitive_action)
+        policy_ids = self._sensitive_data_policy.applicable_policy_ids(response)
+        return self._combine(findings, sensitive_action, policy_ids)
 
     def _redact_request(self, request: LLMRequest) -> LLMRequest:
         redacted_messages = [

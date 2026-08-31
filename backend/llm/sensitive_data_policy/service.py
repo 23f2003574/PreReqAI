@@ -130,3 +130,19 @@ class LLMSensitiveDataPolicyService:
     def allowed(self, value) -> bool:
         """Whether `value` may proceed (as-is, or after redaction) -- i.e. not BLOCK."""
         return self.evaluate(value) != BLOCK
+
+    def applicable_policy_ids(self, value) -> list:
+        """policy_id of every registered policy whose data_type was actually
+        detected in `value` (Commit #6's audit trail links these).
+
+        A detected data_type with no registered policy contributes
+        nothing here -- evaluate()'s own BLOCK-by-default for it is not a
+        "policy" that applied, since none was ever registered.
+        """
+        data_types = {match["pattern"] for match in self._secret_redaction.detect(self._resolve(value))}
+        with self._lock:
+            return [
+                self._policies_by_data_type[data_type].policy_id
+                for data_type in data_types
+                if data_type in self._policies_by_data_type
+            ]

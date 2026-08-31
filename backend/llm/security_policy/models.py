@@ -15,14 +15,19 @@ class LLMPolicyDecision:
     directly rather than a second one -- it is what enforce_input()/
     enforce_output() actually act on. security_findings holds every
     Commit #1/#2 finding for the checked request/response (empty if
-    none). blocking is True whenever any security finding was itself
-    blocking, or the sensitive-data action was BLOCK -- either one alone
-    is enough (see Rules: "Blocking policy always wins"), and action is
-    then always BLOCK too. reason is a short, human-readable summary of
-    why this decision was reached.
+    none). policy_ids names every Commit #4 sensitive-data policy whose
+    data_type was actually detected (see
+    LLMSensitiveDataPolicyService.applicable_policy_ids()) -- Commit #6's
+    audit trail links these without needing to re-run detection itself.
+    blocking is True whenever any security finding was itself blocking,
+    or the sensitive-data action was BLOCK -- either one alone is enough
+    (see Rules: "Blocking policy always wins"), and action is then always
+    BLOCK too. reason is a short, human-readable summary of why this
+    decision was reached.
     """
 
     action: str
     blocking: bool
     security_findings: list = field(default_factory=list)
+    policy_ids: list = field(default_factory=list)
     reason: str = ""
