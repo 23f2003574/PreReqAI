@@ -121,3 +121,19 @@ class LLMSecurityAuditService:
                 return list(self._history_by_request[scope])
             except KeyError:
                 raise UnknownAuditError(scope)
+
+    def records(self, scope: str = None) -> tuple:
+        """Every snapshot for `scope` (a request_id), or every snapshot ever
+        recorded if omitted -- Commit #9's own bulk read for aggregation.
+
+        Mirrors backend.llm.usage.LLMUsageService.records(scope_id) exactly:
+        unlike history(), an unrecognized scope yields an empty tuple
+        rather than raising -- a scope with nothing recorded is a valid,
+        empty result, not an error.
+        """
+        with self._lock:
+            if scope is None:
+                return tuple(
+                    audit for trail in self._history_by_request.values() for audit in trail
+                )
+            return tuple(self._history_by_request.get(scope, ()))
