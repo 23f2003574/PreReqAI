@@ -1,18 +1,8 @@
 import re
 
 from ..models import LLMRequest
+from ..secret_redaction import LLMSecretRedactionService
 from .models import CRITICAL, PROMPT_INJECTION, TOOL_BOUNDARY_BYPASS, LLMInputSecurityFinding
-
-# Same secret-redaction idiom backend.api_security_review and
-# backend.code_patch_security_review already use -- there is no shared
-# util module in this repo, every security-review service defines its own
-# copy of this trio, so this one does too rather than introducing a new
-# shared dependency.
-_SECRET_PATTERNS = (
-    re.compile(r"sk-[A-Za-z0-9_-]{10,}"),
-    re.compile(r"AKIA[A-Z0-9]{12,}"),
-    re.compile(r"(?i)\b(api[_-]?key|token|secret|password)\s*=\s*['\"][^'\"]+['\"]"),
-)
 
 # Unambiguous attempts to override the system prompt or existing
 # instructions. Each entry is (pattern, human-readable description).
@@ -73,13 +63,6 @@ class LLMInputSecurityError(ValueError):
         super().__init__(f"LLM request failed input security validation: {summary}")
 
 
-def _redact(text: str) -> str:
-    redacted = text
-    for pattern in _SECRET_PATTERNS:
-        redacted = pattern.sub("[REDACTED]", redacted)
-    return redacted
-
-
 class LLMInputSecurityService:
     """Deterministic, read-only security screen for an LLMRequest, run
     before it reaches LLMRequestOrchestrationService.execute().
@@ -92,14 +75,19 @@ class LLMInputSecurityService:
     matches; it never calls an LLM, never mutates the request or any
     message, and never modifies a prompt automatically. Findings mirror
     the category/severity/evidence shape backend.api_security_review and
-    backend.code_patch_security_review already use, and reuse their
-    redact-before-store convention: evidence is always drawn from
-    already-redacted content, so a finding can never itself leak a
-    credential or other sensitive value present in the input.
+    backend.code_patch_security_review already use. Redaction is done by
+    Commit #3's LLMSecretRedactionService rather than a local copy: every
+    message is redacted before any pattern is matched against it, so
+    evidence is always drawn from already-redacted content and a finding
+    can never itself leak a credential or other sensitive value present
+    in the input.
     """
 
+    def __init__(self, secret_redaction_service: LLMSecretRedactionService = None):
+        self._secret_redaction = secret_redaction_service or LLMSecretRedactionService()
+
     def _findings_for_message(self, role: str, content: str) -> list:
-        sanitized = _redact(content)
+        sanitized = self._secret_redaction.redact(content)
         findings = []
 
         for pattern, description in _PROMPT_INJECTION_PATTERNS:

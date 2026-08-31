@@ -2,18 +2,8 @@ import dataclasses
 import re
 
 from ..models import LLMResponse
+from ..secret_redaction import LLMSecretRedactionService
 from .models import CRITICAL, SECRETS, TOOL_BOUNDARY_BYPASS, UNSAFE_INSTRUCTION, LLMOutputSecurityFinding
-
-# Same secret-redaction idiom backend.api_security_review,
-# backend.code_patch_security_review, and backend.llm.input_security
-# already use -- there is no shared util module in this repo, every
-# security-review service defines its own copy of this trio, so this one
-# does too rather than introducing a new shared dependency.
-_SECRET_PATTERNS = (
-    re.compile(r"sk-[A-Za-z0-9_-]{10,}"),
-    re.compile(r"AKIA[A-Z0-9]{12,}"),
-    re.compile(r"(?i)\b(api[_-]?key|token|secret|password)\s*=\s*['\"][^'\"]+['\"]"),
-)
 
 # The same dangerous-construct list backend.api_security_review,
 # backend.code_patch_security_review, and backend.generated_code_review
@@ -70,13 +60,6 @@ class LLMOutputSecurityError(ValueError):
         super().__init__(f"LLM response failed output security validation: {summary}")
 
 
-def _redact(text: str) -> str:
-    redacted = text
-    for pattern in _SECRET_PATTERNS:
-        redacted = pattern.sub("[REDACTED]", redacted)
-    return redacted
-
-
 class LLMOutputSecurityService:
     """Deterministic, read-only security screen for an LLMResponse, run
     before its content may be returned to a user or handed to a
@@ -90,14 +73,18 @@ class LLMOutputSecurityService:
     and never executes, evaluates, or applies anything the response
     contains. Findings mirror the category/severity/evidence shape
     backend.api_security_review and backend.code_patch_security_review
-    already use, and reuse their redact-before-store convention: evidence
-    is always drawn from already-redacted content, so a finding can never
-    itself leak the credential it flags. sanitize() applies that same
-    redaction to the response's content and nothing else -- it never
-    reformats, reparses, or otherwise restructures the content, so
+    already use. Secret detection and redaction are both delegated to
+    Commit #3's LLMSecretRedactionService rather than a local copy:
+    evidence is always drawn from already-redacted content, so a finding
+    can never itself leak the credential it flags, and sanitize() applies
+    that same redaction to the response's content and nothing else -- it
+    never reformats, reparses, or otherwise restructures the content, so
     already-structured output (e.g. JSON) survives with every field but
     the redacted secret unchanged.
     """
+
+    def __init__(self, secret_redaction_service: LLMSecretRedactionService = None):
+        self._secret_redaction = secret_redaction_service or LLMSecretRedactionService()
 
     @staticmethod
     def _content(response) -> str:
@@ -121,19 +108,21 @@ class LLMOutputSecurityService:
                 non-empty string content.
         """
         content = self._content(response)
-        sanitized = _redact(content)
+        sanitized = self._secret_redaction.redact(content)
         found = []
 
-        for pattern in _SECRET_PATTERNS:
-            if pattern.search(content):
-                found.append(
-                    LLMOutputSecurityFinding(
-                        category=SECRETS,
-                        severity=CRITICAL,
-                        evidence=f"response content matches a known secret/credential pattern: {sanitized!r}",
-                        blocking=True,
-                    )
+        for match in self._secret_redaction.detect(content):
+            found.append(
+                LLMOutputSecurityFinding(
+                    category=SECRETS,
+                    severity=CRITICAL,
+                    evidence=(
+                        f"response content matches a known secret/credential pattern "
+                        f"({match['pattern']}): {sanitized!r}"
+                    ),
+                    blocking=True,
                 )
+            )
 
         for needle, description in _DANGEROUS_PATTERNS:
             if needle in sanitized:
@@ -185,4 +174,4 @@ class LLMOutputSecurityService:
         the redacted secret value exactly as given.
         """
         content = self._content(response)
-        return dataclasses.replace(response, content=_redact(content))
+        return dataclasses.replace(response, content=self._secret_redaction.redact(content))
