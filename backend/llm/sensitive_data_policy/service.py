@@ -113,6 +113,17 @@ class LLMSensitiveDataPolicyService:
             return value.content
         return value
 
+    @staticmethod
+    def resolve(value):
+        """Public entry point for the same LLMRequest/LLMResponse reduction
+        evaluate()/applicable_policy_ids() already use internally.
+
+        Reused directly by Commit #7's LLMSecurityPolicySimulationService
+        so its redaction preview scans exactly the same text this service
+        already would, rather than a second copy of this logic.
+        """
+        return LLMSensitiveDataPolicyService._resolve(value)
+
     def evaluate(self, value) -> str:
         """The single action to take for `value`: ALLOW, REDACT, or BLOCK.
 
