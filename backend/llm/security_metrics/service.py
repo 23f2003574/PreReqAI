@@ -63,6 +63,18 @@ class LLMSecurityMetricsService:
             audit for audit in self._audit_service.records(scope) if start <= audit.created_at <= end
         )
 
+    def records(self, scope, period) -> tuple:
+        """The exact audit records summary()/by_policy()/by_decision()/
+        by_direction() themselves aggregate over for `scope` and `period`.
+
+        Exposed for Commit #10's report service, which needs the
+        individual (already payload-free) records -- e.g. to list
+        blocking events -- rather than a count; reuses this service's own
+        scope-safety and period validation rather than a second copy of
+        either.
+        """
+        return self._records(scope, period)
+
     @staticmethod
     def _empty_bucket() -> dict:
         return {"allowed": 0, "redacted": 0, "blocked": 0, "findings": {}}
