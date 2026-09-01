@@ -107,13 +107,37 @@ class LLMAgentPlanExecutionService:
             self._executions[execution.execution_id] = execution
             return execution
 
-    def execute(self, plan_id: str, subject, timeout: float = None) -> LLMAgentPlanExecution:
+    def execute(
+        self, plan_id: str, subject, timeout: float = None,
+        on_created=None, before_step=None, after_step=None,
+    ) -> LLMAgentPlanExecution:
         """Run every step of `plan_id`, in dependency order, on behalf of `subject`.
 
         Never raises for a rejected, failed, or cancelled run -- every
         attempt becomes an LLMAgentPlanExecution whose status says what
         happened. Only a caller error (an unknown plan_id, or a repeat
         execute() for a plan already executed) raises.
+
+        Three optional hooks, all no-ops by default, exist solely so a
+        higher-level composition (Commit #13's orchestration) can react to
+        this same loop rather than writing a second one:
+
+            on_created(execution_id, plan_id) -- called once, immediately
+                after this run's execution_id is assigned, before Commit #2
+                validation is even checked. The only point a caller learns
+                the id in time to configure per-run state keyed by it (a
+                Commit #10 budget, for instance).
+            before_step(execution_id, step_id) -- called immediately before
+                each step would run, after the cancellation check.
+                Returning False stops the run exactly as a cancellation
+                does (recorded as CANCELLED) -- e.g. a budget already
+                exhausted.
+            after_step(execution_id, step_execution) -- called immediately
+                after each step finishes, whatever its outcome, before
+                deciding whether to continue -- e.g. to record it into
+                context, save a checkpoint, or consume budget.
+
+        Omitting all three reproduces this method's exact prior behaviour.
         """
         with self._lock:
             if plan_id in self._by_plan:
@@ -136,6 +160,9 @@ class LLMAgentPlanExecutionService:
                 )
             )
 
+        if on_created is not None:
+            on_created(execution_id, plan_id)
+
         # 1. The plan as a whole must pass Commit #2 validation before any
         #    step ever runs -- checked here, once, so a rejected plan never
         #    creates a single Commit #3 step-execution record.
@@ -150,6 +177,11 @@ class LLMAgentPlanExecutionService:
                         execution_id, plan_id, CANCELLED, completed_steps, None, started_at
                     )
 
+            if before_step is not None and not before_step(execution_id, step.step_id):
+                return self._finish(
+                    execution_id, plan_id, CANCELLED, completed_steps, None, started_at
+                )
+
             # 2. Run only this step, entirely through Commit #3 -- dependency
             #    success, authorization, execution, and everything under it
             #    is that service's own concern, not re-checked or
@@ -157,6 +189,9 @@ class LLMAgentPlanExecutionService:
             step_execution = self._step_execution_service.execute_step(
                 plan_id, step.step_id, subject, timeout=timeout
             )
+
+            if after_step is not None:
+                after_step(execution_id, step_execution)
 
             if step_execution.status != SUCCEEDED:
                 return self._finish(
