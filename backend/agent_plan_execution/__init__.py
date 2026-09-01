@@ -3,6 +3,7 @@ from .service import (
     LLMAgentPlanExecutionService,
     PlanExecutionAlreadyExistsError,
     UnknownAgentPlanExecutionError,
+    topological_order,
 )
 
 __all__ = [
@@ -10,4 +11,5 @@ __all__ = [
     "LLMAgentPlanExecutionService",
     "PlanExecutionAlreadyExistsError",
     "UnknownAgentPlanExecutionError",
+    "topological_order",
 ]

@@ -21,7 +21,7 @@ class UnknownAgentPlanExecutionError(KeyError):
     """Raised when status()/steps()/cancel()/get() is given an unrecorded execution_id."""
 
 
-def _topological_order(steps: list) -> list:
+def topological_order(steps: list) -> list:
     """steps ordered so every step follows all of its depends_on.
 
     Kahn's algorithm, picking the earliest-declared ready step at each tie
@@ -30,6 +30,10 @@ def _topological_order(steps: list) -> list:
     Commit #2 validation (checked by execute() before this is ever called)
     already refuses a plan with a dependency cycle, so this never has to
     detect one itself.
+
+    Module-level so that Commit #5's checkpointing walks the same
+    dependency order this service does, rather than keeping a second copy
+    of it in step.
     """
     remaining = list(steps)
     indegree = {step.step_id: len(step.depends_on) for step in steps}
@@ -139,7 +143,7 @@ class LLMAgentPlanExecutionService:
             return self._finish(execution_id, plan_id, REJECTED, [], None, started_at)
 
         completed_steps = []
-        for step in _topological_order(plan.steps):
+        for step in topological_order(plan.steps):
             with self._lock:
                 if self._cancel_requested[execution_id]:
                     return self._finish(
