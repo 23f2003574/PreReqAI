@@ -79,7 +79,7 @@ class LLMAgentExecutionBudgetService:
             # limits (None, i.e. unlimited, here) on an existing scope and
             # leaves its used_tokens/used_cost untouched.
             self._budget_service.configure(execution_id, max_tokens=None, max_cost=None)
-        return self._snapshot(execution_id)
+        return self.snapshot(execution_id)
 
     def _limit(self, execution_id: str) -> dict:
         with self._lock:
@@ -149,7 +149,7 @@ class LLMAgentExecutionBudgetService:
 
         # Configured above with no max of its own, so this never raises.
         self._budget_service.consume(execution_id, tokens=tokens, cost=cost)
-        return self._snapshot(execution_id)
+        return self.snapshot(execution_id)
 
     def consume_step(self, execution_id: str, step_execution, tokens: int = 0, cost: float = 0.0) -> dict:
         """Convenience: derive steps/duration from a real Commit #3
@@ -179,6 +179,9 @@ class LLMAgentExecutionBudgetService:
         violations, _usage, _limits = self._violations(execution_id)
         return BUDGET_EXCEEDED if violations else WITHIN_BUDGET
 
-    def _snapshot(self, execution_id: str) -> dict:
+    def snapshot(self, execution_id: str) -> dict:
+        """execution_id's current usage and configured limits together --
+        for a caller (such as Commit #12's report) that wants both without
+        composing them from remaining() and exceeded() itself."""
         usage, limits = self._usage_snapshot(execution_id)
         return {"usage": usage, "limits": limits}
