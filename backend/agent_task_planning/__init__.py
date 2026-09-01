@@ -3,6 +3,7 @@ from .service import (
     LLMAgentPlanningService,
     MalformedAgentPlanResponseError,
     UnknownAgentPlanError,
+    cyclic_step_ids,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "LLMAgentPlanningService",
     "MalformedAgentPlanResponseError",
     "UnknownAgentPlanError",
+    "cyclic_step_ids",
 ]

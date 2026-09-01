@@ -71,13 +71,18 @@ def _parse_response(raw_content: str) -> list:
     return steps
 
 
-def _cyclic_step_ids(step_ids: list, edges: dict) -> set:
+def cyclic_step_ids(step_ids: list, edges: dict) -> set:
     """step_ids that participate in a dependency cycle, via depends_on edges.
 
     edges maps a step_id to the step_ids it depends on (only ones that
     resolved to a real step -- an unknown dependency is reported separately
     and never joins this graph). A step referencing its own id is treated as
     a one-node cycle.
+
+    Module-level so that this planning service and
+    backend.agent_plan_validation's independent re-check both walk the same
+    dependency graph the same way, rather than keeping two copies of cycle
+    detection in step.
     """
     color = {}
     cyclic = set()
@@ -215,7 +220,7 @@ class LLMAgentPlanningService:
             edges[step_id] = resolved_deps
             per_step_errors.append(errors)
 
-        cyclic = _cyclic_step_ids(step_ids, edges)
+        cyclic = cyclic_step_ids(step_ids, edges)
 
         steps = []
         for index, (step_id, raw) in enumerate(zip(step_ids, raw_steps)):
