@@ -1,6 +1,6 @@
 from backend.agent_task_planning import cyclic_step_ids
 from backend.llm.tool_invocation import READY as INVOCATION_READY
-from backend.llm.tool_invocation import LLMToolInvocationPlan
+from backend.llm.tool_invocation import LLMToolInvocationPlan, LLMToolInvocationService
 from backend.llm.tool_permissions import ANY_SUBJECT
 from backend.llm.tools import DisabledToolError, LLMToolRegistryService, UnknownToolError
 
@@ -45,10 +45,33 @@ class LLMAgentPlanValidationService:
         planning_service,
         registry: LLMToolRegistryService,
         permission_service=None,
+        invocation_service: LLMToolInvocationService = None,
     ):
+        """
+        Args:
+            planning_service: The Commit #1 LLMAgentPlanningService (or
+                anything exposing its get()), the sole source of plans
+            registry: The Commit #1 tool registry
+            permission_service: Optional existing
+                backend.llm.tool_permissions.LLMToolPermissionService. When
+                omitted, validate()/blocking() skip permission checks
+                entirely
+            invocation_service: Optional existing
+                backend.llm.tool_invocation.LLMToolInvocationService. Pass
+                the *same* instance permission_service was built with (if
+                any) -- the synthetic plan a permission check authorizes is
+                built by calling this service's own plan(), so that
+                permission_service's own re-validation of it (when it was
+                given an invocation_service) resolves against a plan that
+                genuinely exists there. When omitted, a bare plan is
+                constructed directly instead, which is only safe when
+                permission_service has no invocation_service of its own to
+                re-validate against.
+        """
         self._planning_service = planning_service
         self._registry = registry
         self._permission_service = permission_service
+        self._invocation_service = invocation_service
 
     def _plan(self, plan_id: str):
         """Fetch the Commit #1 plan. Propagates its own UnknownAgentPlanError."""
@@ -132,15 +155,20 @@ class LLMAgentPlanValidationService:
             if self._tool_error(step) is not None:
                 continue
 
-            synthetic_plan = LLMToolInvocationPlan(
-                plan_id=f"{plan_id}-{step.step_id}",
-                tool_name=step.tool_name,
-                arguments=step.arguments,
-                rationale=step.action,
-                status=INVOCATION_READY,
-                tool_call={"name": step.tool_name, "arguments": step.arguments},
-                errors=[],
-            )
+            if self._invocation_service is not None:
+                synthetic_plan = self._invocation_service.plan(
+                    {"name": step.tool_name, "arguments": step.arguments}
+                )
+            else:
+                synthetic_plan = LLMToolInvocationPlan(
+                    plan_id=f"{plan_id}-{step.step_id}",
+                    tool_name=step.tool_name,
+                    arguments=step.arguments,
+                    rationale=step.action,
+                    status=INVOCATION_READY,
+                    tool_call={"name": step.tool_name, "arguments": step.arguments},
+                    errors=[],
+                )
             authorization = self._permission_service.authorize(synthetic_plan, subject)
             if not authorization.allowed:
                 findings.append(
