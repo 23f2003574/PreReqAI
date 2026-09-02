@@ -46,10 +46,23 @@ class LLMAgentMemoryRetriever:
     execution_id (and every other field) passes through untouched, so a
     caller can always trace a retrieved memory back to the execution it
     came from.
+
+    An optional Commit #3 `scorer` (any object exposing
+    `rank(memories, query, now=None) -> list[ScoredMemory-like]`, i.e.
+    backend.agent_memory_relevance_scoring.LLMAgentMemoryRelevanceScorer)
+    can be supplied to rank retrieve()'s already-filtered candidates by
+    its richer, multi-signal score instead of this module's own plain
+    text-overlap rank(). This is additive: omitting `scorer` reproduces
+    this class's original behaviour exactly, and self.rank() itself is
+    untouched either way -- retrieve() is the only method that ever
+    consults `scorer`, kept as a duck-typed collaborator so this module
+    never has to import Commit #3's package (which itself depends on this
+    one).
     """
 
-    def __init__(self, memory_service: LLMAgentMemoryService):
+    def __init__(self, memory_service: LLMAgentMemoryService, scorer=None):
         self._memory_service = memory_service
+        self._scorer = scorer
 
     def rank(self, memories: list, query: str) -> list:
         """memories, best-first by relevance to query, ties broken deterministically.
@@ -66,8 +79,12 @@ class LLMAgentMemoryRetriever:
         scored.sort(key=lambda pair: (-pair[0], -pair[1].created_at.timestamp(), pair[1].memory_id))
         return [memory for _score, memory in scored]
 
-    def retrieve(self, query: LLMAgentMemoryQuery) -> list:
+    def retrieve(self, query: LLMAgentMemoryQuery, now=None) -> list:
         """The memories in query.scope_id relevant to query, best first.
+
+        `now` is passed through to a Commit #3 `scorer`, if one was
+        supplied at construction; it is ignored otherwise (this module's
+        own rank() has no recency signal to fix a clock for).
 
         Raises:
             InvalidMemoryQueryError: If memory_types/outcome_filter names
@@ -90,7 +107,10 @@ class LLMAgentMemoryRetriever:
         if query.outcome_filter is not None:
             candidates = [memory for memory in candidates if memory.outcome == query.outcome_filter]
 
-        ranked = self.rank(candidates, query.query)
+        if self._scorer is not None:
+            ranked = [scored.memory for scored in self._scorer.rank(candidates, query, now=now)]
+        else:
+            ranked = self.rank(candidates, query.query)
 
         if query.limit is not None:
             ranked = ranked[: query.limit]
