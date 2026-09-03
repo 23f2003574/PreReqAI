@@ -6,12 +6,17 @@ from uuid import uuid4
 # The kinds of strategy-driven planning choice this trail records.
 # Deliberately small and closed, the same reasoning every other closed
 # vocabulary in this series (VALID_MEMORY_TYPES, VALID_RESULTS, ...)
-# already documents.
+# already documents. LEARNED is Commit #12's own addition: the lifecycle
+# verdict (Commit #9's own ACTIVE/TRUSTED/DEPRECATED) reached once an
+# applied strategy's real execution outcome has been folded back into its
+# effectiveness -- distinct from the four planning-time decisions above,
+# all of which happen before any execution result exists to learn from.
 SELECTED = "selected"
 REJECTED = "rejected"
 CONFLICT_RESOLVED = "conflict_resolved"
 APPLIED = "applied"
-DECISION_TYPES = frozenset({SELECTED, REJECTED, CONFLICT_RESOLVED, APPLIED})
+LEARNED = "learned"
+DECISION_TYPES = frozenset({SELECTED, REJECTED, CONFLICT_RESOLVED, APPLIED, LEARNED})
 
 
 @dataclass(frozen=True)
