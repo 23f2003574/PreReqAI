@@ -64,11 +64,18 @@ class LLMAgentPolicyVersionService:
         self._policy_service = policy_service
         self._history_service = history_service
 
-    def create_version(self, policy_id: str, rules: list, created_by: str = None) -> Optional[LLMAgentPolicyVersion]:
+    def create_version(
+        self, policy_id: str, rules: list, created_by: str = None, reason: str = None
+    ) -> Optional[LLMAgentPolicyVersion]:
         """Update policy_id's rules and, if they actually changed,
         record a new Commit #10 change for it -- then return the
         resulting current version (or the prior one unchanged, if
         nothing meaningful happened).
+
+        reason, when given, is recorded on the Commit #10 change itself
+        (e.g. Commit #12's rollback records why it rolled back) --
+        forwarded verbatim to LLMAgentPolicyHistoryService.record_change(),
+        never interpreted here.
 
         Raises:
             UnknownAgentPolicyError, ArchivedPolicyError,
@@ -82,7 +89,7 @@ class LLMAgentPolicyVersionService:
 
         if before["rules"] != after["rules"]:
             self._history_service.record_change(
-                policy.scope_id, policy_id, UPDATED, before=before, after=after, actor=created_by,
+                policy.scope_id, policy_id, UPDATED, before=before, after=after, actor=created_by, reason=reason,
             )
 
         return self._latest_version(policy_id)

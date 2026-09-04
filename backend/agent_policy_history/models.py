@@ -53,6 +53,12 @@ class LLMAgentPolicyChange:
         after: The entity's full snapshot immediately after this change
         actor: Who or what made the change, when known (a subject
             identifier, a service name, ...); None when not supplied
+        reason: Why the change was made, when the caller supplied one
+            (e.g. Commit #12's own rollback records why it rolled back);
+            None when not supplied. Added alongside Commit #12 as a
+            purely additive field -- every change recorded before it
+            existed simply has reason=None, exactly as if it had always
+            been there
     """
 
     scope_id: str
@@ -61,6 +67,7 @@ class LLMAgentPolicyChange:
     before: Optional[dict]
     after: Optional[dict]
     actor: Optional[str] = None
+    reason: Optional[str] = None
     change_id: str = field(default_factory=lambda: str(uuid4()))
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 

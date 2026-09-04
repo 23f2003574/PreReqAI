@@ -82,13 +82,15 @@ class LLMAgentPolicyHistoryService:
         before: dict,
         after: dict,
         actor: str = None,
+        reason: str = None,
     ) -> LLMAgentPolicyChange:
         """Append one change record.
 
         Raises:
             InvalidPolicyChangeError: If scope_id/policy_id is missing,
-                change_type is not one of CHANGE_TYPES, or before/after
-                is given and is not a dict
+                change_type is not one of CHANGE_TYPES, before/after is
+                given and is not a dict, or reason is given and is not a
+                string
         """
         if not scope_id or not isinstance(scope_id, str):
             raise InvalidPolicyChangeError("scope_id is required")
@@ -100,6 +102,8 @@ class LLMAgentPolicyHistoryService:
             raise InvalidPolicyChangeError("before must be a dict or None")
         if after is not None and not isinstance(after, dict):
             raise InvalidPolicyChangeError("after must be a dict or None")
+        if reason is not None and not isinstance(reason, str):
+            raise InvalidPolicyChangeError("reason must be a string or None")
 
         change = LLMAgentPolicyChange(
             scope_id=scope_id,
@@ -108,6 +112,7 @@ class LLMAgentPolicyHistoryService:
             before=_redact_deep(before),
             after=_redact_deep(after),
             actor=actor,
+            reason=_redact_deep(reason),
         )
         return self.store.save(change)
 
