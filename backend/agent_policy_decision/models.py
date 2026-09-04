@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from backend.agent_policy_engine import LLMAgentPolicyDecision
 from backend.agent_policy_resolution import ResolvedPolicy
@@ -42,9 +42,21 @@ class PolicyDecision:
     actually evaluated, in the exact order it was evaluated, whether or
     not it contributed to matched_rules -- so a decision is never merely
     implied by matched_rules alone.
+
+    exceptions_applied is empty for every PolicyDecision this module's
+    own LLMAgentPolicyDecisionEngine.decide() produces -- it never grants
+    an exception, and has no notion that one could exist. It exists only
+    so a later, optional layer
+    (backend.agent_policy_exceptions.LLMAgentPolicyExceptionAwareDecisionEngine)
+    can report, on the exact same PolicyDecision shape, which Commit #5
+    LLMAgentPolicyException records (if any) turned what would otherwise
+    have been a DENY into this ALLOW -- without that layer needing a
+    second, differently-shaped decision type, and without this decide()
+    or LLMAgentPolicyEvaluator ever having to know exceptions exist.
     """
 
     decision: str
     matched_rules: list
     reasons: list
     provenance: list
+    exceptions_applied: list = field(default_factory=list)
