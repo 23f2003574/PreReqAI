@@ -97,6 +97,17 @@ class LLMAgentPolicyDeploymentHistory:
         string values) -- Commit #10's own rollback is the first caller
         to actually supply them, but any caller may.
 
+        When deployment_id already names a record this history already
+        holds, that existing record is returned unchanged and nothing
+        new is written: records are immutable once recorded (see the
+        class docstring), so re-recording the same successful
+        deployment_id (e.g. Commit #7's own idempotent re-deploy of an
+        already-current policy_id, which always returns the same
+        DeploymentResult.deployment_id) must never silently overwrite
+        its original created_at with a fresh one -- Commit #11's own
+        "did a later deployment attempt fail after this one went live"
+        check depends on that timestamp never moving once recorded.
+
         Raises:
             InvalidDeploymentRecordError: If policy_id/target_scope is
                 missing, status is not one of STATUSES, or provenance is
@@ -125,6 +136,9 @@ class LLMAgentPolicyDeploymentHistory:
             actor=actor,
         )
         if deployment_id is not None:
+            existing = self.store.get(deployment_id)
+            if existing is not None:
+                return existing
             kwargs["deployment_id"] = deployment_id
 
         return self.store.save(LLMAgentPolicyDeploymentRecord(**kwargs))
