@@ -43,6 +43,12 @@ class LLMAgentPolicyDeploymentHistoryTrackedDeploymentService(LLMAgentPolicyTemp
     collaborators verbatim, never a second provenance lookup path. When
     even that fails (e.g. policy_id itself is unknown), both stay None
     rather than raising out of the recording path.
+
+    reason/actor are optional, purely additive parameters on deploy()
+    (Commit #7's own base signature is never changed) -- when a caller
+    supplies them (Commit #10's own rollback is the first to), they are
+    forwarded verbatim onto whichever record this call produces, success
+    or failure alike.
     """
 
     def __init__(self, *args, history_service: LLMAgentPolicyDeploymentHistory = None, version_service=None, **kwargs):
@@ -50,7 +56,7 @@ class LLMAgentPolicyDeploymentHistoryTrackedDeploymentService(LLMAgentPolicyTemp
         self._history_service = history_service if history_service is not None else LLMAgentPolicyDeploymentHistory()
         self._version_service = version_service
 
-    def deploy(self, policy_id: str, target_context: dict):
+    def deploy(self, policy_id: str, target_context: dict, reason: str = None, actor: str = None):
         target_scope = target_context.get("scope_id") if isinstance(target_context, dict) else None
 
         try:
@@ -64,6 +70,8 @@ class LLMAgentPolicyDeploymentHistoryTrackedDeploymentService(LLMAgentPolicyTemp
                 template_id=template_id,
                 template_version=template_version,
                 provenance={"reason": str(error)},
+                reason=reason,
+                actor=actor,
             )
             raise
 
@@ -76,6 +84,8 @@ class LLMAgentPolicyDeploymentHistoryTrackedDeploymentService(LLMAgentPolicyTemp
             policy_version=self._peek_policy_version(result.policy_id),
             provenance={"deployment_status": result.status, "previous_policy_id": result.previous_policy_id},
             deployment_id=result.deployment_id,
+            reason=reason,
+            actor=actor,
         )
         return result
 

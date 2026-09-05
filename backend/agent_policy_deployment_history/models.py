@@ -56,6 +56,18 @@ class LLMAgentPolicyDeploymentRecord:
         status: One of STATUSES
         provenance: Contextual detail about this attempt -- never a
             policy/template payload
+        reason: Why this deployment attempt happened, when the caller
+            supplied one (e.g. Commit #10's own rollback records why it
+            rolled back); None when not supplied. Added alongside
+            Commit #10 as a purely additive field -- every record made
+            before it existed simply has reason=None, exactly as if it
+            had always been there, the same evolution
+            backend.agent_policy_history.LLMAgentPolicyChange's own
+            reason field (added alongside base-series Commit #12)
+            already went through
+        actor: Who or what made this deployment attempt, when known;
+            None when not supplied. Same purely-additive history as
+            reason
     """
 
     policy_id: str
@@ -65,6 +77,8 @@ class LLMAgentPolicyDeploymentRecord:
     template_version: Optional[int] = None
     policy_version: Optional[int] = None
     provenance: dict = field(default_factory=dict)
+    reason: Optional[str] = None
+    actor: Optional[str] = None
     deployment_id: str = field(default_factory=lambda: str(uuid4()))
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 

@@ -71,7 +71,19 @@ class LLMAgentPolicyDeploymentVerifier:
         self._history_service = history_service
         self._version_service = version_service
 
-    def verify(self, deployment_id: str) -> VerificationResult:
+    def verify(self, deployment_id: str, require_active: bool = True) -> VerificationResult:
+        """
+        require_active governs only the "is this policy currently
+        ACTIVE" check: True (the default, and the only behavior this
+        method had before Commit #10) is right for verifying a
+        deployment that is supposed to still be the live one. Commit
+        #10's own LLMAgentPolicyDeploymentRollbackService passes False
+        when verifying a *rollback target* -- a deployment that was
+        legitimately superseded (and therefore ARCHIVED) is not thereby
+        an invalid one to roll back to; every other check (terminal
+        state, rule validity, scope, template/version provenance) still
+        runs exactly as before regardless of this flag.
+        """
         reasons = []
         provenance = {}
 
@@ -112,7 +124,7 @@ class LLMAgentPolicyDeploymentVerifier:
         provenance["actual_scope"] = policy.scope_id
         provenance["policy_status"] = policy.status
 
-        if policy.status != ACTIVE:
+        if require_active and policy.status != ACTIVE:
             reasons.append(f"policy {record.policy_id!r} is not ACTIVE (status: {policy.status!r})")
 
         if policy.scope_id != record.target_scope:

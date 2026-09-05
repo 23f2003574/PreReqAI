@@ -76,6 +76,8 @@ class LLMAgentPolicyDeploymentHistory:
         policy_version: int = None,
         provenance: dict = None,
         deployment_id: str = None,
+        reason: str = None,
+        actor: str = None,
     ) -> LLMAgentPolicyDeploymentRecord:
         """Append one deployment record.
 
@@ -89,6 +91,11 @@ class LLMAgentPolicyDeploymentHistory:
         as None (a fresh one generated), it is always appropriate for a
         DEPLOYMENT_FAILED record, since no DeploymentResult was ever
         produced for a failed attempt.
+
+        reason/actor are forwarded verbatim onto the record (reason
+        passed through the same redaction convention as provenance
+        string values) -- Commit #10's own rollback is the first caller
+        to actually supply them, but any caller may.
 
         Raises:
             InvalidDeploymentRecordError: If policy_id/target_scope is
@@ -114,6 +121,8 @@ class LLMAgentPolicyDeploymentHistory:
             template_version=template_version,
             policy_version=policy_version,
             provenance=redacted_provenance,
+            reason=_redact(reason) if isinstance(reason, str) else reason,
+            actor=actor,
         )
         if deployment_id is not None:
             kwargs["deployment_id"] = deployment_id
