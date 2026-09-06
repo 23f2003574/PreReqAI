@@ -74,6 +74,10 @@ class ReviewItem(object):
         claimed_at: When this item was claimed, or None if it never was
         resolution: {"outcome": APPROVED/REJECTED, "reason": str or
             None} once RESOLVED, else None
+        resolved_by: Who actually completed this item -- normally the
+            same as claimed_by, but can differ (e.g. Commit #9's own
+            assignment authority diverging from Commit #8's own real
+            claim owner); None until RESOLVED
         resolved_at: When this item was resolved, or None otherwise
         created_at: When this item was enqueued
         expires_at: The deadline by which this item must be resolved,
@@ -95,6 +99,7 @@ class ReviewItem(object):
     claimed_by: Optional[str] = None
     claimed_at: Optional[datetime] = None
     resolution: Optional[dict] = None
+    resolved_by: Optional[str] = None
     resolved_at: Optional[datetime] = None
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: Optional[datetime] = None
@@ -133,6 +138,7 @@ class ReviewItem(object):
 
         if self.status == RESOLVED:
             self._require_text(self.claimed_by, "claimed_by")
+            self._require_text(self.resolved_by, "resolved_by")
             if not isinstance(self.resolution, dict) or "outcome" not in self.resolution:
                 raise InvalidReviewItemError("a RESOLVED item must have a resolution with an outcome")
             if self.resolved_at is None:

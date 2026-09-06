@@ -240,7 +240,7 @@ class LLMAgentRiskReviewQueue:
         )
         return self.store.save(claimed)
 
-    def complete(self, item_id: str, resolution: dict) -> ReviewItem:
+    def complete(self, item_id: str, resolution: dict, actor: str = None) -> ReviewItem:
         """Complete a CLAIMED item, driving the real authorization
         transition through Commit #5's gate (or, when an active Commit
         #6 escalation exists for the same request, through Commit #6's
@@ -249,6 +249,15 @@ class LLMAgentRiskReviewQueue:
 
         resolution is {"outcome": APPROVED or REJECTED (Commit #5's own
         constants), "reason": str, required when outcome is REJECTED}.
+
+        actor is who is recorded as having actually completed this item
+        (resolved_by) and driven the underlying gate/escalation
+        transition -- defaulting to the item's own claimed_by, but
+        overridable for a caller (Commit #10's own
+        LLMAgentRiskReviewResolver) whose own authorization source (e.g.
+        Commit #9's active Assignment) has determined a different actor
+        is the one actually authorized to complete it than whoever
+        happens to hold Commit #8's own raw claim.
 
         Raises:
             UnknownReviewItemError: If item_id was never enqueued
@@ -278,21 +287,22 @@ class LLMAgentRiskReviewQueue:
                 f"cannot complete item {item_id!r}: it is {effective.status}, not {CLAIMED}"
             )
 
-        actor = effective.claimed_by
+        resolved_by = actor or effective.claimed_by
         escalation_id = self._active_escalation_id(effective.approval_request_id)
 
         if escalation_id is not None:
-            self._escalation_service.resolve(escalation_id, outcome, actor, resolution_reason=reason)
+            self._escalation_service.resolve(escalation_id, outcome, resolved_by, resolution_reason=reason)
         elif outcome == APPROVAL_APPROVED:
-            self._approval_gate.approve(effective.approval_request_id, actor)
+            self._approval_gate.approve(effective.approval_request_id, resolved_by)
         else:
-            self._approval_gate.reject(effective.approval_request_id, actor, reason)
+            self._approval_gate.reject(effective.approval_request_id, resolved_by, reason)
 
         resolved = replace(
             stored,
             status=RESOLVED,
             escalation_id=escalation_id or stored.escalation_id,
             resolution={"outcome": outcome, "reason": reason},
+            resolved_by=resolved_by,
             resolved_at=datetime.now(timezone.utc),
         )
         return self.store.save(resolved)
