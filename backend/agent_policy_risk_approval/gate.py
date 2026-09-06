@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from backend.agent_policy_engine import ALLOW, DENY
 from backend.agent_policy_risk_decision import RiskDecision
 
+from .expiry import effective_status
 from .in_memory_store import InMemoryApprovalRequirementStore
 from .models import (
     APPROVED,
@@ -255,10 +256,9 @@ class LLMAgentRiskApprovalGate:
     def _effective(requirement, now=None):
         if requirement is None:
             return None
-        if requirement.status != REQUIRED:
-            return requirement
 
         now = now or datetime.now(timezone.utc)
-        if requirement.expires_at is not None and requirement.expires_at <= now:
-            return replace(requirement, status=EXPIRED)
-        return requirement
+        new_status = effective_status(requirement.status, requirement.expires_at, REQUIRED, EXPIRED, now)
+        if new_status == requirement.status:
+            return requirement
+        return replace(requirement, status=new_status)

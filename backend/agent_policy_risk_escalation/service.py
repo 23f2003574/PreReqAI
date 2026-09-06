@@ -10,6 +10,7 @@ from backend.agent_policy_risk_approval import (
 from backend.agent_policy_risk_approval import (
     LLMAgentRiskApprovalGate,
     UnknownApprovalRequestError,
+    effective_status,
 )
 
 from .in_memory_store import InMemoryEscalationStore
@@ -250,13 +251,12 @@ class LLMAgentRiskEscalationService:
     def _effective(escalation, now=None):
         if escalation is None:
             return None
-        if escalation.status != PENDING:
-            return escalation
 
         now = now or datetime.now(timezone.utc)
-        if escalation.expires_at is not None and escalation.expires_at <= now:
-            return replace(escalation, status=EXPIRED)
-        return escalation
+        new_status = effective_status(escalation.status, escalation.expires_at, PENDING, EXPIRED, now)
+        if new_status == escalation.status:
+            return escalation
+        return replace(escalation, status=new_status)
 
     @staticmethod
     def _require_text(value, field_name: str) -> None:

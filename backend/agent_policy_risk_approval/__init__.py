@@ -1,4 +1,5 @@
 from .execution import LLMAgentRiskGatedExecutionService
+from .expiry import effective_status
 from .gate import (
     DEFAULT_APPROVAL_WINDOW,
     ExpiredApprovalError,
@@ -36,4 +37,5 @@ __all__ = [
     "InvalidApprovalTransitionError",
     "ExpiredApprovalError",
     "LLMAgentRiskGatedExecutionService",
+    "effective_status",
 ]
