@@ -3,7 +3,14 @@ from datetime import datetime
 
 from backend.agent_policy_risk_approval import APPROVED, REJECTED
 from backend.agent_policy_risk_assessment import LEVELS
-from backend.agent_policy_risk_review_queue import CLAIMED, RESOLVED, STATUSES, LLMAgentRiskReviewQueue
+from backend.agent_policy_risk_review_queue import (
+    CLAIMED,
+    EXPIRED,
+    PENDING,
+    RESOLVED,
+    STATUSES,
+    LLMAgentRiskReviewQueue,
+)
 
 from .models import ReviewMetrics
 
@@ -156,12 +163,25 @@ class LLMAgentRiskReviewMetrics:
         by_outcome = {outcome: 0 for outcome in _OUTCOMES}
         by_risk_level = {level: 0 for level in LEVELS}
         reviewer_workload: dict = {}
+        stuck_items: list = []
         resolution_seconds_total = 0.0
         resolved_count = 0
 
         for item in items:
             by_status[item.status] += 1
             by_risk_level[item.decision.risk_level] += 1
+
+            if item.status in (PENDING, EXPIRED):
+                stuck_items.append(
+                    {
+                        "item_id": item.item_id,
+                        "scope_id": item.scope_id,
+                        "status": item.status,
+                        "risk_level": item.decision.risk_level,
+                        "created_at": item.created_at,
+                        "expires_at": item.expires_at,
+                    }
+                )
 
             if item.status == CLAIMED and item.claimed_by:
                 reviewer_workload.setdefault(item.claimed_by, {"active": 0, "resolved": 0})
@@ -192,4 +212,5 @@ class LLMAgentRiskReviewMetrics:
             by_risk_level=by_risk_level,
             average_resolution_seconds=average_resolution_seconds,
             reviewer_workload=reviewer_workload,
+            stuck_items=stuck_items,
         )

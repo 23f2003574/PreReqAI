@@ -35,6 +35,14 @@ class ReviewMetrics(object):
             backend.agent_policy_metrics.PolicyMetrics's own by_policy/
             by_rule sparsity convention); a reviewer with zero of either
             never appears
+        stuck_items: Every matching PENDING or EXPIRED item (the ones
+            with no forward progress), each as {item_id, scope_id,
+            status, risk_level, created_at, expires_at} -- identifiers
+            and timestamps only, added for Commit #12's own report to
+            reshape for "identifying review bottlenecks" without that
+            report needing a second source of truth or its own copy of
+            this iteration (see Rules: "Keep reporting separate from
+            metric collection")
     """
 
     scope_id: str
@@ -44,3 +52,4 @@ class ReviewMetrics(object):
     by_risk_level: dict
     average_resolution_seconds: float
     reviewer_workload: dict = field(default_factory=dict)
+    stuck_items: list = field(default_factory=list)
