@@ -8,6 +8,7 @@ from .models import (
     InvalidRiskThresholdsError,
     RiskAction,
     RiskThresholds,
+    resolve_action,
 )
 from .service import InvalidRiskClassificationError, LLMAgentPolicyRiskThresholdService
 from .store import RiskThresholdsStore
@@ -19,6 +20,7 @@ __all__ = [
     "ACTIONS",
     "DEFAULT_REVIEW_AT",
     "DEFAULT_DENY_AT",
+    "resolve_action",
     "InvalidRiskThresholdsError",
     "RiskThresholdsStore",
     "InMemoryRiskThresholdsStore",

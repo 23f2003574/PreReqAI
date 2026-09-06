@@ -1,9 +1,8 @@
-from backend.agent_policy_engine import ALLOW, DENY
 from backend.agent_policy_risk_assessment import LEVELS
 from backend.agent_policy_risk_classification import RiskClassification
 
 from .in_memory_store import InMemoryRiskThresholdsStore
-from .models import REVIEW, InvalidRiskThresholdsError, RiskAction, RiskThresholds
+from .models import InvalidRiskThresholdsError, RiskAction, RiskThresholds, resolve_action
 from .store import RiskThresholdsStore
 
 
@@ -117,23 +116,11 @@ class LLMAgentPolicyRiskThresholdService:
             )
 
         thresholds = self.get(scope_id)
-        level_index = LEVELS.index(classification.risk_level)
-
-        if level_index >= LEVELS.index(thresholds.deny_at):
-            action, reason = DENY, (
-                f"risk level {classification.risk_level!r} is at or above deny_at "
-                f"({thresholds.deny_at!r}) for scope {scope_id!r}"
-            )
-        elif level_index >= LEVELS.index(thresholds.review_at):
-            action, reason = REVIEW, (
-                f"risk level {classification.risk_level!r} is at or above review_at "
-                f"({thresholds.review_at!r}) for scope {scope_id!r}"
-            )
-        else:
-            action, reason = ALLOW, (
-                f"risk level {classification.risk_level!r} is below review_at "
-                f"({thresholds.review_at!r}) for scope {scope_id!r}"
-            )
+        action = resolve_action(classification.risk_level, thresholds.review_at, thresholds.deny_at)
+        reason = (
+            f"risk level {classification.risk_level!r} resolves to {action!r} against "
+            f"review_at={thresholds.review_at!r}/deny_at={thresholds.deny_at!r} for scope {scope_id!r}"
+        )
 
         return RiskAction(
             action=action,

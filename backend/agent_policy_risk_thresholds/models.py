@@ -29,6 +29,36 @@ class InvalidRiskThresholdsError(ValueError):
     out of order."""
 
 
+def resolve_action(risk_level: str, review_at: str, deny_at: str) -> str:
+    """The single source of truth mapping a risk_level against a
+    review_at/deny_at pair to ALLOW/REVIEW/DENY.
+
+    Pulled out as its own pure function (rather than kept inline in
+    LLMAgentPolicyRiskThresholdService.evaluate()) so a later caller
+    that already has a resolved review_at/deny_at pair -- but not
+    necessarily a persisted, scope-bound RiskThresholds record (e.g.
+    Commit #4's own decision engine, falling back to
+    DEFAULT_REVIEW_AT/DEFAULT_DENY_AT when no thresholds were
+    configured for a scope) -- can reuse the exact same comparison
+    rather than a second copy of it (see Rules: "No duplicate policy
+    evaluation" / "Apply configured thresholds deterministically").
+
+    Raises:
+        InvalidRiskThresholdsError: If risk_level, review_at, or
+            deny_at is not one of LEVELS
+    """
+    for name, value in (("risk_level", risk_level), ("review_at", review_at), ("deny_at", deny_at)):
+        if value not in LEVELS:
+            raise InvalidRiskThresholdsError(f"{name} {value!r} is not one of {LEVELS}")
+
+    level_index = LEVELS.index(risk_level)
+    if level_index >= LEVELS.index(deny_at):
+        return DENY
+    if level_index >= LEVELS.index(review_at):
+        return REVIEW
+    return ALLOW
+
+
 @dataclass(frozen=True)
 class RiskThresholds:
     """One scope's configurable mapping from Commit #1's own
