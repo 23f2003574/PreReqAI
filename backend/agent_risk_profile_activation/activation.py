@@ -7,7 +7,7 @@ from backend.agent_risk_profile import (
     RiskProfileActionRule,
 )
 from backend.agent_risk_profile_compatibility import LLMAgentRiskProfileCompatibility
-from backend.agent_risk_profile_versioning import LLMAgentRiskProfileVersionService
+from backend.agent_risk_profile_versioning import LLMAgentRiskProfileVersionService, profile_from_version
 
 from .models import ACTIVATED, ALREADY_ACTIVE, ActivationResult
 
@@ -173,7 +173,7 @@ class LLMAgentRiskProfileActivationService:
 
         target_version = self._version_service.get_version(profile_id, version)
 
-        prospective = self._prospective_profile(profile, target_version)
+        prospective = profile_from_version(profile, target_version)
         context = dict(target_context) if target_context is not None else {}
         context.setdefault("scope_id", scope_id)
         compatibility_result = self._compatibility.check(prospective, context)
@@ -259,22 +259,3 @@ class LLMAgentRiskProfileActivationService:
         profile = defaults[0]
         version = self._version_service.get_version(profile.profile_id, profile.version)
         return profile, version
-
-    @staticmethod
-    def _prospective_profile(profile: LLMAgentRiskProfile, target_version) -> LLMAgentRiskProfile:
-        """A purely in-memory LLMAgentRiskProfile reflecting
-        target_version's own frozen definition applied to profile's real
-        identity -- never persisted, used only to run Commit #5's
-        compatibility check before anything actually changes."""
-        definition = target_version.definition
-        return LLMAgentRiskProfile(
-            scope_id=profile.scope_id,
-            name=definition["name"],
-            action_rules=[RiskProfileActionRule.from_dict(rule) for rule in definition["action_rules"]],
-            default_level=definition["default_level"],
-            status=profile.status,
-            version=target_version.version,
-            action_name=definition["action_name"],
-            action_category=definition["action_category"],
-            profile_id=profile.profile_id,
-        )

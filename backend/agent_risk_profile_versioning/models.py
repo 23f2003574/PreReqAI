@@ -2,6 +2,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from backend.agent_risk_profile import LLMAgentRiskProfile, RiskProfileActionRule
+
 
 @dataclass(frozen=True)
 class LLMAgentRiskProfileVersion:
@@ -52,3 +54,34 @@ class LLMAgentRiskProfileVersion:
         if isinstance(value, str):
             payload["created_at"] = datetime.fromisoformat(value)
         return cls(**payload)
+
+
+def profile_from_version(profile: LLMAgentRiskProfile, version: LLMAgentRiskProfileVersion) -> LLMAgentRiskProfile:
+    """A purely in-memory LLMAgentRiskProfile reflecting version's own
+    frozen definition applied to profile's real identity -- never
+    persisted.
+
+    Pulled out as its own pure function (Commit #6's own
+    LLMAgentRiskProfileActivationService._prospective_profile(), moved
+    here unchanged) so a later caller that needs to preview a specific
+    historical version against a real profile's identity -- Commit #6's
+    own activate() before ever mutating anything, and Commit #9's own
+    impact analyzer, which needs the identical reconstruction to run
+    Commit #5's compatibility check and Commit #8's simulator against a
+    not-yet-activated version -- shares the exact same reconstruction
+    rather than a second copy of it (see Rules: "No duplicate risk
+    engine" / "reuse existing resolution/simulation/compatibility
+    logic").
+    """
+    definition = version.definition
+    return LLMAgentRiskProfile(
+        scope_id=profile.scope_id,
+        name=definition["name"],
+        action_rules=[RiskProfileActionRule.from_dict(rule) for rule in definition["action_rules"]],
+        default_level=definition["default_level"],
+        status=profile.status,
+        version=version.version,
+        action_name=definition["action_name"],
+        action_category=definition["action_category"],
+        profile_id=profile.profile_id,
+    )
