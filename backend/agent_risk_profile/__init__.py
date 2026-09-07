@@ -8,6 +8,8 @@ from .models import (
     LLMAgentRiskProfile,
     RiskProfileActionRule,
     RiskProfileResolution,
+    constraints_met,
+    resolve_level,
 )
 from .service import (
     ActiveRiskProfileExistsError,
@@ -28,6 +30,8 @@ __all__ = [
     "ARCHIVED",
     "STATUSES",
     "InvalidRiskProfileActionRuleError",
+    "constraints_met",
+    "resolve_level",
     "RiskProfileStore",
     "InMemoryRiskProfileStore",
     "JsonRiskProfileStore",

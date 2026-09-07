@@ -8,6 +8,7 @@ from .models import (
     LLMAgentRiskProfile,
     RiskProfileActionRule,
     RiskProfileResolution,
+    resolve_level,
 )
 from .store import RiskProfileStore
 
@@ -44,14 +45,18 @@ class ArchivedRiskProfileError(ValueError):
 
 class ActiveRiskProfileExistsError(ValueError):
     """Raised when create() would leave a scope with more than one
-    ACTIVE risk profile at once.
+    ACTIVE risk profile bound to the same specificity key at once (the
+    same scope_id, and the same action_name/action_category/default
+    binding -- see LLMAgentRiskProfileService._specificity_key()).
 
-    A scope has at most one ACTIVE risk profile at any time -- the same
-    "one live record per identity" discipline this repository's own
-    RiskThresholds (one current config per scope) already keeps,
-    applied here so resolve() never needs a precedence/conflict
-    mechanism of its own to pick among several simultaneously-active
-    profiles for the same scope: archive the old one before creating its
+    A scope has at most one ACTIVE risk profile per specificity key at
+    any time -- the same "one live record per identity" discipline this
+    repository's own RiskThresholds (one current config per scope)
+    already keeps, generalized (Commit #2) from "per scope" to "per
+    (scope, specificity key)" so a scope-default profile and any number
+    of distinctly-keyed exact-action/action-category profiles can
+    coexist ACTIVE without ambiguity, while two profiles bound to the
+    exact same key still cannot: archive the old one before creating its
     replacement.
     """
 
@@ -96,12 +101,23 @@ class LLMAgentRiskProfileService:
         action_rules: list = None,
         default_level: str = None,
         status: str = ACTIVE,
+        action_name: str = None,
+        action_category: str = None,
     ) -> LLMAgentRiskProfile:
         """Record a new, version-1 risk profile for scope_id.
 
+        action_name/action_category (Commit #2) optionally bind this
+        profile to a specific action (exact tool_name match) or a
+        broader action category, for
+        backend.agent_risk_profile_resolution.LLMAgentRiskProfileResolver
+        to select by specificity -- at most one of the two may be given;
+        leaving both None (the default) creates an ordinary scope-default
+        profile, exactly as Commit #1 originally defined create().
+
         Raises:
-            InvalidRiskProfileError: If scope_id, name, or default_level
-                is missing or invalid
+            InvalidRiskProfileError: If scope_id, name, default_level,
+                action_name, or action_category is missing or invalid,
+                or both action_name and action_category are given
             InvalidRiskProfileActionRuleError: If any action_rules entry
                 is invalid
             DuplicateActionRuleIdError: If two action_rules share a
@@ -109,18 +125,25 @@ class LLMAgentRiskProfileService:
             InvalidRiskProfileStatusError: If status is given and is not
                 one of STATUSES
             ActiveRiskProfileExistsError: If status is ACTIVE and
-                scope_id already has an ACTIVE risk profile
+                scope_id already has an ACTIVE risk profile bound to the
+                same specificity key (scope-default, or the same
+                action_name/action_category)
         """
         self._validate_scope_id(scope_id)
         self._validate_name(name)
         self._validate_status(status)
         resolved_level = self._validate_default_level(default_level)
         resolved_rules = self._validate_action_rules(action_rules)
+        action_name, action_category = self._validate_action_binding(action_name, action_category)
 
-        if status == ACTIVE and self.store.list_for_scope(scope_id, status=ACTIVE):
-            raise ActiveRiskProfileExistsError(
-                f"scope {scope_id!r} already has an active risk profile; archive it first"
-            )
+        if status == ACTIVE:
+            new_key = self._specificity_key(action_name, action_category)
+            for existing in self.store.list_for_scope(scope_id, status=ACTIVE):
+                if self._specificity_key(existing.action_name, existing.action_category) == new_key:
+                    raise ActiveRiskProfileExistsError(
+                        f"scope {scope_id!r} already has an active risk profile for {new_key!r}; "
+                        f"archive it first"
+                    )
 
         profile = LLMAgentRiskProfile(
             scope_id=scope_id,
@@ -129,6 +152,8 @@ class LLMAgentRiskProfileService:
             default_level=resolved_level,
             status=status,
             version=1,
+            action_name=action_name,
+            action_category=action_category,
         )
         return self.store.save(profile)
 
@@ -206,18 +231,27 @@ class LLMAgentRiskProfileService:
         return self.store.save(profile)
 
     def resolve(self, scope_id: str, action_context: dict):
-        """Resolve action_context against scope_id's current ACTIVE risk
-        profile, if any.
+        """Resolve action_context against scope_id's current ACTIVE
+        scope-default risk profile (action_name and action_category both
+        None), if any.
 
-        Returns None when scope_id has no ACTIVE risk profile at all --
-        existing default risk behavior remains entirely unchanged in
-        that case, since there is nothing here to override it with.
+        Returns None when scope_id has no ACTIVE scope-default risk
+        profile at all -- existing default risk behavior remains
+        entirely unchanged in that case, since there is nothing here to
+        override it with. A scope may also have ACTIVE action-name- or
+        action-category-bound profiles (Commit #2) that this method
+        never considers -- selecting the most specific applicable
+        profile across all three is
+        backend.agent_risk_profile_resolution.LLMAgentRiskProfileResolver's
+        own job; this method's scope-default-only behavior is exactly
+        Commit #1's original resolve(), unchanged.
 
-        When an ACTIVE profile exists, action_rules are checked in
-        order; the first whose match constraints are satisfied by
-        action_context wins. When none match, the profile's own
-        default_level is used instead -- a selected profile always
-        resolves to a definite level, it never falls through to None.
+        When a scope-default ACTIVE profile exists, action_rules are
+        checked in order; the first whose match constraints are
+        satisfied by action_context wins. When none match, the
+        profile's own default_level is used instead -- a selected
+        profile always resolves to a definite level, it never falls
+        through to None.
 
         Raises:
             InvalidRiskProfileError: If scope_id is missing
@@ -229,45 +263,52 @@ class LLMAgentRiskProfileService:
                 f"action_context must be a dict, got {type(action_context).__name__}"
             )
 
-        active = self.store.list_for_scope(scope_id, status=ACTIVE)
-        if not active:
+        defaults = [
+            profile
+            for profile in self.store.list_for_scope(scope_id, status=ACTIVE)
+            if profile.action_name is None and profile.action_category is None
+        ]
+        if not defaults:
             return None
-        profile = active[0]
+        profile = defaults[0]
 
-        for rule in profile.action_rules:
-            if self._matches(rule.match, action_context):
-                return RiskProfileResolution(
-                    profile_id=profile.profile_id,
-                    scope_id=scope_id,
-                    version=profile.version,
-                    level=rule.level,
-                    matched_rule_id=rule.rule_id,
-                    reason=rule.reason or f"action_rule {rule.rule_id!r} matched",
-                    provenance={"profile": profile, "action_context": dict(action_context)},
-                )
-
+        level, matched_rule_id, reason = resolve_level(profile, action_context)
         return RiskProfileResolution(
             profile_id=profile.profile_id,
             scope_id=scope_id,
             version=profile.version,
-            level=profile.default_level,
-            matched_rule_id=None,
-            reason=f"no action_rule matched; using profile {profile.profile_id!r}'s default_level",
+            level=level,
+            matched_rule_id=matched_rule_id,
+            reason=reason,
             provenance={"profile": profile, "action_context": dict(action_context)},
         )
 
     @staticmethod
-    def _matches(match: dict, action_context: dict) -> bool:
-        for field_name, expected in match.items():
-            if field_name not in action_context:
-                return False
-            actual = action_context[field_name]
-            if isinstance(expected, (list, tuple, set, frozenset)):
-                if actual not in expected:
-                    return False
-            elif actual != expected:
-                return False
-        return True
+    def _specificity_key(action_name, action_category):
+        """The identity a risk profile's ACTIVE-uniqueness is keyed on:
+        an exact action binding, an action-category binding, or (both
+        None) the scope-default binding -- mirrors
+        backend.session.execution_network_traffic_policy_service's own
+        endpoint-specific-vs-runtime-wide key shape."""
+        if action_name is not None:
+            return ("action", action_name)
+        if action_category is not None:
+            return ("category", action_category)
+        return ("default", None)
+
+    @staticmethod
+    def _validate_action_binding(action_name, action_category):
+        if action_name is not None and (not isinstance(action_name, str) or not action_name.strip()):
+            raise InvalidRiskProfileError("action_name must be a non-empty string when given")
+        if action_category is not None and (
+            not isinstance(action_category, str) or not action_category.strip()
+        ):
+            raise InvalidRiskProfileError("action_category must be a non-empty string when given")
+        if action_name is not None and action_category is not None:
+            raise InvalidRiskProfileError(
+                "a risk profile may bind to action_name or action_category, not both"
+            )
+        return action_name, action_category
 
     @staticmethod
     def _validate_scope_id(scope_id):

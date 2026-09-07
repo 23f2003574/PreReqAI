@@ -90,6 +90,20 @@ class LLMAgentRiskProfile:
     the same discipline backend.agent_policy_templates.
     LLMAgentPolicyTemplate.version already established for its own
     definition-only version bump.
+
+    action_name/action_category (Commit #2) are this profile's own
+    optional specificity binding, used by
+    backend.agent_risk_profile_resolution.LLMAgentRiskProfileResolver to
+    pick the most specific applicable profile for a scope -- at most one
+    of the two may be set (__post_init__-free by convention with the
+    rest of this mutable record; LLMAgentRiskProfileService validates
+    this), and both being None marks a scope-default profile, the exact
+    role a scope's single ACTIVE profile already played before Commit
+    #2. This mirrors the specific-overrides-general precedence
+    backend.session.execution_network_traffic_policy_service.evaluate()
+    already established for an unrelated domain (an endpoint-specific
+    policy always overrides a runtime-wide default) rather than
+    inventing a new precedence scheme.
     """
 
     scope_id: str
@@ -98,6 +112,8 @@ class LLMAgentRiskProfile:
     default_level: str = LEVEL_LOW
     status: str = ACTIVE
     version: int = 1
+    action_name: Optional[str] = None
+    action_category: Optional[str] = None
     profile_id: str = field(default_factory=lambda: str(uuid4()))
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -148,3 +164,48 @@ class RiskProfileResolution:
     matched_rule_id: Optional[str]
     reason: str
     provenance: dict
+
+
+def constraints_met(match: dict, action_context: dict) -> bool:
+    """Whether every {field: expected} constraint in match holds against
+    action_context -- the exact same {field: expected} shape and
+    matching semantics backend.agent_policy_engine.LLMAgentPolicyEvaluator.
+    _constraints_met() and backend.llm.tool_permissions.
+    LLMToolPermissionService._conditions_met() already use for an
+    unrelated domain's own rule/policy match, mirrored locally here
+    (Commit #1's own precedent) rather than imported cross-module."""
+    for field_name, expected in match.items():
+        if field_name not in action_context:
+            return False
+        actual = action_context[field_name]
+        if isinstance(expected, (list, tuple, set, frozenset)):
+            if actual not in expected:
+                return False
+        elif actual != expected:
+            return False
+    return True
+
+
+def resolve_level(profile: LLMAgentRiskProfile, action_context: dict):
+    """The (level, matched_rule_id, reason) a single profile resolves
+    action_context to: the first action_rule whose match constraints
+    hold, in the profile's own list order, or profile.default_level
+    when none match (matched_rule_id is then None).
+
+    Pulled out as its own pure function (Commit #1's own resolve() body,
+    unchanged in behavior) so Commit #2's
+    backend.agent_risk_profile_resolution.LLMAgentRiskProfileResolver
+    can reuse the exact same within-profile matching once it has already
+    picked which profile applies via its own exact/category/default
+    specificity hierarchy -- never a second copy of this matching logic
+    (see Rules: "No new matching framework").
+    """
+    for rule in profile.action_rules:
+        if constraints_met(rule.match, action_context):
+            return rule.level, rule.rule_id, rule.reason or f"action_rule {rule.rule_id!r} matched"
+
+    return (
+        profile.default_level,
+        None,
+        f"no action_rule matched; using profile {profile.profile_id!r}'s default_level",
+    )
