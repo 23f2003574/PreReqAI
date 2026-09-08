@@ -154,9 +154,19 @@ class LLMAgentCapabilityExecutionService:
     def fail(self, execution_id: str, error) -> LLMAgentCapabilityExecution:
         """Close execution_id as FAILED with a short, redacted error.
 
-        error may be an exception or a string; either way it is rendered
-        with str() and passed through the repository's canonical
-        secret-redaction service before being stored.
+        error may be an exception or a string. An exception is rendered
+        as "ClassName: detail" -- the same shape
+        backend.llm.tool_execution.LLMToolExecutionService.execute()
+        already formats a caught exception into before recording it, and
+        the exact shape backend.llm.tool_retry.LLMToolRetryService.
+        should_retry()'s own error-text matching already expects (it
+        matches on the leading class name) -- so a caller wanting to
+        classify a FAILED capability execution's retryability (Commit
+        #11's own LLMAgentCapabilityRecoveryService) can reuse that
+        existing classifier directly against this field, never a second
+        one. A plain string is stored as given. Either way, the result
+        is passed through the repository's canonical secret-redaction
+        service before being stored.
 
         Raises:
             UnknownCapabilityExecutionError: If execution_id was never
@@ -168,7 +178,10 @@ class LLMAgentCapabilityExecutionService:
         """
         execution = self._require_running(execution_id)
 
-        error_text = str(error) if error is not None else ""
+        if isinstance(error, BaseException):
+            error_text = f"{type(error).__name__}: {error}"
+        else:
+            error_text = str(error) if error is not None else ""
         if not error_text.strip():
             raise InvalidCapabilityExecutionError("error is required and must not be blank")
 

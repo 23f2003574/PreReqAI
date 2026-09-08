@@ -51,7 +51,7 @@ def test_start_fail_lifecycle():
 
     assert failed.status == FAILED
     assert failed.completed_at is not None
-    assert failed.error == "boom"
+    assert failed.error == "ValueError: boom"
     assert failed.output_reference is None
 
 
