@@ -148,43 +148,63 @@ class LLMAgentCapabilityContractService:
             )
         return contract
 
-    def validate_input(self, capability_id: str, payload) -> LLMAgentCapabilityContractCheck:
-        """Check payload against capability_id's current contract's
-        input_schema. Never raises for a payload that fails -- every
-        mismatch is collected into the returned check's violations.
+    def validate_input(self, capability_id: str, payload, version: str = None) -> LLMAgentCapabilityContractCheck:
+        """Check payload against capability_id's contract's input_schema
+        -- the contract at version, or (version=None) at the
+        capability's current LLMAgentCapabilityRegistry version. Never
+        raises for a payload that fails -- every mismatch is collected
+        into the returned check's violations.
+
+        version (Commit #8) lets a caller validate against a specific,
+        possibly no-longer-current contract version -- e.g. Commit #8's
+        own LLMAgentCapabilityExecutionValidator, which must validate
+        against the exact version an already-started execution recorded,
+        never whatever the capability's current version happens to be by
+        the time validation runs. Every existing caller that never passes
+        version keeps today's exact behavior.
 
         Raises:
             UnknownCapabilityError, UnknownContractError: As get()
         """
-        contract = self.get(capability_id)
+        contract = self.get(capability_id, version=version)
         violations = self._schema_violations(contract, contract.input_schema, payload, CHECK_INPUT)
         return self._check(contract, CHECK_INPUT, violations)
 
-    def validate_output(self, capability_id: str, payload) -> LLMAgentCapabilityContractCheck:
-        """Check payload against capability_id's current contract's
-        output_schema. Never raises for a payload that fails -- every
-        mismatch is collected into the returned check's violations.
+    def validate_output(self, capability_id: str, payload, version: str = None) -> LLMAgentCapabilityContractCheck:
+        """Check payload against capability_id's contract's output_schema
+        -- the contract at version, or (version=None) at the
+        capability's current LLMAgentCapabilityRegistry version. Never
+        raises for a payload that fails -- every mismatch is collected
+        into the returned check's violations.
+
+        See validate_input()'s own version parameter for why (Commit #8).
 
         Raises:
             UnknownCapabilityError, UnknownContractError: As get()
         """
-        contract = self.get(capability_id)
+        contract = self.get(capability_id, version=version)
         violations = self._schema_violations(contract, contract.output_schema, payload, CHECK_OUTPUT)
         return self._check(contract, CHECK_OUTPUT, violations)
 
-    def check_requirements(self, capability_id: str, context: dict) -> LLMAgentCapabilityContractCheck:
-        """Check context against capability_id's current contract's
+    def check_requirements(
+        self, capability_id: str, context: dict, version: str = None
+    ) -> LLMAgentCapabilityContractCheck:
+        """Check context against capability_id's contract's
         required_context (presence only) and requirements ({field:
-        expected} value constraints). Never raises for a context that
-        fails -- every missing key and unmet constraint is collected
+        expected} value constraints) -- the contract at version, or
+        (version=None) at the capability's current
+        LLMAgentCapabilityRegistry version. Never raises for a context
+        that fails -- every missing key and unmet constraint is collected
         into the returned check's violations (Rule: "missing required
         context or requirements must produce structured failures").
+
+        See validate_input()'s own version parameter for why (Commit #8).
 
         Raises:
             UnknownCapabilityError, UnknownContractError: As get()
             InvalidCapabilityContractError: If context is not a dict
         """
-        contract = self.get(capability_id)
+        contract = self.get(capability_id, version=version)
         if not isinstance(context, dict):
             raise InvalidCapabilityContractError(
                 f"context must be a dict, got {type(context).__name__}"
