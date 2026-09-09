@@ -7,13 +7,19 @@ from uuid import uuid4
 # Commit #1's VALID_CONTEXT_TYPES: "project_context" and "context_version"
 # point at Commit #1/#2's own records and are verified against them when
 # possible; "research_artifact" points at backend.session's ResearchArtifact;
-# "external" covers anything the repository has no store to verify against
-# (a notebook cell, an uploaded file, a URL) and is accepted on trust.
+# "agent_memory" points at backend.agent_execution_memory's LLMAgentMemory
+# (added by backend.agent_task_context_resolution, which is the first
+# consumer to attach provenance for an injected memory rather than a
+# stored context -- additive only, verified against nothing in this
+# module, the same trust level "external" already gets); "external"
+# covers anything the repository has no store to verify against (a
+# notebook cell, an uploaded file, a URL) and is accepted on trust.
 VALID_SOURCE_TYPES = frozenset(
     {
         "project_context",
         "context_version",
         "research_artifact",
+        "agent_memory",
         "external",
     }
 )
