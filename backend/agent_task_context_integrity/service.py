@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from backend.agent_policy_engine import DENY, LLMAgentPolicyEvaluator
 from backend.agent_policy_resolution import LLMAgentPolicyResolver
 from backend.agent_task_context_packaging import AgentContextPackage
@@ -6,6 +8,7 @@ from backend.llm.context_injection import CONTEXT_ROLE
 from backend.llm.context_provenance import (
     VALID_SOURCE_TYPES,
     InvalidSourceError,
+    LLMContextProvenance,
     LLMContextProvenanceService,
     SecretProvenanceError,
 )
@@ -92,6 +95,7 @@ class LLMAgentTaskContextIntegrityService:
 
         provenance_by_id = {}
         for record in package.provenance:
+            record = self._normalize_provenance(record)
             provenance_by_id[record.context_id] = record  # last (most recent) wins
 
         for message in package.context:
@@ -190,6 +194,24 @@ class LLMAgentTaskContextIntegrityService:
             issue_text = "; ".join(issues)
             provenance_issues.append({"id": source_id, "issue": issue_text})
             errors.append(f"source {source_id!r} has inconsistent provenance: {issue_text}")
+
+    @staticmethod
+    def _normalize_provenance(record):
+        """package.provenance (backend.agent_task_context_packaging.
+        AgentContextPackage's own documented shape) holds plain dicts --
+        Commit #4's packager renders each LLMContextProvenance via
+        asdict() for JSON-friendliness -- reconstructed back into the
+        real repository type here, the same conversion backend.
+        agent_task_context_provenance.provenance_from_dict() already
+        performs for the identical shape mismatch. A caller that already
+        passes real LLMContextProvenance instances is unaffected."""
+        if isinstance(record, LLMContextProvenance):
+            return record
+        payload = dict(record)
+        created_at = payload.get("created_at")
+        if isinstance(created_at, str):
+            payload["created_at"] = datetime.fromisoformat(created_at)
+        return LLMContextProvenance(**payload)
 
     @staticmethod
     def _provenance_shape_issues(record) -> list:
