@@ -29,6 +29,13 @@ class BudgetedAgentTaskContext:
     of what budgeting did with it (kept unchanged / shrunk to fit /
     dropped), the same "never silently imply a decision" discipline
     every other *Result in this repository already keeps.
+
+    selected_memories is context.selected_memories, passed through
+    unchanged (added by Commit #4, additive): this commit's own Rules
+    never asked for memory to be token-budgeted, only project context,
+    so there is nothing to drop or shrink here -- but Commit #4's own
+    packaging step needs a memories value on whatever it is given, and
+    ResolvedAgentTaskContext is not itself Commit #4's second argument.
     """
 
     task_id: str
@@ -42,3 +49,4 @@ class BudgetedAgentTaskContext:
     truncation_applied: bool
     reasons: dict
     provenance: list
+    selected_memories: list

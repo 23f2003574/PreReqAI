@@ -124,6 +124,7 @@ class LLMAgentTaskContextBudgeter:
             truncation_applied=truncation_applied,
             reasons=reasons,
             provenance=list(context.provenance),
+            selected_memories=list(context.selected_memories),
         )
 
     @staticmethod
