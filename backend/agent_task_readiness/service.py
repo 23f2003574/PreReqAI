@@ -2,6 +2,7 @@ from backend.agent_policy_engine import LLMAgentPolicyService
 from backend.agent_policy_enforcement import LLMAgentPolicyEnforcement, PolicyEvaluationFailedError, is_blocking
 from backend.agent_policy_resolution import LLMAgentPolicyResolver
 from backend.agent_task_context import LLMAgentTaskContextService, UnknownTaskContextError
+from backend.agent_task_dependencies import LLMAgentTaskDependencyService
 from backend.agent_task_lifecycle import RUNNING, LLMAgentTaskLifecycleService, UnknownAgentTaskError
 from backend.agent_task_planning import LLMAgentPlanningService, UnknownAgentPlanError
 from backend.agent_task_state_validation import LLMAgentTaskStateValidator
@@ -60,16 +61,27 @@ class LLMAgentTaskReadinessService:
         usable zero-argument default -- see __init__'s own docstring);
         with both present, the referenced backend.agent_task_planning.
         LLMAgentPlan must exist and its own validate() must report True.
-        Deliberately covers "required
-        dependencies are satisfied" too: a plan's own validate()/create()
-        already guarantee every step's depends_on references a real
-        step_id with no cycle (see that module's own LLMAgentPlan
-        docstring) -- there is no separate, pre-execution notion of
-        "dependencies satisfied" to check beyond that; backend.
+        This only ever covers a *plan's own internal* step graph: a
+        plan's validate()/create() already guarantee every step's
+        depends_on references a real step_id with no cycle (see that
+        module's own LLMAgentPlan docstring); backend.
         agent_dependency_resolution is scoped to steps of an
         *already-started* execution (it takes an execution_id, only
         created once a task is already RUNNING), so it has nothing to
         answer before that point and is not reused here.
+      - dependencies: only when a dependency_service was actually
+        supplied to __init__ -- Commit #5's own backend.
+        agent_task_dependencies.LLMAgentTaskDependencyService.
+        check_dependencies(task_id) is called and consumed directly
+        (Rule: "existing task readiness should be able to consume this
+        result rather than duplicate dependency checks" -- this is the
+        *task-to-task* prerequisite graph Commit #5 introduces, a
+        completely different thing from one plan's own internal step
+        graph immediately above). Every pending/failed/blocked
+        dependency_task_id in the result becomes its own blocking
+        reason; an unsatisfied result is never collapsed to one vague
+        message, so a caller can see exactly which prerequisite(s) are
+        still outstanding.
       - context: only when definition sets "requires_context" truthy --
         backend.agent_task_context.LLMAgentTaskContextService.get(task_id)
         must succeed (the same task_id joins both records, exactly as
@@ -95,6 +107,7 @@ class LLMAgentTaskReadinessService:
         context_service: LLMAgentTaskContextService = None,
         planning_service: LLMAgentPlanningService = None,
         policy_enforcement: LLMAgentPolicyEnforcement = None,
+        dependency_service: LLMAgentTaskDependencyService = None,
     ):
         """
         Args:
@@ -116,6 +129,10 @@ class LLMAgentTaskReadinessService:
                 backend.agent_policy_enforcement.LLMAgentPolicyEnforcement
                 over a fresh, empty policy store (so "policy" always
                 passes unless a caller supplies the real, populated one)
+            dependency_service: No default (mirrors planning_service --
+                it must be the exact instance holding a task's recorded
+                dependency edges); left None, the "dependencies" check
+                is always skipped
         """
         self._lifecycle_service = lifecycle_service
         self._context_service = context_service if context_service is not None else LLMAgentTaskContextService()
@@ -134,6 +151,7 @@ class LLMAgentTaskReadinessService:
             if policy_enforcement is not None
             else LLMAgentPolicyEnforcement(LLMAgentPolicyResolver(LLMAgentPolicyService()))
         )
+        self._dependency_service = dependency_service
 
     def is_ready(self, task_id: str) -> bool:
         """Shorthand for check(task_id).ready."""
@@ -162,6 +180,7 @@ class LLMAgentTaskReadinessService:
         self._check_lifecycle_state(task, checks, blocking_reasons)
         self._check_task_record(task, checks, blocking_reasons, warnings)
         self._check_plan(task, checks, blocking_reasons)
+        self._check_dependencies(task, checks, blocking_reasons)
         self._check_context(task, checks, blocking_reasons, warnings)
         self._check_policy(task, checks, blocking_reasons)
 
@@ -222,6 +241,23 @@ class LLMAgentTaskReadinessService:
         reason = f"plan {plan_id!r} is not valid (a referenced tool may be missing/disabled, or a step is REJECTED)"
         blocking_reasons.append(reason)
         checks.append(AgentTaskReadinessCheck(name="plan", passed=False, detail=reason))
+
+    def _check_dependencies(self, task, checks, blocking_reasons) -> None:
+        if self._dependency_service is None:
+            return
+
+        result = self._dependency_service.check_dependencies(task.task_id)
+        if result.satisfied:
+            checks.append(AgentTaskReadinessCheck(name="dependencies", passed=True))
+            return
+
+        reasons = (
+            [f"dependency {dep!r} has not completed yet" for dep in result.pending]
+            + [f"dependency {dep!r} failed or was cancelled" for dep in result.failed]
+            + [f"dependency {dep!r} is missing or part of a dependency cycle" for dep in result.blocked]
+        )
+        blocking_reasons.extend(reasons)
+        checks.append(AgentTaskReadinessCheck(name="dependencies", passed=False, detail="; ".join(reasons)))
 
     def _check_context(self, task, checks, blocking_reasons, warnings) -> None:
         requires_context = isinstance(task.definition, dict) and task.definition.get("requires_context")
