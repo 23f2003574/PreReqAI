@@ -7,6 +7,7 @@ from backend.agent_policy_enforcement import LLMAgentPolicyEnforcement
 from backend.agent_policy_resolution import LLMAgentPolicyResolver
 from backend.agent_task_context import LLMAgentTaskContextService
 from backend.agent_task_dependencies import LLMAgentTaskDependencyService
+from backend.agent_task_dependency_resolution import LLMAgentTaskDependencyResolver
 from backend.agent_task_lifecycle import (
     COMPLETED,
     CREATED,
@@ -285,6 +286,44 @@ def test_dependency_check_is_skipped_without_a_configured_dependency_service():
 
     assert result.ready is True
     assert "dependencies" not in [check.name for check in result.checks]
+
+
+def test_transitive_dependency_unsatisfied_blocks_via_resolver():
+    lifecycle_service = LLMAgentTaskLifecycleService()
+    task = _task_in_state(lifecycle_service, READY)
+    mid = _task_in_state(lifecycle_service, READY)
+    leaf = _task_in_state(lifecycle_service, RUNNING)
+    dependency_service = LLMAgentTaskDependencyService(lifecycle_service)
+    dependency_service.add_dependency(task.task_id, mid.task_id)
+    dependency_service.add_dependency(mid.task_id, leaf.task_id)
+    dependency_resolver = LLMAgentTaskDependencyResolver(lifecycle_service, dependency_service)
+    readiness_service = LLMAgentTaskReadinessService(lifecycle_service, dependency_resolver=dependency_resolver)
+
+    result = readiness_service.check(task.task_id)
+
+    # mid itself is not yet started, and leaf (mid's own dependency) is
+    # still RUNNING -- neither Commit #5's direct-only check could see
+    # mid at all here, since mid is only a *transitive* dependency.
+    assert result.ready is False
+    assert any("has not completed yet" in reason for reason in result.blocking_reasons)
+
+
+def test_dependency_resolver_takes_priority_over_dependency_service():
+    lifecycle_service = LLMAgentTaskLifecycleService()
+    task = _task_in_state(lifecycle_service, READY)
+    prerequisite = _task_in_state(lifecycle_service, RUNNING)
+    prerequisite = lifecycle_service.transition(prerequisite.task_id, COMPLETED)
+    dependency_service = LLMAgentTaskDependencyService(lifecycle_service)
+    dependency_service.add_dependency(task.task_id, prerequisite.task_id)
+    dependency_resolver = LLMAgentTaskDependencyResolver(lifecycle_service, dependency_service)
+    readiness_service = LLMAgentTaskReadinessService(
+        lifecycle_service, dependency_service=dependency_service, dependency_resolver=dependency_resolver
+    )
+
+    result = readiness_service.check(task.task_id)
+
+    assert result.ready is True
+    assert "dependencies" in [check.name for check in result.checks]
 
 
 def test_policy_deny_blocks_with_reason():

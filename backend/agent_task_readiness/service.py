@@ -3,6 +3,7 @@ from backend.agent_policy_enforcement import LLMAgentPolicyEnforcement, PolicyEv
 from backend.agent_policy_resolution import LLMAgentPolicyResolver
 from backend.agent_task_context import LLMAgentTaskContextService, UnknownTaskContextError
 from backend.agent_task_dependencies import LLMAgentTaskDependencyService
+from backend.agent_task_dependency_resolution import LLMAgentTaskDependencyResolver
 from backend.agent_task_lifecycle import RUNNING, LLMAgentTaskLifecycleService, UnknownAgentTaskError
 from backend.agent_task_planning import LLMAgentPlanningService, UnknownAgentPlanError
 from backend.agent_task_state_validation import LLMAgentTaskStateValidator
@@ -69,19 +70,25 @@ class LLMAgentTaskReadinessService:
         *already-started* execution (it takes an execution_id, only
         created once a task is already RUNNING), so it has nothing to
         answer before that point and is not reused here.
-      - dependencies: only when a dependency_service was actually
-        supplied to __init__ -- Commit #5's own backend.
-        agent_task_dependencies.LLMAgentTaskDependencyService.
-        check_dependencies(task_id) is called and consumed directly
-        (Rule: "existing task readiness should be able to consume this
-        result rather than duplicate dependency checks" -- this is the
-        *task-to-task* prerequisite graph Commit #5 introduces, a
+      - dependencies: only when a dependency_resolver or a
+        dependency_service was actually supplied to __init__ -- this is
+        the *task-to-task* prerequisite graph Commit #5 introduces, a
         completely different thing from one plan's own internal step
-        graph immediately above). Every pending/failed/blocked
-        dependency_task_id in the result becomes its own blocking
-        reason; an unsatisfied result is never collapsed to one vague
-        message, so a caller can see exactly which prerequisite(s) are
-        still outstanding.
+        graph immediately above. When a dependency_resolver is given,
+        Commit #6's own backend.agent_task_dependency_resolution.
+        LLMAgentTaskDependencyResolver.resolve(task_id) is called and
+        its result consumed directly -- no traversal of any kind
+        happens here (Rule: "existing readiness checks should be able
+        to consume this resolver rather than reimplement traversal") --
+        covering task_id's *whole transitive* dependency graph:
+        outstanding pending/failed/blocked/unresolved dependencies and
+        any cycle each become their own blocking reason. Without a
+        dependency_resolver, a dependency_service falls back to Commit
+        #5's own check_dependencies(task_id) instead -- *direct*
+        dependencies only, kept only for a caller that has not yet
+        moved to Commit #6's resolver. A dependency_resolver takes
+        priority when both are given, since it is a strict superset of
+        what check_dependencies() alone can see.
       - context: only when definition sets "requires_context" truthy --
         backend.agent_task_context.LLMAgentTaskContextService.get(task_id)
         must succeed (the same task_id joins both records, exactly as
@@ -108,6 +115,7 @@ class LLMAgentTaskReadinessService:
         planning_service: LLMAgentPlanningService = None,
         policy_enforcement: LLMAgentPolicyEnforcement = None,
         dependency_service: LLMAgentTaskDependencyService = None,
+        dependency_resolver: LLMAgentTaskDependencyResolver = None,
     ):
         """
         Args:
@@ -131,8 +139,14 @@ class LLMAgentTaskReadinessService:
                 passes unless a caller supplies the real, populated one)
             dependency_service: No default (mirrors planning_service --
                 it must be the exact instance holding a task's recorded
-                dependency edges); left None, the "dependencies" check
-                is always skipped
+                dependency edges); enables only a *direct*-dependencies
+                "dependencies" check, and only when dependency_resolver
+                is not also given
+            dependency_resolver: No default; the exact Commit #6
+                LLMAgentTaskDependencyResolver instance built over a
+                task's real dependency graph. Enables the *transitive*
+                "dependencies" check, and takes priority over
+                dependency_service when both are given
         """
         self._lifecycle_service = lifecycle_service
         self._context_service = context_service if context_service is not None else LLMAgentTaskContextService()
@@ -152,6 +166,7 @@ class LLMAgentTaskReadinessService:
             else LLMAgentPolicyEnforcement(LLMAgentPolicyResolver(LLMAgentPolicyService()))
         )
         self._dependency_service = dependency_service
+        self._dependency_resolver = dependency_resolver
 
     def is_ready(self, task_id: str) -> bool:
         """Shorthand for check(task_id).ready."""
@@ -243,9 +258,32 @@ class LLMAgentTaskReadinessService:
         checks.append(AgentTaskReadinessCheck(name="plan", passed=False, detail=reason))
 
     def _check_dependencies(self, task, checks, blocking_reasons) -> None:
-        if self._dependency_service is None:
+        if self._dependency_resolver is not None:
+            self._check_dependencies_via_resolver(task, checks, blocking_reasons)
+            return
+        if self._dependency_service is not None:
+            self._check_dependencies_via_service(task, checks, blocking_reasons)
+
+    def _check_dependencies_via_resolver(self, task, checks, blocking_reasons) -> None:
+        resolution = self._dependency_resolver.resolve(task.task_id)
+        reasons = (
+            [f"dependency {dep!r} has not completed yet" for dep in resolution.pending_dependencies]
+            + [f"dependency {dep!r} failed or was cancelled" for dep in resolution.failed_dependencies]
+            + [
+                f"dependency {dep!r} is blocked by an upstream failure/cycle"
+                for dep in resolution.blocked_dependencies
+            ]
+            + [f"dependency {dep!r} could not be resolved (missing task)" for dep in resolution.unresolved_dependencies]
+            + [f"dependency graph contains a cycle involving {dep!r}" for dep in resolution.cycles]
+        )
+        if not reasons:
+            checks.append(AgentTaskReadinessCheck(name="dependencies", passed=True))
             return
 
+        blocking_reasons.extend(reasons)
+        checks.append(AgentTaskReadinessCheck(name="dependencies", passed=False, detail="; ".join(reasons)))
+
+    def _check_dependencies_via_service(self, task, checks, blocking_reasons) -> None:
         result = self._dependency_service.check_dependencies(task.task_id)
         if result.satisfied:
             checks.append(AgentTaskReadinessCheck(name="dependencies", passed=True))
