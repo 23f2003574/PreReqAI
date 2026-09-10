@@ -27,9 +27,11 @@ class LLMAgentTaskDependencyReadinessCache:
     That fingerprint check alone cannot catch a purely structural
     change (a Commit #5 dependency edge added or removed touches no
     AgentTask.updated_at at all) -- invalidate()/invalidate_dependents()
-    exist for exactly that, and .tracked's
-    LLMAgentTaskDependencyCacheInvalidatingService/
-    LLMAgentTaskLifecycleCacheInvalidatingService call them
+    exist for exactly that, and Commit #10's own backend.
+    agent_task_dependency_readiness_invalidation (its own
+    LLMAgentTaskDependencyReadinessInvalidationService, called from that
+    same module's own tracked LLMAgentTaskDependencyCacheInvalidatingService/
+    LLMAgentTaskLifecycleCacheInvalidatingService) calls them
     automatically after every real mutation, the same "the entity
     service never records/invalidates on its own; a thin wrapper does"
     split backend.agent_task_state_history.tracked and backend.
