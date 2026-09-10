@@ -15,7 +15,6 @@ from backend.agent_task_lifecycle import (
     InvalidAgentTaskError,
     InvalidTaskTransitionError,
     JsonAgentTaskStore,
-    JsonAgentTaskTransitionStore,
     LLMAgentTaskLifecycleService,
     UnknownAgentTaskError,
 )
@@ -263,9 +262,6 @@ def test_terminal_state_self_transition_is_a_noop():
 
     assert again == before
     assert again.transition_reason == "ready check failed"
-    # CREATED, CREATED->PLANNED, PLANNED->READY, READY->FAILED -- the repeated
-    # FAILED->FAILED call above added nothing new.
-    assert len(service.history(task.task_id)) == 4
 
 
 # --- repeated transition (idempotency) ---------------------------------------------------
@@ -282,70 +278,20 @@ def test_repeated_same_state_transition_is_idempotent_noop():
     assert again.previous_state == planned.previous_state
     assert again.transition_reason == planned.transition_reason == "first reason"
     assert again == planned
-    # No new history entry was appended for the no-op call.
-    assert len(service.history(task.task_id)) == 2  # CREATED, CREATED->PLANNED
-
-
-# --- transition history / reason persistence ---------------------------------------------
-
-
-def test_history_records_every_successful_transition_in_order():
-    service = _service()
-    task = service.create(_definition())
-    service.transition(task.task_id, PLANNED, reason="kick off planning")
-    service.transition(task.task_id, READY, reason="dependencies resolved")
-    service.transition(task.task_id, RUNNING)
-
-    history = service.history(task.task_id)
-
-    assert [record.to_state for record in history] == [CREATED, PLANNED, READY, RUNNING]
-    assert history[0].from_state is None
-    assert history[1].from_state == CREATED
-    assert history[1].reason == "kick off planning"
-    assert history[2].reason == "dependencies resolved"
-    assert history[3].reason is None
-    for earlier, later in zip(history, history[1:]):
-        assert earlier.occurred_at <= later.occurred_at
-
-
-def test_history_missing_task_raises():
-    service = _service()
-
-    with pytest.raises(UnknownAgentTaskError):
-        service.history("does-not-exist")
-
-
-def test_rejected_transition_does_not_add_history_entry():
-    service = _service()
-    task = service.create(_definition())
-
-    with pytest.raises(InvalidTaskTransitionError):
-        service.transition(task.task_id, RUNNING)
-
-    assert len(service.history(task.task_id)) == 1  # only the initial CREATED entry
 
 
 # --- JSON persistence ------------------------------------------------------------------
 
 
-def test_json_stores_round_trip_across_service_instances(tmp_path):
-    tasks_path = tmp_path / "tasks.json"
-    transitions_path = tmp_path / "transitions.json"
+def test_json_store_round_trips_across_service_instances(tmp_path):
+    path = tmp_path / "tasks.json"
 
-    service_a = LLMAgentTaskLifecycleService(
-        store=JsonAgentTaskStore(tasks_path),
-        transition_store=JsonAgentTaskTransitionStore(transitions_path),
-    )
+    service_a = LLMAgentTaskLifecycleService(store=JsonAgentTaskStore(path))
     task = service_a.create(_definition())
     service_a.transition(task.task_id, PLANNED, reason="kick off planning")
 
-    service_b = LLMAgentTaskLifecycleService(
-        store=JsonAgentTaskStore(tasks_path),
-        transition_store=JsonAgentTaskTransitionStore(transitions_path),
-    )
+    service_b = LLMAgentTaskLifecycleService(store=JsonAgentTaskStore(path))
     fetched = service_b.get(task.task_id)
-    history = service_b.history(task.task_id)
 
     assert fetched.current_state == PLANNED
     assert fetched.transition_reason == "kick off planning"
-    assert [record.to_state for record in history] == [CREATED, PLANNED]

@@ -1,49 +1,50 @@
-from typing import Optional
-
-from .in_memory_store import InMemoryAgentTaskStore, InMemoryAgentTaskTransitionStore
+from .in_memory_store import InMemoryAgentTaskStore
 from .models import (
-    CREATED,
     STATES,
     TRANSITIONS,
     AgentTask,
     InvalidAgentTaskError,
     InvalidTaskTransitionError,
-    TaskTransitionRecord,
     UnknownAgentTaskError,
 )
-from .store import AgentTaskStore, AgentTaskTransitionStore
+from .store import AgentTaskStore
 
 
 class LLMAgentTaskLifecycleService:
     """Owns one AgentTask's lifecycle state -- create/get/transition --
     and nothing else. This service never executes a task, never plans
-    one (backend.agent_task_planning already owns that), and never holds
-    a task's own working data (backend.agent_task_context already owns
-    that, keyed by its own, separately-generated task_id); it only
-    answers "what state is this task in, and how did it get there."
+    one (backend.agent_task_planning already owns that), never holds a
+    task's own working data (backend.agent_task_context already owns
+    that, keyed by its own, separately-generated task_id), and never
+    records its own transition history (backend.agent_task_state_history
+    owns that entirely, from the outside -- see this class's own
+    docstring below); it only answers "what state is this task in right
+    now, and is a given move legal."
 
     transition() is the sole way current_state ever changes, and every
     change it makes is validated against can_transition() first --
     Rule: "Invalid transitions must fail explicitly," never silently
     clamped or ignored. A transition whose target_state equals the
     task's own current current_state is a deliberate exception: it
-    returns the task unchanged, mutates nothing, and appends no new
-    history entry -- the same "repeating an already-applied change is a
-    no-op, not an error" convention
-    backend.agent_policy_engine.LLMAgentPolicyService.archive() already
-    establishes for an already-ARCHIVED policy.
+    returns the task unchanged and mutates nothing -- the same
+    "repeating an already-applied change is a no-op, not an error"
+    convention backend.agent_policy_engine.LLMAgentPolicyService.
+    archive() already establishes for an already-ARCHIVED policy.
 
-    Every other successful transition is recorded, in order, as a new
-    models.TaskTransitionRecord via transition_store -- create() itself
-    writes the first one (from_state=None, to_state=CREATED) -- so a
-    task's complete transition trail (Rule: "Every successful transition
-    records history") is always reachable through history(), never only
-    inferable from the task's own current_state/previous_state pair.
+    Recording a durable, queryable trail of every transition is
+    deliberately not this class's job: backend.agent_task_state_history.
+    LLMAgentTaskStateHistoryService owns that, called from
+    backend.agent_task_state_history.tracked.
+    LLMAgentTaskLifecycleHistoryTrackedService -- a thin subclass that
+    delegates every method here completely unchanged and only
+    afterward records what happened. Nothing in this class imports or
+    references that module at all, so "lifecycle transitions remain
+    owned by LLMAgentTaskLifecycleService" holds structurally: this
+    class cannot regress into recording history again by accident.
     """
 
-    def __init__(self, store: AgentTaskStore = None, transition_store: AgentTaskTransitionStore = None):
+    def __init__(self, store: AgentTaskStore = None):
         self.store = store if store is not None else InMemoryAgentTaskStore()
-        self.transition_store = transition_store if transition_store is not None else InMemoryAgentTaskTransitionStore()
 
     def create(self, task_definition: dict) -> AgentTask:
         """Create a new AgentTask in the CREATED state from
@@ -78,9 +79,7 @@ class LLMAgentTaskLifecycleService:
         if task_id is not None:
             kwargs["task_id"] = task_id
 
-        task = self.store.save(AgentTask(**kwargs))
-        self._record_transition(task.task_id, from_state=None, to_state=CREATED, reason=None)
-        return task
+        return self.store.save(AgentTask(**kwargs))
 
     def get(self, task_id: str) -> AgentTask:
         """The current lifecycle record for task_id.
@@ -113,11 +112,10 @@ class LLMAgentTaskLifecycleService:
         return target_state in TRANSITIONS.get(current_state, frozenset())
 
     def transition(self, task_id: str, target_state: str, reason: str = None) -> AgentTask:
-        """Move task_id to target_state, recording reason (if given) and
-        appending a new history entry -- unless target_state already
-        equals the task's own current current_state, in which case this
-        is a no-op: the task is returned unchanged, and no new history
-        entry is appended (see this class's own docstring).
+        """Move task_id to target_state, recording reason (if given) --
+        unless target_state already equals the task's own current
+        current_state, in which case this is a no-op: the task is
+        returned unchanged (see this class's own docstring).
 
         Raises:
             UnknownAgentTaskError: If task_id was never created
@@ -142,30 +140,11 @@ class LLMAgentTaskLifecycleService:
         if task.current_state == target_state:
             return task
 
-        previous_state = task.current_state
-        task.previous_state = previous_state
+        task.previous_state = task.current_state
         task.current_state = target_state
         task.transition_reason = reason
 
-        saved = self.store.save(task)
-        self._record_transition(task_id, from_state=previous_state, to_state=target_state, reason=reason)
-        return saved
-
-    def history(self, task_id: str) -> list:
-        """task_id's complete, in-order transition trail, as
-        models.TaskTransitionRecord entries -- the first always
-        (from_state=None, to_state=CREATED).
-
-        Raises:
-            UnknownAgentTaskError: If task_id was never created
-        """
-        self.get(task_id)
-        return self.transition_store.list_for_task(task_id)
-
-    def _record_transition(self, task_id: str, from_state: Optional[str], to_state: str, reason: Optional[str]) -> TaskTransitionRecord:
-        return self.transition_store.save(
-            TaskTransitionRecord(task_id=task_id, from_state=from_state, to_state=to_state, reason=reason)
-        )
+        return self.store.save(task)
 
     @staticmethod
     def _validate_identity(agent_id, scope_id, objective) -> None:

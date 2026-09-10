@@ -61,8 +61,8 @@ class InvalidAgentTaskError(ValueError):
 
 
 class UnknownAgentTaskError(KeyError):
-    """Raised when get()/transition()/history() is given a task_id that
-    was never created."""
+    """Raised when get()/transition() is given a task_id that was never
+    created."""
 
 
 class InvalidTaskTransitionError(ValueError):
@@ -88,14 +88,12 @@ class AgentTask:
     like.
 
     previous_state/transition_reason describe only the most recent
-    transition; a task's complete transition trail is a separate,
-    append-only TaskTransitionRecord history (see
-    LLMAgentTaskLifecycleService.history()) -- the same
-    "current-state-plus-full-append-only-trail" split
-    backend.agent_policy_history/backend.agent_risk_profile_history
-    already use for their own entities, kept local here rather than
-    reusing either of those (both are already bound to their own,
-    unrelated entity shapes).
+    transition; a task's complete transition trail is owned entirely
+    outside this module, by backend.agent_task_state_history.
+    LLMAgentTaskStateHistoryService's own append-only
+    TaskTransitionRecord -- the same "current-state-plus-full-append-
+    only-trail" split backend.agent_policy_history/backend.
+    agent_risk_profile_history already use for their own entities.
     """
 
     agent_id: str
@@ -122,44 +120,4 @@ class AgentTask:
             value = payload.get(key)
             if isinstance(value, str):
                 payload[key] = datetime.fromisoformat(value)
-        return cls(**payload)
-
-
-@dataclass(frozen=True)
-class TaskTransitionRecord:
-    """One immutable, append-only entry in a task's own transition
-    history, written by every successful LLMAgentTaskLifecycleService.
-    transition() call (create() writes the first one itself, from_state
-    None, to_state CREATED -- the same "before is None only for the
-    creation event" convention
-    backend.agent_policy_history.LLMAgentPolicyChange already
-    establishes).
-
-    Never updated or deleted once recorded -- the same append-only
-    discipline backend.agent_strategy_lifecycle.
-    LLMAgentStrategyLifecycleDecision and backend.agent_policy_history.
-    LLMAgentPolicyChange already establish elsewhere in this repository.
-    An idempotent self-transition (target_state == current current_state)
-    never appends a record here -- see LLMAgentTaskLifecycleService.
-    transition()'s own docstring.
-    """
-
-    task_id: str
-    from_state: Optional[str]
-    to_state: str
-    reason: Optional[str] = None
-    transition_id: str = field(default_factory=lambda: str(uuid4()))
-    occurred_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-
-    def to_dict(self) -> dict:
-        data = asdict(self)
-        data["occurred_at"] = self.occurred_at.isoformat()
-        return data
-
-    @classmethod
-    def from_dict(cls, data: dict) -> "TaskTransitionRecord":
-        payload = dict(data)
-        value = payload.get("occurred_at")
-        if isinstance(value, str):
-            payload["occurred_at"] = datetime.fromisoformat(value)
         return cls(**payload)

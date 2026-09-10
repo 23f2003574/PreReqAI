@@ -1,5 +1,5 @@
-from .in_memory_store import InMemoryAgentTaskStore, InMemoryAgentTaskTransitionStore
-from .json_store import JsonAgentTaskStore, JsonAgentTaskTransitionStore
+from .in_memory_store import InMemoryAgentTaskStore
+from .json_store import JsonAgentTaskStore
 from .models import (
     CANCELLED,
     COMPLETED,
@@ -15,15 +15,13 @@ from .models import (
     AgentTask,
     InvalidAgentTaskError,
     InvalidTaskTransitionError,
-    TaskTransitionRecord,
     UnknownAgentTaskError,
 )
 from .service import LLMAgentTaskLifecycleService
-from .store import AgentTaskStore, AgentTaskTransitionStore
+from .store import AgentTaskStore
 
 __all__ = [
     "AgentTask",
-    "TaskTransitionRecord",
     "CREATED",
     "PLANNED",
     "READY",
@@ -36,11 +34,8 @@ __all__ = [
     "TERMINAL_STATES",
     "TRANSITIONS",
     "AgentTaskStore",
-    "AgentTaskTransitionStore",
     "InMemoryAgentTaskStore",
-    "InMemoryAgentTaskTransitionStore",
     "JsonAgentTaskStore",
-    "JsonAgentTaskTransitionStore",
     "LLMAgentTaskLifecycleService",
     "InvalidAgentTaskError",
     "UnknownAgentTaskError",
