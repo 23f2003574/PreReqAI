@@ -3,7 +3,10 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from backend.agent_task_queue import InvalidQueueEntryError
-from backend.agent_task_queue_retry_eligibility import LLMAgentTaskQueueRetryEligibilityService
+from backend.agent_task_queue_retry_eligibility import (
+    LLMAgentTaskQueueRetryEligibilityService,
+    RetryEligibilityResult,
+)
 
 from .in_memory_store import InMemoryRetryScheduleStore
 from .models import CANCELLED, SCHEDULED, TaskRetrySchedule
@@ -54,18 +57,23 @@ class LLMAgentTaskRetryScheduler:
     window not elapsed -> ineligible"), which is exactly correct for
     "is it OK to enqueue this instant" but would make schedule_retry()
     unable to schedule *anything* for later, defeating this commit's
-    own purpose. schedule_retry() resolves this without touching
-    Commit #9's own logic or duplicating it: it calls check() once at
-    now; if that already reports eligible, backoff was never the issue.
-    If not, it reads that same call's own next_eligible_at and calls
-    check() a *second* time, at exactly that future moment -- every
-    other condition Commit #9 evaluates (dead-letter, classification,
-    attempt limit, readiness) does not depend on `now` at all, so this
-    second call is eligible if and only if backoff timing was the
-    *only* thing blocking the first one. Only then does scheduling
-    proceed (for the eligible_at the first call already computed); any
-    other, still-eligible-at-neither-time reason raises
-    IneligibleForRetryError, exactly as the first call reported it.
+    own purpose. resolve_eligibility() (below) is where this is
+    resolved, without touching Commit #9's own logic or duplicating it:
+    it calls check() once at now; if that already reports eligible,
+    backoff was never the issue. If not, it reads that same call's own
+    next_eligible_at and calls check() a *second* time, at exactly that
+    future moment -- every other condition Commit #9 evaluates (dead-
+    letter, classification, attempt limit, readiness) does not depend
+    on `now` at all, so this second call is eligible if and only if
+    backoff timing was the *only* thing blocking the first one.
+    schedule_retry() then proceeds only if that resolved result is
+    eligible (for the eligible_at the first call already computed);
+    otherwise it raises IneligibleForRetryError, exactly as Commit #9
+    reported it. resolve_eligibility() is exposed publicly (not
+    inlined into schedule_retry() alone) so Commit #11's own
+    reconciliation service can reuse this exact same resolution instead
+    of a second copy of it (Rule there: "Reuse existing retry
+    scheduling and eligibility semantics").
 
     schedule_retry() is idempotent per attempt (Rule 4: "Prevent
     duplicate schedules for the same retry attempt"): a second call for
@@ -106,9 +114,34 @@ class LLMAgentTaskRetryScheduler:
         self._eligibility_service = eligibility_service
         self.store = store if store is not None else InMemoryRetryScheduleStore()
 
+    def resolve_eligibility(self, task_id: str, now: Optional[datetime] = None) -> RetryEligibilityResult:
+        """Commit #9's own eligibility verdict for task_id, resolved so
+        that a task blocked *only* by its own backoff window not having
+        elapsed yet reads as eligible (as of the eligible_at it itself
+        reports) rather than flatly ineligible -- see this class's own
+        docstring for why. Read-only: never persists anything, and
+        never raises for an ineligible task_id (unlike schedule_retry())
+        -- it only ever reports.
+
+        Raises:
+            InvalidQueueEntryError: If task_id is missing or blank, or
+                now is given and is not a datetime
+        """
+        if not task_id or not isinstance(task_id, str):
+            raise InvalidQueueEntryError("task_id is required and must be a non-empty string")
+        now = self._resolve_now(now)
+
+        eligibility = self._eligibility_service.check(task_id, now=now)
+        if eligibility.eligible:
+            return eligibility
+
+        eligible_at = eligibility.next_eligible_at if eligibility.next_eligible_at is not None else now
+        return self._eligibility_service.check(task_id, now=eligible_at)
+
     def schedule_retry(self, task_id: str, now: Optional[datetime] = None) -> TaskRetrySchedule:
         """Schedule task_id's next retry attempt, per Commit #9's own
-        current eligibility verdict.
+        current eligibility verdict (resolved through
+        resolve_eligibility() above).
 
         Raises:
             InvalidQueueEntryError: If task_id is missing or blank, or
@@ -116,22 +149,14 @@ class LLMAgentTaskRetryScheduler:
             IneligibleForRetryError: If task_id is not currently
                 eligible for retry (Commit #9's own check())
         """
-        if not task_id or not isinstance(task_id, str):
-            raise InvalidQueueEntryError("task_id is required and must be a non-empty string")
         now = self._resolve_now(now)
-
-        eligibility = self._eligibility_service.check(task_id, now=now)
+        eligibility = self.resolve_eligibility(task_id, now=now)
         eligible_at = eligibility.next_eligible_at if eligibility.next_eligible_at is not None else now
 
         if not eligibility.eligible:
-            # Only backoff timing is allowed to be the reason
-            # scheduling still proceeds -- re-check at the moment that
-            # backoff itself elapses (see this class's own docstring).
-            eligibility = self._eligibility_service.check(task_id, now=eligible_at)
-            if not eligibility.eligible:
-                raise IneligibleForRetryError(
-                    f"task {task_id!r} is not eligible for retry: {eligibility.reason}"
-                )
+            raise IneligibleForRetryError(
+                f"task {task_id!r} is not eligible for retry: {eligibility.reason}"
+            )
 
         attempt = (eligibility.attempt_count or 0) + 1
 
