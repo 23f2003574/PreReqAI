@@ -72,15 +72,24 @@ class LLMAgentTaskQueueService:
     different one conflicts" discipline
     LLMAgentRiskReviewQueue.claim() already uses.
 
-    peek() orders entries deterministically: priority first (higher
-    first, the same convention backend.llm.context.LLMContextService's
-    own ranking already uses for its LLMContextItem.priority), then
-    queued_at (earlier first -- FIFO among equal priority), then task_id
-    as a final, total tie-break -- the same
-    (-priority, timestamp, id)-shaped sort key backend.
+    peek() orders entries deterministically by delegating to Commit #3's
+    own backend.agent_task_queue_ordering.LLMAgentTaskQueueOrderingService
+    (Rule: "Integrate queue.peek/selection with this ordering service
+    where appropriate") rather than sorting inline: priority first
+    (higher first, the same convention backend.llm.context.
+    LLMContextService's own ranking already uses for its
+    LLMContextItem.priority), then queued_at (earlier first -- FIFO
+    among equal priority), then task_id as a final, total tie-break --
+    the same (-priority, timestamp, id)-shaped sort key backend.
     agent_memory_retrieval.LLMAgentMemoryRetrievalService and backend.
     agent_strategy_retrieval.LLMAgentStrategyRetrievalService already
-    use for their own ranked results.
+    use for their own ranked results. By default the ordering service is
+    built over this same instance's own readiness_service, so peek()
+    also ranks currently-ready entries ahead of ones that were ready at
+    enqueue() time but have since stopped being so (see that service's
+    own docstring for why); pass a different ordering_service to
+    __init__ to change that (e.g. one built with no readiness_service at
+    all, for pure priority/queued_at/task_id ordering).
 
     Only an InMemory store is provided by default; a
     JsonAgentTaskQueueStore is available for durable, file-backed queues
@@ -90,7 +99,12 @@ class LLMAgentTaskQueueService:
     InMemory-only).
     """
 
-    def __init__(self, readiness_service: LLMAgentTaskReadinessService, store: AgentTaskQueueStore = None):
+    def __init__(
+        self,
+        readiness_service: LLMAgentTaskReadinessService,
+        store: AgentTaskQueueStore = None,
+        ordering_service=None,
+    ):
         """
         Args:
             readiness_service: The exact
@@ -103,9 +117,21 @@ class LLMAgentTaskQueueService:
                 LLMAgentTaskReadinessProjectionService already applies
                 to its own lifecycle_service argument.
             store: Defaults to a fresh InMemoryAgentTaskQueueStore.
+            ordering_service: The
+                backend.agent_task_queue_ordering.LLMAgentTaskQueueOrderingService
+                peek() delegates to. Defaults to a fresh one built over
+                this same readiness_service (imported lazily, inside
+                __init__, since that module itself imports this one --
+                see this module's own package for why a module-level
+                import would cycle).
         """
         self._readiness_service = readiness_service
         self.store = store if store is not None else InMemoryAgentTaskQueueStore()
+        if ordering_service is None:
+            from backend.agent_task_queue_ordering import LLMAgentTaskQueueOrderingService
+
+            ordering_service = LLMAgentTaskQueueOrderingService(readiness_service)
+        self._ordering_service = ordering_service
         self._lock = RLock()
 
     def enqueue(self, task_id: str, priority: Optional[int] = None) -> QueueEntry:
@@ -149,7 +175,7 @@ class LLMAgentTaskQueueService:
         if limit is not None and (not isinstance(limit, int) or isinstance(limit, bool) or limit < 0):
             raise InvalidQueueEntryError("limit must be a non-negative int when given")
 
-        entries = sorted(self.store.list(), key=lambda entry: (-entry.priority, entry.queued_at, entry.task_id))
+        entries = self._ordering_service.order(self.store.list())
         return entries if limit is None else entries[:limit]
 
     def claim(self, task_id: str, claimant_id: str) -> QueueEntry:
