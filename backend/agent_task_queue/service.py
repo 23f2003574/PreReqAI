@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from dataclasses import replace
 from datetime import datetime, timezone
 from threading import RLock
@@ -256,3 +257,22 @@ class LLMAgentTaskQueueService:
         """Whether task_id currently has a queue entry, claimed or
         not."""
         return self.store.get(task_id) is not None
+
+    @contextmanager
+    def atomic(self):
+        """Exposes this service's own RLock (the same one every method
+        above already acquires -- see this class's own docstring) so a
+        caller composing multiple queue operations -- Commit #5's own
+        LLMAgentTaskQueueBatchService -- can group them under one hold,
+        with the same correctness guarantees any single call already
+        has. Reentrant: enqueue()/claim()/release()/remove() called from
+        inside this block simply re-enter the same lock rather than
+        blocking. Not a new transaction/locking framework (Rule: "do
+        not invent a new transaction or storage framework") -- there is
+        no rollback here, only mutual exclusion against other threads
+        for the duration of the block; whatever individual calls inside
+        it actually commit stays committed even if a later one in the
+        same block fails.
+        """
+        with self._lock:
+            yield

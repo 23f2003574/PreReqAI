@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from numbers import Real
 from threading import RLock
@@ -239,3 +240,14 @@ class LLMAgentTaskQueueReservationService:
         except (UnknownQueueEntryError, ConflictingClaimError):
             pass
         self.store.delete(reservation.task_id)
+
+    @contextmanager
+    def atomic(self):
+        """Exposes this service's own RLock, the same way Commit #1's
+        own LLMAgentTaskQueueService.atomic() does and for the same
+        reason -- Commit #5's own LLMAgentTaskQueueBatchService grouping
+        several reserve() calls under one hold. See that method's own
+        docstring for what this does and does not guarantee (mutual
+        exclusion only, no rollback)."""
+        with self._lock:
+            yield
