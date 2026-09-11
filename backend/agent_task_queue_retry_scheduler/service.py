@@ -1,5 +1,7 @@
+from contextlib import contextmanager
 from dataclasses import replace
 from datetime import datetime, timezone
+from threading import RLock
 from typing import Optional
 
 from backend.agent_task_queue import InvalidQueueEntryError
@@ -96,6 +98,15 @@ class LLMAgentTaskRetryScheduler:
     whose own eligible_at has passed as of now, sorted deterministically
     (eligible_at, then task_id) -- never a persisted "DUE" status of its
     own (see TaskRetrySchedule's own docstring for why).
+
+    atomic() exposes this service's own RLock -- the same "existing
+    concurrency primitive, made available for a caller to group several
+    calls under one hold" convention backend.agent_task_queue.
+    LLMAgentTaskQueueService.atomic()/backend.agent_task_queue_reservation.
+    LLMAgentTaskQueueReservationService.atomic() already establish, added
+    here for Commit #13's own LLMAgentTaskRetryRepairExecutor to reuse
+    (Rule there: "Reuse existing persistence/transaction mechanisms")
+    rather than that class inventing its own.
     """
 
     def __init__(
@@ -113,6 +124,7 @@ class LLMAgentTaskRetryScheduler:
         """
         self._eligibility_service = eligibility_service
         self.store = store if store is not None else InMemoryRetryScheduleStore()
+        self._lock = RLock()
 
     def resolve_eligibility(self, task_id: str, now: Optional[datetime] = None) -> RetryEligibilityResult:
         """Commit #9's own eligibility verdict for task_id, resolved so
@@ -160,19 +172,20 @@ class LLMAgentTaskRetryScheduler:
 
         attempt = (eligibility.attempt_count or 0) + 1
 
-        existing = self.store.get(task_id)
-        if existing is not None and existing.status == SCHEDULED and existing.attempt == attempt:
-            return existing
+        with self._lock:
+            existing = self.store.get(task_id)
+            if existing is not None and existing.status == SCHEDULED and existing.attempt == attempt:
+                return existing
 
-        schedule = TaskRetrySchedule(
-            task_id=task_id,
-            attempt=attempt,
-            scheduled_at=now,
-            eligible_at=eligible_at,
-            status=SCHEDULED,
-            reason=eligibility.reason,
-        )
-        return self.store.save(schedule)
+            schedule = TaskRetrySchedule(
+                task_id=task_id,
+                attempt=attempt,
+                scheduled_at=now,
+                eligible_at=eligible_at,
+                status=SCHEDULED,
+                reason=eligibility.reason,
+            )
+            return self.store.save(schedule)
 
     def cancel_retry(self, task_id: str) -> None:
         """Withdraw task_id's current retry schedule, if any.
@@ -183,11 +196,12 @@ class LLMAgentTaskRetryScheduler:
         if not task_id or not isinstance(task_id, str):
             raise InvalidQueueEntryError("task_id is required and must be a non-empty string")
 
-        existing = self.store.get(task_id)
-        if existing is None or existing.status == CANCELLED:
-            return
+        with self._lock:
+            existing = self.store.get(task_id)
+            if existing is None or existing.status == CANCELLED:
+                return
 
-        self.store.save(replace(existing, status=CANCELLED))
+            self.store.save(replace(existing, status=CANCELLED))
 
     def get_retry_schedule(self, task_id: str) -> Optional[TaskRetrySchedule]:
         """task_id's current schedule, exactly as stored (SCHEDULED or
@@ -216,6 +230,22 @@ class LLMAgentTaskRetryScheduler:
             if schedule.status == SCHEDULED and schedule.eligible_at <= now
         ]
         return sorted(due, key=lambda schedule: (schedule.eligible_at, schedule.task_id))
+
+    @contextmanager
+    def atomic(self):
+        """Exposes this service's own RLock, the same way Commit #1's
+        own LLMAgentTaskQueueService.atomic() does and for the same
+        reason -- Commit #13's own LLMAgentTaskRetryRepairExecutor
+        grouping several schedule_retry()/cancel_retry() calls under
+        one hold while applying a repair plan. Reentrant: calls made
+        from inside this block simply re-enter. Mutual exclusion only,
+        no rollback -- whatever individual calls inside it actually
+        commit stays committed even if a later one in the same block
+        fails (see that executor's own docstring for why that is
+        exactly the behavior Rule "A failed repair must not corrupt an
+        otherwise valid schedule" needs)."""
+        with self._lock:
+            yield
 
     @staticmethod
     def _resolve_now(now) -> datetime:
