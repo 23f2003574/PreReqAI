@@ -238,6 +238,53 @@ class TestClaimExclusivity:
             queue_service.claim(task.task_id, "")
 
 
+class TestReleaseClaim:
+    def test_release_by_owner_unclaims_but_keeps_entry_queued(self):
+        lifecycle_service, queue_service = _services()
+        task = _ready_task(lifecycle_service)
+        queue_service.enqueue(task.task_id)
+        queue_service.claim(task.task_id, "worker-1")
+
+        released = queue_service.release(task.task_id, "worker-1")
+
+        assert released.claimant_id is None
+        assert released.claimed_at is None
+        assert queue_service.contains(task.task_id) is True
+
+    def test_release_by_non_owner_conflicts(self):
+        lifecycle_service, queue_service = _services()
+        task = _ready_task(lifecycle_service)
+        queue_service.enqueue(task.task_id)
+        queue_service.claim(task.task_id, "worker-1")
+
+        with pytest.raises(ConflictingClaimError):
+            queue_service.release(task.task_id, "worker-2")
+
+    def test_release_unclaimed_entry_is_noop(self):
+        lifecycle_service, queue_service = _services()
+        task = _ready_task(lifecycle_service)
+        entry = queue_service.enqueue(task.task_id)
+
+        released = queue_service.release(task.task_id, "worker-1")
+
+        assert released == entry
+
+    def test_release_missing_entry_raises(self):
+        _, queue_service = _services()
+        with pytest.raises(UnknownQueueEntryError):
+            queue_service.release("no-such-task", "worker-1")
+
+    def test_after_release_a_different_claimant_can_claim(self):
+        lifecycle_service, queue_service = _services()
+        task = _ready_task(lifecycle_service)
+        queue_service.enqueue(task.task_id)
+        queue_service.claim(task.task_id, "worker-1")
+        queue_service.release(task.task_id, "worker-1")
+
+        claimed = queue_service.claim(task.task_id, "worker-2")
+        assert claimed.claimant_id == "worker-2"
+
+
 class TestMissingTaskOrEntry:
     def test_claim_missing_entry_raises(self):
         _, queue_service = _services()

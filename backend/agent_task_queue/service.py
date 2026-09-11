@@ -30,7 +30,7 @@ class ConflictingClaimError(ValueError):
 
 class LLMAgentTaskQueueService:
     """A persistent queue of task_ids that are ready for work --
-    enqueue, inspect, claim, remove. Never a worker, scheduler, or
+    enqueue, inspect, claim, release, remove. Never a worker, scheduler, or
     executor (Rule: "No task execution, scheduling, retry, or worker
     implementation"): nothing here ever runs a task, only records that
     it is waiting to be picked up and by whom.
@@ -179,6 +179,40 @@ class LLMAgentTaskQueueService:
 
             claimed = replace(entry, claimant_id=claimant_id, claimed_at=datetime.now(timezone.utc))
             return self.store.save(claimed)
+
+    def release(self, task_id: str, claimant_id: str) -> QueueEntry:
+        """Release a claim held by claimant_id, returning task_id's
+        entry to unclaimed while leaving it queued -- the mirror of
+        claim(), added here (Commit #2) for its own reservation layer
+        to hand ownership back without dequeuing task_id (Rule: "Queue
+        state is not task lifecycle state" applies just as much to
+        queue removal itself: releasing a claim is never the same
+        operation as remove()). An already-unclaimed entry is a no-op,
+        matching claim()'s own idempotent-by-actor discipline.
+
+        Raises:
+            InvalidQueueEntryError: If claimant_id is missing or blank
+            UnknownQueueEntryError: If task_id is not currently queued
+            ConflictingClaimError: If task_id is currently claimed by a
+                different claimant_id
+        """
+        if not claimant_id or not isinstance(claimant_id, str):
+            raise InvalidQueueEntryError("claimant_id is required and must be a non-empty string")
+
+        with self._lock:
+            entry = self.store.get(task_id)
+            if entry is None:
+                raise UnknownQueueEntryError(task_id)
+
+            if entry.claimant_id is None:
+                return entry
+            if entry.claimant_id != claimant_id:
+                raise ConflictingClaimError(
+                    f"cannot release task {task_id!r}: claimed by {entry.claimant_id!r}, not {claimant_id!r}"
+                )
+
+            released = replace(entry, claimant_id=None, claimed_at=None)
+            return self.store.save(released)
 
     def remove(self, task_id: str) -> None:
         """Remove task_id's entry from the queue entirely -- claimed or
