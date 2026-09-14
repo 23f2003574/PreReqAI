@@ -23,10 +23,22 @@ from .preflight_revalidation import (
     InvalidAgentTaskRecoveryPreflightRevalidationError,
     LLMAgentTaskRecoveryPreflightRevalidationService,
 )
+from .preflight_approval import (
+    AgentTaskRecoveryPreflightApprovalStore,
+    InMemoryAgentTaskRecoveryPreflightApprovalStore,
+    InvalidAgentTaskRecoveryPreflightApprovalError,
+    JsonAgentTaskRecoveryPreflightApprovalStore,
+    LLMAgentTaskRecoveryPreflightApprovalService,
+)
 from .models import (
+    APPROVAL_STATUSES,
+    APPROVED,
+    PENDING,
+    REJECTED,
     AgentTaskRecoveryGuardEvaluation,
     AgentTaskRecoveryGuardResult,
     AgentTaskRecoveryPreflight,
+    AgentTaskRecoveryPreflightApproval,
     AgentTaskRecoveryPreflightFreshness,
     AgentTaskRecoveryPreflightInvalidation,
     AgentTaskRecoveryPreflightInvalidationResult,
@@ -62,4 +74,14 @@ __all__ = [
     "AgentTaskRecoveryPreflightRevalidationResult",
     "LLMAgentTaskRecoveryPreflightRevalidationService",
     "InvalidAgentTaskRecoveryPreflightRevalidationError",
+    "PENDING",
+    "APPROVED",
+    "REJECTED",
+    "APPROVAL_STATUSES",
+    "AgentTaskRecoveryPreflightApproval",
+    "AgentTaskRecoveryPreflightApprovalStore",
+    "InMemoryAgentTaskRecoveryPreflightApprovalStore",
+    "JsonAgentTaskRecoveryPreflightApprovalStore",
+    "LLMAgentTaskRecoveryPreflightApprovalService",
+    "InvalidAgentTaskRecoveryPreflightApprovalError",
 ]

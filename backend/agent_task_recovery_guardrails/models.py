@@ -400,3 +400,88 @@ class AgentTaskRecoveryPreflightRevalidationResult:
     was_revalidated: bool
     decision: str
     stale_reasons: tuple
+
+
+# Modeled directly on backend.agent_policy_risk_approval.ApprovalRequirement's
+# own REQUIRED/APPROVED/REJECTED vocabulary and backend.
+# agent_risk_profile_approval.RiskProfileApproval's own PENDING/APPROVED/
+# REJECTED, "terminal once decided" reimplementation of it for a
+# different subject -- reused here as a THIRD from-scratch, same-shape
+# reimplementation (this repository's own established precedent for
+# reusing an approval vocabulary/shape across unrelated domains without a
+# cross-module import) rather than importing either class directly, since
+# both are permanently keyed to a different subject entirely (one
+# RiskDecision/action_context, one profile/version/scope triple) than
+# this domain's own (task_id, preflight_id). "pending" is used instead of
+# "REQUIRED" specifically because the goal's own wording says "pending ->
+# approved or pending -> rejected" literally.
+PENDING = "pending"
+APPROVED = "approved"
+REJECTED = "rejected"
+APPROVAL_STATUSES = frozenset({PENDING, APPROVED, REJECTED})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightApproval:
+    """Immutable record of one approval request for one EXACT, specific
+    Commit #4 preflight_id -- "approval is tied to the exact preflight
+    version" held structurally, since preflight_id can never change after
+    construction, and a NEW preflight_id (from a later revalidation)
+    always needs its own, entirely separate approval record.
+
+    A value object only, performing no state transition of its own;
+    LLMAgentTaskRecoveryPreflightApprovalService produces a new record
+    (via dataclasses.replace) for every transition rather than mutating
+    an existing one -- the same "terminal once decided,
+    dataclasses.replace()-not-mutate" discipline both of the precedents
+    named above already establish.
+
+    Unlike either precedent, approve()/reject() called again on a
+    record ALREADY in the state being requested are idempotent no-ops
+    (Rule: "idempotent where existing state already represents the
+    requested transition") rather than raising -- a deliberate deviation
+    from both existing approval precedents (which raise for any non-
+    PENDING transition attempt), made because this commit's own Rules
+    explicitly ask for it. A record in the OPPOSITE resolved state
+    (approve() on a REJECTED record, or vice versa) still raises: that is
+    a genuine conflicting transition, never "already represents it".
+
+    Attributes:
+        approval_id: This approval's own bookkeeping identifier
+        task_id: The task this approval concerns
+        preflight_id: The EXACT Commit #4 preflight this approval is
+            scoped to -- never any other preflight_id, past or future,
+            for the same task_id
+        status: pending, approved, or rejected
+        actor: Who approved or rejected this record -- None while
+            pending
+        reason: Why a rejected record was rejected -- required for
+            rejected, never present otherwise
+        created_at: When this approval was first requested
+        resolved_at: When this approval was approved or rejected, or
+            None while pending
+    """
+
+    task_id: str
+    preflight_id: str
+    status: str
+    actor: Optional[str]
+    reason: Optional[str]
+    created_at: datetime
+    resolved_at: Optional[datetime]
+    approval_id: str = field(default_factory=lambda: str(uuid4()))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["created_at"] = self.created_at.isoformat()
+        data["resolved_at"] = self.resolved_at.isoformat() if self.resolved_at else None
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "AgentTaskRecoveryPreflightApproval":
+        payload = dict(data)
+        for key in ("created_at", "resolved_at"):
+            value = payload.get(key)
+            if isinstance(value, str):
+                payload[key] = datetime.fromisoformat(value)
+        return cls(**payload)
