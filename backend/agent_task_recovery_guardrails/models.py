@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Optional
+from uuid import uuid4
 
 from backend.agent_task_event_analytics import AgentTaskFailureRecoveryPlan
 
@@ -144,3 +145,82 @@ class AgentTaskRecoveryPreflightResult:
     blocking_reasons: tuple
     warnings: tuple
     checked_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflight:
+    """LLMAgentTaskRecoveryPreflightStore.save()'s durable, persisted
+    snapshot of one Commit #3 AgentTaskRecoveryPreflightResult -- never a
+    second orchestration or a new storage framework (Rule: "Persist
+    preflight results, not task state"; "Do not invent a new storage
+    framework"): this is a plain record of what Commit #3 already decided,
+    never itself re-derived, re-planned, or re-evaluated.
+
+    Deliberately narrower than AgentTaskRecoveryPreflightResult -- carries
+    exactly the fields the goal names (task_id, preflight_id, plan,
+    decision, blocking_reasons, warnings, checked_at), never the full
+    Commit #2 guard_result object: decision/blocking_reasons/warnings are
+    already that object's own most useful extract (verbatim, on the
+    Commit #3 result this is built from), so persisting the whole
+    AgentTaskRecoveryGuardEvaluation too would only duplicate the same
+    facts a second way.
+
+    plan is the real, already-small AgentTaskFailureRecoveryPlan object
+    (never merely a summary) -- unlike an LLM response or task content,
+    a recovery plan has no large-payload concern of its own to guard
+    against, so embedding it directly (the same "embed the real object
+    verbatim" precedent backend.agent_task_event_analytics' own Commit #7
+    AgentTaskRecoveryEffectiveness.attempts already establishes for a
+    comparable case) is more useful than inventing a lossy reference
+    scheme. None exactly when Commit #3 itself reported a planning
+    failure (plan=None on the source result) -- never fabricated.
+
+    preflight_id is this record's own fresh identity (Rule: "Saving the
+    same preflight must be idempotent where existing IDs allow it" --
+    since neither Commit #1/#2/#3 mint an id of their own a save() could
+    reuse, a new uuid4 is generated here exactly once per genuinely new
+    save, the same "no existing id to reuse, so mint a small, local one"
+    precedent backend.agent_task_state_history.TaskTransitionRecord.
+    transition_id already establishes for a comparable case). A repeat
+    save() of equivalent content instead returns the EXISTING record's
+    own preflight_id unchanged, never generating a second one for the
+    same evidence.
+
+    Never updated or deleted once recorded (Rule: "Preserve the original
+    decision; never silently overwrite history") -- the same append-only
+    discipline backend.agent_task_state_history.TaskTransitionRecord and
+    backend.agent_policy_history.LLMAgentPolicyChange already establish
+    elsewhere in this repository.
+    """
+
+    task_id: str
+    plan: Optional[AgentTaskFailureRecoveryPlan]
+    decision: str
+    blocking_reasons: tuple
+    warnings: tuple
+    checked_at: datetime
+    preflight_id: str = field(default_factory=lambda: str(uuid4()))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["checked_at"] = self.checked_at.isoformat()
+        data["blocking_reasons"] = list(self.blocking_reasons)
+        data["warnings"] = list(self.warnings)
+        if self.plan is not None:
+            data["plan"]["blocking_conditions"] = list(self.plan.blocking_conditions)
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "AgentTaskRecoveryPreflight":
+        payload = dict(data)
+        value = payload.get("checked_at")
+        if isinstance(value, str):
+            payload["checked_at"] = datetime.fromisoformat(value)
+        payload["blocking_reasons"] = tuple(payload.get("blocking_reasons") or ())
+        payload["warnings"] = tuple(payload.get("warnings") or ())
+        plan_data = payload.get("plan")
+        if plan_data is not None:
+            plan_payload = dict(plan_data)
+            plan_payload["blocking_conditions"] = tuple(plan_payload.get("blocking_conditions") or ())
+            payload["plan"] = AgentTaskFailureRecoveryPlan(**plan_payload)
+        return cls(**payload)
