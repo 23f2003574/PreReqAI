@@ -23,3 +23,8 @@ class JsonAgentTaskEventStore(AgentTaskEventStore):
         events = self.file.read()
         matching = [AgentTaskEvent.from_dict(data) for data in events.get(task_id, [])]
         return sorted(matching, key=lambda item: item.occurred_at)
+
+    def all(self) -> list:
+        events = self.file.read()
+        every_event = [AgentTaskEvent.from_dict(data) for records in events.values() for data in records]
+        return sorted(every_event, key=lambda item: item.occurred_at)

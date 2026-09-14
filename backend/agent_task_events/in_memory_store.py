@@ -19,3 +19,7 @@ class InMemoryAgentTaskEventStore(AgentTaskEventStore):
     def list_for_task(self, task_id: str) -> list:
         events = self._events.get(task_id, [])
         return [deepcopy(event) for event in sorted(events, key=lambda item: item.occurred_at)]
+
+    def all(self) -> list:
+        every_event = [event for events in self._events.values() for event in events]
+        return [deepcopy(event) for event in sorted(every_event, key=lambda item: item.occurred_at)]

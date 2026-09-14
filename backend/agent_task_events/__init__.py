@@ -11,6 +11,7 @@ from .models import (
     RETRY_SCHEDULED,
     AgentTaskEvent,
 )
+from .query import InvalidAgentTaskEventQueryError, LLMAgentTaskEventQueryService
 from .service import InvalidAgentTaskEventError, LLMAgentTaskEventService
 from .store import AgentTaskEventStore
 
@@ -21,6 +22,8 @@ __all__ = [
     "JsonAgentTaskEventStore",
     "LLMAgentTaskEventService",
     "InvalidAgentTaskEventError",
+    "LLMAgentTaskEventQueryService",
+    "InvalidAgentTaskEventQueryError",
     "KNOWN_EVENT_TYPES",
     "LIFECYCLE_TRANSITIONED",
     "DEPENDENCY_ADDED",
