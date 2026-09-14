@@ -22,11 +22,16 @@ from .models import (
     AgentTaskEvent,
     AgentTaskEventConsistencyResult,
     AgentTaskEventConsistencyViolation,
+    AgentTaskEventProjection,
     AgentTaskEventReplayFailure,
     AgentTaskEventReplayResult,
     AgentTaskEventTimeline,
     AgentTaskStateTransition,
 )
+from .projection import InvalidAgentTaskEventProjectionError, LLMAgentTaskEventProjectionService
+from .projection_in_memory_store import InMemoryAgentTaskEventProjectionStore
+from .projection_json_store import JsonAgentTaskEventProjectionStore
+from .projection_store import AgentTaskEventProjectionStore
 from .query import InvalidAgentTaskEventQueryError, LLMAgentTaskEventQueryService
 from .replay import InvalidAgentTaskEventReplayError, LLMAgentTaskEventReplayService
 from .service import InvalidAgentTaskEventError, LLMAgentTaskEventService
@@ -56,6 +61,12 @@ __all__ = [
     "AgentTaskEventReplayFailure",
     "LLMAgentTaskEventReplayService",
     "InvalidAgentTaskEventReplayError",
+    "AgentTaskEventProjection",
+    "AgentTaskEventProjectionStore",
+    "InMemoryAgentTaskEventProjectionStore",
+    "JsonAgentTaskEventProjectionStore",
+    "LLMAgentTaskEventProjectionService",
+    "InvalidAgentTaskEventProjectionError",
     "KNOWN_EVENT_TYPES",
     "LIFECYCLE_TRANSITIONED",
     "DEPENDENCY_ADDED",

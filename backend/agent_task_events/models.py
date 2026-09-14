@@ -310,3 +310,85 @@ class AgentTaskEventReplayResult:
     final_state: str
     state_transitions: tuple
     replay_errors: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskEventProjection:
+    """A queryable, current-state read model for one task_id, entirely
+    derived from its own persisted event stream -- never a second source
+    of truth (Rule: "Do not make the projection authoritative task
+    state"; "Keep the projection explicitly derived/read-only from the
+    authoritative event stream"). The real authority for lifecycle state
+    remains backend.agent_task_lifecycle.AgentTask, exactly as Commits
+    #3/#5/#6 already establish for their own event-derived views.
+
+    Exactly one of these exists per task_id at a time -- the same
+    "replace, don't accumulate" shape
+    backend.agent_task_readiness_projection.AgentTaskReadinessProjection
+    already established for a comparable "latest known derived view"
+    record in this project (the closest existing projection/read-model
+    pattern found by this commit's own "check whether one already
+    exists" inspection step) -- deliberately reused for persistence
+    shape (a plain save()/get() store, not an append-only trail), while
+    the split into project()/refresh()/get() (see
+    LLMAgentTaskEventProjectionService) is new to this module: that
+    precedent conflates "compute" and "persist" into one project() call,
+    but this goal names three distinct operations, so they are kept
+    distinct here rather than collapsed to match that precedent exactly.
+
+    current_state/last_error_reference are never independently derived:
+    both come from a single Commit #6 LLMAgentTaskEventReplayService.
+    replay() call (Rule: "Reuse Commit #6 replay semantics ... instead
+    of duplicating transition logic") -- current_state is that result's
+    own final_state, and last_error_reference is the event_id of its
+    most recent replay_errors entry (or None if replay reported none).
+    last_event_id/last_event_at/event_count come from a single Commit #3
+    LLMAgentTaskEventTimelineService.build() call (Rule: "Do not create
+    another timeline/query implementation") rather than a third,
+    separately-sorted read of the event stream.
+
+    active_retry_reference/active_context_reference are plain references
+    (event_id), not duplicated event content (the same "ids and labels,
+    never raw content" discipline every result type in this module
+    already follows): active_retry_reference is the most recent
+    RETRY_SCHEDULED event's event_id, unless a later RETRY_CANCELLED
+    event has since superseded it (then None); active_context_reference
+    is simply the most recent CONTEXT_UPDATED event's event_id, since
+    this event vocabulary has no cancel/expire counterpart for context.
+
+    There is no separate staleness/version field: event_count already is
+    one (Rule: "Only include fields supported by the repository" --
+    adding a second field purely to duplicate what event_count already
+    tells a caller would not be a new, useful field). get() is a plain
+    store read with no staleness check of its own (see
+    LLMAgentTaskEventProjectionService.get()'s own docstring for why) --
+    a caller who wants a fresh view compares this field against
+    LLMAgentTaskEventQueryService.count(task_id), or simply calls
+    refresh() again.
+    """
+
+    task_id: str
+    current_state: str
+    last_event_id: Optional[str]
+    last_event_at: Optional[datetime]
+    event_count: int
+    last_error_reference: Optional[str]
+    active_retry_reference: Optional[str]
+    active_context_reference: Optional[str]
+    evaluated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["evaluated_at"] = self.evaluated_at.isoformat()
+        if isinstance(self.last_event_at, datetime):
+            data["last_event_at"] = self.last_event_at.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "AgentTaskEventProjection":
+        payload = dict(data)
+        for key in ("evaluated_at", "last_event_at"):
+            value = payload.get(key)
+            if isinstance(value, str):
+                payload[key] = datetime.fromisoformat(value)
+        return cls(**payload)
