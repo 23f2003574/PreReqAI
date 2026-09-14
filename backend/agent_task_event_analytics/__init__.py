@@ -2,6 +2,10 @@ from .failure_classification import (
     InvalidAgentTaskEventFailureClassificationError,
     LLMAgentTaskEventFailureClassifier,
 )
+from .failure_recovery_planning import (
+    InvalidAgentTaskFailureRecoveryPlanError,
+    LLMAgentTaskEventFailureRecoveryPlanner,
+)
 from .models import (
     FAILURE_CATEGORIES,
     FAILURE_CATEGORY_CONTEXT,
@@ -11,9 +15,22 @@ from .models import (
     FAILURE_CATEGORY_TIMEOUT_CANCELLATION,
     FAILURE_CATEGORY_UNKNOWN,
     FAILURE_CATEGORY_VALIDATION_POLICY,
+    RECOVERY_ACTION_MARK_UNRECOVERABLE,
+    RECOVERY_ACTION_NONE,
+    RECOVERY_ACTION_REFRESH_CONTEXT,
+    RECOVERY_ACTION_REPAIR_TASK,
+    RECOVERY_ACTION_RETRY,
+    RECOVERY_ACTION_UNRESOLVED,
+    RECOVERY_ACTION_WAIT_FOR_DEPENDENCY,
+    RECOVERY_ACTIONS,
+    RECOVERY_PRIORITY_HIGH,
+    RECOVERY_PRIORITY_LOW,
+    RECOVERY_PRIORITY_MEDIUM,
+    RECOVERY_PRIORITY_NONE,
     AgentTaskEventAnalytics,
     AgentTaskEventFailure,
     AgentTaskEventFailureAnalysis,
+    AgentTaskFailureRecoveryPlan,
 )
 from .service import InvalidAgentTaskEventAnalyticsError, LLMAgentTaskEventAnalyticsService
 
@@ -33,4 +50,19 @@ __all__ = [
     "FAILURE_CATEGORY_VALIDATION_POLICY",
     "FAILURE_CATEGORY_CONTEXT",
     "FAILURE_CATEGORY_UNKNOWN",
+    "AgentTaskFailureRecoveryPlan",
+    "LLMAgentTaskEventFailureRecoveryPlanner",
+    "InvalidAgentTaskFailureRecoveryPlanError",
+    "RECOVERY_ACTIONS",
+    "RECOVERY_ACTION_RETRY",
+    "RECOVERY_ACTION_WAIT_FOR_DEPENDENCY",
+    "RECOVERY_ACTION_REFRESH_CONTEXT",
+    "RECOVERY_ACTION_REPAIR_TASK",
+    "RECOVERY_ACTION_MARK_UNRECOVERABLE",
+    "RECOVERY_ACTION_UNRESOLVED",
+    "RECOVERY_ACTION_NONE",
+    "RECOVERY_PRIORITY_NONE",
+    "RECOVERY_PRIORITY_LOW",
+    "RECOVERY_PRIORITY_MEDIUM",
+    "RECOVERY_PRIORITY_HIGH",
 ]

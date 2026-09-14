@@ -179,3 +179,86 @@ class AgentTaskEventFailureAnalysis:
     failures: tuple
     category_counts: dict
     terminal_failure: Optional[AgentTaskEventFailure]
+
+
+# LLMAgentTaskEventFailureRecoveryPlanner's own recovery-action vocabulary --
+# each backed by a genuinely existing repository mechanism, never invented to
+# fill a result (Rule: "Never invent an action merely to fill a result"):
+#   RETRY -> backend.agent_task_queue_retry_eligibility's own eligibility
+#     check (or backend.agent_task_queue_retry_repair's own CREATE/UPDATE
+#     proposal) says the task may currently retry.
+#   WAIT_FOR_DEPENDENCY -> backend.agent_task_readiness's own "dependencies"
+#     check still fails.
+#   REFRESH_CONTEXT -> backend.agent_task_context holds a context record for
+#     this task that backend.agent_task_context_refresh could act on.
+#   REPAIR_TASK -> backend.agent_task_queue_retry_repair's own plan_repair()
+#     proposes a concrete UPDATE/CREATE operation for this task.
+#   MARK_UNRECOVERABLE -> the failure is terminal-by-nature (cancellation),
+#     retry attempts are exhausted (dead_letter_required), or the category
+#     has no automated repair path in this repository (validation/policy).
+#   UNRESOLVED -> a supported category, but the collaborator needed to
+#     verify feasibility was not supplied, or none of that category's own
+#     read-only checks pointed to a specific action.
+#   NONE -> there is no failure to plan around at all.
+RECOVERY_ACTION_RETRY = "retry"
+RECOVERY_ACTION_WAIT_FOR_DEPENDENCY = "wait_for_dependency"
+RECOVERY_ACTION_REFRESH_CONTEXT = "refresh_context"
+RECOVERY_ACTION_REPAIR_TASK = "repair_task"
+RECOVERY_ACTION_MARK_UNRECOVERABLE = "mark_unrecoverable"
+RECOVERY_ACTION_UNRESOLVED = "unresolved"
+RECOVERY_ACTION_NONE = "no_action_needed"
+
+RECOVERY_ACTIONS = frozenset(
+    {
+        RECOVERY_ACTION_RETRY,
+        RECOVERY_ACTION_WAIT_FOR_DEPENDENCY,
+        RECOVERY_ACTION_REFRESH_CONTEXT,
+        RECOVERY_ACTION_REPAIR_TASK,
+        RECOVERY_ACTION_MARK_UNRECOVERABLE,
+        RECOVERY_ACTION_UNRESOLVED,
+        RECOVERY_ACTION_NONE,
+    }
+)
+
+# A plain int scale, higher meaning more urgent -- the same "higher first"
+# convention backend.llm.context.LLMContextItem.priority/backend.
+# agent_task_queue.QueueEntry.priority already establish, reused rather than
+# a new priority representation.
+RECOVERY_PRIORITY_NONE = 0
+RECOVERY_PRIORITY_LOW = 1
+RECOVERY_PRIORITY_MEDIUM = 2
+RECOVERY_PRIORITY_HIGH = 3
+
+
+@dataclass(frozen=True)
+class AgentTaskFailureRecoveryPlan:
+    """LLMAgentTaskEventFailureRecoveryPlanner.plan()'s single, read-only
+    recommendation for task_id -- planning only, never itself performed
+    (Rule: "Never execute recovery").
+
+    Deliberately one flat recommendation, not a list (Rule: "avoid
+    recommending mutually incompatible actions" -- a task can only
+    meaningfully pursue one recovery action at a time, so this plan is
+    resolved down to exactly one before it is ever returned):
+    failure_event_id/failure_category are read straight off Commit #2's
+    own AgentTaskEventFailureAnalysis (Rule: "Reuse Commit #2
+    classification rather than reclassifying failures") -- terminal_failure
+    when one exists (the one failure replay() actually validated),
+    otherwise the most recent raw failure claim, otherwise None (no
+    failures at all -- recommended_action is then RECOVERY_ACTION_NONE).
+
+    reason always cites the concrete, existing check/service result this
+    plan's own recommended_action is based on -- never a generic or
+    invented explanation. blocking_conditions is only ever populated for
+    RECOVERY_ACTION_WAIT_FOR_DEPENDENCY, naming the exact
+    backend.agent_task_readiness "dependencies" check detail(s) still
+    failing.
+    """
+
+    task_id: str
+    failure_event_id: Optional[str]
+    failure_category: Optional[str]
+    recommended_action: str
+    reason: str
+    priority: int
+    blocking_conditions: tuple
