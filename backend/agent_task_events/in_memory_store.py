@@ -23,3 +23,13 @@ class InMemoryAgentTaskEventStore(AgentTaskEventStore):
     def all(self) -> list:
         every_event = [event for events in self._events.values() for event in events]
         return [deepcopy(event) for event in sorted(every_event, key=lambda item: item.occurred_at)]
+
+    def delete(self, task_id: str, event_id: str) -> bool:
+        events = self._events.get(task_id)
+        if not events:
+            return False
+        for index, event in enumerate(events):
+            if event.event_id == event_id:
+                del events[index]
+                return True
+        return False

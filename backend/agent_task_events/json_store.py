@@ -28,3 +28,15 @@ class JsonAgentTaskEventStore(AgentTaskEventStore):
         events = self.file.read()
         every_event = [AgentTaskEvent.from_dict(data) for records in events.values() for data in records]
         return sorted(every_event, key=lambda item: item.occurred_at)
+
+    def delete(self, task_id: str, event_id: str) -> bool:
+        events = self.file.read()
+        task_events = events.get(task_id)
+        if not task_events:
+            return False
+        for index, data in enumerate(task_events):
+            if data.get("event_id") == event_id:
+                del task_events[index]
+                self.file.write(events)
+                return True
+        return False

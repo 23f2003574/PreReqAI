@@ -26,6 +26,10 @@ from .models import (
     AgentTaskEventProjection,
     AgentTaskEventReplayFailure,
     AgentTaskEventReplayResult,
+    AgentTaskEventRetentionCandidate,
+    AgentTaskEventRetentionPlan,
+    AgentTaskEventRetentionProtection,
+    AgentTaskEventRetentionResult,
     AgentTaskEventTimeline,
     AgentTaskProjectionDifference,
     AgentTaskProjectionReconciliationResult,
@@ -41,6 +45,7 @@ from .projection_reconciliation import (
 from .projection_store import AgentTaskEventProjectionStore
 from .query import InvalidAgentTaskEventQueryError, LLMAgentTaskEventQueryService
 from .replay import InvalidAgentTaskEventReplayError, LLMAgentTaskEventReplayService
+from .retention import DEFAULT_RETENTION_WINDOW, InvalidAgentTaskEventRetentionError, LLMAgentTaskEventRetentionService
 from .service import InvalidAgentTaskEventError, LLMAgentTaskEventService
 from .store import AgentTaskEventStore
 from .timeline import InvalidAgentTaskEventTimelineError, LLMAgentTaskEventTimelineService
@@ -79,6 +84,13 @@ __all__ = [
     "PROJECTION_COMPARISON_FIELDS",
     "LLMAgentTaskEventProjectionReconciliationService",
     "InvalidAgentTaskProjectionReconciliationError",
+    "AgentTaskEventRetentionCandidate",
+    "AgentTaskEventRetentionProtection",
+    "AgentTaskEventRetentionPlan",
+    "AgentTaskEventRetentionResult",
+    "LLMAgentTaskEventRetentionService",
+    "InvalidAgentTaskEventRetentionError",
+    "DEFAULT_RETENTION_WINDOW",
     "KNOWN_EVENT_TYPES",
     "LIFECYCLE_TRANSITIONED",
     "DEPENDENCY_ADDED",

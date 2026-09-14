@@ -456,3 +456,79 @@ class AgentTaskProjectionReconciliationResult:
     expected_projection: AgentTaskEventProjection
     differences: tuple
     reconciled: bool
+
+
+@dataclass(frozen=True)
+class AgentTaskEventRetentionCandidate:
+    """One event LLMAgentTaskEventRetentionService.plan() is considering
+    for removal or has already removed -- task_id is carried alongside
+    event_id (not just a bare event_id string) because deletion itself
+    needs it (this module's own AgentTaskEventStore.delete() is keyed by
+    (task_id, event_id), the same compound key save()/list_for_task()
+    already use)."""
+
+    task_id: str
+    event_id: str
+
+
+@dataclass(frozen=True)
+class AgentTaskEventRetentionProtection:
+    """One candidate event that qualified for removal by age alone but
+    was protected for a concrete reason (Rule: "Never delete events
+    merely because they are old if they are still required" -- this
+    record is the evidence of why one specific event was kept, not a
+    generic "some events were skipped" tally)."""
+
+    task_id: str
+    event_id: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class AgentTaskEventRetentionPlan:
+    """LLMAgentTaskEventRetentionService.plan()'s read-only proposal:
+    exactly which events are eligible for removal and which candidates
+    were protected and why. Computing a plan never deletes anything --
+    only execute() does that, and only for entries actually in `eligible`
+    (Rule: "plan() is read-only").
+
+    task_id is the scope the plan was built for (None means every task);
+    before is the effective cutoff actually used (either the caller's own
+    explicit argument, or the configured retention window's own boundary
+    at the moment plan() ran) -- always a concrete datetime, so a caller
+    never has to re-derive what "no argument given" resolved to.
+    """
+
+    task_id: Optional[str]
+    before: datetime
+    eligible: tuple
+    protected: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskEventRetentionResult:
+    """LLMAgentTaskEventRetentionService.execute()'s complete outcome for
+    one AgentTaskEventRetentionPlan.
+
+    plan is the exact plan execute() was given, embedded for traceability
+    -- never rebuilt or reshaped. removed is what this call actually
+    deleted; already_removed is whatever the plan named that turned out to
+    be gone already (Rule: "execute() must be idempotent" -- re-executing
+    the same plan after a first successful run reports everything as
+    already_removed, deletes nothing further, and is never an error).
+    newly_protected is the subset of plan.eligible that execute() itself
+    re-checked and found had become protected since the plan was built
+    (e.g. a task went active, or a new correlation link appeared) --
+    execute() re-validates every candidate's protection status at
+    deletion time rather than blindly trusting a plan that may have
+    grown stale between planning and execution, the same "re-check
+    ... at apply time" discipline
+    backend.agent_task_queue_retry_repair_execution.
+    LLMAgentTaskRetryRepairExecutor.apply() already establishes for a
+    comparable plan-then-execute split.
+    """
+
+    plan: AgentTaskEventRetentionPlan
+    removed: tuple
+    already_removed: tuple
+    newly_protected: tuple

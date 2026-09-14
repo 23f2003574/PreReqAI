@@ -234,13 +234,17 @@ def test_events_cannot_mutate_previously_recorded_entries():
     assert [event.event_type for event in second_read] == [LIFECYCLE_TRANSITIONED]
 
 
-def test_no_update_or_delete_method_exists():
+def test_no_update_method_exists():
+    # store.delete() was added additively in Commit #9, narrowly for
+    # backend.agent_task_events.retention.LLMAgentTaskEventRetentionService's
+    # own bounded cleanup -- see that module's own store.py docstring.
+    # Ordinary event emission/retrieval still has no way to update or
+    # delete a record: LLMAgentTaskEventService itself exposes neither.
     service = _service()
 
     assert not hasattr(service, "update")
     assert not hasattr(service, "delete")
     assert not hasattr(service.store, "update")
-    assert not hasattr(service.store, "delete")
 
 
 # --- large/sensitive payload handling ---------------------------------------------------------
