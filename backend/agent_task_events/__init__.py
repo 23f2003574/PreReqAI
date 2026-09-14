@@ -22,9 +22,13 @@ from .models import (
     AgentTaskEvent,
     AgentTaskEventConsistencyResult,
     AgentTaskEventConsistencyViolation,
+    AgentTaskEventReplayFailure,
+    AgentTaskEventReplayResult,
     AgentTaskEventTimeline,
+    AgentTaskStateTransition,
 )
 from .query import InvalidAgentTaskEventQueryError, LLMAgentTaskEventQueryService
+from .replay import InvalidAgentTaskEventReplayError, LLMAgentTaskEventReplayService
 from .service import InvalidAgentTaskEventError, LLMAgentTaskEventService
 from .store import AgentTaskEventStore
 from .timeline import InvalidAgentTaskEventTimelineError, LLMAgentTaskEventTimelineService
@@ -47,6 +51,11 @@ __all__ = [
     "AgentTaskEventConsistencyViolation",
     "LLMAgentTaskEventConsistencyService",
     "InvalidAgentTaskEventConsistencyError",
+    "AgentTaskEventReplayResult",
+    "AgentTaskStateTransition",
+    "AgentTaskEventReplayFailure",
+    "LLMAgentTaskEventReplayService",
+    "InvalidAgentTaskEventReplayError",
     "KNOWN_EVENT_TYPES",
     "LIFECYCLE_TRANSITIONED",
     "DEPENDENCY_ADDED",

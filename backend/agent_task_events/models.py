@@ -239,3 +239,74 @@ class AgentTaskEventConsistencyResult:
     violations: tuple
     checked_event_count: int
     checked_task_state: Optional[str]
+
+
+@dataclass(frozen=True)
+class AgentTaskStateTransition:
+    """One state-bearing move LLMAgentTaskEventReplayService.replay()
+    actually applied while reconstructing a task's state -- from_state is
+    always whatever replay's own running state was immediately before this
+    event, never a value read off the event's own payload (Commit #1's
+    AgentTaskEvent payload only ever records to_state, the same convention
+    Commit #3's own current_observed_state derivation already established);
+    this is what makes replay an actual reconstruction rather than a replay
+    of already-claimed transitions.
+    """
+
+    from_state: str
+    to_state: str
+    event_id: str
+
+
+@dataclass(frozen=True)
+class AgentTaskEventReplayFailure:
+    """One state-bearing event replay() could not apply -- reported
+    instead of silently inventing a state (Rule: "Report invalid
+    transitions as replay errors instead of silently inventing a state").
+    event_id is a reference, the same "ids and labels, never the object
+    itself" discipline every other result type in this module already
+    follows.
+    """
+
+    event_id: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class AgentTaskEventReplayResult:
+    """LLMAgentTaskEventReplayService.replay()'s complete, structured
+    outcome for one task's event stream (or a [start_time, end_time]
+    window of it).
+
+    initial_state is always backend.agent_task_lifecycle.CREATED -- the
+    one canonical starting state every real AgentTask actually begins in
+    (Commit #1's own default), and the only starting point replay can
+    assume without consulting authoritative state it is deliberately not
+    given (Rule: "reconstructs ... from its event stream," not by cross-
+    checking backend.agent_task_lifecycle -- that cross-check is Commit
+    #5's own STATE_MISMATCH job, not this one's). A window whose start_time
+    excludes a task's own earlier lifecycle events therefore may report
+    replay_errors for transitions that were legal in full history but
+    look unreachable from the assumed CREATED starting point within this
+    narrower window -- an inherent, documented limitation of windowed
+    replay from a fixed assumed origin, not a defect.
+
+    events_replayed counts every event replay() considered in the window,
+    state-bearing or not (Rule: "Unknown/non-state-bearing events should
+    remain in the replay count but not fabricate state changes") --
+    state_transitions/replay_errors only ever reflect LIFECYCLE_TRANSITIONED
+    events with a recognized to_state.
+
+    Deterministic (Rule): the same persisted events in the same window
+    always replay to the same final_state/state_transitions/replay_errors,
+    since replay walks Commit #2's own already-deterministically-ordered
+    query() result exactly once, in order, with no randomness or wall-
+    clock dependency of its own.
+    """
+
+    task_id: str
+    events_replayed: int
+    initial_state: str
+    final_state: str
+    state_transitions: tuple
+    replay_errors: tuple
