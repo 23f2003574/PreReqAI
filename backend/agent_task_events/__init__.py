@@ -1,7 +1,9 @@
+from .correlation import InvalidAgentTaskEventCorrelationError, LLMAgentTaskEventCorrelationService
 from .in_memory_store import InMemoryAgentTaskEventStore
 from .json_store import JsonAgentTaskEventStore
 from .models import (
     CONTEXT_UPDATED,
+    CORRELATION_ESTABLISHED,
     DEPENDENCY_ADDED,
     DEPENDENCY_REMOVED,
     KNOWN_EVENT_TYPES,
@@ -29,6 +31,8 @@ __all__ = [
     "AgentTaskEventTimeline",
     "LLMAgentTaskEventTimelineService",
     "InvalidAgentTaskEventTimelineError",
+    "LLMAgentTaskEventCorrelationService",
+    "InvalidAgentTaskEventCorrelationError",
     "KNOWN_EVENT_TYPES",
     "LIFECYCLE_TRANSITIONED",
     "DEPENDENCY_ADDED",
@@ -37,4 +41,5 @@ __all__ = [
     "RETRY_SCHEDULED",
     "RETRY_CANCELLED",
     "CONTEXT_UPDATED",
+    "CORRELATION_ESTABLISHED",
 ]

@@ -26,6 +26,13 @@ RETRY_SCHEDULED = "retry_scheduled"
 RETRY_CANCELLED = "retry_cancelled"
 CONTEXT_UPDATED = "context_updated"
 
+# Commit #4's own addition: the marker event LLMAgentTaskEventCorrelationService.
+# correlate() emits. A genuinely new concept (correlation itself), not one
+# borrowed from an existing task-family service the way the seven event types
+# above are -- exactly the kind of extension this vocabulary's own "documented,
+# not enforced" design already anticipated.
+CORRELATION_ESTABLISHED = "correlation_established"
+
 KNOWN_EVENT_TYPES = frozenset(
     {
         LIFECYCLE_TRANSITIONED,
@@ -35,6 +42,7 @@ KNOWN_EVENT_TYPES = frozenset(
         RETRY_SCHEDULED,
         RETRY_CANCELLED,
         CONTEXT_UPDATED,
+        CORRELATION_ESTABLISHED,
     }
 )
 
@@ -75,11 +83,30 @@ class AgentTaskEvent:
     "id"), matching TaskTransitionRecord.transition_id; occurred_at (not
     "timestamp"), matching TaskTransitionRecord.occurred_at/
     DeadLetterEntry.failed_at.
+
+    correlation_id/parent_event_id/operation_id (Commit #4) are plain,
+    optional reference fields, deliberately not a second, heavier
+    span/status tracing record like backend.session.execution_trace.
+    ExecutionTrace (Rule: "Do not introduce distributed tracing
+    infrastructure" / "Do not invent a parallel tracing system") -- there
+    is no started_at/finished_at/status lifecycle here, just three bare
+    identifiers a caller may attach to relate events to each other or to
+    one logical operation, the same "ids and labels, never raw content"
+    discipline this event's own payload field already follows (Rule:
+    "Correlation metadata must reference events/operations, not
+    duplicate payloads"). All three default to None and are never
+    required, so every event Commits #1-#3 already emitted (with no
+    knowledge of these fields at all) still round-trips through to_dict()/
+    from_dict() unchanged (Rule: "Existing events without correlation
+    metadata remain valid").
     """
 
     task_id: str
     event_type: str
     payload: Optional[dict] = None
+    correlation_id: Optional[str] = None
+    parent_event_id: Optional[str] = None
+    operation_id: Optional[str] = None
     event_id: str = field(default_factory=lambda: str(uuid4()))
     occurred_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 

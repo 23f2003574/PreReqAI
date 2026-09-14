@@ -51,7 +51,15 @@ class LLMAgentTaskEventService:
     def __init__(self, store: AgentTaskEventStore = None):
         self.store = store if store is not None else InMemoryAgentTaskEventStore()
 
-    def emit(self, task_id: str, event_type: str, payload: Optional[dict] = None) -> AgentTaskEvent:
+    def emit(
+        self,
+        task_id: str,
+        event_type: str,
+        payload: Optional[dict] = None,
+        correlation_id: Optional[str] = None,
+        parent_event_id: Optional[str] = None,
+        operation_id: Optional[str] = None,
+    ) -> AgentTaskEvent:
         """Append one event for task_id. Append-only: there is no update
         or delete, and every call adds a new entry.
 
@@ -63,17 +71,40 @@ class LLMAgentTaskEventService:
         record, since redaction only screens for known secret patterns,
         it does not shrink or summarize otherwise-large content.
 
+        correlation_id/parent_event_id/operation_id (Commit #4) are plain,
+        optional reference identifiers -- see AgentTaskEvent's own
+        docstring -- stored verbatim, never redacted or interpreted (they
+        are ids, not free-form content). Use
+        backend.agent_task_events.LLMAgentTaskEventCorrelationService to
+        look events back up by them.
+
         Raises:
             InvalidAgentTaskEventError: If task_id or event_type is not a
-                non-empty string, or payload is given and is not a dict
+                non-empty string, payload is given and is not a dict, or
+                correlation_id/parent_event_id/operation_id is given and
+                is not a non-empty string
         """
         self._require_text(task_id, "task_id")
         self._require_text(event_type, "event_type")
         if payload is not None and not isinstance(payload, dict):
             raise InvalidAgentTaskEventError("payload must be a dict when given")
+        for value, name in (
+            (correlation_id, "correlation_id"),
+            (parent_event_id, "parent_event_id"),
+            (operation_id, "operation_id"),
+        ):
+            if value is not None:
+                self._require_text(value, name)
 
         redacted_payload = _redactor.redact(payload) if payload is not None else None
-        event = AgentTaskEvent(task_id=task_id, event_type=event_type, payload=redacted_payload)
+        event = AgentTaskEvent(
+            task_id=task_id,
+            event_type=event_type,
+            payload=redacted_payload,
+            correlation_id=correlation_id,
+            parent_event_id=parent_event_id,
+            operation_id=operation_id,
+        )
         return self.store.save(event)
 
     def get(self, task_id: str, event_type: str = None, limit: int = None) -> list:
