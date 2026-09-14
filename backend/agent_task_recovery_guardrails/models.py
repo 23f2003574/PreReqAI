@@ -485,3 +485,77 @@ class AgentTaskRecoveryPreflightApproval:
             if isinstance(value, str):
                 payload[key] = datetime.fromisoformat(value)
         return cls(**payload)
+
+
+# Modeled on backend.agent_policy_exceptions.LLMAgentPolicyException's own
+# ACTIVE/REVOKED vocabulary (itself already a from-scratch reimplementation
+# of a comparable lifecycle for a different subject) -- a fresh
+# reimplementation for this domain's own (task_id, preflight_id) subject
+# rather than a cross-module import, the same established convention
+# Commit #8's own PENDING/APPROVED/REJECTED already follows.
+ACTIVE = "active"
+REVOKED = "revoked"
+AUTHORIZATION_STATUSES = frozenset({ACTIVE, REVOKED})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightAuthorization:
+    """Immutable record that one EXACT, specific, Commit #8-APPROVED
+    Commit #4 preflight has been converted into a live execution
+    authorization -- "authorization is bound to the exact task_id +
+    preflight_id" held structurally, since neither can ever change after
+    construction, and a NEW preflight_id (from a later Commit #7
+    revalidation) always needs its own, entirely separate authorization.
+
+    A value object only, performing no state transition of its own;
+    LLMAgentTaskRecoveryPreflightAuthorizationService produces a new
+    record (via dataclasses.replace) only for revoke() -- authorize()
+    itself only ever creates a fresh ACTIVE record or returns an
+    existing one unchanged, the same "terminal once decided,
+    dataclasses.replace()-not-mutate" discipline Commit #8's own
+    AgentTaskRecoveryPreflightApproval already establishes.
+
+    approval_id references the exact Commit #8 AgentTaskRecoveryPreflightApproval
+    this authorization was converted from -- a reference, never a copy of
+    its own fields, so the full approval decision trail (actor/reason/
+    timestamps) is always inspectable through Commit #8's own store
+    rather than duplicated here.
+
+    Attributes:
+        authorization_id: This authorization's own bookkeeping identifier
+        task_id: The task this authorization concerns
+        preflight_id: The EXACT Commit #4 preflight this authorization
+            was converted from
+        approval_id: The EXACT Commit #8 approval this authorization was
+            converted from
+        status: active or revoked
+        revocation_reason: Why this authorization was revoked -- required
+            for revoked, never present otherwise
+        created_at: When this authorization was first granted
+        revoked_at: When this authorization was revoked, or None while
+            active
+    """
+
+    task_id: str
+    preflight_id: str
+    approval_id: str
+    status: str
+    revocation_reason: Optional[str]
+    created_at: datetime
+    revoked_at: Optional[datetime]
+    authorization_id: str = field(default_factory=lambda: str(uuid4()))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["created_at"] = self.created_at.isoformat()
+        data["revoked_at"] = self.revoked_at.isoformat() if self.revoked_at else None
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "AgentTaskRecoveryPreflightAuthorization":
+        payload = dict(data)
+        for key in ("created_at", "revoked_at"):
+            value = payload.get(key)
+            if isinstance(value, str):
+                payload[key] = datetime.fromisoformat(value)
+        return cls(**payload)
