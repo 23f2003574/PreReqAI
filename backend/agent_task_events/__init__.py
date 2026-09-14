@@ -1,4 +1,5 @@
 from .archive import InvalidAgentTaskEventArchiveError, LLMAgentTaskEventArchiveService
+from .archive_recovery import InvalidAgentTaskEventRecoveryError, LLMAgentTaskEventArchiveRecoveryService
 from .archive_verification import (
     InvalidAgentTaskEventArchiveVerificationError,
     LLMAgentTaskEventArchiveVerificationService,
@@ -35,6 +36,9 @@ from .models import (
     AgentTaskEventProjection,
     AgentTaskEventReplayFailure,
     AgentTaskEventReplayResult,
+    AgentTaskEventRecoveryConflict,
+    AgentTaskEventRecoveryPlan,
+    AgentTaskEventRecoveryResult,
     AgentTaskEventRetentionCandidate,
     AgentTaskEventRetentionPlan,
     AgentTaskEventRetentionProtection,
@@ -68,6 +72,11 @@ __all__ = [
     "InvalidAgentTaskEventArchiveVerificationError",
     "AgentTaskEventArchiveVerificationResult",
     "AgentTaskArchiveMismatch",
+    "LLMAgentTaskEventArchiveRecoveryService",
+    "InvalidAgentTaskEventRecoveryError",
+    "AgentTaskEventRecoveryConflict",
+    "AgentTaskEventRecoveryPlan",
+    "AgentTaskEventRecoveryResult",
     "AgentTaskEvent",
     "AgentTaskEventStore",
     "InMemoryAgentTaskEventStore",

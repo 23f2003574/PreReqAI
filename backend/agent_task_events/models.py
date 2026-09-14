@@ -636,3 +636,92 @@ class AgentTaskEventArchiveVerificationResult:
     missing_events: tuple
     mismatches: tuple
     duplicate_events: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskEventRecoveryConflict:
+    """One archived event LLMAgentTaskEventArchiveRecoveryService.
+    plan_restore() found already occupied by a *different* active event
+    sharing the same event_id -- Rule: "Never overwrite an existing event
+    with different content" means this is always reported, never
+    resolved automatically one way or the other."""
+
+    event_id: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class AgentTaskEventRecoveryPlan:
+    """LLMAgentTaskEventArchiveRecoveryService.plan_restore()'s read-only
+    proposal for one task_id: computing a plan never restores, deletes,
+    or overwrites anything.
+
+    requested_event_ids is exactly the event_ids argument plan_restore()
+    was given (deduplicated, order-preserving), or None when it was
+    omitted -- recover() re-derives a fresh plan from this same scope at
+    apply time rather than trusting this one's own possibly-stale
+    snapshot (the same "re-check ... at apply time" discipline
+    backend.agent_task_queue_retry_repair_execution.
+    LLMAgentTaskRetryRepairExecutor.apply() and Commit #9's own
+    execute() already establish).
+
+    already_active/missing/conflicts are a strict partition of the
+    considered scope (every requested event_id, or every currently-
+    archived one when event_ids is omitted) -- each event_id found in
+    either store lands in exactly one: missing exists only in the archive
+    (safe to restore); conflicts exists in both stores with genuinely
+    different content (Rule: "identity/conflict violations" -- never
+    auto-resolved); already_active covers two cases -- byte-for-byte
+    identical in both stores right now, or (only reachable when
+    event_ids was given explicitly) no longer archived at all because an
+    earlier recover() already moved it back, so there is nothing left to
+    compare or to do. available_in_archive is a separate, purely
+    informational subset: exactly which of the considered event_ids
+    still have an archived copy at all -- it is not guaranteed to be a
+    superset of already_active for that second reason.
+
+    resulting_order previews the task's own active event_id order a
+    successful recover() of this exact plan would produce -- every
+    currently-active event_id plus every `missing` one, in the same
+    deterministic (occurred_at, task_id, event_id) order Commit #2's own
+    query() already establishes (Rule: "Do not create another timeline/
+    query implementation" carries forward: no new sort is invented, this
+    is that exact tie-break applied to a hypothetical merged set).
+    """
+
+    task_id: str
+    requested_event_ids: Optional[tuple]
+    available_in_archive: tuple
+    already_active: tuple
+    missing: tuple
+    conflicts: tuple
+    resulting_order: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskEventRecoveryResult:
+    """LLMAgentTaskEventArchiveRecoveryService.recover()'s complete
+    outcome for one AgentTaskEventRecoveryPlan.
+
+    restored is what this call actually moved from archive back to
+    active; already_restored is whatever was already identically present
+    in both stores at apply time (Rule: "Recovery must be idempotent" --
+    a second recover() of the same plan finds its own first call's own
+    restored entries here instead, and moves nothing further).
+    unresolved_conflicts is carried through from the fresh, re-derived
+    plan verbatim -- recover() never attempts to fix a conflict, only
+    ever reports it (Rule: "Do not silently discard conflicts"); the
+    active event a conflict names is left byte-for-byte as it was found
+    (Rule: "failed recovery leaves existing events unchanged").
+
+    verification is Commit #11's own AgentTaskEventArchiveVerificationResult,
+    computed once against the post-recovery state and embedded directly
+    (Rule: "Reuse Commit #11 verification rather than duplicating it") --
+    never a second, competing consistency check invented here.
+    """
+
+    task_id: str
+    restored: tuple
+    already_restored: tuple
+    unresolved_conflicts: tuple
+    verification: AgentTaskEventArchiveVerificationResult
