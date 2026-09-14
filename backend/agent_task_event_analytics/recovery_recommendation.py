@@ -97,6 +97,7 @@ class LLMAgentTaskRecoveryRecommendationService:
                 reason=plan.reason,
                 supporting_recovery_ids=(),
                 blocking_conditions=plan.blocking_conditions,
+                failure_event_id=plan.failure_event_id,
             )
 
         effectiveness = self._effectiveness_service.analyze(task_id)
@@ -127,6 +128,7 @@ class LLMAgentTaskRecoveryRecommendationService:
             reason=f"{plan.reason}; {historical_note}",
             supporting_recovery_ids=tuple(outcome.recovery_id for outcome in successes),
             blocking_conditions=plan.blocking_conditions,
+            failure_event_id=plan.failure_event_id,
         )
 
     def _category_scoped_attempts(self, task_id: str, attempts, failure_category) -> list:

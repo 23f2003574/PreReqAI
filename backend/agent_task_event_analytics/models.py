@@ -525,6 +525,14 @@ class AgentTaskRecoveryRecommendation:
     recovery_id values, never a copy of those records. blocking_conditions
     is exactly Commit #3's own plan.blocking_conditions, carried through
     unchanged.
+
+    failure_event_id (Commit #9) is an additive field: exactly Commit #3's
+    own plan.failure_event_id, carried through so a later decision-audit
+    step can link back to the current failure without re-deriving
+    anything -- defaults to None so every AgentTaskRecoveryRecommendation
+    Commit #8's own tests already construct remains valid unchanged (the
+    same "additive extension, defaulted for compatibility" pattern Commit
+    #5 already used for AgentTaskFailureRecoveryResult).
     """
 
     task_id: str
@@ -533,3 +541,49 @@ class AgentTaskRecoveryRecommendation:
     reason: str
     supporting_recovery_ids: tuple
     blocking_conditions: tuple
+    failure_event_id: Optional[str] = None
+
+
+# LLMAgentTaskRecoveryDecisionAuditService's own event_type -- reuses
+# backend.agent_task_events' own append-only store/query machinery directly
+# (Rule: "Reuse existing persistence"; "Do not build generic auditing"),
+# the exact same pattern Commit #5's own RECOVERY_OUTCOME_EVENT_TYPE already
+# established for a comparable durable record, never a second persistence
+# mechanism.
+RECOVERY_DECISION_EVENT_TYPE = "recovery_decision_recorded"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryDecisionAudit:
+    """LLMAgentTaskRecoveryDecisionAuditService.record()'s durable record
+    of one Commit #8 AgentTaskRecoveryRecommendation -- never itself
+    authoritative task state, purely a durable, explainable fact: "this
+    recommendation was made, and here is the exact evidence it was based
+    on."
+
+    decision_id is exactly the underlying backend.agent_task_events.
+    AgentTaskEvent.event_id this audit was recorded as (Rule: "Use
+    existing IDs/timestamps" -- no second id-generation scheme, the same
+    convention Commit #5's own recovery_id already established for a
+    comparable record). created_at is that same event's own occurred_at
+    verbatim -- unlike Commit #5's own started_at/completed_at pair, an
+    audit record only ever needs the one moment it was made, so no
+    payload timestamp key is needed at all here.
+
+    Every other field is copied verbatim from the recommendation it
+    audits (Rule: "Never modify the recommendation" -- this is a record
+    of it, never a second copy that could drift from it) -- failure_
+    event_id/recommended_action/confidence/supporting_recovery_ids/
+    blocking_conditions/reason are exactly Commit #8's own fields, never
+    re-derived or summarized.
+    """
+
+    decision_id: str
+    task_id: str
+    failure_event_id: Optional[str]
+    recommended_action: str
+    confidence: float
+    supporting_recovery_ids: tuple
+    blocking_conditions: tuple
+    reason: str
+    created_at: datetime

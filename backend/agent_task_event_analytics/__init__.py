@@ -26,6 +26,10 @@ from .recovery_recommendation import (
     InvalidAgentTaskRecoveryRecommendationError,
     LLMAgentTaskRecoveryRecommendationService,
 )
+from .recovery_decision_audit import (
+    InvalidAgentTaskRecoveryDecisionAuditError,
+    LLMAgentTaskRecoveryDecisionAuditService,
+)
 from .models import (
     FAILURE_CATEGORIES,
     FAILURE_CATEGORY_CONTEXT,
@@ -52,12 +56,14 @@ from .models import (
     RECOVERY_OUTCOME_PARTIAL,
     RECOVERY_OUTCOME_STATUSES,
     RECOVERY_OUTCOME_SUCCESS,
+    RECOVERY_DECISION_EVENT_TYPE,
     MINIMUM_CONFIDENT_SAMPLE_SIZE,
     AgentTaskEventAnalytics,
     AgentTaskEventFailure,
     AgentTaskEventFailureAnalysis,
     AgentTaskFailureRecoveryPlan,
     AgentTaskFailureRecoveryResult,
+    AgentTaskRecoveryDecisionAudit,
     AgentTaskRecoveryEffectiveness,
     AgentTaskRecoveryHistorySummary,
     AgentTaskRecoveryOutcome,
@@ -117,4 +123,8 @@ __all__ = [
     "LLMAgentTaskRecoveryRecommendationService",
     "InvalidAgentTaskRecoveryRecommendationError",
     "MINIMUM_CONFIDENT_SAMPLE_SIZE",
+    "AgentTaskRecoveryDecisionAudit",
+    "LLMAgentTaskRecoveryDecisionAuditService",
+    "InvalidAgentTaskRecoveryDecisionAuditError",
+    "RECOVERY_DECISION_EVENT_TYPE",
 ]
