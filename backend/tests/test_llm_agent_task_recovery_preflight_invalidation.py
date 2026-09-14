@@ -223,6 +223,29 @@ def test_repeated_invalidate_if_stale_is_idempotent():
     assert first == second
 
 
+def test_explicitly_invalidated_preflight_is_not_revived_by_invalidate_if_stale():
+    event_service, classifier, replay_service = _stack()
+    failure = _fail_task(event_service)
+    preflight_store = LLMAgentTaskRecoveryPreflightStore()
+    plan = _plan("task-1", failure)  # a plan that is otherwise still perfectly fresh
+    saved = _save_preflight(preflight_store, "task-1", plan)
+    service = _invalidation_service(
+        preflight_store, classifier, replay_service,
+        readiness_service=_FakeReadinessService(), retry_eligibility_service=_FakeRetryEligibilityService(),
+    )
+
+    explicit = service.invalidate("task-1", reason="operator judgment, unrelated to task state")
+    assert explicit.is_invalid is True
+
+    # Nothing about the task changed -- a bare freshness check would say
+    # fresh -- but the explicit invalidation must still stand.
+    result = service.invalidate_if_stale("task-1")
+
+    assert result.is_invalid is True
+    assert result.reason == "operator judgment, unrelated to task state"
+    assert result.preflight_id == saved.preflight_id
+
+
 # --- reason preservation --------------------------------------------------------------
 
 

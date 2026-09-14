@@ -19,6 +19,10 @@ from .preflight_invalidation import (
     JsonAgentTaskRecoveryPreflightInvalidationStore,
     LLMAgentTaskRecoveryPreflightInvalidationService,
 )
+from .preflight_revalidation import (
+    InvalidAgentTaskRecoveryPreflightRevalidationError,
+    LLMAgentTaskRecoveryPreflightRevalidationService,
+)
 from .models import (
     AgentTaskRecoveryGuardEvaluation,
     AgentTaskRecoveryGuardResult,
@@ -27,6 +31,7 @@ from .models import (
     AgentTaskRecoveryPreflightInvalidation,
     AgentTaskRecoveryPreflightInvalidationResult,
     AgentTaskRecoveryPreflightResult,
+    AgentTaskRecoveryPreflightRevalidationResult,
 )
 
 __all__ = [
@@ -54,4 +59,7 @@ __all__ = [
     "JsonAgentTaskRecoveryPreflightInvalidationStore",
     "LLMAgentTaskRecoveryPreflightInvalidationService",
     "InvalidAgentTaskRecoveryPreflightInvalidationError",
+    "AgentTaskRecoveryPreflightRevalidationResult",
+    "LLMAgentTaskRecoveryPreflightRevalidationService",
+    "InvalidAgentTaskRecoveryPreflightRevalidationError",
 ]

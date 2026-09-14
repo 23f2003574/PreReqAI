@@ -356,3 +356,47 @@ class AgentTaskRecoveryPreflightInvalidationResult:
     invalidated_at: Optional[datetime]
     reason: Optional[str]
     previous_decision: Optional[str]
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightRevalidationResult:
+    """LLMAgentTaskRecoveryPreflightRevalidationService.revalidate()'s
+    complete, read-only report of whether task_id's stored preflight is
+    still safe to act on right now, rebuilding it when it is not -- never
+    a second validation/policy framework (Rule: "Do not create another
+    validation/policy framework"): every fact here comes from Commit #4's
+    own store, Commit #6's own invalidate_if_stale() (which itself reuses
+    Commit #5's own freshness check), and, only when a rebuild is
+    genuinely needed, Commit #3's own run().
+
+    previous_preflight_id is the preflight_id that existed before this
+    call (None only when no preflight had ever been stored at all);
+    current_preflight_id is what a caller should treat as authoritative
+    AFTER this call -- the SAME id as previous_preflight_id when
+    was_revalidated is False (nothing needed to change), a freshly
+    persisted one otherwise. Together these are the literal "link the new
+    result to the superseded preflight" the goal asks for.
+
+    was_revalidated is True exactly when a REBUILD actually happened
+    (no prior preflight at all, or Commit #6's own invalidate_if_stale()
+    reported the existing one invalid, whether because it was newly found
+    stale or because it was already explicitly invalidated by a prior,
+    unrelated invalidate() call -- Rule: "Never revive an invalid
+    preflight" -- either case supersedes it, never silently returns it as
+    still valid).
+
+    decision is always the CURRENT preflight's own decision (ALLOW/DENY/
+    REVIEW) -- the existing one's, unchanged, when was_revalidated is
+    False; the freshly rebuilt one's otherwise.
+
+    stale_reasons is Commit #6's own invalidation `reason` verbatim
+    (never duplicated or re-derived) when a rebuild happened, or ()
+    when the existing preflight was confirmed still valid.
+    """
+
+    task_id: str
+    previous_preflight_id: Optional[str]
+    current_preflight_id: str
+    was_revalidated: bool
+    decision: str
+    stale_reasons: tuple

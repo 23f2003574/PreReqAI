@@ -1,3 +1,4 @@
+from backend.agent_policy_engine import DENY
 from backend.agent_task_event_analytics import (
     RECOVERY_ACTION_RETRY,
     RECOVERY_ACTION_WAIT_FOR_DEPENDENCY,
@@ -68,7 +69,15 @@ class LLMAgentTaskRecoveryPreflightFreshnessService:
       eligible; every action checks the SAME "policy" named readiness
       check the same way Commit #1 already does for "action_permission",
       since a permission change is relevant regardless of which specific
-      action was recommended.
+      action was recommended. Both the policy and retry checks only flag
+      a CURRENT failure as newly stale when the stored preflight's own
+      decision was not already backend.agent_policy_engine.DENY: a
+      preflight that already correctly denies for the SAME underlying
+      class of reason has nothing NEW to report, and re-flagging it every
+      single call would make revalidation (a later commit's own concern)
+      never converge -- the stored decision, not just the bare current
+      readiness/retry answer, is part of what "still accounted for"
+      means here.
 
     Every optional collaborator (readiness_service/
     retry_eligibility_service) follows the exact same "duck-typed, used
@@ -202,7 +211,7 @@ class LLMAgentTaskRecoveryPreflightFreshnessService:
             policy_check = next((check for check in readiness_result.checks if check.name == "policy"), None)
             if policy_check is not None:
                 checked_references.append("action_permission")
-                if not policy_check.passed:
+                if not policy_check.passed and preflight.decision != DENY:
                     stale_reasons.append(f"the action is no longer permitted: {policy_check.detail}")
 
             if action == RECOVERY_ACTION_WAIT_FOR_DEPENDENCY:
@@ -225,7 +234,7 @@ class LLMAgentTaskRecoveryPreflightFreshnessService:
             else:
                 checked_references.append("retry_condition")
                 eligibility = self._retry_eligibility_service.check(task_id)
-                if not eligibility.eligible:
+                if not eligibility.eligible and preflight.decision != DENY:
                     stale_reasons.append(
                         f"retry eligibility has changed since this preflight was checked: {eligibility.reason}"
                     )

@@ -162,6 +162,15 @@ class LLMAgentTaskRecoveryPreflightInvalidationService:
         #5's own freshness check reports it stale. A fresh preflight is
         left alone (Rule: "Do not invalidate a fresh preflight").
 
+        An already-invalidated preflight (whether by a prior call to this
+        same method, or by an explicit invalidate() call for a reason
+        Commit #5's own freshness check has no way to see, e.g. an
+        operator's own manual judgment) is reported as still invalid
+        BEFORE freshness is even consulted -- never re-validated back to
+        "not invalid" merely because it now happens to look fresh again
+        (an explicit invalidation is a standing decision, not something a
+        later freshness check can silently override).
+
         Raises:
             InvalidAgentTaskRecoveryPreflightInvalidationError: If task_id
                 is not a non-empty string
@@ -171,6 +180,14 @@ class LLMAgentTaskRecoveryPreflightInvalidationService:
         preflight = self._preflight_store.get(task_id)
         if preflight is None:
             return self._no_preflight_result(task_id)
+
+        already_invalid = self._invalidation_store.get(preflight.preflight_id)
+        if already_invalid is not None:
+            return AgentTaskRecoveryPreflightInvalidationResult(
+                task_id=task_id, preflight_id=preflight.preflight_id, is_invalid=True,
+                invalidated_at=already_invalid.invalidated_at, reason=already_invalid.reason,
+                previous_decision=already_invalid.previous_decision,
+            )
 
         freshness = self._freshness_service.check(task_id, preflight=preflight)
         if freshness.is_fresh:
