@@ -8,10 +8,15 @@ from .preflight_store import (
     JsonAgentTaskRecoveryPreflightStore,
     LLMAgentTaskRecoveryPreflightStore,
 )
+from .preflight_freshness import (
+    InvalidAgentTaskRecoveryPreflightFreshnessError,
+    LLMAgentTaskRecoveryPreflightFreshnessService,
+)
 from .models import (
     AgentTaskRecoveryGuardEvaluation,
     AgentTaskRecoveryGuardResult,
     AgentTaskRecoveryPreflight,
+    AgentTaskRecoveryPreflightFreshness,
     AgentTaskRecoveryPreflightResult,
 )
 
@@ -30,4 +35,7 @@ __all__ = [
     "JsonAgentTaskRecoveryPreflightStore",
     "LLMAgentTaskRecoveryPreflightStore",
     "InvalidAgentTaskRecoveryPreflightPersistenceError",
+    "AgentTaskRecoveryPreflightFreshness",
+    "LLMAgentTaskRecoveryPreflightFreshnessService",
+    "InvalidAgentTaskRecoveryPreflightFreshnessError",
 ]

@@ -224,3 +224,56 @@ class AgentTaskRecoveryPreflight:
             plan_payload["blocking_conditions"] = tuple(plan_payload.get("blocking_conditions") or ())
             payload["plan"] = AgentTaskFailureRecoveryPlan(**plan_payload)
         return cls(**payload)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightFreshness:
+    """LLMAgentTaskRecoveryPreflightFreshnessService.check()'s complete,
+    read-only verdict on whether a Commit #4 AgentTaskRecoveryPreflight is
+    still trustworthy -- never a second cache/freshness framework (Rule:
+    "Do not invent another cache/freshness framework") and never a second
+    guard evaluation (Rule: "Do not duplicate Commit #1 guard checks"):
+    this service only ever compares a handful of specific, already-
+    existing reference facts (current event-sourced task state, the
+    current authoritative failure, and whichever of the stored plan's own
+    action-relevant conditions have a real existing collaborator to
+    re-check) against what the stored preflight itself recorded or
+    implied -- it never re-runs Commit #1's own ALLOW/DENY/REVIEW
+    machinery a second time.
+
+    is_fresh is exactly `not stale_reasons` -- the same "collect every
+    reason, never stop at the first" discipline every comparable result
+    in this project already establishes.
+
+    stale_reasons includes not only evidence of an actual CHANGE, but
+    also every applicable-but-unverifiable comparison (Rule: "Never
+    silently treat missing evidence as fresh" -- the same discipline
+    Commit #2's own "never silently convert an unknown condition into
+    allow" already establishes for a structurally identical problem): a
+    condition relevant to the stored plan's own recommended_action that
+    this service has no collaborator to actually re-check is reported as
+    its own stale_reasons entry, never silently skipped in a way that
+    would let is_fresh default to True.
+
+    checked_references names every reference this call ACTUALLY compared
+    (never a condition that was merely applicable-but-unverifiable, which
+    lives in stale_reasons instead) -- the same "only claim what was
+    genuinely checked" discipline Commit #1's own checked_conditions
+    already establishes.
+
+    A stored preflight's own checked_at timestamp is used analytically,
+    as the boundary for reconstructing what the task's state WAS at
+    preflight time (via a time-bounded replay), never as a naive
+    age/TTL check on its own (Rule: "If the repository already has
+    version/revision mechanisms, use those instead of timestamps alone"
+    -- this repository's own append-only event log already IS a
+    revision mechanism; comparing two point-in-time reconstructions of it
+    is more precise than treating "old" as inherently unsafe). A merely
+    OLD preflight whose task state, plan identity, and relevant
+    conditions all still match is still fresh.
+    """
+
+    task_id: str
+    is_fresh: bool
+    stale_reasons: tuple
+    checked_references: tuple
