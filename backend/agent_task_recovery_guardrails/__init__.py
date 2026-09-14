@@ -37,6 +37,10 @@ from .preflight_authorization import (
     JsonAgentTaskRecoveryPreflightAuthorizationStore,
     LLMAgentTaskRecoveryPreflightAuthorizationService,
 )
+from .preflight_authorization_validation import (
+    InvalidAgentTaskRecoveryPreflightAuthorizationValidationError,
+    LLMAgentTaskRecoveryPreflightAuthorizationValidationService,
+)
 from .models import (
     ACTIVE,
     APPROVAL_STATUSES,
@@ -50,6 +54,7 @@ from .models import (
     AgentTaskRecoveryPreflight,
     AgentTaskRecoveryPreflightApproval,
     AgentTaskRecoveryPreflightAuthorization,
+    AgentTaskRecoveryPreflightAuthorizationValidation,
     AgentTaskRecoveryPreflightFreshness,
     AgentTaskRecoveryPreflightInvalidation,
     AgentTaskRecoveryPreflightInvalidationResult,
@@ -104,4 +109,7 @@ __all__ = [
     "JsonAgentTaskRecoveryPreflightAuthorizationStore",
     "LLMAgentTaskRecoveryPreflightAuthorizationService",
     "InvalidAgentTaskRecoveryPreflightAuthorizationError",
+    "AgentTaskRecoveryPreflightAuthorizationValidation",
+    "LLMAgentTaskRecoveryPreflightAuthorizationValidationService",
+    "InvalidAgentTaskRecoveryPreflightAuthorizationValidationError",
 ]

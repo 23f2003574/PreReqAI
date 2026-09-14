@@ -559,3 +559,54 @@ class AgentTaskRecoveryPreflightAuthorization:
             if isinstance(value, str):
                 payload[key] = datetime.fromisoformat(value)
         return cls(**payload)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightAuthorizationValidation:
+    """LLMAgentTaskRecoveryPreflightAuthorizationValidationService.
+    validate()'s complete, read-only verdict on whether one Commit #9
+    execution authorization is STILL usable right this moment -- never a
+    second validation/policy framework (Rule: "Do not create duplicate
+    validation or policy infrastructure"): every fact here is read
+    straight from Commit #9's own authorization record, Commit #4's own
+    preflight store, Commit #6's own (now dual read/write) invalidation
+    service, Commit #5's own freshness check, Commit #8's own approval
+    record, and Commit #2's own guard evaluation -- nothing here is
+    re-derived a second way, and nothing here writes anything at all
+    (unlike Commit #8/#9's own `_verify_approvable`/
+    `_verify_current_and_valid`, which legitimately call Commit #6's own
+    invalidate_if_stale() as part of a WRITE operation, this service only
+    ever calls its pure-read counterpart, get_invalidation()).
+
+    valid is exactly `not blocking_reasons` -- warnings never affect it,
+    the same failed-checks/warnings split every comparable result in this
+    project already keeps.
+
+    blocking_reasons distinguishes every named failure case explicitly
+    (Rule: "Clearly distinguish missing, revoked, stale, invalidated,
+    superseded, and policy-blocked cases") rather than collapsing them
+    into one generic "invalid" message -- missing authorization/preflight,
+    revoked, superseded, explicitly invalidated, stale (Commit #5's own
+    stale_reasons, prefixed for clarity), a lapsed approval, and a fresh
+    guard/policy re-evaluation that no longer returns ALLOW are each
+    reported as their own distinct entry, and every applicable one is
+    collected -- never only the first found.
+
+    preflight_id is None only when authorization_id itself does not
+    exist for task_id at all (Rule: "authorization exists and belongs to
+    the requested task") -- there is then nothing else to report on.
+
+    validated_at is a plain wall-clock record of when this check ran
+    (Rule: "Validation must be deterministic for the same current state"
+    -- every OTHER field is a pure function of already-deterministic
+    reads, so only this timestamp is expected to differ between two
+    otherwise-identical calls).
+    """
+
+    valid: bool
+    task_id: str
+    authorization_id: str
+    preflight_id: Optional[str]
+    blocking_reasons: tuple
+    warnings: tuple
+    validated_at: datetime

@@ -157,6 +157,23 @@ class LLMAgentTaskRecoveryPreflightInvalidationService:
 
         return self._invalidate_preflight(task_id, preflight, reason or _EXPLICIT_REASON)
 
+    def get_invalidation(self, preflight_id: str) -> Optional[AgentTaskRecoveryPreflightInvalidation]:
+        """preflight_id's own invalidation record, or None if it has
+        never been invalidated -- a pure read, never a write, unlike
+        invalidate()/invalidate_if_stale(): added for Commit #10's own
+        read-only validation service, which needs to distinguish "already
+        explicitly invalidated" from "stale" as two separate, clearly
+        reported facts without itself writing a new invalidation record
+        as a side effect of merely checking (Rule: "Read-only; validation
+        must not execute recovery or mutate task state").
+
+        Raises:
+            InvalidAgentTaskRecoveryPreflightInvalidationError: If
+                preflight_id is not a non-empty string
+        """
+        self._require_text(preflight_id, field_name="preflight_id")
+        return self._invalidation_store.get(preflight_id)
+
     def invalidate_if_stale(self, task_id: str) -> AgentTaskRecoveryPreflightInvalidationResult:
         """Invalidate task_id's current stored preflight only if Commit
         #5's own freshness check reports it stale. A fresh preflight is
