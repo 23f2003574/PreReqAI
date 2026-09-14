@@ -37,6 +37,7 @@ from .models import (
     AgentTaskEventReplayFailure,
     AgentTaskEventReplayResult,
     AgentTaskEventRecoveryConflict,
+    AgentTaskEventRecoveryOrchestrationResult,
     AgentTaskEventRecoveryPlan,
     AgentTaskEventRecoveryResult,
     AgentTaskEventRetentionCandidate,
@@ -47,6 +48,12 @@ from .models import (
     AgentTaskProjectionDifference,
     AgentTaskProjectionReconciliationResult,
     AgentTaskStateTransition,
+    RECOVERY_STAGE_CONSISTENCY,
+    RECOVERY_STAGE_PLAN,
+    RECOVERY_STAGE_PROJECTION,
+    RECOVERY_STAGE_RECOVERY,
+    RECOVERY_STAGE_VERIFICATION,
+    RECOVERY_STAGES,
 )
 from .projection import InvalidAgentTaskEventProjectionError, LLMAgentTaskEventProjectionService
 from .projection_in_memory_store import InMemoryAgentTaskEventProjectionStore
@@ -59,6 +66,10 @@ from .projection_store import AgentTaskEventProjectionStore
 from .query import InvalidAgentTaskEventQueryError, LLMAgentTaskEventQueryService
 from .replay import InvalidAgentTaskEventReplayError, LLMAgentTaskEventReplayService
 from .retention import DEFAULT_RETENTION_WINDOW, InvalidAgentTaskEventRetentionError, LLMAgentTaskEventRetentionService
+from .recovery_orchestration import (
+    InvalidAgentTaskEventRecoveryOrchestrationError,
+    LLMAgentTaskEventRecoveryOrchestrationService,
+)
 from .service import InvalidAgentTaskEventError, LLMAgentTaskEventService
 from .store import AgentTaskEventStore
 from .timeline import InvalidAgentTaskEventTimelineError, LLMAgentTaskEventTimelineService
@@ -77,6 +88,15 @@ __all__ = [
     "AgentTaskEventRecoveryConflict",
     "AgentTaskEventRecoveryPlan",
     "AgentTaskEventRecoveryResult",
+    "LLMAgentTaskEventRecoveryOrchestrationService",
+    "InvalidAgentTaskEventRecoveryOrchestrationError",
+    "AgentTaskEventRecoveryOrchestrationResult",
+    "RECOVERY_STAGE_PLAN",
+    "RECOVERY_STAGE_RECOVERY",
+    "RECOVERY_STAGE_VERIFICATION",
+    "RECOVERY_STAGE_CONSISTENCY",
+    "RECOVERY_STAGE_PROJECTION",
+    "RECOVERY_STAGES",
     "AgentTaskEvent",
     "AgentTaskEventStore",
     "InMemoryAgentTaskEventStore",

@@ -725,3 +725,62 @@ class AgentTaskEventRecoveryResult:
     already_restored: tuple
     unresolved_conflicts: tuple
     verification: AgentTaskEventArchiveVerificationResult
+
+
+# LLMAgentTaskEventRecoveryOrchestrationService's own workflow-stage
+# vocabulary -- a closed set (unlike KNOWN_EVENT_TYPES) matching exactly the
+# goal's own 6-step workflow, minus the two steps (3 "recover eligible
+# missing events" and 4 "verify the recovered data") that Commit #12's own
+# recover() already performs as one call, embedding Commit #11's own
+# verification directly (Rule: "Do not duplicate logic from Commit #11 or
+# #12") -- so RECOVERY_STAGE_RECOVERY covers step 3's own outcome and
+# RECOVERY_STAGE_VERIFICATION covers step 4's, even though both are learned
+# from that single recover() call, never a second one.
+RECOVERY_STAGE_PLAN = "plan"
+RECOVERY_STAGE_RECOVERY = "recovery"
+RECOVERY_STAGE_VERIFICATION = "verification"
+RECOVERY_STAGE_CONSISTENCY = "consistency"
+RECOVERY_STAGE_PROJECTION = "projection"
+
+RECOVERY_STAGES = frozenset(
+    {
+        RECOVERY_STAGE_PLAN,
+        RECOVERY_STAGE_RECOVERY,
+        RECOVERY_STAGE_VERIFICATION,
+        RECOVERY_STAGE_CONSISTENCY,
+        RECOVERY_STAGE_PROJECTION,
+    }
+)
+
+
+@dataclass(frozen=True)
+class AgentTaskEventRecoveryOrchestrationResult:
+    """LLMAgentTaskEventRecoveryOrchestrationService.recover_task_history()'s
+    complete outcome -- the "one workflow" result tying Commits #5, #7/#8,
+    #11, and #12 together.
+
+    Each *_result field is exactly the embedded collaborator's own result
+    type, never reshaped or re-derived (Rule: "Only include fields that
+    match existing repository conventions"): recovery_result is Commit
+    #12's own AgentTaskEventRecoveryResult; verification_result is that
+    same result's own already-embedded Commit #11
+    AgentTaskEventArchiveVerificationResult, exposed at the top level too
+    for direct access without a caller having to reach through
+    recovery_result.verification themselves; consistency_result is Commit
+    #5's own AgentTaskEventConsistencyResult; projection_result is Commit
+    #8's own AgentTaskProjectionReconciliationResult.
+
+    A field is None exactly when its own stage was never reached (Rule:
+    "a failed stage must not pretend later stages succeeded") -- there is
+    no partial/placeholder result for a stage that did not run.
+    failure_stage names exactly which RECOVERY_STAGES value stopped the
+    workflow, or None when success is True (every stage ran and passed).
+    """
+
+    task_id: str
+    recovery_result: Optional[AgentTaskEventRecoveryResult]
+    verification_result: Optional[AgentTaskEventArchiveVerificationResult]
+    consistency_result: Optional[AgentTaskEventConsistencyResult]
+    projection_result: Optional[AgentTaskProjectionReconciliationResult]
+    success: bool
+    failure_stage: Optional[str]
