@@ -277,3 +277,82 @@ class AgentTaskRecoveryPreflightFreshness:
     is_fresh: bool
     stale_reasons: tuple
     checked_references: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightInvalidation:
+    """LLMAgentTaskRecoveryPreflightInvalidationService's durable record
+    that one specific Commit #4 AgentTaskRecoveryPreflight (named by its
+    own preflight_id) is no longer usable -- never a mutation of that
+    original record (Rule: "Never delete the original preflight";
+    "preserve the original preflight but mark it unusable"): the
+    preflight itself is never touched, rewritten, or removed from Commit
+    #4's own store; this is a SEPARATE, additive fact about it, the same
+    "mark unusable via a separate record, never by rewriting the
+    original" discipline backend.agent_task_queue_dead_letter.
+    DeadLetterEntry already establishes for a comparable case (a task is
+    never deleted or edited when dead-lettered -- a second, additive
+    record says so instead).
+
+    One record per preflight_id (Rule: "Already-invalid preflights remain
+    idempotently invalid"): the service layer checks for an existing
+    record before ever creating a new one, the same idempotent-by-key
+    convention backend.agent_task_queue_dead_letter.LLMAgentTaskDeadLetterService.
+    dead_letter() already establishes ("if task_id is already dead-
+    lettered, returns that existing entry unchanged").
+
+    previous_decision is exactly the invalidated preflight's own
+    `decision` (ALLOW/DENY/REVIEW), captured at invalidation time -- pure
+    audit context, "what did we used to think before this was marked
+    unusable," never itself re-evaluated or acted upon.
+    """
+
+    task_id: str
+    preflight_id: str
+    reason: str
+    previous_decision: str
+    invalidated_at: datetime
+    invalidation_id: str = field(default_factory=lambda: str(uuid4()))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["invalidated_at"] = self.invalidated_at.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "AgentTaskRecoveryPreflightInvalidation":
+        payload = dict(data)
+        value = payload.get("invalidated_at")
+        if isinstance(value, str):
+            payload["invalidated_at"] = datetime.fromisoformat(value)
+        return cls(**payload)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightInvalidationResult:
+    """LLMAgentTaskRecoveryPreflightInvalidationService.invalidate()/
+    invalidate_if_stale()'s complete, read-only report of task_id's own
+    preflight-invalidation status right now.
+
+    preflight_id is None exactly when task_id has no stored preflight at
+    all (Rule: "missing preflight handled cleanly" -- reported honestly,
+    never an error and never fabricated). is_invalid is False both when
+    no preflight exists at all and when one exists but was never (and,
+    for invalidate_if_stale(), is not currently) found invalid --
+    invalidated_at/reason/previous_decision are then all None, the same
+    "unknown/inapplicable stays None, never guessed" discipline this
+    entire project already establishes everywhere.
+
+    Idempotent by construction (Rule: "repeated invalidation is
+    idempotent"): calling invalidate()/invalidate_if_stale() again for a
+    preflight_id already carrying an AgentTaskRecoveryPreflightInvalidation
+    record returns that SAME existing record's own reason/invalidated_at/
+    previous_decision, never a freshly re-derived one.
+    """
+
+    task_id: str
+    preflight_id: Optional[str]
+    is_invalid: bool
+    invalidated_at: Optional[datetime]
+    reason: Optional[str]
+    previous_decision: Optional[str]

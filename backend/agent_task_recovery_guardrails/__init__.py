@@ -12,11 +12,20 @@ from .preflight_freshness import (
     InvalidAgentTaskRecoveryPreflightFreshnessError,
     LLMAgentTaskRecoveryPreflightFreshnessService,
 )
+from .preflight_invalidation import (
+    AgentTaskRecoveryPreflightInvalidationStore,
+    InMemoryAgentTaskRecoveryPreflightInvalidationStore,
+    InvalidAgentTaskRecoveryPreflightInvalidationError,
+    JsonAgentTaskRecoveryPreflightInvalidationStore,
+    LLMAgentTaskRecoveryPreflightInvalidationService,
+)
 from .models import (
     AgentTaskRecoveryGuardEvaluation,
     AgentTaskRecoveryGuardResult,
     AgentTaskRecoveryPreflight,
     AgentTaskRecoveryPreflightFreshness,
+    AgentTaskRecoveryPreflightInvalidation,
+    AgentTaskRecoveryPreflightInvalidationResult,
     AgentTaskRecoveryPreflightResult,
 )
 
@@ -38,4 +47,11 @@ __all__ = [
     "AgentTaskRecoveryPreflightFreshness",
     "LLMAgentTaskRecoveryPreflightFreshnessService",
     "InvalidAgentTaskRecoveryPreflightFreshnessError",
+    "AgentTaskRecoveryPreflightInvalidation",
+    "AgentTaskRecoveryPreflightInvalidationResult",
+    "AgentTaskRecoveryPreflightInvalidationStore",
+    "InMemoryAgentTaskRecoveryPreflightInvalidationStore",
+    "JsonAgentTaskRecoveryPreflightInvalidationStore",
+    "LLMAgentTaskRecoveryPreflightInvalidationService",
+    "InvalidAgentTaskRecoveryPreflightInvalidationError",
 ]
