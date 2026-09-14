@@ -379,3 +379,38 @@ class AgentTaskRecoveryOutcome:
     reason: Optional[str]
     started_at: datetime
     completed_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryHistorySummary:
+    """LLMAgentTaskRecoveryHistoryService.summarize()'s compact rollup of
+    one task's own recorded recovery outcomes -- every field is a plain
+    count or a value copied verbatim from the latest
+    AgentTaskRecoveryOutcome, never a re-derivation of anything Commit
+    #5's own record() already decided (Rule: "Reuse Commit #5 outcomes;
+    do not reconstruct them from raw events").
+
+    successful_attempts/failed_attempts/partial_attempts are a strict
+    partition of total_attempts (every outcome has exactly one of Commit
+    #5's own three RECOVERY_OUTCOME_STATUSES) -- partial_attempts is
+    counted separately rather than folded into either bucket, since a
+    PARTIAL repair is genuinely neither a full success nor a failure
+    (Rule: "Do not invent recovery statuses unsupported by the
+    repository" cuts both ways: never inventing a new status, and never
+    silently discarding a real one by miscounting it).
+
+    latest_status/latest_action are None only when there are no recorded
+    outcomes at all; otherwise latest_action is the latest outcome's own
+    executed_action, falling back to its planned_action only when nothing
+    was actually executed (an unsupported/unresolved action) -- always
+    reporting the most informative real value Commit #5 already recorded,
+    never a placeholder.
+    """
+
+    task_id: str
+    total_attempts: int
+    successful_attempts: int
+    failed_attempts: int
+    partial_attempts: int
+    latest_status: Optional[str]
+    latest_action: Optional[str]
