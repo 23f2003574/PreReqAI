@@ -587,3 +587,50 @@ class AgentTaskRecoveryDecisionAudit:
     blocking_conditions: tuple
     reason: str
     created_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryDecisionComparison:
+    """LLMAgentTaskRecoveryDecisionComparisonService.compare()'s complete
+    outcome for one Commit #9 AgentTaskRecoveryDecisionAudit -- never a
+    second analytics/audit framework (Rule): every field is read from an
+    existing service's own already-computed result (Commit #9's own
+    audit, Commit #6's own history, Commit #7's own effectiveness), and
+    the only new computation is a small, explicit matching/comparison
+    step.
+
+    Matching the decision to "the recovery attempt that followed it" is
+    deliberately reference-based, not merely temporal (Rule: "Do not
+    infer causality from temporal proximity alone"): a candidate outcome
+    must share the decision's own failure_event_id (Commit #5's own
+    source_failure_event_id) *and* have completed at or after the
+    decision's own created_at -- the earliest such outcome, in Commit #6's
+    own already-deterministic order, is the one compared. Time is only
+    ever used to break ties among outcomes that already share the same
+    explicit failure reference, never as the sole basis for a match.
+
+    executed_action/outcome_status/was_followed/was_effective are all
+    None together when no matching outcome exists at all (Rule: "Unknown
+    relationships must remain unknown" -- "no corresponding recovery" is
+    reported honestly, never guessed at). was_followed is otherwise always
+    a real True/False once a matching outcome exists (a plain string
+    comparison, never ambiguous). was_effective is None whenever the
+    task's own broader recovery effectiveness cannot be determined (Commit
+    #7's own terminal_failure_after_recovery is itself None, e.g. no
+    failure_classifier was ever wired into the effectiveness_service
+    supplied here) -- "insufficient evidence to judge" is a real, distinct
+    outcome from "no corresponding recovery," not conflated with it.
+
+    recommendation_confidence is exactly the audited decision's own
+    confidence, carried through unchanged -- never re-computed.
+    """
+
+    task_id: str
+    decision_id: str
+    recommended_action: str
+    executed_action: Optional[str]
+    recommendation_confidence: float
+    outcome_status: Optional[str]
+    was_followed: Optional[bool]
+    was_effective: Optional[bool]
+    comparison_reason: str

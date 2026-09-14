@@ -30,6 +30,10 @@ from .recovery_decision_audit import (
     InvalidAgentTaskRecoveryDecisionAuditError,
     LLMAgentTaskRecoveryDecisionAuditService,
 )
+from .recovery_decision_comparison import (
+    InvalidAgentTaskRecoveryDecisionComparisonError,
+    LLMAgentTaskRecoveryDecisionComparisonService,
+)
 from .models import (
     FAILURE_CATEGORIES,
     FAILURE_CATEGORY_CONTEXT,
@@ -64,6 +68,7 @@ from .models import (
     AgentTaskFailureRecoveryPlan,
     AgentTaskFailureRecoveryResult,
     AgentTaskRecoveryDecisionAudit,
+    AgentTaskRecoveryDecisionComparison,
     AgentTaskRecoveryEffectiveness,
     AgentTaskRecoveryHistorySummary,
     AgentTaskRecoveryOutcome,
@@ -127,4 +132,7 @@ __all__ = [
     "LLMAgentTaskRecoveryDecisionAuditService",
     "InvalidAgentTaskRecoveryDecisionAuditError",
     "RECOVERY_DECISION_EVENT_TYPE",
+    "AgentTaskRecoveryDecisionComparison",
+    "LLMAgentTaskRecoveryDecisionComparisonService",
+    "InvalidAgentTaskRecoveryDecisionComparisonError",
 ]
