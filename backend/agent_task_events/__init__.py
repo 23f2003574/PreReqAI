@@ -1,17 +1,27 @@
+from .consistency import InvalidAgentTaskEventConsistencyError, LLMAgentTaskEventConsistencyService
 from .correlation import InvalidAgentTaskEventCorrelationError, LLMAgentTaskEventCorrelationService
 from .in_memory_store import InMemoryAgentTaskEventStore
 from .json_store import JsonAgentTaskEventStore
 from .models import (
+    CONFLICTING_TERMINAL,
+    CONSISTENCY_VIOLATION_CATEGORIES,
     CONTEXT_UPDATED,
     CORRELATION_ESTABLISHED,
     DEPENDENCY_ADDED,
     DEPENDENCY_REMOVED,
+    IMPOSSIBLE_TRANSITION,
+    INVALID_ORDER,
+    INVALID_RELATIONSHIP,
     KNOWN_EVENT_TYPES,
     LIFECYCLE_TRANSITIONED,
+    MISSING_REFERENCE,
     READINESS_CHANGED,
     RETRY_CANCELLED,
     RETRY_SCHEDULED,
+    STATE_MISMATCH,
     AgentTaskEvent,
+    AgentTaskEventConsistencyResult,
+    AgentTaskEventConsistencyViolation,
     AgentTaskEventTimeline,
 )
 from .query import InvalidAgentTaskEventQueryError, LLMAgentTaskEventQueryService
@@ -33,6 +43,10 @@ __all__ = [
     "InvalidAgentTaskEventTimelineError",
     "LLMAgentTaskEventCorrelationService",
     "InvalidAgentTaskEventCorrelationError",
+    "AgentTaskEventConsistencyResult",
+    "AgentTaskEventConsistencyViolation",
+    "LLMAgentTaskEventConsistencyService",
+    "InvalidAgentTaskEventConsistencyError",
     "KNOWN_EVENT_TYPES",
     "LIFECYCLE_TRANSITIONED",
     "DEPENDENCY_ADDED",
@@ -42,4 +56,11 @@ __all__ = [
     "RETRY_CANCELLED",
     "CONTEXT_UPDATED",
     "CORRELATION_ESTABLISHED",
+    "CONSISTENCY_VIOLATION_CATEGORIES",
+    "IMPOSSIBLE_TRANSITION",
+    "INVALID_ORDER",
+    "CONFLICTING_TERMINAL",
+    "MISSING_REFERENCE",
+    "STATE_MISMATCH",
+    "INVALID_RELATIONSHIP",
 ]

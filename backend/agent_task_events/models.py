@@ -168,3 +168,74 @@ class AgentTaskEventTimeline:
             "event_type_counts": dict(self.event_type_counts),
             "current_observed_state": self.current_observed_state,
         }
+
+
+# Commit #5's own violation-category vocabulary -- a closed set (unlike
+# KNOWN_EVENT_TYPES) since these six are exactly the categories the goal
+# itself names; LLMAgentTaskEventConsistencyService.validate() never reports
+# a category outside this set.
+IMPOSSIBLE_TRANSITION = "impossible_transition"
+INVALID_ORDER = "invalid_order"
+CONFLICTING_TERMINAL = "conflicting_terminal"
+MISSING_REFERENCE = "missing_reference"
+STATE_MISMATCH = "state_mismatch"
+INVALID_RELATIONSHIP = "invalid_relationship"
+
+CONSISTENCY_VIOLATION_CATEGORIES = frozenset(
+    {
+        IMPOSSIBLE_TRANSITION,
+        INVALID_ORDER,
+        CONFLICTING_TERMINAL,
+        MISSING_REFERENCE,
+        STATE_MISMATCH,
+        INVALID_RELATIONSHIP,
+    }
+)
+
+
+@dataclass(frozen=True)
+class AgentTaskEventConsistencyViolation:
+    """One concrete inconsistency LLMAgentTaskEventConsistencyService.
+    validate() found, always anchored to the one event responsible for it.
+
+    event_id is a reference, not the event itself (Rule: "Correlation
+    metadata must reference events/operations, not duplicate payloads" --
+    the same "ids and labels, never raw content" discipline this whole
+    module already applies to payload/correlation fields extends here too):
+    a caller who wants the full AgentTaskEvent already has it, from the
+    same query() call validate() itself used.
+    """
+
+    event_id: str
+    category: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class AgentTaskEventConsistencyResult:
+    """LLMAgentTaskEventConsistencyService.validate()'s complete,
+    structured outcome for one task's event stream.
+
+    Deterministic and side-effect free (Rule: "Deterministic results"):
+    computing a result never mutates, persists, or emits anything, and the
+    same persisted events always produce the same violations in the same
+    order (every check below iterates Commit #2's own already-
+    deterministically-ordered query() result in a fixed sequence).
+
+    is_consistent is exactly `not violations` -- the same
+    `valid = not errors` convention
+    backend.agent_task_state_validation.AgentTaskStateValidationResult
+    already establishes for a comparable "consistency of one entity"
+    result.
+
+    checked_task_state is backend.agent_task_lifecycle.AgentTask's own
+    current_state at validation time -- the authoritative value every
+    STATE_MISMATCH violation compares an event-derived observation
+    against, exposed here so a caller never has to re-fetch it separately.
+    """
+
+    task_id: str
+    is_consistent: bool
+    violations: tuple
+    checked_event_count: int
+    checked_task_state: Optional[str]
