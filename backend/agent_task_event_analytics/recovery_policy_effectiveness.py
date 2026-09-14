@@ -6,7 +6,7 @@ from .models import (
     AgentTaskRecoveryPolicyEffectivenessBreakdown,
 )
 from .recovery_decision_audit import LLMAgentTaskRecoveryDecisionAuditService
-from .recovery_policy_feedback import LLMAgentTaskRecoveryPolicyFeedbackService
+from .recovery_policy_feedback import LLMAgentTaskRecoveryPolicyFeedbackService, latest_feedback_per_decision
 
 
 class InvalidAgentTaskRecoveryPolicyEffectivenessError(ValueError):
@@ -148,7 +148,7 @@ class LLMAgentTaskRecoveryPolicyEffectivenessService:
         if policy_id is not None:
             self._require_text(policy_id, "policy_id")
 
-        records = self._latest_per_decision(
+        records = latest_feedback_per_decision(
             self._feedback_service.list(task_id) if task_id is not None else self._feedback_service.list_all()
         )
 
@@ -235,13 +235,6 @@ class LLMAgentTaskRecoveryPolicyEffectivenessService:
                 if category is not None:
                     result[(task_id, record.decision_id)] = category
         return result
-
-    @staticmethod
-    def _latest_per_decision(records) -> list:
-        latest_by_decision: dict = {}
-        for record in records:
-            latest_by_decision[record.decision_id] = record
-        return list(latest_by_decision.values())
 
     @staticmethod
     def _breakdown(records) -> AgentTaskRecoveryPolicyEffectivenessBreakdown:

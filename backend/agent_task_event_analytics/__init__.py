@@ -42,6 +42,10 @@ from .recovery_policy_effectiveness import (
     InvalidAgentTaskRecoveryPolicyEffectivenessError,
     LLMAgentTaskRecoveryPolicyEffectivenessService,
 )
+from .recovery_learning_integration import (
+    InvalidAgentTaskRecoveryLearningError,
+    LLMAgentTaskRecoveryLearningService,
+)
 from .models import (
     FAILURE_CATEGORIES,
     FAILURE_CATEGORY_CONTEXT,
@@ -69,6 +73,7 @@ from .models import (
     RECOVERY_OUTCOME_STATUSES,
     RECOVERY_OUTCOME_SUCCESS,
     RECOVERY_DECISION_EVENT_TYPE,
+    RECOVERY_LEARNING_EVENT_TYPE,
     RECOVERY_POLICY_FEEDBACK_EVENT_TYPE,
     RECOVERY_POLICY_FEEDBACK_EFFECTIVE,
     RECOVERY_POLICY_FEEDBACK_INEFFECTIVE,
@@ -84,6 +89,7 @@ from .models import (
     AgentTaskRecoveryDecisionComparison,
     AgentTaskRecoveryEffectiveness,
     AgentTaskRecoveryHistorySummary,
+    AgentTaskRecoveryLearningResult,
     AgentTaskRecoveryOutcome,
     AgentTaskRecoveryPolicyEffectiveness,
     AgentTaskRecoveryPolicyEffectivenessBreakdown,
@@ -163,4 +169,8 @@ __all__ = [
     "AgentTaskRecoveryPolicyEffectivenessBreakdown",
     "LLMAgentTaskRecoveryPolicyEffectivenessService",
     "InvalidAgentTaskRecoveryPolicyEffectivenessError",
+    "AgentTaskRecoveryLearningResult",
+    "RECOVERY_LEARNING_EVENT_TYPE",
+    "LLMAgentTaskRecoveryLearningService",
+    "InvalidAgentTaskRecoveryLearningError",
 ]

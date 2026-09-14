@@ -27,6 +27,23 @@ _IDENTITY_FIELDS = (
 )
 
 
+def latest_feedback_per_decision(records) -> list:
+    """`records` collapsed to at most one entry per decision_id -- the
+    most recently recorded one, when a decision was evaluated more than
+    once (its own evidence changed between calls, e.g. "no corresponding
+    recovery" superseded later by a real outcome). Shared by Commit #12
+    (LLMAgentTaskRecoveryPolicyEffectivenessService) and Commit #13
+    (LLMAgentTaskRecoveryLearningService) so this "which feedback record
+    is authoritative for a decision_id" rule lives in exactly one place
+    (Rule: "Do not duplicate generic analytics infrastructure") -- the
+    same "most informative real value already on record" precedent
+    Commit #6's own latest_action fallback already establishes."""
+    latest_by_decision: dict = {}
+    for record in records:
+        latest_by_decision[record.decision_id] = record
+    return list(latest_by_decision.values())
+
+
 class InvalidAgentTaskRecoveryPolicyFeedbackError(ValueError):
     """Raised when record()/get()/list() is given invalid arguments."""
 

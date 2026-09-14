@@ -803,3 +803,41 @@ class AgentTaskRecoveryPolicyEffectiveness:
     effectiveness_by_policy: dict
     supporting_decision_ids: tuple
     supporting_recovery_ids: tuple
+
+
+# Commit #13's own event_type for persisted learning results, the same
+# "append it as a plain new agent_task_events event type" reuse Commits
+# #5, #9, and #11 already established -- zero new store.
+RECOVERY_LEARNING_EVENT_TYPE = "recovery_learning_signal_recorded"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryLearningResult:
+    """LLMAgentTaskRecoveryLearningService.learn()'s durable record of
+    converting one task_id's worth of Commit #12 evidence into
+    backend.agent_learning_signals.LLMAgentLearningSignal instances --
+    never a second learning store or algorithm (Rule: "Do not invent a
+    new learning store or learning algorithm"; "Do not duplicate Agent
+    Memory or Strategy Learning infrastructure"): `signals` are literally
+    that existing repository's own signal type, unmodified, reused as
+    this domain's "existing learning signal" the same way Commit #9/#11
+    already reuse backend.agent_task_events' own AgentTaskEvent for
+    persistence rather than inventing a parallel one.
+
+    signals is empty exactly when every decision considered had an
+    unknown effectiveness (Rule: "Unknown outcomes must produce no
+    positive/negative learning signal") -- skipped_unknown_count still
+    honestly reports how many decisions were looked at and produced
+    nothing, rather than silently vanishing them.
+
+    decisions_considered is exactly len(signals) + skipped_unknown_count
+    -- a true partition, the same "every attempt belongs to exactly one
+    bucket" discipline Commit #6/#12 already establish.
+    """
+
+    task_id: str
+    learning_id: str
+    decisions_considered: int
+    skipped_unknown_count: int
+    signals: tuple
+    created_at: datetime
