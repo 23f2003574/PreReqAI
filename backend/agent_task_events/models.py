@@ -95,3 +95,49 @@ class AgentTaskEvent:
         if isinstance(value, str):
             payload["occurred_at"] = datetime.fromisoformat(value)
         return cls(**payload)
+
+
+@dataclass(frozen=True)
+class AgentTaskEventTimeline:
+    """One task's chronological progression, reconstructed entirely from
+    its own already-persisted AgentTaskEvent stream by Commit #3's
+    LLMAgentTaskEventTimelineService.build() -- a computed, read-only view,
+    never itself persisted (no store/to_dict round-trip is needed the way
+    AgentTaskEvent's own is, since nothing ever writes a timeline back;
+    to_dict() exists purely for callers that want a serializable snapshot).
+
+    events is a tuple (not a list) -- the same structural-immutability
+    discipline backend.agent_task_context_provenance.ContextProvenanceRecord.
+    entries already establishes -- holding the exact AgentTaskEvent records
+    LLMAgentTaskEventQueryService.query() returned, never reshaped or
+    copied into a second representation (Rule: "Preserve event payload/
+    reference data without duplicating it").
+
+    current_observed_state is explicitly *observed*, not authoritative
+    (Rule: "Do not replace authoritative task state with the timeline"):
+    it is whatever backend.agent_task_lifecycle.STATES value the most
+    recent LIFECYCLE_TRANSITIONED event's own payload["to_state"]
+    reported, or None if no event in this timeline ever reported one
+    (Rule: "Do not invent missing state from incomplete events") -- the
+    real, authoritative current_state still lives only in
+    backend.agent_task_lifecycle.AgentTask itself.
+    """
+
+    task_id: str
+    events: tuple
+    first_event_at: Optional[datetime]
+    last_event_at: Optional[datetime]
+    event_count: int
+    event_type_counts: dict
+    current_observed_state: Optional[str]
+
+    def to_dict(self) -> dict:
+        return {
+            "task_id": self.task_id,
+            "events": [event.to_dict() for event in self.events],
+            "first_event_at": self.first_event_at.isoformat() if self.first_event_at else None,
+            "last_event_at": self.last_event_at.isoformat() if self.last_event_at else None,
+            "event_count": self.event_count,
+            "event_type_counts": dict(self.event_type_counts),
+            "current_observed_state": self.current_observed_state,
+        }

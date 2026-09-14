@@ -10,10 +10,12 @@ from .models import (
     RETRY_CANCELLED,
     RETRY_SCHEDULED,
     AgentTaskEvent,
+    AgentTaskEventTimeline,
 )
 from .query import InvalidAgentTaskEventQueryError, LLMAgentTaskEventQueryService
 from .service import InvalidAgentTaskEventError, LLMAgentTaskEventService
 from .store import AgentTaskEventStore
+from .timeline import InvalidAgentTaskEventTimelineError, LLMAgentTaskEventTimelineService
 
 __all__ = [
     "AgentTaskEvent",
@@ -24,6 +26,9 @@ __all__ = [
     "InvalidAgentTaskEventError",
     "LLMAgentTaskEventQueryService",
     "InvalidAgentTaskEventQueryError",
+    "AgentTaskEventTimeline",
+    "LLMAgentTaskEventTimelineService",
+    "InvalidAgentTaskEventTimelineError",
     "KNOWN_EVENT_TYPES",
     "LIFECYCLE_TRANSITIONED",
     "DEPENDENCY_ADDED",
