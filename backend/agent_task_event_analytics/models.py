@@ -86,3 +86,96 @@ class AgentTaskEventAnalytics:
     retry_cancelled_count: int
     failure_count: int
     terminal_outcome: Optional[str]
+
+
+# LLMAgentTaskEventFailureClassifier's own category vocabulary -- deliberately
+# distinct from backend.agent_failure_handling.CATEGORIES (NONE/RETRYABLE/
+# PERMANENT/PERMISSION_DENIED/DEPENDENCY_FAILURE): that taxonomy is scoped to
+# one plan-step execution (step_id) and answers "should this step retry right
+# now," a different question from "why did this *task*, across its own event
+# stream, end up here" -- reusing it directly would blur two unrelated
+# identity spaces (step_id vs task_id) together. Where the two genuinely
+# overlap in spirit (DEPENDENCY_FAILURE <-> FAILURE_CATEGORY_DEPENDENCY) the
+# naming deliberately echoes it. Only categories with a clean, existing
+# event-type-backed signal are included -- "validation/policy" maps to
+# READINESS_CHANGED (backend.agent_task_readiness's own gate already folds a
+# policy check into readiness), not to a new "policy" event type.
+FAILURE_CATEGORY_EXECUTION = "execution"
+FAILURE_CATEGORY_DEPENDENCY = "dependency"
+FAILURE_CATEGORY_TIMEOUT_CANCELLATION = "timeout_cancellation"
+FAILURE_CATEGORY_RETRY_EXHAUSTION = "retry_exhaustion"
+FAILURE_CATEGORY_VALIDATION_POLICY = "validation_policy"
+FAILURE_CATEGORY_CONTEXT = "context"
+FAILURE_CATEGORY_UNKNOWN = "unknown"
+
+FAILURE_CATEGORIES = frozenset(
+    {
+        FAILURE_CATEGORY_EXECUTION,
+        FAILURE_CATEGORY_DEPENDENCY,
+        FAILURE_CATEGORY_TIMEOUT_CANCELLATION,
+        FAILURE_CATEGORY_RETRY_EXHAUSTION,
+        FAILURE_CATEGORY_VALIDATION_POLICY,
+        FAILURE_CATEGORY_CONTEXT,
+        FAILURE_CATEGORY_UNKNOWN,
+    }
+)
+
+
+@dataclass(frozen=True)
+class AgentTaskEventFailure:
+    """One raw event LLMAgentTaskEventFailureClassifier.classify() found
+    claiming a terminal-failure-like backend.agent_task_lifecycle to_state
+    (FAILED or CANCELLED) -- a reference to that exact event (event_id/
+    occurred_at), never a rewritten or summarized copy of it (Rule: "Never
+    rewrite the original event/error"). to_state is the raw claimed value,
+    exactly as the event's own payload recorded it -- category/reason are
+    this classifier's own added interpretation, kept in separate fields
+    so the original claim is always distinguishable from this service's
+    opinion about it.
+
+    Deliberately scans *raw* claimed to_state values, not only backend.
+    agent_task_events.LLMAgentTaskEventReplayService's own *validated*
+    state_transitions: a task cannot legally leave FAILED/CANCELLED once
+    reached (backend.agent_task_lifecycle.TRANSITIONS has no outgoing
+    edges for either), so a second, later claim of the same or a
+    different terminal state is exactly a "repeated failure" this
+    classifier is asked to surface, even though replay() itself would
+    silently skip a same-state reaffirmation or reject a conflicting one
+    as a replay error -- see AgentTaskEventFailureAnalysis.terminal_failure
+    for the one, authoritative answer instead.
+    """
+
+    event_id: str
+    occurred_at: datetime
+    to_state: str
+    category: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class AgentTaskEventFailureAnalysis:
+    """LLMAgentTaskEventFailureClassifier.classify()'s complete outcome
+    for one task_id's event stream (or a [start_time, end_time] window of
+    it).
+
+    failures is every raw failure-claiming event found, oldest to newest
+    (including any repeated/duplicate claims); category_counts tallies
+    them by category. terminal_failure is the one, authoritative failure
+    outcome -- present only when backend.agent_task_events.
+    LLMAgentTaskEventReplayService's own validated final_state is itself
+    terminal-and-failing (FAILED or CANCELLED), pointing at the specific
+    AgentTaskEventFailure entry in `failures` that produced it. A task
+    that failed once and was never touched again has exactly one entry in
+    `failures`, equal to `terminal_failure`; a task with repeated/noisy
+    failure claims can have many entries in `failures` while
+    `terminal_failure` still names only the one replay() actually
+    validated.
+    """
+
+    task_id: str
+    start_time: Optional[datetime]
+    end_time: Optional[datetime]
+    failure_count: int
+    failures: tuple
+    category_counts: dict
+    terminal_failure: Optional[AgentTaskEventFailure]
