@@ -664,3 +664,57 @@ class AgentTaskRecoveryPreflightConsumption:
             payload["consumed_at"] = datetime.fromisoformat(value)
         payload["execution_result"] = AgentTaskFailureRecoveryResult(**payload["execution_result"])
         return cls(**payload)
+
+
+# Audit outcome vocabulary for Commit #12 -- "denied" for a consumption
+# attempt Commit #10's own validate() blocked before execution;
+# "consumed"/"failed" mirror backend.agent_task_event_analytics' own
+# RECOVERY_OUTCOME_SUCCESS/FAILED (partial collapses into "consumed",
+# since it is still a completed execution attempt, not a denial).
+DENIED = "denied"
+CONSUMED = "consumed"
+CONSUMPTION_FAILED = "failed"
+CONSUMPTION_AUDIT_OUTCOMES = frozenset({DENIED, CONSUMED, CONSUMPTION_FAILED})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryConsumptionAuditEntry:
+    """One immutable, append-only record that Commit #11's own consume()
+    was attempted for one (task_id, authorization_id) -- every attempt,
+    including a denied or duplicate one, gets its own entry (Rule:
+    "Audit every consumption attempt, including validation failures and
+    duplicate-consumption attempts"). Never mutates or replaces an
+    earlier entry (Rule: "Preserve append-only history"); never itself
+    alters the authorization/preflight/consumption records it describes
+    (Rule: "Never alter the authorization/preflight decision merely for
+    audit purposes").
+
+    preflight_id/execution_reference are both resolved by the audit
+    service itself from Commit #9's own authorization record and Commit
+    #11's own consumption record -- never required of the caller, and
+    None whenever that lookup has nothing to report (e.g. preflight_id
+    when authorization_id itself was never even valid; execution_reference
+    for a denied attempt that never reached execution at all).
+    """
+
+    task_id: str
+    authorization_id: str
+    preflight_id: Optional[str]
+    outcome: str
+    reason: Optional[str]
+    execution_reference: Optional[str]
+    attempted_at: datetime
+    entry_id: str = field(default_factory=lambda: str(uuid4()))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["attempted_at"] = self.attempted_at.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "AgentTaskRecoveryConsumptionAuditEntry":
+        payload = dict(data)
+        value = payload.get("attempted_at")
+        if isinstance(value, str):
+            payload["attempted_at"] = datetime.fromisoformat(value)
+        return cls(**payload)

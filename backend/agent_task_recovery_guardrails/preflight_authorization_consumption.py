@@ -12,7 +12,7 @@ from backend.agent_task_event_analytics import (
 )
 from backend.storage import AtomicJsonFile
 
-from .models import AgentTaskRecoveryPreflightConsumption
+from .models import CONSUMED, CONSUMPTION_FAILED, DENIED, AgentTaskRecoveryPreflightConsumption
 from .preflight_authorization_validation import LLMAgentTaskRecoveryPreflightAuthorizationValidationService
 from .preflight_store import LLMAgentTaskRecoveryPreflightStore
 
@@ -136,6 +136,7 @@ class LLMAgentTaskRecoveryPreflightAuthorizationConsumptionService:
         preflight_store: LLMAgentTaskRecoveryPreflightStore = None,
         execution_service: LLMAgentTaskFailureRecoveryService = None,
         store: AgentTaskRecoveryPreflightConsumptionStore = None,
+        audit_service=None,
     ):
         self._preflight_store = (
             preflight_store if preflight_store is not None else LLMAgentTaskRecoveryPreflightStore()
@@ -149,12 +150,29 @@ class LLMAgentTaskRecoveryPreflightAuthorizationConsumptionService:
             execution_service if execution_service is not None else LLMAgentTaskFailureRecoveryService()
         )
         self._store = store if store is not None else InMemoryAgentTaskRecoveryPreflightConsumptionStore()
+        self._audit_service = audit_service
+
+    def _audit(self, task_id: str, authorization_id: str, outcome: str, reason: str = None) -> None:
+        """Record one audit attempt via Commit #12, if wired -- never
+        allowed to affect consume()'s own return value or trigger a
+        second execution attempt (Rule: "Keep audit recording resilient:
+        an audit-recording failure must not accidentally trigger a
+        second recovery execution"): called only AFTER execution (or
+        after a decision not to execute) has already fully happened, and
+        any exception it raises is caught and discarded here."""
+        if self._audit_service is None:
+            return
+        try:
+            self._audit_service.record_attempt(task_id, authorization_id, outcome, reason=reason)
+        except Exception:
+            pass
 
     def consume(self, task_id: str, authorization_id: str) -> AgentTaskRecoveryPreflightConsumption:
         """Validate, then execute, task_id's exact authorization_id's own
         recovery plan exactly once. Idempotent: an already-consumed
         authorization_id returns its original recorded outcome unchanged,
-        never re-executing.
+        never re-executing. Every attempt (including a denied or repeat
+        one) is audited via Commit #12, when wired.
 
         Raises:
             InvalidAgentTaskRecoveryPreflightConsumptionError: If
@@ -168,13 +186,19 @@ class LLMAgentTaskRecoveryPreflightAuthorizationConsumptionService:
 
         existing = self._store.get(authorization_id)
         if existing is not None and existing.task_id == task_id:
+            self._audit(
+                task_id, authorization_id,
+                CONSUMED if existing.outcome != RECOVERY_OUTCOME_FAILED else CONSUMPTION_FAILED,
+                reason="duplicate consumption attempt; returning original recorded outcome",
+            )
             return existing
 
         validation = self._validation_service.validate(task_id, authorization_id)
         if not validation.valid:
+            reason = "; ".join(validation.blocking_reasons)
+            self._audit(task_id, authorization_id, DENIED, reason=reason)
             raise InvalidAgentTaskRecoveryPreflightConsumptionError(
-                f"authorization {authorization_id!r} is not valid and cannot be consumed: "
-                + "; ".join(validation.blocking_reasons)
+                f"authorization {authorization_id!r} is not valid and cannot be consumed: {reason}"
             )
 
         preflight = next(
@@ -186,9 +210,9 @@ class LLMAgentTaskRecoveryPreflightAuthorizationConsumptionService:
             None,
         )
         if preflight is None or preflight.plan is None:
-            raise InvalidAgentTaskRecoveryPreflightConsumptionError(
-                f"preflight {validation.preflight_id!r} has no recovery plan to execute"
-            )
+            reason = f"preflight {validation.preflight_id!r} has no recovery plan to execute"
+            self._audit(task_id, authorization_id, DENIED, reason=reason)
+            raise InvalidAgentTaskRecoveryPreflightConsumptionError(reason)
 
         execution_result = self._execution_service.execute_plan(preflight.plan)
 
@@ -200,7 +224,13 @@ class LLMAgentTaskRecoveryPreflightAuthorizationConsumptionService:
             execution_result=execution_result,
             outcome=_outcome_for(execution_result),
         )
-        return self._store.save(consumption)
+        saved = self._store.save(consumption)
+        self._audit(
+            task_id, authorization_id,
+            CONSUMED if saved.outcome != RECOVERY_OUTCOME_FAILED else CONSUMPTION_FAILED,
+            reason=execution_result.failure_reason,
+        )
+        return saved
 
     def get(self, task_id: str, authorization_id: str) -> Optional[AgentTaskRecoveryPreflightConsumption]:
         """task_id's consumption record for its exact authorization_id,
