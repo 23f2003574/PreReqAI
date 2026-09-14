@@ -478,3 +478,58 @@ class AgentTaskRecoveryEffectiveness:
     average_recovery_duration: Optional[timedelta]
     latest_outcome: Optional[AgentTaskRecoveryOutcome]
     attempts: tuple
+
+
+# The sample size at which LLMAgentTaskRecoveryRecommendationService.
+# recommend() treats a historical success rate as fully trustworthy --
+# below it, confidence is scaled down proportionally (Rule: "Do not treat
+# historical success as a guarantee" -- a 100% success rate from a single
+# past attempt should never carry the same weight as 100% from several).
+# Deliberately small and documented, not a tuned/learned parameter: this is
+# a plain, explainable dampening rule, not a second statistics framework.
+MINIMUM_CONFIDENT_SAMPLE_SIZE = 3
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryRecommendation:
+    """LLMAgentTaskRecoveryRecommendationService.recommend()'s complete
+    outcome for one task_id -- a decision layer over Commits #2/#3/#6/#7,
+    never a second strategy/recommendation framework and never itself an
+    executor (Rule: "Never execute the recommendation").
+
+    recommended_action is always exactly Commit #3's own plan.
+    recommended_action (Rule: "Reuse existing failure classification/
+    planning semantics"; "Do not invent actions") -- this service never
+    substitutes a different action based on history; historical evidence
+    only ever adjusts *confidence* and *reason*, never *which* action is
+    named, since Commit #3's own planner is the sole authority on which
+    actions are currently feasible at all (retry/execution limits,
+    dependency/readiness state) via its own already-existing collaborators.
+
+    confidence is a plain 0.0-1.0 float, not a new qualitative scale
+    (Rule: "Do not invent a second ... framework") -- it is 0.0 whenever
+    there is no supporting evidence at all (no prior attempts of this
+    exact action for this exact failure category), and otherwise the
+    historical success rate for that action *within that same failure
+    category*, scaled down for a small sample via
+    MINIMUM_CONFIDENT_SAMPLE_SIZE. Category-scoping is deliberate: an
+    action's track record against a *different* kind of failure is not
+    treated as evidence for the current one (Rule, implicitly: historical
+    success must actually apply to the situation at hand to count as
+    evidence) -- when no failure classifier was supplied to determine
+    each past attempt's own category, this falls back to the action's
+    unscoped history rather than refusing to answer at all.
+
+    supporting_recovery_ids names only the successful past attempts that
+    actually back this confidence figure -- Commit #5/#6's own
+    recovery_id values, never a copy of those records. blocking_conditions
+    is exactly Commit #3's own plan.blocking_conditions, carried through
+    unchanged.
+    """
+
+    task_id: str
+    recommended_action: str
+    confidence: float
+    reason: str
+    supporting_recovery_ids: tuple
+    blocking_conditions: tuple
