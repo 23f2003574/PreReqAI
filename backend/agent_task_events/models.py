@@ -392,3 +392,67 @@ class AgentTaskEventProjection:
             if isinstance(value, str):
                 payload[key] = datetime.fromisoformat(value)
         return cls(**payload)
+
+
+# The AgentTaskEventProjection fields LLMAgentTaskEventProjectionReconciliationService
+# actually compares -- deliberately excludes task_id (always equal by
+# construction: both sides are built for the same task_id) and evaluated_at
+# (pure bookkeeping: every fresh project() call gets a new one regardless of
+# whether anything about the task actually changed, the same "content is
+# stable, only the store's own bookkeeping timestamp moves" convention
+# backend.agent_task_readiness_projection's own projection_id/evaluated_at
+# already establishes -- comparing it would make is_current never true).
+PROJECTION_COMPARISON_FIELDS = (
+    "current_state",
+    "last_event_id",
+    "last_event_at",
+    "event_count",
+    "last_error_reference",
+    "active_retry_reference",
+    "active_context_reference",
+)
+
+
+@dataclass(frozen=True)
+class AgentTaskProjectionDifference:
+    """One field where a stored AgentTaskEventProjection disagreed with a
+    freshly event-derived one -- field is one of
+    PROJECTION_COMPARISON_FIELDS, or the literal "projection" when there
+    was no stored projection to compare at all (Rule: "Do not silently
+    discard projection differences" -- a missing projection is itself a
+    reportable difference, not a special case that produces an empty
+    differences list).
+    """
+
+    field: str
+    stored: object
+    expected: object
+
+
+@dataclass(frozen=True)
+class AgentTaskProjectionReconciliationResult:
+    """LLMAgentTaskEventProjectionReconciliationService.check()/
+    reconcile()'s complete, structured outcome for one task_id.
+
+    is_current is exactly `not differences`, computed once by check() and
+    carried unchanged into reconcile()'s own returned result even after a
+    fix was applied (Rule: "Do not silently discard projection
+    differences") -- it always answers "was the stored projection current
+    *before* this call took any action," never "is it current now."
+    reconciled is the separate flag for whether an action was actually
+    taken: always False from check() (Rule: "check() is strictly
+    read-only"), and True from reconcile() exactly when persistence
+    happened.
+
+    stored_projection/expected_projection are Commit #7's own
+    AgentTaskEventProjection, embedded directly -- never re-derived or
+    reshaped a second time here (Rule: "Reuse ... Commit #7 projection
+    logic").
+    """
+
+    task_id: str
+    is_current: bool
+    stored_projection: Optional[AgentTaskEventProjection]
+    expected_projection: AgentTaskEventProjection
+    differences: tuple
+    reconciled: bool

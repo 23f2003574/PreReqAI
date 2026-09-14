@@ -19,6 +19,7 @@ from .models import (
     RETRY_CANCELLED,
     RETRY_SCHEDULED,
     STATE_MISMATCH,
+    PROJECTION_COMPARISON_FIELDS,
     AgentTaskEvent,
     AgentTaskEventConsistencyResult,
     AgentTaskEventConsistencyViolation,
@@ -26,11 +27,17 @@ from .models import (
     AgentTaskEventReplayFailure,
     AgentTaskEventReplayResult,
     AgentTaskEventTimeline,
+    AgentTaskProjectionDifference,
+    AgentTaskProjectionReconciliationResult,
     AgentTaskStateTransition,
 )
 from .projection import InvalidAgentTaskEventProjectionError, LLMAgentTaskEventProjectionService
 from .projection_in_memory_store import InMemoryAgentTaskEventProjectionStore
 from .projection_json_store import JsonAgentTaskEventProjectionStore
+from .projection_reconciliation import (
+    InvalidAgentTaskProjectionReconciliationError,
+    LLMAgentTaskEventProjectionReconciliationService,
+)
 from .projection_store import AgentTaskEventProjectionStore
 from .query import InvalidAgentTaskEventQueryError, LLMAgentTaskEventQueryService
 from .replay import InvalidAgentTaskEventReplayError, LLMAgentTaskEventReplayService
@@ -67,6 +74,11 @@ __all__ = [
     "JsonAgentTaskEventProjectionStore",
     "LLMAgentTaskEventProjectionService",
     "InvalidAgentTaskEventProjectionError",
+    "AgentTaskProjectionDifference",
+    "AgentTaskProjectionReconciliationResult",
+    "PROJECTION_COMPARISON_FIELDS",
+    "LLMAgentTaskEventProjectionReconciliationService",
+    "InvalidAgentTaskProjectionReconciliationError",
     "KNOWN_EVENT_TYPES",
     "LIFECYCLE_TRANSITIONED",
     "DEPENDENCY_ADDED",
