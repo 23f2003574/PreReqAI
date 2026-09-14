@@ -38,6 +38,10 @@ from .recovery_policy_feedback import (
     InvalidAgentTaskRecoveryPolicyFeedbackError,
     LLMAgentTaskRecoveryPolicyFeedbackService,
 )
+from .recovery_policy_effectiveness import (
+    InvalidAgentTaskRecoveryPolicyEffectivenessError,
+    LLMAgentTaskRecoveryPolicyEffectivenessService,
+)
 from .models import (
     FAILURE_CATEGORIES,
     FAILURE_CATEGORY_CONTEXT,
@@ -81,6 +85,8 @@ from .models import (
     AgentTaskRecoveryEffectiveness,
     AgentTaskRecoveryHistorySummary,
     AgentTaskRecoveryOutcome,
+    AgentTaskRecoveryPolicyEffectiveness,
+    AgentTaskRecoveryPolicyEffectivenessBreakdown,
     AgentTaskRecoveryPolicyFeedback,
     AgentTaskRecoveryRecommendation,
 )
@@ -153,4 +159,8 @@ __all__ = [
     "RECOVERY_POLICY_FEEDBACK_INEFFECTIVE",
     "RECOVERY_POLICY_FEEDBACK_UNKNOWN",
     "RECOVERY_POLICY_FEEDBACK_EFFECTIVENESS_VALUES",
+    "AgentTaskRecoveryPolicyEffectiveness",
+    "AgentTaskRecoveryPolicyEffectivenessBreakdown",
+    "LLMAgentTaskRecoveryPolicyEffectivenessService",
+    "InvalidAgentTaskRecoveryPolicyEffectivenessError",
 ]

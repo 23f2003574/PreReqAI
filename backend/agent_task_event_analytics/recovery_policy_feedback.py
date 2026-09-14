@@ -197,6 +197,18 @@ class LLMAgentTaskRecoveryPolicyFeedbackService:
             records = records[-limit:] if limit > 0 else []
         return records
 
+    def list_all(self) -> list:
+        """Every feedback record ever recorded, across every task, oldest
+        to newest -- the one place this service's own read path is
+        deliberately NOT task-scoped (Commit #12's own
+        LLMAgentTaskRecoveryPolicyEffectivenessService needs to aggregate
+        across tasks; every other read in this family stays per-task).
+        Reuses the same underlying query() with task_id omitted, which
+        already supports querying across every task -- no new querying
+        mechanism."""
+        events = self._query_service.query(event_types=[RECOVERY_POLICY_FEEDBACK_EVENT_TYPE])
+        return [self._feedback_from_event(event) for event in events]
+
     def _publish(self, feedback: AgentTaskRecoveryPolicyFeedback) -> None:
         if self._policy_publisher is None:
             return

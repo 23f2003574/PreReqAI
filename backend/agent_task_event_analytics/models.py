@@ -706,3 +706,100 @@ class AgentTaskRecoveryPolicyFeedback:
     effectiveness: str
     feedback_reason: str
     created_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPolicyEffectivenessBreakdown:
+    """One group's (one recovery action's, or one identifiable policy's)
+    slice of Commit #12's own effectiveness analysis -- the same shape
+    used for both effectiveness_by_action and effectiveness_by_policy so
+    neither grouping needs its own bespoke set of parallel dicts (Rule:
+    "Do not duplicate generic analytics infrastructure").
+
+    effectiveness_rate is None, never 0.0, whenever effective_count +
+    ineffective_count == 0 (every decision in this group is still
+    unknown) -- the same "never fabricate a rate over zero determined
+    outcomes" discipline Commit #7's own success_rate/success_rate_by_action
+    already establish.
+
+    supporting_decision_ids/supporting_recovery_ids name exactly the
+    AgentTaskRecoveryPolicyFeedback records this group's counts were
+    computed from (Rule: "expose the supporting decision/recovery IDs
+    behind each aggregate where practical") -- recovery_ids omits None
+    (a decision with no corresponding recovery contributes no recovery_id
+    to name).
+    """
+
+    decisions_evaluated: int
+    effective_count: int
+    ineffective_count: int
+    unknown_count: int
+    effectiveness_rate: Optional[float]
+    supporting_decision_ids: tuple
+    supporting_recovery_ids: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPolicyEffectiveness:
+    """LLMAgentTaskRecoveryPolicyEffectivenessService.analyze()'s complete
+    measurement of whether Commit #8's own recovery recommendations
+    actually improve real recovery outcomes -- closing the loop
+    recommendation (#8) -> decision (#9) -> execution (#4/#5) -> outcome
+    comparison (#10) -> policy feedback (#11) -> this analysis.
+
+    Purely derived from Commit #11's own already-recorded
+    AgentTaskRecoveryPolicyFeedback records (Rule: "Reuse Commit #10
+    comparison data and Commit #11 feedback"): every feedback record
+    already carries everything Commit #10's own comparison computed
+    (recommended_action/executed_action/recommendation_confidence/
+    effectiveness/decision_id/recovery_id), so this analysis reads
+    Commit #11's own durable record directly rather than re-deriving
+    anything from Commit #10 a second way.
+
+    task_id/policy_id echo back exactly the filters analyze() was called
+    with (None means "every task"/"every policy", not "no filter
+    matched") -- never guessed at or normalized.
+
+    recommendations_followed + recommendations_changed does NOT
+    necessarily equal decisions_evaluated (Rule: "Do not infer causality
+    beyond explicit decision-recovery-outcome links"): a decision with no
+    corresponding recovery attempt at all (Commit #10's own "no
+    corresponding recovery" case, executed_action is None) is neither
+    "followed" nor "changed/rejected" -- it was never acted on at all --
+    and is deliberately left out of both counts rather than forced into
+    either one.
+
+    effective_decisions/ineffective_decisions/unknown_outcomes IS always a
+    strict partition of decisions_evaluated (the same "every attempt
+    belongs to exactly one bucket" discipline Commit #6's own
+    successful/failed/partial_attempts already establishes) -- every
+    feedback record's own effectiveness is exactly one of the three.
+
+    effectiveness_by_policy is populated only when a failure_classifier
+    was supplied to this service AND a given decision's own
+    failure_event_id could actually be classified (Rule: "effectiveness by
+    policy/strategy when identifiable") -- keyed by Commit #2's own
+    failure category, since no distinct policy_id/strategy_id concept
+    exists anywhere in this series' own data model (checked every result
+    type from Commits #1-#11): the failure category a recommendation
+    responded to is the closest real, already-existing analog to "which
+    policy governed this decision" this repository actually has. Without
+    a classifier (or when a decision's failure can't be classified),
+    effectiveness_by_policy is {} -- never fabricated, the same "missing
+    evidence stays unknown" discipline applied to an entire grouping
+    rather than a single field.
+    """
+
+    task_id: Optional[str]
+    policy_id: Optional[str]
+    decisions_evaluated: int
+    recommendations_followed: int
+    recommendations_changed: int
+    effective_decisions: int
+    ineffective_decisions: int
+    unknown_outcomes: int
+    effectiveness_rate: Optional[float]
+    effectiveness_by_action: dict
+    effectiveness_by_policy: dict
+    supporting_decision_ids: tuple
+    supporting_recovery_ids: tuple
