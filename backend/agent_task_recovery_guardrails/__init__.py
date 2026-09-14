@@ -55,6 +55,10 @@ from .preflight_consumption_audit import (
     JsonAgentTaskRecoveryConsumptionAuditStore,
     LLMAgentTaskRecoveryPreflightConsumptionAuditService,
 )
+from .preflight_orchestration import (
+    InvalidAgentTaskRecoveryOrchestrationError,
+    LLMAgentTaskRecoveryPreflightOrchestrationService,
+)
 from .models import (
     ACTIVE,
     APPROVAL_STATUSES,
@@ -69,6 +73,7 @@ from .models import (
     REVOKED,
     AgentTaskRecoveryConsumptionAuditEntry,
     AgentTaskRecoveryGuardEvaluation,
+    AgentTaskRecoveryOrchestrationResult,
     AgentTaskRecoveryGuardResult,
     AgentTaskRecoveryPreflight,
     AgentTaskRecoveryPreflightApproval,
@@ -148,4 +153,7 @@ __all__ = [
     "JsonAgentTaskRecoveryConsumptionAuditStore",
     "LLMAgentTaskRecoveryPreflightConsumptionAuditService",
     "InvalidAgentTaskRecoveryConsumptionAuditError",
+    "AgentTaskRecoveryOrchestrationResult",
+    "LLMAgentTaskRecoveryPreflightOrchestrationService",
+    "InvalidAgentTaskRecoveryOrchestrationError",
 ]

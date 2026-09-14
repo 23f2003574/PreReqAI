@@ -718,3 +718,29 @@ class AgentTaskRecoveryConsumptionAuditEntry:
         if isinstance(value, str):
             payload["attempted_at"] = datetime.fromisoformat(value)
         return cls(**payload)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryOrchestrationResult:
+    """LLMAgentTaskRecoveryPreflightOrchestrationService.execute()'s
+    single, structured report of the full preflight -> approval ->
+    authorization -> validation -> consumption lifecycle -- every field
+    is exactly what the ONE existing service owning that step already
+    produced, never re-derived (Rule: "delegate all actual work").
+
+    Fields left None mark exactly how far the lifecycle got before a gate
+    stopped it (Rule: "Fail closed"): e.g. authorization/validation/
+    consumption are all None when approval itself was missing/not
+    APPROVED, since nothing past that point was ever attempted.
+    """
+
+    task_id: str
+    original_preflight_id: Optional[str]
+    current_preflight_id: Optional[str]
+    approval: Optional[object]
+    authorization: Optional[object]
+    validation: Optional[object]
+    consumption: Optional[object]
+    executed: bool
+    outcome: str
+    blocking_reasons: tuple
