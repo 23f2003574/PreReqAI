@@ -10,6 +10,10 @@ from .failure_recovery_planning import (
     InvalidAgentTaskFailureRecoveryPlanError,
     LLMAgentTaskEventFailureRecoveryPlanner,
 )
+from .recovery_effectiveness import (
+    InvalidAgentTaskRecoveryEffectivenessError,
+    LLMAgentTaskRecoveryEffectivenessService,
+)
 from .recovery_history import (
     InvalidAgentTaskRecoveryHistoryError,
     LLMAgentTaskRecoveryHistoryService,
@@ -49,6 +53,7 @@ from .models import (
     AgentTaskEventFailureAnalysis,
     AgentTaskFailureRecoveryPlan,
     AgentTaskFailureRecoveryResult,
+    AgentTaskRecoveryEffectiveness,
     AgentTaskRecoveryHistorySummary,
     AgentTaskRecoveryOutcome,
 )
@@ -99,4 +104,7 @@ __all__ = [
     "AgentTaskRecoveryHistorySummary",
     "LLMAgentTaskRecoveryHistoryService",
     "InvalidAgentTaskRecoveryHistoryError",
+    "AgentTaskRecoveryEffectiveness",
+    "LLMAgentTaskRecoveryEffectivenessService",
+    "InvalidAgentTaskRecoveryEffectivenessError",
 ]

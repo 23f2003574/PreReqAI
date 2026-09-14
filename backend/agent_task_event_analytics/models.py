@@ -414,3 +414,67 @@ class AgentTaskRecoveryHistorySummary:
     partial_attempts: int
     latest_status: Optional[str]
     latest_action: Optional[str]
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryEffectiveness:
+    """LLMAgentTaskRecoveryEffectivenessService.analyze()'s complete
+    outcome for one task_id -- analytics over Commit #6's own recovery
+    history, never a second recovery executor or a second metrics
+    framework (Rule: "This is analytics over recovery history, not
+    another recovery executor").
+
+    attempts is Commit #6's own AgentTaskRecoveryOutcome list, embedded
+    verbatim, oldest to newest (Rule: "For each attempt, retain enough
+    linkage to identify the source failure and resulting outcome" --
+    every entry already carries its own source_failure_event_id/
+    recovery_id, so nothing further needs inventing).
+
+    success_rate/success_rate_by_action are None (whole) or simply absent
+    (per-action) exactly when there is no attempt to compute a rate over
+    -- never 0.0, which would misreport "attempted and always failed" for
+    "never attempted at all" (Rule: "Missing outcome boundaries must
+    remain unknown, not fabricated"). attempts_by_action/
+    success_rate_by_action both key on the same value Commit #6's own
+    latest_action already uses (executed_action, falling back to
+    planned_action when nothing was actually executed) -- the same
+    convention, not a new one.
+
+    failures_followed_by_success counts *distinct* source_failure_event_id
+    values that have at least one SUCCESS outcome recorded among their own
+    attempts -- never a raw attempt count, since several attempts can
+    target the same originating failure.
+
+    terminal_failure_after_recovery is None whenever no failure_classifier
+    was supplied to determine it (Rule: "Do not claim causality beyond
+    what the stored task/recovery data supports" -- without Commit #2's
+    own authoritative, replay-validated answer, this service has no
+    reliable way to say whether the task's own real outcome was ultimately
+    a terminal failure, so it does not guess); when supplied, it is
+    exactly whether Commit #2's own
+    LLMAgentTaskEventFailureClassifier.classify().terminal_failure is not
+    None -- reused, never re-derived.
+
+    average_recovery_duration is the mean of each attempt's own
+    completed_at - started_at (Commit #5's own fields) -- None only when
+    there are no attempts at all. Under Commit #5's own current design
+    (every attempt is recorded synchronously, so started_at always equals
+    completed_at) this is always timedelta(0) -- an honest reflection of
+    what is actually observable, not a defect in this commit: "recovery
+    duration where timestamps exist" is computed for real from the
+    timestamps that do exist, never approximated from anything else.
+    """
+
+    task_id: str
+    total_attempts: int
+    successful_attempts: int
+    failed_attempts: int
+    partial_attempts: int
+    success_rate: Optional[float]
+    attempts_by_action: dict
+    success_rate_by_action: dict
+    failures_followed_by_success: int
+    terminal_failure_after_recovery: Optional[bool]
+    average_recovery_duration: Optional[timedelta]
+    latest_outcome: Optional[AgentTaskRecoveryOutcome]
+    attempts: tuple
