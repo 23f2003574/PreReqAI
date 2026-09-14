@@ -1,6 +1,11 @@
 from .guard import InvalidAgentTaskRecoveryGuardError, LLMAgentTaskRecoveryGuardService
 from .evaluation import InvalidAgentTaskRecoveryGuardEvaluationError, LLMAgentTaskRecoveryGuardEvaluationService
-from .models import AgentTaskRecoveryGuardEvaluation, AgentTaskRecoveryGuardResult
+from .preflight import LLMAgentTaskRecoveryPreflightService
+from .models import (
+    AgentTaskRecoveryGuardEvaluation,
+    AgentTaskRecoveryGuardResult,
+    AgentTaskRecoveryPreflightResult,
+)
 
 __all__ = [
     "AgentTaskRecoveryGuardResult",
@@ -9,4 +14,6 @@ __all__ = [
     "AgentTaskRecoveryGuardEvaluation",
     "LLMAgentTaskRecoveryGuardEvaluationService",
     "InvalidAgentTaskRecoveryGuardEvaluationError",
+    "AgentTaskRecoveryPreflightResult",
+    "LLMAgentTaskRecoveryPreflightService",
 ]
