@@ -10,6 +10,10 @@ from .failure_recovery_planning import (
     InvalidAgentTaskFailureRecoveryPlanError,
     LLMAgentTaskEventFailureRecoveryPlanner,
 )
+from .recovery_outcome import (
+    InvalidAgentTaskRecoveryOutcomeError,
+    LLMAgentTaskRecoveryOutcomeService,
+)
 from .models import (
     FAILURE_CATEGORIES,
     FAILURE_CATEGORY_CONTEXT,
@@ -31,11 +35,17 @@ from .models import (
     RECOVERY_PRIORITY_LOW,
     RECOVERY_PRIORITY_MEDIUM,
     RECOVERY_PRIORITY_NONE,
+    RECOVERY_OUTCOME_EVENT_TYPE,
+    RECOVERY_OUTCOME_FAILED,
+    RECOVERY_OUTCOME_PARTIAL,
+    RECOVERY_OUTCOME_STATUSES,
+    RECOVERY_OUTCOME_SUCCESS,
     AgentTaskEventAnalytics,
     AgentTaskEventFailure,
     AgentTaskEventFailureAnalysis,
     AgentTaskFailureRecoveryPlan,
     AgentTaskFailureRecoveryResult,
+    AgentTaskRecoveryOutcome,
 )
 from .service import InvalidAgentTaskEventAnalyticsError, LLMAgentTaskEventAnalyticsService
 
@@ -73,4 +83,12 @@ __all__ = [
     "AgentTaskFailureRecoveryResult",
     "LLMAgentTaskFailureRecoveryService",
     "InvalidAgentTaskFailureRecoveryExecutionError",
+    "AgentTaskRecoveryOutcome",
+    "LLMAgentTaskRecoveryOutcomeService",
+    "InvalidAgentTaskRecoveryOutcomeError",
+    "RECOVERY_OUTCOME_EVENT_TYPE",
+    "RECOVERY_OUTCOME_SUCCESS",
+    "RECOVERY_OUTCOME_FAILED",
+    "RECOVERY_OUTCOME_PARTIAL",
+    "RECOVERY_OUTCOME_STATUSES",
 ]

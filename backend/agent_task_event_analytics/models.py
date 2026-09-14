@@ -293,6 +293,17 @@ class AgentTaskFailureRecoveryResult:
     never a duplicated copy of the affected record itself, only enough
     to identify what happened. None when nothing was actually changed
     (a no-op, a failure, or no action needed at all).
+
+    source_failure_event_id/partial (Commit #5) are additive fields: the
+    former is exactly the plan's own failure_event_id, carried through so
+    a later outcome-recording step can link back to the originating
+    failure without re-deriving anything; the latter is only ever True
+    for a REPAIR_TASK execution whose own
+    backend.agent_task_queue_retry_repair_execution.RetryRepairResult.
+    final_status was PARTIAL -- both default to their "nothing special"
+    value so every result Commit #4's own tests already construct remains
+    valid unchanged (Rule -- Commit #5's own: "Existing recovery execution
+    must remain compatible").
     """
 
     task_id: str
@@ -301,3 +312,70 @@ class AgentTaskFailureRecoveryResult:
     success: bool
     failure_reason: Optional[str]
     affected_reference: Optional[str]
+    source_failure_event_id: Optional[str] = None
+    partial: bool = False
+
+
+# LLMAgentTaskRecoveryOutcomeService's own event_type -- reuses backend.
+# agent_task_events' own append-only store/query machinery directly (Rule:
+# "Reuse the existing Agent Task Event system where appropriate"; "Do not
+# invent another audit/history store") rather than a new persisted entity.
+# Not added to that module's own KNOWN_EVENT_TYPES vocabulary -- that
+# constant lives in a different, already-completed series' own package, and
+# its own docstring already documents emit() as deliberately open (not
+# restricted to that enum), so a plain string here needs no changes there.
+RECOVERY_OUTCOME_EVENT_TYPE = "recovery_outcome_recorded"
+
+# A closed set (unlike KNOWN_EVENT_TYPES): exactly the three outcomes Commit
+# #4's own execution layer can actually distinguish (Rule: "Do not invent
+# recovery statuses unsupported by the repository") -- PARTIAL only ever
+# applies to a REPAIR_TASK execution whose RetryRepairResult.final_status
+# was itself PARTIAL (see AgentTaskFailureRecoveryResult.partial's own
+# docstring); every other action can only ever report SUCCESS or FAILED.
+RECOVERY_OUTCOME_SUCCESS = "success"
+RECOVERY_OUTCOME_FAILED = "failed"
+RECOVERY_OUTCOME_PARTIAL = "partial"
+
+RECOVERY_OUTCOME_STATUSES = frozenset(
+    {
+        RECOVERY_OUTCOME_SUCCESS,
+        RECOVERY_OUTCOME_FAILED,
+        RECOVERY_OUTCOME_PARTIAL,
+    }
+)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryOutcome:
+    """LLMAgentTaskRecoveryOutcomeService.record()'s durable record of one
+    completed AgentTaskFailureRecoveryResult -- never itself authoritative
+    task state (Rule: "Do not turn outcomes into authoritative task
+    state"), purely a durable fact: "this recovery attempt happened, and
+    here is how it went."
+
+    recovery_id is exactly the underlying backend.agent_task_events.
+    AgentTaskEvent.event_id this outcome was recorded as (Rule: "Use
+    repository conventions for IDs" -- no second id-generation scheme).
+    source_failure_event_id links back to the originating failure this
+    recovery was attempted for (Commit #4's own
+    AgentTaskFailureRecoveryResult.source_failure_event_id, itself Commit
+    #3's own plan.failure_event_id, carried through unbroken) -- a
+    reference, never a copy of that event.
+
+    started_at/completed_at are both the single moment record() itself
+    ran: Commit #4's own AgentTaskFailureRecoveryResult carries no timing
+    metadata of its own (every execution path is synchronous), so this
+    service does not fabricate a duration it cannot actually observe --
+    both fields are set to the same timestamp rather than inventing a
+    fictitious start time.
+    """
+
+    recovery_id: str
+    task_id: str
+    source_failure_event_id: Optional[str]
+    planned_action: str
+    executed_action: Optional[str]
+    status: str
+    reason: Optional[str]
+    started_at: datetime
+    completed_at: datetime

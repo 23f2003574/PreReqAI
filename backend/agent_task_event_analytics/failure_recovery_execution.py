@@ -3,6 +3,7 @@ from backend.agent_task_queue import LLMAgentTaskQueueService
 from backend.agent_task_queue_dead_letter import LLMAgentTaskDeadLetterService
 from backend.agent_task_queue_retry_repair import LLMAgentTaskRetryRepairService
 from backend.agent_task_queue_retry_repair_execution import FAILED as REPAIR_FAILED
+from backend.agent_task_queue_retry_repair_execution import PARTIAL as REPAIR_PARTIAL
 from backend.agent_task_queue_retry_repair_execution import LLMAgentTaskRetryRepairExecutor
 from backend.agent_task_queue_retry_scheduler import LLMAgentTaskRetryScheduler
 from backend.agent_task_readiness import LLMAgentTaskReadinessService
@@ -227,7 +228,12 @@ class LLMAgentTaskFailureRecoveryService:
             return self._failure(
                 plan, RECOVERY_ACTION_REPAIR_TASK, f"repair execution reported final_status={result.final_status}"
             )
-        return self._success(plan, RECOVERY_ACTION_REPAIR_TASK, f"repair applied: final_status={result.final_status}")
+        return self._success(
+            plan,
+            RECOVERY_ACTION_REPAIR_TASK,
+            f"repair applied: final_status={result.final_status}",
+            partial=(result.final_status == REPAIR_PARTIAL),
+        )
 
     def _execute_mark_unrecoverable(self, plan: AgentTaskFailureRecoveryPlan) -> AgentTaskFailureRecoveryResult:
         if self._dead_letter_service is None:
@@ -242,7 +248,7 @@ class LLMAgentTaskFailureRecoveryService:
 
     @staticmethod
     def _success(
-        plan: AgentTaskFailureRecoveryPlan, executed_action: str, affected_reference: str
+        plan: AgentTaskFailureRecoveryPlan, executed_action: str, affected_reference: str, partial: bool = False
     ) -> AgentTaskFailureRecoveryResult:
         return AgentTaskFailureRecoveryResult(
             task_id=plan.task_id,
@@ -251,6 +257,8 @@ class LLMAgentTaskFailureRecoveryService:
             success=True,
             failure_reason=None,
             affected_reference=affected_reference,
+            source_failure_event_id=plan.failure_event_id,
+            partial=partial,
         )
 
     @staticmethod
@@ -262,4 +270,5 @@ class LLMAgentTaskFailureRecoveryService:
             success=False,
             failure_reason=reason,
             affected_reference=None,
+            source_failure_event_id=plan.failure_event_id,
         )
