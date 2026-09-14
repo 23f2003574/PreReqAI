@@ -532,3 +532,54 @@ class AgentTaskEventRetentionResult:
     removed: tuple
     already_removed: tuple
     newly_protected: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskEventArchiveResult:
+    """LLMAgentTaskEventArchiveService.archive()'s complete outcome for
+    one task_id.
+
+    Reuses Commit #9's own AgentTaskEventRetentionCandidate/
+    AgentTaskEventRetentionProtection reference types verbatim for
+    `archived`/`already_archived`/`skipped` -- never a parallel set of
+    near-identical archive-specific reference types (Rule: "Reuse Commit
+    #9 retention eligibility rather than implementing competing rules").
+
+    archived is what this call actually moved from the active store into
+    the archive store; already_archived is whatever the underlying
+    retention plan named as already gone from the active store (in the
+    ordinary case, because a prior archive() call already moved it --
+    Rule: "repeated archive is idempotent"); skipped mirrors Commit #9's
+    own `newly_protected` -- a candidate execute() itself found had
+    become newly required since the plan was built, so archive() never
+    touched it at all.
+    """
+
+    task_id: str
+    before: datetime
+    archived: tuple
+    already_archived: tuple
+    skipped: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskArchiveRestoreResult:
+    """LLMAgentTaskEventArchiveService.restore()'s complete outcome for
+    one task_id.
+
+    restored/already_restored reuse Commit #9's own
+    AgentTaskEventRetentionCandidate (task_id, event_id) reference shape;
+    not_found is a plain tuple of bare event_id strings a caller
+    explicitly asked to restore that were not present in the archive at
+    all (never partially matched or guessed at).
+
+    already_restored covers the narrow defensive case where an event
+    somehow already exists in the active store under the same event_id
+    the archive also still holds -- restore() never re-inserts it (Rule:
+    "restore() must avoid creating duplicate event identities").
+    """
+
+    task_id: str
+    restored: tuple
+    already_restored: tuple
+    not_found: tuple

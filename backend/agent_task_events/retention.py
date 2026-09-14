@@ -76,6 +76,14 @@ class LLMAgentTaskEventRetentionService:
     Never touches backend.agent_task_lifecycle's own AgentTask record
     itself (Rule: "Do not silently alter authoritative task state") --
     lifecycle_service, when supplied, is only ever read via get().
+
+    query_service is exposed publicly (not `_query_service`) -- the same
+    "expose the collaborator a later commit will need to reuse" precedent
+    every store-owning service in this project already follows (e.g.
+    LLMAgentTaskEventService.store, LLMAgentTaskEventQueryService.store).
+    Commit #10's own archive service needs it to fetch full AgentTaskEvent
+    records for plan.eligible candidates before they are deleted --
+    reusing this exact instance rather than constructing a second one.
     """
 
     def __init__(
@@ -85,7 +93,7 @@ class LLMAgentTaskEventRetentionService:
         projection_service: LLMAgentTaskEventProjectionService = None,
         retention_window: timedelta = DEFAULT_RETENTION_WINDOW,
     ):
-        self._query_service = query_service if query_service is not None else LLMAgentTaskEventQueryService()
+        self.query_service = query_service if query_service is not None else LLMAgentTaskEventQueryService()
         self._lifecycle_service = lifecycle_service
         self._projection_service = projection_service
         self._retention_window = retention_window
@@ -114,10 +122,10 @@ class LLMAgentTaskEventRetentionService:
 
         effective_before = before if before is not None else datetime.now(timezone.utc) - self._retention_window
 
-        all_events = self._query_service.query()
+        all_events = self.query_service.query()
         context = self._build_protection_context(all_events)
 
-        candidates = self._query_service.query(task_id=task_id, end_time=effective_before)
+        candidates = self.query_service.query(task_id=task_id, end_time=effective_before)
 
         eligible = []
         protected = []
@@ -151,7 +159,7 @@ class LLMAgentTaskEventRetentionService:
         if not isinstance(plan, AgentTaskEventRetentionPlan):
             raise InvalidAgentTaskEventRetentionError("plan must be an AgentTaskEventRetentionPlan")
 
-        all_events = self._query_service.query()
+        all_events = self.query_service.query()
         context = self._build_protection_context(all_events)
         events_by_id = {event.event_id: event for event in all_events}
 
@@ -171,7 +179,7 @@ class LLMAgentTaskEventRetentionService:
                     )
                     continue
 
-            deleted = self._query_service.store.delete(candidate.task_id, candidate.event_id)
+            deleted = self.query_service.store.delete(candidate.task_id, candidate.event_id)
             (removed if deleted else already_removed).append(candidate)
 
         return AgentTaskEventRetentionResult(
