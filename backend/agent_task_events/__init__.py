@@ -1,4 +1,8 @@
 from .archive import InvalidAgentTaskEventArchiveError, LLMAgentTaskEventArchiveService
+from .archive_verification import (
+    InvalidAgentTaskEventArchiveVerificationError,
+    LLMAgentTaskEventArchiveVerificationService,
+)
 from .consistency import InvalidAgentTaskEventConsistencyError, LLMAgentTaskEventConsistencyService
 from .correlation import InvalidAgentTaskEventCorrelationError, LLMAgentTaskEventCorrelationService
 from .in_memory_store import InMemoryAgentTaskEventStore
@@ -21,9 +25,11 @@ from .models import (
     RETRY_SCHEDULED,
     STATE_MISMATCH,
     PROJECTION_COMPARISON_FIELDS,
+    AgentTaskArchiveMismatch,
     AgentTaskArchiveRestoreResult,
     AgentTaskEvent,
     AgentTaskEventArchiveResult,
+    AgentTaskEventArchiveVerificationResult,
     AgentTaskEventConsistencyResult,
     AgentTaskEventConsistencyViolation,
     AgentTaskEventProjection,
@@ -58,6 +64,10 @@ __all__ = [
     "InvalidAgentTaskEventArchiveError",
     "AgentTaskEventArchiveResult",
     "AgentTaskArchiveRestoreResult",
+    "LLMAgentTaskEventArchiveVerificationService",
+    "InvalidAgentTaskEventArchiveVerificationError",
+    "AgentTaskEventArchiveVerificationResult",
+    "AgentTaskArchiveMismatch",
     "AgentTaskEvent",
     "AgentTaskEventStore",
     "InMemoryAgentTaskEventStore",

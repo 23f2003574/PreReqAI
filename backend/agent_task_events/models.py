@@ -583,3 +583,56 @@ class AgentTaskArchiveRestoreResult:
     restored: tuple
     already_restored: tuple
     not_found: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskArchiveMismatch:
+    """One concrete problem
+    LLMAgentTaskEventArchiveVerificationService.verify() found with a
+    specific archived event's own fields or relationships -- event_id is
+    a reference (the same "ids and labels, never the object itself"
+    discipline every result type in this module already follows), field
+    names the one attribute at issue, reason is a concise, human-readable
+    explanation.
+    """
+
+    event_id: str
+    field: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class AgentTaskEventArchiveVerificationResult:
+    """LLMAgentTaskEventArchiveVerificationService.verify()'s complete,
+    structured outcome for one task_id.
+
+    is_valid is exactly `not missing_events and not mismatches and not
+    duplicate_events` -- the same `valid = not errors` convention this
+    project's other verification results already establish (e.g.
+    backend.agent_task_state_validation.AgentTaskStateValidationResult).
+
+    checked_count is len() of whatever set of event_ids this call
+    actually evaluated: the caller's own explicit event_ids when given
+    (Behavior: "archived event count matches the archive operation" --
+    passing the exact event_ids an AgentTaskEventArchiveResult.archived
+    just named is how a caller confirms that specific operation's own
+    events all survived), or every currently-archived event_id for
+    task_id otherwise (a general health check with no specific operation
+    to match against).
+
+    missing_events names a requested/expected event_id found in neither
+    the active nor the archive store at all (Rule: "Missing/partial
+    archives must be reported explicitly") -- never inferred or guessed
+    at from surrounding events. duplicate_events names an event_id
+    verify() found present in *both* stores simultaneously -- reported,
+    never repaired (Rule: "Do not mutate or repair data"; this is
+    exactly the condition Commit #10's own restore() guards against at
+    write time, audited here after the fact instead).
+    """
+
+    task_id: str
+    is_valid: bool
+    checked_count: int
+    missing_events: tuple
+    mismatches: tuple
+    duplicate_events: tuple
