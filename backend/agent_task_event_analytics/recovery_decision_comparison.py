@@ -102,6 +102,7 @@ class LLMAgentTaskRecoveryDecisionComparisonService:
                 comparison_reason=(
                     "no recovery attempt is recorded for this decision's own originating failure"
                 ),
+                recovery_id=None,
             )
 
         was_followed = matching_outcome.executed_action == decision.recommended_action
@@ -123,6 +124,7 @@ class LLMAgentTaskRecoveryDecisionComparisonService:
             was_followed=was_followed,
             was_effective=was_effective,
             comparison_reason=comparison_reason,
+            recovery_id=matching_outcome.recovery_id,
         )
 
     @staticmethod

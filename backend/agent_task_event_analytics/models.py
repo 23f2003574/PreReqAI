@@ -623,6 +623,17 @@ class AgentTaskRecoveryDecisionComparison:
 
     recommendation_confidence is exactly the audited decision's own
     confidence, carried through unchanged -- never re-computed.
+
+    recovery_id (Commit #11's own additive extension, defaulted so all of
+    Commit #10's own existing tests remain valid unchanged) is exactly the
+    matched Commit #5/#6 AgentTaskRecoveryOutcome's own recovery_id -- None
+    together with executed_action/outcome_status whenever no matching
+    outcome exists at all. Added because Commit #11's own policy-feedback
+    record needs to "preserve links to the original decision and recovery,"
+    and decision_id alone was already carried, but nothing on this record
+    named the specific recovery attempt itself -- the same "a later commit
+    needs an ..._id link this result didn't yet expose" gap Commits #5 and
+    #9 each already hit once before.
     """
 
     task_id: str
@@ -634,3 +645,64 @@ class AgentTaskRecoveryDecisionComparison:
     was_followed: Optional[bool]
     was_effective: Optional[bool]
     comparison_reason: str
+    recovery_id: Optional[str] = None
+
+
+# Commit #11's own event_type for persisted policy feedback, the same
+# "append it as a plain new agent_task_events event type" reuse Commits #5
+# and #9 already established -- zero new store.
+RECOVERY_POLICY_FEEDBACK_EVENT_TYPE = "recovery_policy_feedback_recorded"
+
+# A closed, honestly-three-valued effectiveness vocabulary for policy
+# feedback (Rule: "Unknown outcomes must remain unknown" -- "unknown" is a
+# first-class member here, never a missing/None placeholder standing in for
+# it, since a feedback record that carries no effectiveness verdict at all
+# would be indistinguishable from one nobody ever looked at).
+RECOVERY_POLICY_FEEDBACK_EFFECTIVE = "effective"
+RECOVERY_POLICY_FEEDBACK_INEFFECTIVE = "ineffective"
+RECOVERY_POLICY_FEEDBACK_UNKNOWN = "unknown"
+RECOVERY_POLICY_FEEDBACK_EFFECTIVENESS_VALUES = frozenset(
+    {
+        RECOVERY_POLICY_FEEDBACK_EFFECTIVE,
+        RECOVERY_POLICY_FEEDBACK_INEFFECTIVE,
+        RECOVERY_POLICY_FEEDBACK_UNKNOWN,
+    }
+)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPolicyFeedback:
+    """LLMAgentTaskRecoveryPolicyFeedbackService.record()'s durable record
+    of one Commit #10 AgentTaskRecoveryDecisionComparison, reshaped into the
+    vocabulary a recovery-policy/strategy layer would consume -- never a
+    second analytics/audit framework (Rule: "Do not create a parallel
+    learning or policy system"): every field is read straight from the
+    comparison it was derived from, and the only new judgment made here is
+    collapsing was_effective's True/False/None into the closed effective/
+    ineffective/unknown vocabulary this record's own consumers expect.
+
+    decision_id/recovery_id are Commit #10's own comparison.decision_id/
+    recovery_id, carried through unchanged (Rule: "Preserve links to the
+    original decision and recovery") -- recovery_id is None exactly when
+    Commit #10 itself found no corresponding recovery attempt at all.
+
+    effectiveness is RECOVERY_POLICY_FEEDBACK_UNKNOWN whenever comparison.
+    was_effective is None, whatever the reason (no corresponding recovery,
+    or insufficient evidence with one) -- Rule: "Unknown outcomes must
+    remain unknown," never guessed at or defaulted to ineffective.
+
+    feedback_reason is exactly comparison.comparison_reason, carried
+    through unchanged rather than re-explained a second way -- it already
+    describes precisely the same judgment this record exists to feed back.
+    """
+
+    task_id: str
+    feedback_id: str
+    decision_id: str
+    recovery_id: Optional[str]
+    recommended_action: str
+    executed_action: Optional[str]
+    recommendation_confidence: float
+    effectiveness: str
+    feedback_reason: str
+    created_at: datetime

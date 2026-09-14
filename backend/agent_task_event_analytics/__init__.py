@@ -34,6 +34,10 @@ from .recovery_decision_comparison import (
     InvalidAgentTaskRecoveryDecisionComparisonError,
     LLMAgentTaskRecoveryDecisionComparisonService,
 )
+from .recovery_policy_feedback import (
+    InvalidAgentTaskRecoveryPolicyFeedbackError,
+    LLMAgentTaskRecoveryPolicyFeedbackService,
+)
 from .models import (
     FAILURE_CATEGORIES,
     FAILURE_CATEGORY_CONTEXT,
@@ -61,6 +65,11 @@ from .models import (
     RECOVERY_OUTCOME_STATUSES,
     RECOVERY_OUTCOME_SUCCESS,
     RECOVERY_DECISION_EVENT_TYPE,
+    RECOVERY_POLICY_FEEDBACK_EVENT_TYPE,
+    RECOVERY_POLICY_FEEDBACK_EFFECTIVE,
+    RECOVERY_POLICY_FEEDBACK_INEFFECTIVE,
+    RECOVERY_POLICY_FEEDBACK_UNKNOWN,
+    RECOVERY_POLICY_FEEDBACK_EFFECTIVENESS_VALUES,
     MINIMUM_CONFIDENT_SAMPLE_SIZE,
     AgentTaskEventAnalytics,
     AgentTaskEventFailure,
@@ -72,6 +81,7 @@ from .models import (
     AgentTaskRecoveryEffectiveness,
     AgentTaskRecoveryHistorySummary,
     AgentTaskRecoveryOutcome,
+    AgentTaskRecoveryPolicyFeedback,
     AgentTaskRecoveryRecommendation,
 )
 from .service import InvalidAgentTaskEventAnalyticsError, LLMAgentTaskEventAnalyticsService
@@ -135,4 +145,12 @@ __all__ = [
     "AgentTaskRecoveryDecisionComparison",
     "LLMAgentTaskRecoveryDecisionComparisonService",
     "InvalidAgentTaskRecoveryDecisionComparisonError",
+    "AgentTaskRecoveryPolicyFeedback",
+    "LLMAgentTaskRecoveryPolicyFeedbackService",
+    "InvalidAgentTaskRecoveryPolicyFeedbackError",
+    "RECOVERY_POLICY_FEEDBACK_EVENT_TYPE",
+    "RECOVERY_POLICY_FEEDBACK_EFFECTIVE",
+    "RECOVERY_POLICY_FEEDBACK_INEFFECTIVE",
+    "RECOVERY_POLICY_FEEDBACK_UNKNOWN",
+    "RECOVERY_POLICY_FEEDBACK_EFFECTIVENESS_VALUES",
 ]
