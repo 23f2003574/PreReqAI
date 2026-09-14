@@ -262,3 +262,42 @@ class AgentTaskFailureRecoveryPlan:
     reason: str
     priority: int
     blocking_conditions: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskFailureRecoveryResult:
+    """LLMAgentTaskFailureRecoveryService.execute()/execute_plan()'s
+    complete outcome for one AgentTaskFailureRecoveryPlan.
+
+    planned_action is exactly the plan's own recommended_action (Rule:
+    "Reuse Commit #3; don't reimplement recovery decisions" -- this
+    service never overrides what Commit #3 decided, only carries it out).
+    executed_action is what this call actually attempted -- None only
+    when nothing could even be attempted (an unsupported action, or a
+    required collaborator was never supplied); otherwise it always
+    equals planned_action, whether or not the attempt succeeded.
+
+    success is whether the underlying, already-existing mechanism
+    reported the action as having gone through (Rule: "Unsupported
+    actions must fail explicitly, not silently succeed" -- an
+    unsupported/missing-collaborator case is always success=False,
+    never a silent no-op reported as success). failure_reason is the
+    concrete reason execution did not succeed, carrying the underlying
+    mechanism's own error/explanation verbatim wherever one exists,
+    never a generic message.
+
+    affected_reference is a short, human-readable description of what
+    this call actually changed (a schedule's own attempt number, a
+    dead-letter entry's reason, a repair's own final_status, a context
+    refresh's own added/removed counts, a queue entry's own priority) --
+    never a duplicated copy of the affected record itself, only enough
+    to identify what happened. None when nothing was actually changed
+    (a no-op, a failure, or no action needed at all).
+    """
+
+    task_id: str
+    planned_action: str
+    executed_action: Optional[str]
+    success: bool
+    failure_reason: Optional[str]
+    affected_reference: Optional[str]

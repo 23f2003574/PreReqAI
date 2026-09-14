@@ -2,6 +2,10 @@ from .failure_classification import (
     InvalidAgentTaskEventFailureClassificationError,
     LLMAgentTaskEventFailureClassifier,
 )
+from .failure_recovery_execution import (
+    InvalidAgentTaskFailureRecoveryExecutionError,
+    LLMAgentTaskFailureRecoveryService,
+)
 from .failure_recovery_planning import (
     InvalidAgentTaskFailureRecoveryPlanError,
     LLMAgentTaskEventFailureRecoveryPlanner,
@@ -31,6 +35,7 @@ from .models import (
     AgentTaskEventFailure,
     AgentTaskEventFailureAnalysis,
     AgentTaskFailureRecoveryPlan,
+    AgentTaskFailureRecoveryResult,
 )
 from .service import InvalidAgentTaskEventAnalyticsError, LLMAgentTaskEventAnalyticsService
 
@@ -65,4 +70,7 @@ __all__ = [
     "RECOVERY_PRIORITY_LOW",
     "RECOVERY_PRIORITY_MEDIUM",
     "RECOVERY_PRIORITY_HIGH",
+    "AgentTaskFailureRecoveryResult",
+    "LLMAgentTaskFailureRecoveryService",
+    "InvalidAgentTaskFailureRecoveryExecutionError",
 ]
