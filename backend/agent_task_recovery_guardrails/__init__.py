@@ -41,6 +41,13 @@ from .preflight_authorization_validation import (
     InvalidAgentTaskRecoveryPreflightAuthorizationValidationError,
     LLMAgentTaskRecoveryPreflightAuthorizationValidationService,
 )
+from .preflight_authorization_consumption import (
+    AgentTaskRecoveryPreflightConsumptionStore,
+    InMemoryAgentTaskRecoveryPreflightConsumptionStore,
+    InvalidAgentTaskRecoveryPreflightConsumptionError,
+    JsonAgentTaskRecoveryPreflightConsumptionStore,
+    LLMAgentTaskRecoveryPreflightAuthorizationConsumptionService,
+)
 from .models import (
     ACTIVE,
     APPROVAL_STATUSES,
@@ -55,6 +62,7 @@ from .models import (
     AgentTaskRecoveryPreflightApproval,
     AgentTaskRecoveryPreflightAuthorization,
     AgentTaskRecoveryPreflightAuthorizationValidation,
+    AgentTaskRecoveryPreflightConsumption,
     AgentTaskRecoveryPreflightFreshness,
     AgentTaskRecoveryPreflightInvalidation,
     AgentTaskRecoveryPreflightInvalidationResult,
@@ -112,4 +120,10 @@ __all__ = [
     "AgentTaskRecoveryPreflightAuthorizationValidation",
     "LLMAgentTaskRecoveryPreflightAuthorizationValidationService",
     "InvalidAgentTaskRecoveryPreflightAuthorizationValidationError",
+    "AgentTaskRecoveryPreflightConsumption",
+    "AgentTaskRecoveryPreflightConsumptionStore",
+    "InMemoryAgentTaskRecoveryPreflightConsumptionStore",
+    "JsonAgentTaskRecoveryPreflightConsumptionStore",
+    "LLMAgentTaskRecoveryPreflightAuthorizationConsumptionService",
+    "InvalidAgentTaskRecoveryPreflightConsumptionError",
 ]

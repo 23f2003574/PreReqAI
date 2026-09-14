@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import uuid4
 
-from backend.agent_task_event_analytics import AgentTaskFailureRecoveryPlan
+from backend.agent_task_event_analytics import AgentTaskFailureRecoveryPlan, AgentTaskFailureRecoveryResult
 
 
 @dataclass(frozen=True)
@@ -610,3 +610,57 @@ class AgentTaskRecoveryPreflightAuthorizationValidation:
     blocking_reasons: tuple
     warnings: tuple
     validated_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightConsumption:
+    """Immutable record that one Commit #9 authorization was consumed --
+    handed to backend.agent_task_event_analytics' own Commit #4
+    LLMAgentTaskFailureRecoveryService.execute_plan() exactly once. One
+    record per authorization_id, ever (Rule: "Prevent accidental double
+    execution from repeated consume() calls"): consume() checks the store
+    first and returns an existing record unchanged rather than executing
+    a second time, the same idempotent-by-key convention every other
+    store in this package already establishes.
+
+    execution_result is that same execution service's own, real
+    AgentTaskFailureRecoveryResult, embedded verbatim -- never
+    summarized or re-derived -- so "execution result/reference is
+    preserved" holds by construction. outcome collapses it into
+    backend.agent_task_event_analytics' own existing RECOVERY_OUTCOME_*
+    vocabulary (success/failed/partial), reused rather than inventing a
+    fourth status scheme for what is already a closed, existing one.
+
+    Attributes:
+        consumption_id: This record's own bookkeeping identifier
+        task_id: The task this consumption concerns
+        authorization_id: The EXACT Commit #9 authorization consumed
+        preflight_id: The EXACT Commit #4 preflight whose own embedded
+            plan was executed
+        consumed_at: When execute_plan() was called
+        execution_result: The real AgentTaskFailureRecoveryResult
+            execute_plan() returned
+        outcome: success, failed, or partial (RECOVERY_OUTCOME_*)
+    """
+
+    task_id: str
+    authorization_id: str
+    preflight_id: str
+    consumed_at: datetime
+    execution_result: AgentTaskFailureRecoveryResult
+    outcome: str
+    consumption_id: str = field(default_factory=lambda: str(uuid4()))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["consumed_at"] = self.consumed_at.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "AgentTaskRecoveryPreflightConsumption":
+        payload = dict(data)
+        value = payload.get("consumed_at")
+        if isinstance(value, str):
+            payload["consumed_at"] = datetime.fromisoformat(value)
+        payload["execution_result"] = AgentTaskFailureRecoveryResult(**payload["execution_result"])
+        return cls(**payload)
