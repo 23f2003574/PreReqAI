@@ -48,6 +48,17 @@ from .expiration import (
     InvalidAgentTaskRecoveryScheduleExpirationError,
     LLMAgentTaskRecoveryPreflightScheduleExpirationService,
 )
+from .recovery import (
+    BLOCKED,
+    COMPLETE_HANDOFF,
+    NO_ACTION_REQUIRED,
+    RECOVERY_ACTIONS,
+    REDISPATCH,
+    AgentTaskRecoveryScheduleRecoveryPlan,
+    AgentTaskRecoveryScheduleRecoveryResult,
+    InvalidAgentTaskRecoveryScheduleRecoveryError,
+    LLMAgentTaskRecoveryPreflightScheduleRecoveryService,
+)
 from .backoff import (
     AgentTaskRecoveryScheduleBackoffResult,
     InvalidAgentTaskRecoveryScheduleBackoffError,
@@ -114,4 +125,13 @@ __all__ = [
     "AgentTaskRecoveryScheduleExpirationResult",
     "LLMAgentTaskRecoveryPreflightScheduleExpirationService",
     "InvalidAgentTaskRecoveryScheduleExpirationError",
+    "REDISPATCH",
+    "COMPLETE_HANDOFF",
+    "NO_ACTION_REQUIRED",
+    "BLOCKED",
+    "RECOVERY_ACTIONS",
+    "AgentTaskRecoveryScheduleRecoveryPlan",
+    "AgentTaskRecoveryScheduleRecoveryResult",
+    "LLMAgentTaskRecoveryPreflightScheduleRecoveryService",
+    "InvalidAgentTaskRecoveryScheduleRecoveryError",
 ]
