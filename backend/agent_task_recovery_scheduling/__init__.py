@@ -48,6 +48,16 @@ from .expiration import (
     InvalidAgentTaskRecoveryScheduleExpirationError,
     LLMAgentTaskRecoveryPreflightScheduleExpirationService,
 )
+from .policy_feedback import (
+    ABANDONED,
+    FAILED as SCHEDULE_FEEDBACK_FAILED,
+    RECOVERED,
+    SCHEDULE_FEEDBACK_OUTCOMES,
+    SCHEDULE_POLICY_FEEDBACK_EVENT_TYPE,
+    AgentTaskRecoveryScheduleFeedback,
+    InvalidAgentTaskRecoveryScheduleFeedbackError,
+    LLMAgentTaskRecoveryPreflightSchedulePolicyFeedbackService,
+)
 from .reporting import (
     AgentTaskRecoveryScheduleHistoryEntry,
     AgentTaskRecoveryScheduleHistoryReport,
@@ -168,4 +178,12 @@ __all__ = [
     "AgentTaskRecoveryScheduleHistoryReport",
     "LLMAgentTaskRecoveryPreflightScheduleReportingService",
     "InvalidAgentTaskRecoveryScheduleReportingError",
+    "SCHEDULE_POLICY_FEEDBACK_EVENT_TYPE",
+    "RECOVERED",
+    "SCHEDULE_FEEDBACK_FAILED",
+    "ABANDONED",
+    "SCHEDULE_FEEDBACK_OUTCOMES",
+    "AgentTaskRecoveryScheduleFeedback",
+    "LLMAgentTaskRecoveryPreflightSchedulePolicyFeedbackService",
+    "InvalidAgentTaskRecoveryScheduleFeedbackError",
 ]
