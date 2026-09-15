@@ -48,6 +48,14 @@ from .expiration import (
     InvalidAgentTaskRecoveryScheduleExpirationError,
     LLMAgentTaskRecoveryPreflightScheduleExpirationService,
 )
+from .reporting import (
+    AgentTaskRecoveryScheduleHistoryEntry,
+    AgentTaskRecoveryScheduleHistoryReport,
+    AgentTaskRecoveryScheduleReport,
+    AgentTaskRecoveryScheduleReportEntry,
+    InvalidAgentTaskRecoveryScheduleReportingError,
+    LLMAgentTaskRecoveryPreflightScheduleReportingService,
+)
 from .health import (
     DEGRADED,
     HEALTH_BLOCKED,
@@ -154,4 +162,10 @@ __all__ = [
     "AgentTaskRecoveryScheduleHealthSummary",
     "LLMAgentTaskRecoveryPreflightScheduleHealthService",
     "InvalidAgentTaskRecoveryScheduleHealthError",
+    "AgentTaskRecoveryScheduleReportEntry",
+    "AgentTaskRecoveryScheduleReport",
+    "AgentTaskRecoveryScheduleHistoryEntry",
+    "AgentTaskRecoveryScheduleHistoryReport",
+    "LLMAgentTaskRecoveryPreflightScheduleReportingService",
+    "InvalidAgentTaskRecoveryScheduleReportingError",
 ]
