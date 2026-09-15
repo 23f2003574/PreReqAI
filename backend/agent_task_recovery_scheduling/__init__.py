@@ -32,6 +32,11 @@ from .reconciliation import (
     InvalidAgentTaskRecoveryScheduleReconciliationError,
     LLMAgentTaskRecoveryPreflightScheduleReconciliationService,
 )
+from .priority import (
+    AgentTaskRecoverySchedulePriority,
+    InvalidAgentTaskRecoverySchedulePriorityError,
+    LLMAgentTaskRecoveryPreflightSchedulePriorityService,
+)
 
 __all__ = [
     "SCHEDULED",
@@ -58,4 +63,7 @@ __all__ = [
     "AgentTaskRecoveryScheduleReconciliationResult",
     "LLMAgentTaskRecoveryPreflightScheduleReconciliationService",
     "InvalidAgentTaskRecoveryScheduleReconciliationError",
+    "AgentTaskRecoverySchedulePriority",
+    "LLMAgentTaskRecoveryPreflightSchedulePriorityService",
+    "InvalidAgentTaskRecoverySchedulePriorityError",
 ]
