@@ -4,6 +4,7 @@ from .models import (
     SCHEDULE_STATUSES,
     SCHEDULED,
     AgentTaskRecoveryPreflightSchedule,
+    AgentTaskRecoveryScheduleValidation,
 )
 from .service import (
     AgentTaskRecoveryScheduleStore,
@@ -11,6 +12,10 @@ from .service import (
     InvalidAgentTaskRecoverySchedulingError,
     JsonAgentTaskRecoveryScheduleStore,
     LLMAgentTaskRecoveryPreflightSchedulingService,
+)
+from .validation import (
+    InvalidAgentTaskRecoveryScheduleValidationError,
+    LLMAgentTaskRecoveryPreflightScheduleValidationService,
 )
 
 __all__ = [
@@ -24,4 +29,7 @@ __all__ = [
     "JsonAgentTaskRecoveryScheduleStore",
     "LLMAgentTaskRecoveryPreflightSchedulingService",
     "InvalidAgentTaskRecoverySchedulingError",
+    "AgentTaskRecoveryScheduleValidation",
+    "LLMAgentTaskRecoveryPreflightScheduleValidationService",
+    "InvalidAgentTaskRecoveryScheduleValidationError",
 ]

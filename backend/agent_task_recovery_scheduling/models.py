@@ -73,3 +73,20 @@ class AgentTaskRecoveryPreflightSchedule:
             if isinstance(value, str):
                 payload[key] = datetime.fromisoformat(value)
         return cls(**payload)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryScheduleValidation:
+    """LLMAgentTaskRecoveryPreflightScheduleValidationService.validate()'s
+    complete, read-only verdict on whether one Commit #1 schedule is
+    STILL executable right now. valid is exactly `not blocking_reasons`;
+    preflight_id is None only when schedule_id itself does not exist for
+    task_id at all."""
+
+    valid: bool
+    task_id: str
+    schedule_id: str
+    preflight_id: Optional[str]
+    blocking_reasons: tuple
+    warnings: tuple
+    validated_at: datetime
