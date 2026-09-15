@@ -37,6 +37,17 @@ from .priority import (
     InvalidAgentTaskRecoverySchedulePriorityError,
     LLMAgentTaskRecoveryPreflightSchedulePriorityService,
 )
+from .capacity import (
+    ADMITTED,
+    DEFAULT_CAPACITY_SCOPE_ID,
+    AgentTaskRecoveryScheduleAdmission,
+    AgentTaskRecoveryScheduleAdmissionStore,
+    AgentTaskRecoveryScheduleCapacityResult,
+    InMemoryAgentTaskRecoveryScheduleAdmissionStore,
+    InvalidAgentTaskRecoveryScheduleCapacityError,
+    JsonAgentTaskRecoveryScheduleAdmissionStore,
+    LLMAgentTaskRecoveryPreflightScheduleCapacityService,
+)
 
 __all__ = [
     "SCHEDULED",
@@ -66,4 +77,13 @@ __all__ = [
     "AgentTaskRecoverySchedulePriority",
     "LLMAgentTaskRecoveryPreflightSchedulePriorityService",
     "InvalidAgentTaskRecoverySchedulePriorityError",
+    "ADMITTED",
+    "DEFAULT_CAPACITY_SCOPE_ID",
+    "AgentTaskRecoveryScheduleCapacityResult",
+    "AgentTaskRecoveryScheduleAdmission",
+    "AgentTaskRecoveryScheduleAdmissionStore",
+    "InMemoryAgentTaskRecoveryScheduleAdmissionStore",
+    "JsonAgentTaskRecoveryScheduleAdmissionStore",
+    "LLMAgentTaskRecoveryPreflightScheduleCapacityService",
+    "InvalidAgentTaskRecoveryScheduleCapacityError",
 ]
