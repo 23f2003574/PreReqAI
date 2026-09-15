@@ -17,6 +17,15 @@ from .validation import (
     InvalidAgentTaskRecoveryScheduleValidationError,
     LLMAgentTaskRecoveryPreflightScheduleValidationService,
 )
+from .dispatch import (
+    DISPATCHED,
+    AgentTaskRecoveryScheduleDispatch,
+    AgentTaskRecoveryScheduleDispatchStore,
+    InMemoryAgentTaskRecoveryScheduleDispatchStore,
+    InvalidAgentTaskRecoveryScheduleDispatchError,
+    JsonAgentTaskRecoveryScheduleDispatchStore,
+    LLMAgentTaskRecoveryPreflightScheduleDispatchService,
+)
 
 __all__ = [
     "SCHEDULED",
@@ -32,4 +41,11 @@ __all__ = [
     "AgentTaskRecoveryScheduleValidation",
     "LLMAgentTaskRecoveryPreflightScheduleValidationService",
     "InvalidAgentTaskRecoveryScheduleValidationError",
+    "DISPATCHED",
+    "AgentTaskRecoveryScheduleDispatch",
+    "AgentTaskRecoveryScheduleDispatchStore",
+    "InMemoryAgentTaskRecoveryScheduleDispatchStore",
+    "JsonAgentTaskRecoveryScheduleDispatchStore",
+    "LLMAgentTaskRecoveryPreflightScheduleDispatchService",
+    "InvalidAgentTaskRecoveryScheduleDispatchError",
 ]
