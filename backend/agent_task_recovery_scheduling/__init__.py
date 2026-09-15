@@ -37,6 +37,11 @@ from .priority import (
     InvalidAgentTaskRecoverySchedulePriorityError,
     LLMAgentTaskRecoveryPreflightSchedulePriorityService,
 )
+from .backoff import (
+    AgentTaskRecoveryScheduleBackoffResult,
+    InvalidAgentTaskRecoveryScheduleBackoffError,
+    LLMAgentTaskRecoveryPreflightScheduleBackoffService,
+)
 from .capacity import (
     ADMITTED,
     DEFAULT_CAPACITY_SCOPE_ID,
@@ -86,4 +91,7 @@ __all__ = [
     "JsonAgentTaskRecoveryScheduleAdmissionStore",
     "LLMAgentTaskRecoveryPreflightScheduleCapacityService",
     "InvalidAgentTaskRecoveryScheduleCapacityError",
+    "AgentTaskRecoveryScheduleBackoffResult",
+    "LLMAgentTaskRecoveryPreflightScheduleBackoffService",
+    "InvalidAgentTaskRecoveryScheduleBackoffError",
 ]
