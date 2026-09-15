@@ -37,6 +37,17 @@ from .priority import (
     InvalidAgentTaskRecoverySchedulePriorityError,
     LLMAgentTaskRecoveryPreflightSchedulePriorityService,
 )
+from .expiration import (
+    DEFAULT_SCHEDULE_EXPIRATION_TTL,
+    DUE,
+    EXPIRATION_STATES,
+    EXPIRED,
+    NOT_APPLICABLE,
+    NOT_YET_DUE,
+    AgentTaskRecoveryScheduleExpirationResult,
+    InvalidAgentTaskRecoveryScheduleExpirationError,
+    LLMAgentTaskRecoveryPreflightScheduleExpirationService,
+)
 from .backoff import (
     AgentTaskRecoveryScheduleBackoffResult,
     InvalidAgentTaskRecoveryScheduleBackoffError,
@@ -94,4 +105,13 @@ __all__ = [
     "AgentTaskRecoveryScheduleBackoffResult",
     "LLMAgentTaskRecoveryPreflightScheduleBackoffService",
     "InvalidAgentTaskRecoveryScheduleBackoffError",
+    "NOT_YET_DUE",
+    "DUE",
+    "EXPIRED",
+    "NOT_APPLICABLE",
+    "EXPIRATION_STATES",
+    "DEFAULT_SCHEDULE_EXPIRATION_TTL",
+    "AgentTaskRecoveryScheduleExpirationResult",
+    "LLMAgentTaskRecoveryPreflightScheduleExpirationService",
+    "InvalidAgentTaskRecoveryScheduleExpirationError",
 ]
