@@ -26,6 +26,12 @@ from .dispatch import (
     JsonAgentTaskRecoveryScheduleDispatchStore,
     LLMAgentTaskRecoveryPreflightScheduleDispatchService,
 )
+from .reconciliation import (
+    AgentTaskRecoveryScheduleReconciliationEntry,
+    AgentTaskRecoveryScheduleReconciliationResult,
+    InvalidAgentTaskRecoveryScheduleReconciliationError,
+    LLMAgentTaskRecoveryPreflightScheduleReconciliationService,
+)
 
 __all__ = [
     "SCHEDULED",
@@ -48,4 +54,8 @@ __all__ = [
     "JsonAgentTaskRecoveryScheduleDispatchStore",
     "LLMAgentTaskRecoveryPreflightScheduleDispatchService",
     "InvalidAgentTaskRecoveryScheduleDispatchError",
+    "AgentTaskRecoveryScheduleReconciliationEntry",
+    "AgentTaskRecoveryScheduleReconciliationResult",
+    "LLMAgentTaskRecoveryPreflightScheduleReconciliationService",
+    "InvalidAgentTaskRecoveryScheduleReconciliationError",
 ]
