@@ -48,6 +48,17 @@ from .expiration import (
     InvalidAgentTaskRecoveryScheduleExpirationError,
     LLMAgentTaskRecoveryPreflightScheduleExpirationService,
 )
+from .learning import (
+    LEARNED,
+    LEARNING_OUTCOME_STATUSES,
+    SCHEDULE_LEARNING_EVENT_TYPE,
+    SKIPPED_CONTRADICTORY,
+    SKIPPED_INSUFFICIENT,
+    AgentTaskRecoveryScheduleLearningOutcome,
+    AgentTaskRecoveryScheduleLearningResult,
+    InvalidAgentTaskRecoveryScheduleLearningError,
+    LLMAgentTaskRecoveryPreflightScheduleLearningService,
+)
 from .policy_feedback import (
     ABANDONED,
     FAILED as SCHEDULE_FEEDBACK_FAILED,
@@ -186,4 +197,13 @@ __all__ = [
     "AgentTaskRecoveryScheduleFeedback",
     "LLMAgentTaskRecoveryPreflightSchedulePolicyFeedbackService",
     "InvalidAgentTaskRecoveryScheduleFeedbackError",
+    "SCHEDULE_LEARNING_EVENT_TYPE",
+    "LEARNED",
+    "SKIPPED_INSUFFICIENT",
+    "SKIPPED_CONTRADICTORY",
+    "LEARNING_OUTCOME_STATUSES",
+    "AgentTaskRecoveryScheduleLearningOutcome",
+    "AgentTaskRecoveryScheduleLearningResult",
+    "LLMAgentTaskRecoveryPreflightScheduleLearningService",
+    "InvalidAgentTaskRecoveryScheduleLearningError",
 ]
