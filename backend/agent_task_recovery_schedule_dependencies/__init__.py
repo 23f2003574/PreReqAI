@@ -45,6 +45,16 @@ from .change_planner import (
     InvalidAgentTaskRecoveryScheduleDependencyChangePlanError,
     LLMAgentTaskRecoveryPreflightScheduleDependencyChangePlanner,
 )
+from .change_execution import (
+    APPLICATION_STATUSES,
+    APPLIED,
+    REJECTED,
+    AgentTaskRecoveryScheduleChangeActionResult,
+    AgentTaskRecoveryScheduleDependencyChangeResult,
+    InvalidAgentTaskRecoveryScheduleDependencyChangeError,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyChangeService,
+)
+from .change_execution import FAILED as APPLICATION_FAILED
 from .impact import (
     ESCALATION_REQUIRED,
     IMPACT_CATEGORIES,
@@ -208,4 +218,12 @@ __all__ = [
     "AgentTaskRecoveryScheduleDependencyChangePlan",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyChangePlanner",
     "InvalidAgentTaskRecoveryScheduleDependencyChangePlanError",
+    "APPLIED",
+    "REJECTED",
+    "APPLICATION_FAILED",
+    "APPLICATION_STATUSES",
+    "AgentTaskRecoveryScheduleChangeActionResult",
+    "AgentTaskRecoveryScheduleDependencyChangeResult",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyChangeService",
+    "InvalidAgentTaskRecoveryScheduleDependencyChangeError",
 ]
