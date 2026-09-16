@@ -39,6 +39,17 @@ from .service import (
     InvalidAgentTaskRecoveryScheduleDependencyError,
     LLMAgentTaskRecoveryPreflightScheduleDependencyService,
 )
+from .timeout import (
+    ACTIVE as TIMEOUT_ACTIVE,
+    DEFAULT_DEPENDENCY_WAIT_TIMEOUT,
+    NOT_APPLICABLE as TIMEOUT_NOT_APPLICABLE,
+    NOT_WAITING,
+    TIMED_OUT,
+    TIMEOUT_STATES,
+    AgentTaskRecoveryScheduleDependencyTimeoutResult,
+    InvalidAgentTaskRecoveryScheduleDependencyTimeoutError,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyTimeoutService,
+)
 from .wait import (
     DEFAULT_DEPENDENCY_WAIT_INTERVAL,
     AgentTaskRecoveryScheduleDependencyWaitPlan,
@@ -102,4 +113,13 @@ __all__ = [
     "JsonAgentTaskRecoveryScheduleWakeStore",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyWakeService",
     "InvalidAgentTaskRecoveryScheduleDependencyWakeError",
+    "TIMEOUT_ACTIVE",
+    "TIMED_OUT",
+    "NOT_WAITING",
+    "TIMEOUT_NOT_APPLICABLE",
+    "TIMEOUT_STATES",
+    "DEFAULT_DEPENDENCY_WAIT_TIMEOUT",
+    "AgentTaskRecoveryScheduleDependencyTimeoutResult",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyTimeoutService",
+    "InvalidAgentTaskRecoveryScheduleDependencyTimeoutError",
 ]
