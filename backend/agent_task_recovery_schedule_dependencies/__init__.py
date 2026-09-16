@@ -20,6 +20,18 @@ from .escalation import (
     JsonAgentTaskRecoveryScheduleEscalationStore,
     LLMAgentTaskRecoveryPreflightScheduleDependencyEscalationService,
 )
+from .escalation_resolution import (
+    RESOLUTION_OUTCOMES,
+    RESOLUTION_TERMINAL,
+    RESOLUTION_WOKEN,
+    AgentTaskRecoveryScheduleEscalationResolution,
+    AgentTaskRecoveryScheduleEscalationResolutionResult,
+    AgentTaskRecoveryScheduleEscalationResolutionStore,
+    InMemoryAgentTaskRecoveryScheduleEscalationResolutionStore,
+    InvalidAgentTaskRecoveryScheduleEscalationResolutionError,
+    JsonAgentTaskRecoveryScheduleEscalationResolutionStore,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyEscalationResolutionService,
+)
 from .models import (
     BLOCKED,
     DEPENDENCY_STATES,
@@ -140,4 +152,14 @@ __all__ = [
     "JsonAgentTaskRecoveryScheduleEscalationStore",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyEscalationService",
     "InvalidAgentTaskRecoveryScheduleDependencyEscalationError",
+    "RESOLUTION_WOKEN",
+    "RESOLUTION_TERMINAL",
+    "RESOLUTION_OUTCOMES",
+    "AgentTaskRecoveryScheduleEscalationResolution",
+    "AgentTaskRecoveryScheduleEscalationResolutionResult",
+    "AgentTaskRecoveryScheduleEscalationResolutionStore",
+    "InMemoryAgentTaskRecoveryScheduleEscalationResolutionStore",
+    "JsonAgentTaskRecoveryScheduleEscalationResolutionStore",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyEscalationResolutionService",
+    "InvalidAgentTaskRecoveryScheduleEscalationResolutionError",
 ]
