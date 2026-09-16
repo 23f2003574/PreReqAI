@@ -57,6 +57,18 @@ class AgentTaskRecoveryScheduleChangeActionResult:
     agent_task_recovery_scheduling's own cancel()+schedule() always
     mints a fresh one for those two) -- equal to schedule_id itself for
     escalate/expire/no_op/rejected/failed.
+
+    preflight_id/dependency_id/dependency_state/dependency_evidence are
+    Commit #10's own fresh plan item's own fields, carried through
+    unchanged (Rule, added for Commit #12's own audit trail: "Preserve
+    the exact dependency evidence used by the planner") -- the EXACT
+    evidence this class itself based its own stale/conflict/action
+    decision on, never re-derived afterward (state may have already
+    moved on again by the time anything reads this result).
+    previous_status/resulting_status are schedule_id's/new_schedule_id's
+    own Commit #1-of-agent_task_recovery_scheduling status immediately
+    before and after this call -- both None only when schedule_id itself
+    could not be found at all.
     """
 
     task_id: str
@@ -66,6 +78,12 @@ class AgentTaskRecoveryScheduleChangeActionResult:
     new_schedule_id: Optional[str]
     reason: str
     applied_at: datetime
+    preflight_id: Optional[str] = None
+    dependency_id: Optional[str] = None
+    dependency_state: Optional[str] = None
+    dependency_evidence: tuple = ()
+    previous_status: Optional[str] = None
+    resulting_status: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -154,6 +172,7 @@ class LLMAgentTaskRecoveryPreflightScheduleDependencyChangeService:
         wake_service=None,
         escalation_service=None,
         timeout_service=None,
+        audit_service=None,
     ):
         """
         Args:
@@ -178,6 +197,12 @@ class LLMAgentTaskRecoveryPreflightScheduleDependencyChangeService:
             timeout_service: No default. Optional even for "expire" --
                 when omitted, every expire falls straight through to the
                 direct cancel() fallback.
+            audit_service: No default. When given, Commit #12's own
+                LLMAgentTaskRecoveryPreflightScheduleDependencyChangeAuditService.
+                record() is called automatically for every
+                apply_schedule() result (applied, rejected, or failed
+                alike), whether called directly or from inside apply()'s
+                own batch loop; omitted, no audit trail is recorded.
         """
         self._scheduling_service = (
             scheduling_service if scheduling_service is not None else LLMAgentTaskRecoveryPreflightSchedulingService()
@@ -193,6 +218,7 @@ class LLMAgentTaskRecoveryPreflightScheduleDependencyChangeService:
         self._wake_service = wake_service
         self._escalation_service = escalation_service
         self._timeout_service = timeout_service
+        self._audit_service = audit_service
 
     def apply(
         self, task_id: str, change_plan: AgentTaskRecoveryScheduleDependencyChangePlan, now: Optional[datetime] = None
@@ -221,23 +247,32 @@ class LLMAgentTaskRecoveryPreflightScheduleDependencyChangeService:
 
         results = []
         for item in change_plan.items:
+            current_schedule = self._scheduling_service.get(task_id, item.schedule_id)
+            current_status = current_schedule.status if current_schedule is not None else None
             if item.action is None:
                 reason = item.conflict.reason if item.conflict is not None else item.reason
-                results.append(
-                    self._result(task_id, item.schedule_id, None, REJECTED, item.schedule_id, reason, now)
+                rejected = self._result(
+                    task_id, item.schedule_id, None, REJECTED, item.schedule_id, reason, now,
+                    item=item, previous_status=current_status, resulting_status=current_status,
                 )
+                self._maybe_audit(task_id, item.schedule_id, rejected)
+                results.append(rejected)
                 continue
             try:
+                # apply_schedule() itself already audits its own result
+                # (Rule: "Integrate with the #11 change-execution
+                # service") -- never audited a second time here.
                 results.append(self.apply_schedule(task_id, item.schedule_id, item.action, now=now))
             except InvalidAgentTaskRecoveryScheduleDependencyChangeError:
                 raise
             except Exception as error:
-                results.append(
-                    self._result(
-                        task_id, item.schedule_id, item.action, FAILED, item.schedule_id,
-                        f"execution failed: {error}", now,
-                    )
+                failed = self._result(
+                    task_id, item.schedule_id, item.action, FAILED, item.schedule_id,
+                    f"execution failed: {error}", now,
+                    item=item, previous_status=current_status, resulting_status=current_status,
                 )
+                self._maybe_audit(task_id, item.schedule_id, failed)
+                results.append(failed)
 
         return AgentTaskRecoveryScheduleDependencyChangeResult(task_id=task_id, results=tuple(results), applied_at=now)
 
@@ -265,24 +300,41 @@ class LLMAgentTaskRecoveryPreflightScheduleDependencyChangeService:
 
         fresh_plan = self._planner_service.plan(task_id, schedule_id=schedule_id, now=now)
         fresh_item = fresh_plan.items[0]
+        current_schedule = self._scheduling_service.get(task_id, schedule_id)
+        previous_status = current_schedule.status if current_schedule is not None else None
 
         if fresh_item.conflict is not None:
-            return self._result(
+            result = self._result(
                 task_id, schedule_id, action, REJECTED, schedule_id,
                 f"plan is conflicting: {fresh_item.conflict.reason}", now,
+                item=fresh_item, previous_status=previous_status, resulting_status=previous_status,
             )
-        if not fresh_item.evidence_sufficient:
-            return self._result(
+        elif not fresh_item.evidence_sufficient:
+            result = self._result(
                 task_id, schedule_id, action, REJECTED, schedule_id, f"cannot apply: {fresh_item.reason}", now,
+                item=fresh_item, previous_status=previous_status, resulting_status=previous_status,
             )
-        if fresh_item.action != action:
-            return self._result(
+        elif fresh_item.action != action:
+            result = self._result(
                 task_id, schedule_id, action, REJECTED, schedule_id,
                 f"plan is stale: current required action is {fresh_item.action!r}, not {action!r}", now,
+                item=fresh_item, previous_status=previous_status, resulting_status=previous_status,
+            )
+        else:
+            new_schedule_id, reason = self._execute(task_id, schedule_id, action, fresh_item, now)
+            resulting_schedule = self._scheduling_service.get(task_id, new_schedule_id)
+            resulting_status = resulting_schedule.status if resulting_schedule is not None else None
+            result = self._result(
+                task_id, schedule_id, action, APPLIED, new_schedule_id, reason, now,
+                item=fresh_item, previous_status=previous_status, resulting_status=resulting_status,
             )
 
-        new_schedule_id, reason = self._execute(task_id, schedule_id, action, fresh_item, now)
-        return self._result(task_id, schedule_id, action, APPLIED, new_schedule_id, reason, now)
+        self._maybe_audit(task_id, schedule_id, result)
+        return result
+
+    def _maybe_audit(self, task_id: str, schedule_id: str, result: AgentTaskRecoveryScheduleChangeActionResult) -> None:
+        if self._audit_service is not None:
+            self._audit_service.record(task_id, schedule_id, result)
 
     def _execute(self, task_id: str, schedule_id: str, action: str, item, now: datetime) -> tuple:
         if action == ACTION_NO_OP:
@@ -337,10 +389,18 @@ class LLMAgentTaskRecoveryPreflightScheduleDependencyChangeService:
         return cancelled.schedule_id, cancelled.cancellation_reason
 
     @staticmethod
-    def _result(task_id, schedule_id, action, status, new_schedule_id, reason, now):
+    def _result(
+        task_id, schedule_id, action, status, new_schedule_id, reason, now,
+        item=None, previous_status=None, resulting_status=None,
+    ):
         return AgentTaskRecoveryScheduleChangeActionResult(
             task_id=task_id, schedule_id=schedule_id, action=action, status=status,
             new_schedule_id=new_schedule_id, reason=reason, applied_at=now,
+            preflight_id=item.preflight_id if item is not None else None,
+            dependency_id=item.dependency_id if item is not None else None,
+            dependency_state=item.dependency_state if item is not None else None,
+            dependency_evidence=item.dependency_evidence if item is not None else (),
+            previous_status=previous_status, resulting_status=resulting_status,
         )
 
     @staticmethod

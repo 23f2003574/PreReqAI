@@ -55,6 +55,12 @@ from .change_execution import (
     LLMAgentTaskRecoveryPreflightScheduleDependencyChangeService,
 )
 from .change_execution import FAILED as APPLICATION_FAILED
+from .change_audit import (
+    DEPENDENCY_CHANGE_AUDIT_EVENT_TYPE,
+    AgentTaskRecoveryScheduleDependencyChangeAudit,
+    InvalidAgentTaskRecoveryScheduleDependencyChangeAuditError,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyChangeAuditService,
+)
 from .impact import (
     ESCALATION_REQUIRED,
     IMPACT_CATEGORIES,
@@ -226,4 +232,8 @@ __all__ = [
     "AgentTaskRecoveryScheduleDependencyChangeResult",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyChangeService",
     "InvalidAgentTaskRecoveryScheduleDependencyChangeError",
+    "DEPENDENCY_CHANGE_AUDIT_EVENT_TYPE",
+    "AgentTaskRecoveryScheduleDependencyChangeAudit",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyChangeAuditService",
+    "InvalidAgentTaskRecoveryScheduleDependencyChangeAuditError",
 ]
