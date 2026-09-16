@@ -1,3 +1,15 @@
+from .blocking import (
+    BLOCK_STATUS_BLOCKED,
+    BLOCK_STATUS_UNBLOCKED,
+    BLOCK_STATUSES,
+    AgentTaskRecoveryScheduleDependencyBlock,
+    AgentTaskRecoveryScheduleDependencyBlockingStatus,
+    AgentTaskRecoveryScheduleDependencyBlockStore,
+    InMemoryAgentTaskRecoveryScheduleDependencyBlockStore,
+    InvalidAgentTaskRecoveryScheduleDependencyBlockingError,
+    JsonAgentTaskRecoveryScheduleDependencyBlockStore,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyBlockingService,
+)
 from .models import (
     BLOCKED,
     DEPENDENCY_STATES,
@@ -52,4 +64,14 @@ __all__ = [
     "JsonAgentTaskRecoveryScheduleDependencyObservationStore",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyReconciliationService",
     "InvalidAgentTaskRecoveryScheduleDependencyReconciliationError",
+    "BLOCK_STATUS_BLOCKED",
+    "BLOCK_STATUS_UNBLOCKED",
+    "BLOCK_STATUSES",
+    "AgentTaskRecoveryScheduleDependencyBlock",
+    "AgentTaskRecoveryScheduleDependencyBlockingStatus",
+    "AgentTaskRecoveryScheduleDependencyBlockStore",
+    "InMemoryAgentTaskRecoveryScheduleDependencyBlockStore",
+    "JsonAgentTaskRecoveryScheduleDependencyBlockStore",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyBlockingService",
+    "InvalidAgentTaskRecoveryScheduleDependencyBlockingError",
 ]
