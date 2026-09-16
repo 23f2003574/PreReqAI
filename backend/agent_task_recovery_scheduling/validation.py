@@ -32,12 +32,28 @@ class LLMAgentTaskRecoveryPreflightScheduleValidationService:
 
     Fails closed (Rule): a missing/cancelled/invalidated/not-yet-due
     schedule is reported invalid, never defaulted to valid.
+
+    dependency_service, when supplied, is Commit #1(-of-the-dependency-
+    gate-series)'s own backend.agent_task_recovery_schedule_dependencies.
+    LLMAgentTaskRecoveryPreflightScheduleDependencyService -- deliberately
+    accepted untyped/duck-typed here (mirrors this package's own
+    dispatch.py accepting queue_service the same way) so this earlier
+    package never has to import the later one and risk a circular
+    import between them. Left None (the default), no dependency check
+    ever runs and existing callers see no behavior change at all; when
+    given, its own check(task_id, schedule_id).blockers are folded
+    straight into blocking_reasons -- Rule: "Integrate the gate into
+    the existing schedule validation/dispatch path so it actually
+    affects dispatch eligibility," since dispatch.py's own dispatch()
+    already refuses to hand off a schedule this validate() reports
+    invalid.
     """
 
     def __init__(
         self,
         scheduling_service: LLMAgentTaskRecoveryPreflightSchedulingService = None,
         authorization_validation_service: LLMAgentTaskRecoveryPreflightAuthorizationValidationService = None,
+        dependency_service=None,
     ):
         self._scheduling_service = (
             scheduling_service if scheduling_service is not None else LLMAgentTaskRecoveryPreflightSchedulingService()
@@ -47,6 +63,7 @@ class LLMAgentTaskRecoveryPreflightScheduleValidationService:
             if authorization_validation_service is not None
             else LLMAgentTaskRecoveryPreflightAuthorizationValidationService()
         )
+        self._dependency_service = dependency_service
 
     def validate(self, task_id: str, schedule_id: str) -> AgentTaskRecoveryScheduleValidation:
         """Check whether task_id's exact schedule_id is still executable
@@ -85,6 +102,10 @@ class LLMAgentTaskRecoveryPreflightScheduleValidationService:
             blocking_reasons.append(
                 f"execution window has not been reached yet (scheduled for {schedule.execute_at.isoformat()})"
             )
+
+        if self._dependency_service is not None:
+            dependency_result = self._dependency_service.check(task_id, schedule_id)
+            blocking_reasons.extend(dependency_result.blockers)
 
         return AgentTaskRecoveryScheduleValidation(
             valid=not blocking_reasons,
