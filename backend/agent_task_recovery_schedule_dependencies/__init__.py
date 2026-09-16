@@ -39,6 +39,12 @@ from .service import (
     InvalidAgentTaskRecoveryScheduleDependencyError,
     LLMAgentTaskRecoveryPreflightScheduleDependencyService,
 )
+from .wait import (
+    DEFAULT_DEPENDENCY_WAIT_INTERVAL,
+    AgentTaskRecoveryScheduleDependencyWaitPlan,
+    InvalidAgentTaskRecoveryScheduleDependencyWaitError,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyWaitService,
+)
 
 __all__ = [
     "READY",
@@ -74,4 +80,8 @@ __all__ = [
     "JsonAgentTaskRecoveryScheduleDependencyBlockStore",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyBlockingService",
     "InvalidAgentTaskRecoveryScheduleDependencyBlockingError",
+    "DEFAULT_DEPENDENCY_WAIT_INTERVAL",
+    "AgentTaskRecoveryScheduleDependencyWaitPlan",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyWaitService",
+    "InvalidAgentTaskRecoveryScheduleDependencyWaitError",
 ]
