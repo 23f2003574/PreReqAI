@@ -10,6 +10,16 @@ from .blocking import (
     JsonAgentTaskRecoveryScheduleDependencyBlockStore,
     LLMAgentTaskRecoveryPreflightScheduleDependencyBlockingService,
 )
+from .escalation import (
+    DEPENDENCY_WAIT_ESCALATED_EVENT_TYPE,
+    AgentTaskRecoveryScheduleEscalation,
+    AgentTaskRecoveryScheduleEscalationResult,
+    AgentTaskRecoveryScheduleEscalationStore,
+    InMemoryAgentTaskRecoveryScheduleEscalationStore,
+    InvalidAgentTaskRecoveryScheduleDependencyEscalationError,
+    JsonAgentTaskRecoveryScheduleEscalationStore,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyEscalationService,
+)
 from .models import (
     BLOCKED,
     DEPENDENCY_STATES,
@@ -122,4 +132,12 @@ __all__ = [
     "AgentTaskRecoveryScheduleDependencyTimeoutResult",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyTimeoutService",
     "InvalidAgentTaskRecoveryScheduleDependencyTimeoutError",
+    "DEPENDENCY_WAIT_ESCALATED_EVENT_TYPE",
+    "AgentTaskRecoveryScheduleEscalation",
+    "AgentTaskRecoveryScheduleEscalationResult",
+    "AgentTaskRecoveryScheduleEscalationStore",
+    "InMemoryAgentTaskRecoveryScheduleEscalationStore",
+    "JsonAgentTaskRecoveryScheduleEscalationStore",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyEscalationService",
+    "InvalidAgentTaskRecoveryScheduleDependencyEscalationError",
 ]
