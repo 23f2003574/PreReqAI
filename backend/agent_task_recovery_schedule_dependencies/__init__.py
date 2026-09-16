@@ -61,6 +61,11 @@ from .change_audit import (
     InvalidAgentTaskRecoveryScheduleDependencyChangeAuditError,
     LLMAgentTaskRecoveryPreflightScheduleDependencyChangeAuditService,
 )
+from .change_orchestration import (
+    AgentTaskRecoveryScheduleDependencyChangeOrchestrationResult,
+    InvalidAgentTaskRecoveryScheduleDependencyChangeOrchestrationError,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyChangeOrchestrationService,
+)
 from .impact import (
     ESCALATION_REQUIRED,
     IMPACT_CATEGORIES,
@@ -236,4 +241,7 @@ __all__ = [
     "AgentTaskRecoveryScheduleDependencyChangeAudit",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyChangeAuditService",
     "InvalidAgentTaskRecoveryScheduleDependencyChangeAuditError",
+    "AgentTaskRecoveryScheduleDependencyChangeOrchestrationResult",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyChangeOrchestrationService",
+    "InvalidAgentTaskRecoveryScheduleDependencyChangeOrchestrationError",
 ]
