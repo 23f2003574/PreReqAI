@@ -32,6 +32,18 @@ from .escalation_resolution import (
     JsonAgentTaskRecoveryScheduleEscalationResolutionStore,
     LLMAgentTaskRecoveryPreflightScheduleDependencyEscalationResolutionService,
 )
+from .impact import (
+    ESCALATION_REQUIRED,
+    IMPACT_CATEGORIES,
+    NO_IMPACT,
+    REVALIDATION_REQUIRED,
+    SCHEDULE_NO_LONGER_VIABLE,
+    WAITING_REQUIRED,
+    AgentTaskRecoveryScheduleDependencyImpactOutcome,
+    AgentTaskRecoveryScheduleDependencyImpactResult,
+    InvalidAgentTaskRecoveryScheduleDependencyImpactError,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyImpactService,
+)
 from .models import (
     BLOCKED,
     DEPENDENCY_STATES,
@@ -162,4 +174,14 @@ __all__ = [
     "JsonAgentTaskRecoveryScheduleEscalationResolutionStore",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyEscalationResolutionService",
     "InvalidAgentTaskRecoveryScheduleEscalationResolutionError",
+    "NO_IMPACT",
+    "REVALIDATION_REQUIRED",
+    "WAITING_REQUIRED",
+    "ESCALATION_REQUIRED",
+    "SCHEDULE_NO_LONGER_VIABLE",
+    "IMPACT_CATEGORIES",
+    "AgentTaskRecoveryScheduleDependencyImpactOutcome",
+    "AgentTaskRecoveryScheduleDependencyImpactResult",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyImpactService",
+    "InvalidAgentTaskRecoveryScheduleDependencyImpactError",
 ]
