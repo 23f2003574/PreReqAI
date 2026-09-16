@@ -45,6 +45,16 @@ from .wait import (
     InvalidAgentTaskRecoveryScheduleDependencyWaitError,
     LLMAgentTaskRecoveryPreflightScheduleDependencyWaitService,
 )
+from .wake import (
+    AgentTaskRecoveryScheduleWakeOutcome,
+    AgentTaskRecoveryScheduleWakeRecord,
+    AgentTaskRecoveryScheduleWakeResult,
+    AgentTaskRecoveryScheduleWakeStore,
+    InMemoryAgentTaskRecoveryScheduleWakeStore,
+    InvalidAgentTaskRecoveryScheduleDependencyWakeError,
+    JsonAgentTaskRecoveryScheduleWakeStore,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyWakeService,
+)
 
 __all__ = [
     "READY",
@@ -84,4 +94,12 @@ __all__ = [
     "AgentTaskRecoveryScheduleDependencyWaitPlan",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyWaitService",
     "InvalidAgentTaskRecoveryScheduleDependencyWaitError",
+    "AgentTaskRecoveryScheduleWakeOutcome",
+    "AgentTaskRecoveryScheduleWakeResult",
+    "AgentTaskRecoveryScheduleWakeRecord",
+    "AgentTaskRecoveryScheduleWakeStore",
+    "InMemoryAgentTaskRecoveryScheduleWakeStore",
+    "JsonAgentTaskRecoveryScheduleWakeStore",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyWakeService",
+    "InvalidAgentTaskRecoveryScheduleDependencyWakeError",
 ]
