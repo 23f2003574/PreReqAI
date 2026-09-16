@@ -32,6 +32,19 @@ from .escalation_resolution import (
     JsonAgentTaskRecoveryScheduleEscalationResolutionStore,
     LLMAgentTaskRecoveryPreflightScheduleDependencyEscalationResolutionService,
 )
+from .change_planner import (
+    ACTION_ESCALATE,
+    ACTION_EXPIRE,
+    ACTION_NO_OP,
+    ACTION_REVALIDATE,
+    ACTION_WAIT,
+    CHANGE_PLAN_ACTIONS,
+    AgentTaskRecoveryScheduleChangePlanConflict,
+    AgentTaskRecoveryScheduleChangePlanItem,
+    AgentTaskRecoveryScheduleDependencyChangePlan,
+    InvalidAgentTaskRecoveryScheduleDependencyChangePlanError,
+    LLMAgentTaskRecoveryPreflightScheduleDependencyChangePlanner,
+)
 from .impact import (
     ESCALATION_REQUIRED,
     IMPACT_CATEGORIES,
@@ -184,4 +197,15 @@ __all__ = [
     "AgentTaskRecoveryScheduleDependencyImpactResult",
     "LLMAgentTaskRecoveryPreflightScheduleDependencyImpactService",
     "InvalidAgentTaskRecoveryScheduleDependencyImpactError",
+    "ACTION_REVALIDATE",
+    "ACTION_WAIT",
+    "ACTION_ESCALATE",
+    "ACTION_EXPIRE",
+    "ACTION_NO_OP",
+    "CHANGE_PLAN_ACTIONS",
+    "AgentTaskRecoveryScheduleChangePlanConflict",
+    "AgentTaskRecoveryScheduleChangePlanItem",
+    "AgentTaskRecoveryScheduleDependencyChangePlan",
+    "LLMAgentTaskRecoveryPreflightScheduleDependencyChangePlanner",
+    "InvalidAgentTaskRecoveryScheduleDependencyChangePlanError",
 ]
