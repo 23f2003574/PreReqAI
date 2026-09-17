@@ -619,3 +619,40 @@ class AgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryReconciliationRes
     skipped_conflicts: tuple
     reasons: tuple
     reconciled_at: datetime
+
+
+NO_OP = "no_op"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryOrchestrationResult:
+    """Commit #13's own single, composed report closing the trust
+    lifecycle: detect (#8) -> invalidate (#9) -> revalidate (#10) ->
+    audit (#11) -> reconcile (#12) -- never a second workflow engine
+    (Rule: "Do not introduce generic orchestration infrastructure"):
+    every field below is exactly what the ONE existing service owning
+    that step already produced, never re-derived.
+
+    action is NO_OP when the snapshot was already trusted (nothing else
+    ran); otherwise Commit #10's own action (REPLACED/REVALIDATION_FAILED/
+    REVALIDATION_MISSING) -- reconciliation is only ever attempted when
+    action is REPLACED (Rule: "Fail closed if replacement trust
+    validation fails"), so `reconciliation` stays None for every other
+    action. partial_failure is populated only when a collaborator raised
+    unexpectedly during the reconcile step (Rule: "Handle partial
+    failures explicitly") -- never for an ordinary, structured refusal
+    (which is instead expressed the normal way, in that step's own
+    result)."""
+
+    task_id: str
+    old_snapshot_id: str
+    new_snapshot_id: Optional[str]
+    trusted: bool
+    action: str
+    change: object
+    invalidation: Optional[object]
+    revalidation: Optional[object]
+    audit_record: Optional[object]
+    reconciliation: Optional[object]
+    partial_failure: Optional[str]
+    recovered_at: datetime
