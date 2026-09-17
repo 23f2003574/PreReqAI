@@ -220,6 +220,7 @@ class AgentTaskRecoveryPreflightDependencySnapshotReconciliation:
     reconciled_at: datetime
     version: Optional[int] = None
     integrity: Optional[object] = None
+    signature: Optional[object] = None
 
 
 @dataclass(frozen=True)
@@ -325,5 +326,78 @@ class AgentTaskRecoveryPreflightDependencySnapshotIntegrityResult:
     status: str
     valid: bool
     integrity_value: Optional[str]
+    reasons: tuple
+    verified_at: datetime
+
+
+# Commit #5's own signature-verdict vocabulary. Reuses VALID/MISSING/
+# UNVERIFIABLE verbatim from Commit #4 (same meaning, same word --
+# never a second, colliding constant with the same string value); adds
+# INVALID for "a signature is recorded, the snapshot itself exists, but
+# authenticity/binding does not check out" -- distinct from Commit #4's
+# own CORRUPTED, which describes the snapshot's CONTENT, not a
+# signature's own authenticity.
+INVALID = "invalid"
+SIGNATURE_STATUSES = frozenset({VALID, INVALID, MISSING, UNVERIFIABLE})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotSignature:
+    """One immutable, append-only signing event for a Commit #1 snapshot
+    -- Rule: "Preserve signature metadata/history; don't overwrite prior
+    signatures": sign() always appends a NEW record (never checked for
+    duplicates/idempotency the way #1-#4's own content-addressed writes
+    are), so re-signing (e.g. after a key rotation) is always possible
+    and every past signature stays inspectable.
+
+    signature is this record's own canonical payload -- {task_id,
+    preflight_id, snapshot_id, version, integrity_value} -- HMAC-SHA256'd
+    under the signing key, prefixed "hmac-sha256:". integrity_value is
+    Commit #4's own compute() output at signing time, embedded verbatim
+    (Rule: "Sign the canonical snapshot representation used by the
+    integrity service").
+    """
+
+    task_id: str
+    preflight_id: str
+    snapshot_id: str
+    version: Optional[int]
+    integrity_value: str
+    signature: str
+    signed_at: datetime
+    signature_id: str = field(default_factory=lambda: str(uuid4()))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["signed_at"] = self.signed_at.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "AgentTaskRecoveryPreflightDependencySnapshotSignature":
+        payload = dict(data)
+        value = payload.get("signed_at")
+        if isinstance(value, str):
+            payload["signed_at"] = datetime.fromisoformat(value)
+        return cls(**payload)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotSignatureVerification:
+    """LLMAgentTaskRecoveryPreflightDependencySnapshotSigningService.
+    verify_signature()'s complete, read-only verdict -- bound to the
+    exact task_id/preflight_id/snapshot_id/version (Rule: "Bind the
+    signature to exact task, preflight, snapshot, and version identity").
+    valid is exactly `status == VALID`; integrity_status carries Commit
+    #4's own status alongside (Rule: "Verify both authenticity and
+    snapshot integrity before accepting a signed snapshot")."""
+
+    task_id: str
+    snapshot_id: str
+    preflight_id: Optional[str]
+    version: Optional[int]
+    status: str
+    valid: bool
+    signature_id: Optional[str]
+    integrity_status: Optional[str]
     reasons: tuple
     verified_at: datetime

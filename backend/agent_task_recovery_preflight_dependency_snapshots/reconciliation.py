@@ -45,6 +45,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         schedule_dependency_reconciliation_service=None,
         version_service=None,
         integrity_service=None,
+        signing_service=None,
     ):
         """
         Args:
@@ -75,6 +76,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         self._schedule_dependency_reconciliation_service = schedule_dependency_reconciliation_service
         self._version_service = version_service
         self._integrity_service = integrity_service
+        self._signing_service = signing_service
 
     def is_current(self, task_id: str, snapshot_id: str) -> bool:
         """Shorthand for reconcile(task_id, snapshot_id).status ==
@@ -102,6 +104,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
 
         version = self._resolve_version(task_id, snapshot.preflight_id, snapshot_id)
         integrity = self._integrity_service.verify(task_id, snapshot_id) if self._integrity_service is not None else None
+        signature = self._signing_service.verify_signature(task_id, snapshot_id) if self._signing_service is not None else None
 
         try:
             diff = self._snapshot_service.diff(task_id, snapshot_id)
@@ -111,7 +114,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
                 status=INDETERMINATE, reliable=False,
                 added=(), removed=(), resolved=(), blocked=(), changed=(),
                 reason=f"dependency graph could not be resolved: {error}",
-                reconciled_at=self._now(), version=version, integrity=integrity,
+                reconciled_at=self._now(), version=version, integrity=integrity, signature=signature,
             )
 
         return AgentTaskRecoveryPreflightDependencySnapshotReconciliation(
@@ -120,7 +123,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
             added=diff.added, removed=diff.removed, resolved=diff.resolved,
             blocked=diff.newly_blocked, changed=diff.state_changed,
             reason=None,
-            reconciled_at=self._now(), version=version, integrity=integrity,
+            reconciled_at=self._now(), version=version, integrity=integrity, signature=signature,
         )
 
     def _resolve_version(self, task_id: str, preflight_id: str, snapshot_id: str):

@@ -30,12 +30,23 @@ from .models import (
     AgentTaskRecoveryPreflightDependencySnapshotIntegrityRecord,
     AgentTaskRecoveryPreflightDependencySnapshotIntegrityResult,
     AgentTaskRecoveryPreflightDependencySnapshotReconciliation,
+    AgentTaskRecoveryPreflightDependencySnapshotSignature,
+    AgentTaskRecoveryPreflightDependencySnapshotSignatureVerification,
     AgentTaskRecoveryPreflightDependencySnapshotVersion,
+    INVALID,
+    SIGNATURE_STATUSES,
 )
 from .reconciliation import LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService
 from .service import (
     InvalidAgentTaskRecoveryPreflightDependencySnapshotError,
     LLMAgentTaskRecoveryPreflightDependencySnapshotService,
+)
+from .signing import (
+    AgentTaskRecoveryPreflightDependencySnapshotSignatureStore,
+    InMemoryAgentTaskRecoveryPreflightDependencySnapshotSignatureStore,
+    InvalidAgentTaskRecoveryPreflightDependencySnapshotSigningError,
+    JsonAgentTaskRecoveryPreflightDependencySnapshotSignatureStore,
+    LLMAgentTaskRecoveryPreflightDependencySnapshotSigningService,
 )
 from .store import (
     AgentTaskRecoveryPreflightDependencySnapshotStore,
@@ -94,4 +105,13 @@ __all__ = [
     "JsonAgentTaskRecoveryPreflightDependencySnapshotIntegrityStore",
     "LLMAgentTaskRecoveryPreflightDependencySnapshotIntegrityService",
     "InvalidAgentTaskRecoveryPreflightDependencySnapshotIntegrityError",
+    "INVALID",
+    "SIGNATURE_STATUSES",
+    "AgentTaskRecoveryPreflightDependencySnapshotSignature",
+    "AgentTaskRecoveryPreflightDependencySnapshotSignatureVerification",
+    "AgentTaskRecoveryPreflightDependencySnapshotSignatureStore",
+    "InMemoryAgentTaskRecoveryPreflightDependencySnapshotSignatureStore",
+    "JsonAgentTaskRecoveryPreflightDependencySnapshotSignatureStore",
+    "LLMAgentTaskRecoveryPreflightDependencySnapshotSigningService",
+    "InvalidAgentTaskRecoveryPreflightDependencySnapshotSigningError",
 ]
