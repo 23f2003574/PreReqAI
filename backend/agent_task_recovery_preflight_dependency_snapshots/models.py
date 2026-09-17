@@ -445,3 +445,36 @@ class AgentTaskRecoveryPreflightDependencySnapshotTrustHistoryRecord:
     verified_at: datetime
     recorded_at: datetime
     history_id: str
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotTrustChangeResult:
+    """Commit #8's own comparison of task_id/snapshot_id's PREVIOUSLY
+    recorded (Commit #7) trust state against a FRESH (Commit #6) trust
+    validation -- never a second verification implementation (Rule: "Do
+    not duplicate verification logic"): current_trust is exactly what
+    LLMAgentTaskRecoveryPreflightDependencySnapshotTrustService.
+    validate() itself returned this call; previous_trust is exactly
+    Commit #7's own latest() for this (task_id, snapshot_id), None only
+    when nothing was ever recorded before.
+
+    changed is purely field-value comparison (Rule: "Do not infer trust
+    changes from timestamps alone") -- checked_at/verified_at never
+    participate. changed_dimensions names every field that differs
+    (trusted/integrity_status/signature_status/version/preflight_id/
+    blocking_reasons); evidence is one human-readable "field changed from
+    X to Y" string per dimension. revalidation_required is True when
+    there was nothing to compare against yet (previous_trust is None) or
+    the fresh validation is not trusted -- False when the snapshot
+    remains trusted, whether or not some non-blocking dimension moved.
+    """
+
+    task_id: str
+    snapshot_id: str
+    previous_trust: Optional[object]
+    current_trust: object
+    changed: bool
+    changed_dimensions: tuple
+    evidence: tuple
+    revalidation_required: bool
+    checked_at: datetime

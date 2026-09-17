@@ -47,6 +47,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         integrity_service=None,
         signing_service=None,
         trust_service=None,
+        trust_change_service=None,
     ):
         """
         Args:
@@ -79,6 +80,13 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         self._integrity_service = integrity_service
         self._signing_service = signing_service
         self._trust_service = trust_service
+        # Optional Commit #8 LLMAgentTaskRecoveryPreflightDependencySnapshotTrustChangeService
+        # (duck-typed, only check() is called). When given, it SUPERSEDES
+        # trust_service as reconcile()'s own trust gate below (Rule:
+        # "Integrate with ... reconciliation so a trust change can
+        # invalidate its previous dependency evidence") -- checking for
+        # drift, not merely a fresh trust_service.validate() a second time.
+        self._trust_change_service = trust_change_service
 
     def is_current(self, task_id: str, snapshot_id: str) -> bool:
         """Shorthand for reconcile(task_id, snapshot_id).status ==
@@ -108,7 +116,20 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         integrity = self._integrity_service.verify(task_id, snapshot_id) if self._integrity_service is not None else None
         signature = self._signing_service.verify_signature(task_id, snapshot_id) if self._signing_service is not None else None
 
-        if self._trust_service is not None:
+        if self._trust_change_service is not None:
+            change = self._trust_change_service.check(task_id, snapshot_id)
+            if not change.current_trust.trusted:
+                return AgentTaskRecoveryPreflightDependencySnapshotReconciliation(
+                    task_id=task_id, snapshot_id=snapshot_id, preflight_id=snapshot.preflight_id,
+                    status=INDETERMINATE, reliable=False,
+                    added=(), removed=(), resolved=(), blocked=(), changed=(),
+                    reason=(
+                        f"snapshot is not trusted: {'; '.join(change.current_trust.blocking_reasons)}"
+                        + (f" (changed dimensions: {', '.join(change.changed_dimensions)})" if change.changed else "")
+                    ),
+                    reconciled_at=self._now(), version=version, integrity=integrity, signature=signature,
+                )
+        elif self._trust_service is not None:
             trust = self._trust_service.validate(task_id, snapshot_id)
             if not trust.trusted:
                 return AgentTaskRecoveryPreflightDependencySnapshotReconciliation(
