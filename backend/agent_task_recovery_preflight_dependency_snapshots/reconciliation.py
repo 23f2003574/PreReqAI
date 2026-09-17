@@ -46,6 +46,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         version_service=None,
         integrity_service=None,
         signing_service=None,
+        trust_service=None,
     ):
         """
         Args:
@@ -77,6 +78,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         self._version_service = version_service
         self._integrity_service = integrity_service
         self._signing_service = signing_service
+        self._trust_service = trust_service
 
     def is_current(self, task_id: str, snapshot_id: str) -> bool:
         """Shorthand for reconcile(task_id, snapshot_id).status ==
@@ -105,6 +107,17 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         version = self._resolve_version(task_id, snapshot.preflight_id, snapshot_id)
         integrity = self._integrity_service.verify(task_id, snapshot_id) if self._integrity_service is not None else None
         signature = self._signing_service.verify_signature(task_id, snapshot_id) if self._signing_service is not None else None
+
+        if self._trust_service is not None:
+            trust = self._trust_service.validate(task_id, snapshot_id)
+            if not trust.trusted:
+                return AgentTaskRecoveryPreflightDependencySnapshotReconciliation(
+                    task_id=task_id, snapshot_id=snapshot_id, preflight_id=snapshot.preflight_id,
+                    status=INDETERMINATE, reliable=False,
+                    added=(), removed=(), resolved=(), blocked=(), changed=(),
+                    reason=f"snapshot is not trusted: {'; '.join(trust.blocking_reasons)}",
+                    reconciled_at=self._now(), version=version, integrity=integrity, signature=signature,
+                )
 
         try:
             diff = self._snapshot_service.diff(task_id, snapshot_id)

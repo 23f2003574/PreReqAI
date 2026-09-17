@@ -401,3 +401,22 @@ class AgentTaskRecoveryPreflightDependencySnapshotSignatureVerification:
     integrity_status: Optional[str]
     reasons: tuple
     verified_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotTrustResult:
+    """Commit #6's own single trust-decision verdict -- composes Commit
+    #1(existence/binding)/#3(supersession)/#4(integrity)/#5(signature),
+    never re-deriving any of their logic itself. trusted is exactly `not
+    blocking_reasons` (fail-closed: every blocking condition collected,
+    never only the first)."""
+
+    task_id: str
+    snapshot_id: str
+    preflight_id: Optional[str]
+    version: Optional[int]
+    trusted: bool
+    integrity_status: Optional[str]
+    signature_status: Optional[str]
+    blocking_reasons: tuple
+    validated_at: datetime

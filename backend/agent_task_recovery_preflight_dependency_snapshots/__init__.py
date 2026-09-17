@@ -32,6 +32,7 @@ from .models import (
     AgentTaskRecoveryPreflightDependencySnapshotReconciliation,
     AgentTaskRecoveryPreflightDependencySnapshotSignature,
     AgentTaskRecoveryPreflightDependencySnapshotSignatureVerification,
+    AgentTaskRecoveryPreflightDependencySnapshotTrustResult,
     AgentTaskRecoveryPreflightDependencySnapshotVersion,
     INVALID,
     SIGNATURE_STATUSES,
@@ -52,6 +53,10 @@ from .store import (
     AgentTaskRecoveryPreflightDependencySnapshotStore,
     InMemoryAgentTaskRecoveryPreflightDependencySnapshotStore,
     JsonAgentTaskRecoveryPreflightDependencySnapshotStore,
+)
+from .trust import (
+    InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustError,
+    LLMAgentTaskRecoveryPreflightDependencySnapshotTrustService,
 )
 from .versioning import (
     AgentTaskRecoveryPreflightDependencySnapshotVersionCollisionError,
@@ -114,4 +119,7 @@ __all__ = [
     "JsonAgentTaskRecoveryPreflightDependencySnapshotSignatureStore",
     "LLMAgentTaskRecoveryPreflightDependencySnapshotSigningService",
     "InvalidAgentTaskRecoveryPreflightDependencySnapshotSigningError",
+    "AgentTaskRecoveryPreflightDependencySnapshotTrustResult",
+    "LLMAgentTaskRecoveryPreflightDependencySnapshotTrustService",
+    "InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustError",
 ]
