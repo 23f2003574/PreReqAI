@@ -519,3 +519,41 @@ class AgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationResult:
     affected_schedule_ids: tuple
     evidence: tuple
     checked_at: datetime
+
+
+# Commit #10's own outcome vocabulary for revalidate(). REUSED: an
+# already-trusted snapshot (the exact one asked about, or a later one a
+# PRIOR revalidate() call already produced) was returned unchanged, no
+# new snapshot minted. REPLACED: the old snapshot was untrusted, and a
+# freshly created snapshot passed its own trust validation. FAILED: a
+# fresh snapshot was created, but it ALSO failed trust -- reported
+# honestly, never retried in a loop or fabricated as trusted. MISSING:
+# old_snapshot_id does not exist for task_id at all.
+REUSED = "reused"
+REPLACED = "replaced"
+REVALIDATION_FAILED = "failed"
+REVALIDATION_MISSING = "missing"
+REVALIDATION_ACTIONS = frozenset({REUSED, REPLACED, REVALIDATION_FAILED, REVALIDATION_MISSING})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult:
+    """LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationService.
+    revalidate()'s complete report -- never a second snapshot/trust
+    pipeline (Rule: "Do not duplicate any of those mechanisms"):
+    old_trust/new_trust are exactly Commit #6's own
+    AgentTaskRecoveryPreflightDependencySnapshotTrustResult objects,
+    carried through unchanged. new_snapshot_id equals old_snapshot_id
+    exactly when action is REUSED (Rule: "return the existing trusted
+    snapshot" -- never a copy); it is a genuinely new Commit #1
+    snapshot_id for REPLACED/REVALIDATION_FAILED, and None only for
+    REVALIDATION_MISSING."""
+
+    task_id: str
+    preflight_id: Optional[str]
+    old_snapshot_id: str
+    new_snapshot_id: Optional[str]
+    action: str
+    old_trust: Optional[object]
+    new_trust: Optional[object]
+    revalidated_at: datetime

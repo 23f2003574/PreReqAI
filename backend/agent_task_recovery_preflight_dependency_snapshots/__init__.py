@@ -36,8 +36,14 @@ from .models import (
     AgentTaskRecoveryPreflightDependencySnapshotTrustHistoryRecord,
     AgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationResult,
     AgentTaskRecoveryPreflightDependencySnapshotTrustResult,
+    AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult,
     AgentTaskRecoveryPreflightDependencySnapshotVersion,
     INVALID,
+    REPLACED,
+    REUSED,
+    REVALIDATION_ACTIONS,
+    REVALIDATION_FAILED,
+    REVALIDATION_MISSING,
     SIGNATURE_STATUSES,
 )
 from .reconciliation import LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService
@@ -73,6 +79,10 @@ from .trust_history import (
 from .trust_invalidation import (
     InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationError,
     LLMAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationService,
+)
+from .trust_revalidation import (
+    InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationError,
+    LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationService,
 )
 from .versioning import (
     AgentTaskRecoveryPreflightDependencySnapshotVersionCollisionError,
@@ -148,4 +158,12 @@ __all__ = [
     "AgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationResult",
     "LLMAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationService",
     "InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationError",
+    "REUSED",
+    "REPLACED",
+    "REVALIDATION_FAILED",
+    "REVALIDATION_MISSING",
+    "REVALIDATION_ACTIONS",
+    "AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult",
+    "LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationService",
+    "InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationError",
 ]
