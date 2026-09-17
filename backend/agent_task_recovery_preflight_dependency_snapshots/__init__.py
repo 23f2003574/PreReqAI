@@ -16,6 +16,7 @@ from .models import (
     AgentTaskRecoveryPreflightDependencySnapshot,
     AgentTaskRecoveryPreflightDependencySnapshotDiff,
     AgentTaskRecoveryPreflightDependencySnapshotReconciliation,
+    AgentTaskRecoveryPreflightDependencySnapshotVersion,
 )
 from .reconciliation import LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService
 from .service import (
@@ -26,6 +27,14 @@ from .store import (
     AgentTaskRecoveryPreflightDependencySnapshotStore,
     InMemoryAgentTaskRecoveryPreflightDependencySnapshotStore,
     JsonAgentTaskRecoveryPreflightDependencySnapshotStore,
+)
+from .versioning import (
+    AgentTaskRecoveryPreflightDependencySnapshotVersionCollisionError,
+    AgentTaskRecoveryPreflightDependencySnapshotVersionStore,
+    InMemoryAgentTaskRecoveryPreflightDependencySnapshotVersionStore,
+    InvalidAgentTaskRecoveryPreflightDependencySnapshotVersionError,
+    JsonAgentTaskRecoveryPreflightDependencySnapshotVersionStore,
+    LLMAgentTaskRecoveryPreflightDependencySnapshotVersionService,
 )
 
 __all__ = [
@@ -52,4 +61,11 @@ __all__ = [
     "LLMAgentTaskRecoveryPreflightDependencySnapshotService",
     "LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService",
     "InvalidAgentTaskRecoveryPreflightDependencySnapshotError",
+    "AgentTaskRecoveryPreflightDependencySnapshotVersion",
+    "AgentTaskRecoveryPreflightDependencySnapshotVersionStore",
+    "InMemoryAgentTaskRecoveryPreflightDependencySnapshotVersionStore",
+    "JsonAgentTaskRecoveryPreflightDependencySnapshotVersionStore",
+    "LLMAgentTaskRecoveryPreflightDependencySnapshotVersionService",
+    "InvalidAgentTaskRecoveryPreflightDependencySnapshotVersionError",
+    "AgentTaskRecoveryPreflightDependencySnapshotVersionCollisionError",
 ]

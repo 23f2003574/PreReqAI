@@ -43,6 +43,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         self,
         snapshot_service: LLMAgentTaskRecoveryPreflightDependencySnapshotService = None,
         schedule_dependency_reconciliation_service=None,
+        version_service=None,
     ):
         """
         Args:
@@ -58,11 +59,20 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
                 schedule reconciliation where appropriate". Its own
                 reconcile(task_id, schedule_id) method is called
                 verbatim, never re-derived.
+            version_service: Optional Commit #3
+                LLMAgentTaskRecoveryPreflightDependencySnapshotVersionService.
+                When given, reconcile() looks the compared snapshot_id up
+                via its own list_versions(task_id, preflight_id) and
+                attaches the matching version number to the result (Rule:
+                "Integrate reconciliation so results identify the
+                compared snapshot version") -- None when the snapshot was
+                never versioned, never fabricated.
         """
         self._snapshot_service = (
             snapshot_service if snapshot_service is not None else LLMAgentTaskRecoveryPreflightDependencySnapshotService()
         )
         self._schedule_dependency_reconciliation_service = schedule_dependency_reconciliation_service
+        self._version_service = version_service
 
     def is_current(self, task_id: str, snapshot_id: str) -> bool:
         """Shorthand for reconcile(task_id, snapshot_id).status ==
@@ -88,6 +98,8 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
             # that error message a second way.
             self._snapshot_service.diff(task_id, snapshot_id)
 
+        version = self._resolve_version(task_id, snapshot.preflight_id, snapshot_id)
+
         try:
             diff = self._snapshot_service.diff(task_id, snapshot_id)
         except Exception as error:
@@ -96,7 +108,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
                 status=INDETERMINATE, reliable=False,
                 added=(), removed=(), resolved=(), blocked=(), changed=(),
                 reason=f"dependency graph could not be resolved: {error}",
-                reconciled_at=self._now(),
+                reconciled_at=self._now(), version=version,
             )
 
         return AgentTaskRecoveryPreflightDependencySnapshotReconciliation(
@@ -105,8 +117,16 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
             added=diff.added, removed=diff.removed, resolved=diff.resolved,
             blocked=diff.newly_blocked, changed=diff.state_changed,
             reason=None,
-            reconciled_at=self._now(),
+            reconciled_at=self._now(), version=version,
         )
+
+    def _resolve_version(self, task_id: str, preflight_id: str, snapshot_id: str):
+        if self._version_service is None:
+            return None
+        for entry in self._version_service.list_versions(task_id, preflight_id):
+            if entry.snapshot_id == snapshot_id:
+                return entry.version
+        return None
 
     def reconcile_for_schedule(self, task_id: str, schedule_id: str, snapshot_id: str) -> dict:
         """Combine this class's own reconcile() with an optional,

@@ -218,3 +218,45 @@ class AgentTaskRecoveryPreflightDependencySnapshotReconciliation:
     changed: tuple
     reason: Optional[str]
     reconciled_at: datetime
+    version: Optional[int] = None
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotVersion:
+    """Commit #3's own thin, monotonically-numbered index entry binding
+    one Commit #1 snapshot_id to an exact (task_id, preflight_id, version)
+    -- never a copy of the snapshot's own content (Rule: "Do not invent a
+    generic version-control system"): the real, immutable snapshot data
+    stays entirely in Commit #1's own store; this is only a pointer to it,
+    the same "version record references content, never duplicates it"
+    shape backend.agent_policy_versioning.LLMAgentPolicyVersion already
+    establishes for a comparable case (there the payload -- `rules` -- is
+    embedded directly since Commit #1(-of-that-series)'s own store keeps
+    no history of its own; here Commit #1(-of-this-series) already IS
+    that immutable history, so only a reference is needed).
+
+    version is 1-based and monotonically increasing per (task_id,
+    preflight_id), assigned as `len(existing versions) + 1` -- the exact
+    same numbering convention LLMAgentPolicyVersionService.list_versions()
+    already uses (Rule: "reuse existing repository version/identity
+    conventions").
+    """
+
+    task_id: str
+    preflight_id: str
+    version: int
+    snapshot_id: str
+    created_at: datetime
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["created_at"] = self.created_at.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "AgentTaskRecoveryPreflightDependencySnapshotVersion":
+        payload = dict(data)
+        value = payload.get("created_at")
+        if isinstance(value, str):
+            payload["created_at"] = datetime.fromisoformat(value)
+        return cls(**payload)
