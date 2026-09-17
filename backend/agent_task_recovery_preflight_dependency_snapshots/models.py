@@ -219,6 +219,7 @@ class AgentTaskRecoveryPreflightDependencySnapshotReconciliation:
     reason: Optional[str]
     reconciled_at: datetime
     version: Optional[int] = None
+    integrity: Optional[object] = None
 
 
 @dataclass(frozen=True)
@@ -260,3 +261,69 @@ class AgentTaskRecoveryPreflightDependencySnapshotVersion:
         if isinstance(value, str):
             payload["created_at"] = datetime.fromisoformat(value)
         return cls(**payload)
+
+
+# Commit #4's own integrity verdict vocabulary. VALID: the current
+# canonical content/metadata hash matches the baseline recorded the
+# first time this snapshot_id was ever verified (trust-on-first-use,
+# the same "first observation establishes the trusted value" idea
+# backend.llm.response_cache/backend.llm.tool_idempotency already use
+# their own canonical-hash for, applied here to a durable snapshot
+# instead of a cache key). CORRUPTED: content, metadata, or version
+# binding no longer agrees with that baseline. MISSING: no such
+# snapshot_id is recorded for task_id at all. UNVERIFIABLE: computing
+# the current hash itself failed (fail-closed, mirrors Commit #2's own
+# INDETERMINATE).
+VALID = "valid"
+CORRUPTED = "corrupted"
+MISSING = "missing"
+UNVERIFIABLE = "unverifiable"
+INTEGRITY_STATUSES = frozenset({VALID, CORRUPTED, MISSING, UNVERIFIABLE})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotIntegrityRecord:
+    """The durable, write-once baseline integrity_value recorded the
+    first time Commit #4's verify() ever ran for one exact (task_id,
+    snapshot_id) -- never overwritten afterward (Rule: "Preserve
+    immutable snapshot history"); every later verify() call compares a
+    freshly recomputed value against this same baseline."""
+
+    task_id: str
+    snapshot_id: str
+    integrity_value: str
+    recorded_at: datetime
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["recorded_at"] = self.recorded_at.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "AgentTaskRecoveryPreflightDependencySnapshotIntegrityRecord":
+        payload = dict(data)
+        value = payload.get("recorded_at")
+        if isinstance(value, str):
+            payload["recorded_at"] = datetime.fromisoformat(value)
+        return cls(**payload)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotIntegrityResult:
+    """LLMAgentTaskRecoveryPreflightDependencySnapshotIntegrityService.
+    verify()'s complete, read-only verdict -- bound to the exact task_id,
+    preflight_id, snapshot_id, and (when a version_service is configured)
+    version (Rule: "Bind verification to exact task, preflight, snapshot,
+    and version"). valid is exactly `status == VALID`; reasons collects
+    every distinct issue found (content/metadata hash mismatch, and/or an
+    ambiguous multi-version binding), never only the first."""
+
+    task_id: str
+    snapshot_id: str
+    preflight_id: Optional[str]
+    version: Optional[int]
+    status: str
+    valid: bool
+    integrity_value: Optional[str]
+    reasons: tuple
+    verified_at: datetime

@@ -144,11 +144,23 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotVersionService:
         self,
         snapshot_service: LLMAgentTaskRecoveryPreflightDependencySnapshotService = None,
         store: AgentTaskRecoveryPreflightDependencySnapshotVersionStore = None,
+        integrity_service=None,
     ):
+        """
+        Args:
+            integrity_service: Optional Commit #4
+                LLMAgentTaskRecoveryPreflightDependencySnapshotIntegrityService
+                (duck-typed, only its verify() is called). When given,
+                get_version() refuses to hand back a snapshot whose own
+                integrity verification is not VALID (Rule: "Integrate
+                integrity verification into ... version retrieval where
+                appropriate").
+        """
         self._snapshot_service = (
             snapshot_service if snapshot_service is not None else LLMAgentTaskRecoveryPreflightDependencySnapshotService()
         )
         self._store = store if store is not None else InMemoryAgentTaskRecoveryPreflightDependencySnapshotVersionStore()
+        self._integrity_service = integrity_service
 
     def create_version(
         self, task_id: str, preflight_id: str, snapshot: AgentTaskRecoveryPreflightDependencySnapshot
@@ -209,6 +221,13 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotVersionService:
                         f"version {version} of task_id {task_id!r} / preflight_id {preflight_id!r} "
                         "references a snapshot that no longer exists"
                     )
+                if self._integrity_service is not None:
+                    integrity = self._integrity_service.verify(task_id, entry.snapshot_id)
+                    if not integrity.valid:
+                        raise InvalidAgentTaskRecoveryPreflightDependencySnapshotVersionError(
+                            f"version {version} of task_id {task_id!r} / preflight_id {preflight_id!r} failed "
+                            f"integrity verification ({integrity.status}): {'; '.join(integrity.reasons) or 'no reason given'}"
+                        )
                 return snapshot
 
         raise InvalidAgentTaskRecoveryPreflightDependencySnapshotVersionError(
