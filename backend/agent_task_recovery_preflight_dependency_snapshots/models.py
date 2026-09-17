@@ -420,3 +420,28 @@ class AgentTaskRecoveryPreflightDependencySnapshotTrustResult:
     signature_status: Optional[str]
     blocking_reasons: tuple
     validated_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotTrustHistoryRecord:
+    """Commit #7's own durable, append-only capture of one Commit #6
+    AgentTaskRecoveryPreflightDependencySnapshotTrustResult -- every field
+    is that result's own evidence, preserved verbatim (Rule: "Preserve
+    the exact evidence returned by the trust validator"), never
+    re-derived a second way. history_id/recorded_at are this record's own
+    bookkeeping (the underlying backend.agent_task_events event's own
+    event_id/occurred_at); verified_at is the ORIGINAL trust_result's own
+    validated_at, kept distinct from recorded_at since recording can
+    happen a moment after validation ran."""
+
+    task_id: str
+    preflight_id: Optional[str]
+    snapshot_id: str
+    version: Optional[int]
+    trusted: bool
+    integrity_status: Optional[str]
+    signature_status: Optional[str]
+    blocking_reasons: tuple
+    verified_at: datetime
+    recorded_at: datetime
+    history_id: str

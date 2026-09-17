@@ -58,6 +58,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustService:
         signing_service=None,
         version_service=None,
         require_signature: bool = False,
+        history_service=None,
     ):
         """
         Args:
@@ -71,6 +72,13 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustService:
             require_signature: When True and signing_service is given, a
                 MISSING signature blocks trust; when False (default), a
                 missing signature is merely reported, never blocking.
+            history_service: Optional Commit #7
+                LLMAgentTaskRecoveryPreflightDependencySnapshotTrustHistoryService
+                (duck-typed, only record() is called). When given,
+                validate() records its own already-computed result AFTER
+                computing it -- purely an append, never influencing the
+                result itself (Rule: "without making history persistence
+                alter the trust decision").
         """
         self._snapshot_service = (
             snapshot_service if snapshot_service is not None else LLMAgentTaskRecoveryPreflightDependencySnapshotService()
@@ -82,6 +90,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustService:
         )
         self._signing_service = signing_service
         self._version_service = version_service
+        self._history_service = history_service
         self._require_signature = require_signature
 
     def is_trusted(self, task_id: str, snapshot_id: str) -> bool:
@@ -152,11 +161,14 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustService:
         )
 
     def _result(self, task_id, snapshot_id, preflight_id, version, integrity_status, signature_status, reasons):
-        return AgentTaskRecoveryPreflightDependencySnapshotTrustResult(
+        result = AgentTaskRecoveryPreflightDependencySnapshotTrustResult(
             task_id=task_id, snapshot_id=snapshot_id, preflight_id=preflight_id, version=version,
             trusted=not reasons, integrity_status=integrity_status, signature_status=signature_status,
             blocking_reasons=reasons, validated_at=self._now(),
         )
+        if self._history_service is not None:
+            self._history_service.record(task_id, snapshot_id, result)
+        return result
 
     @staticmethod
     def _now() -> datetime:
