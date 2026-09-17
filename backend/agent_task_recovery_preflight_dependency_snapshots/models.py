@@ -557,3 +557,32 @@ class AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult:
     old_trust: Optional[object]
     new_trust: Optional[object]
     revalidated_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryAuditRecord:
+    """Commit #11's own durable, append-only capture of one Commit #10
+    AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult --
+    every field is that result's own evidence (old_trust/new_trust
+    flattened into their own trusted/integrity_status/signature_status),
+    preserved verbatim, never re-derived. audit_id/recorded_at are this
+    record's own bookkeeping (the underlying backend.agent_task_events
+    event's own event_id/occurred_at); revalidated_at is the ORIGINAL
+    revalidation_result's own timestamp, kept distinct from recorded_at."""
+
+    task_id: str
+    preflight_id: Optional[str]
+    old_snapshot_id: str
+    new_snapshot_id: Optional[str]
+    version: Optional[int]
+    action: str
+    old_trusted: Optional[bool]
+    old_integrity_status: Optional[str]
+    old_signature_status: Optional[str]
+    new_trusted: Optional[bool]
+    new_integrity_status: Optional[str]
+    new_signature_status: Optional[str]
+    reason: Optional[str]
+    revalidated_at: Optional[datetime]
+    recorded_at: datetime
+    audit_id: str

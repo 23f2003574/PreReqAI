@@ -61,6 +61,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationService:
         version_service=None,
         integrity_service=None,
         signing_service=None,
+        audit_service=None,
     ):
         """
         Args:
@@ -73,6 +74,13 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationService:
                 new snapshot's own trusted baseline.
             signing_service: Optional Commit #5 signing service (duck-
                 typed, only sign() is called).
+            audit_service: Optional Commit #11
+                LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryAuditService
+                (duck-typed, only record() is called). When given,
+                revalidate() records its own already-computed result
+                AFTER computing it -- purely an append, never influencing
+                the result itself (Rule: "Integrate with #10 so every
+                trust revalidation has traceable evidence").
         """
         self._snapshot_service = (
             snapshot_service if snapshot_service is not None else LLMAgentTaskRecoveryPreflightDependencySnapshotService()
@@ -83,6 +91,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationService:
         self._version_service = version_service
         self._integrity_service = integrity_service
         self._signing_service = signing_service
+        self._audit_service = audit_service
 
     def revalidate(
         self, task_id: str, snapshot_id: str
@@ -99,20 +108,15 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationService:
 
         old_snapshot = self._snapshot_service.get(task_id, snapshot_id)
         if old_snapshot is None:
-            return AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult(
-                task_id=task_id, preflight_id=None, old_snapshot_id=snapshot_id, new_snapshot_id=None,
-                action=REVALIDATION_MISSING, old_trust=None, new_trust=None, revalidated_at=now,
-            )
+            return self._result(task_id, None, snapshot_id, None, REVALIDATION_MISSING, None, None, now)
 
         preflight_id = old_snapshot.preflight_id
         old_trust = self._trust_service.validate(task_id, snapshot_id)
 
         reuse_snapshot_id, reuse_trust = self._already_trusted_current(task_id, snapshot_id, preflight_id, old_trust)
         if reuse_snapshot_id is not None:
-            return AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult(
-                task_id=task_id, preflight_id=preflight_id, old_snapshot_id=snapshot_id,
-                new_snapshot_id=reuse_snapshot_id, action=REUSED,
-                old_trust=old_trust, new_trust=reuse_trust, revalidated_at=now,
+            return self._result(
+                task_id, preflight_id, snapshot_id, reuse_snapshot_id, REUSED, old_trust, reuse_trust, now
             )
 
         new_snapshot = self._snapshot_service.create(task_id, preflight_id)
@@ -126,11 +130,19 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationService:
         new_trust = self._trust_service.validate(task_id, new_snapshot.snapshot_id)
         action = REPLACED if new_trust.trusted else REVALIDATION_FAILED
 
-        return AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult(
-            task_id=task_id, preflight_id=preflight_id, old_snapshot_id=snapshot_id,
-            new_snapshot_id=new_snapshot.snapshot_id, action=action,
-            old_trust=old_trust, new_trust=new_trust, revalidated_at=now,
+        return self._result(
+            task_id, preflight_id, snapshot_id, new_snapshot.snapshot_id, action, old_trust, new_trust, now
         )
+
+    def _result(self, task_id, preflight_id, old_snapshot_id, new_snapshot_id, action, old_trust, new_trust, now):
+        result = AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult(
+            task_id=task_id, preflight_id=preflight_id, old_snapshot_id=old_snapshot_id,
+            new_snapshot_id=new_snapshot_id, action=action, old_trust=old_trust, new_trust=new_trust,
+            revalidated_at=now,
+        )
+        if self._audit_service is not None:
+            self._audit_service.record(task_id, old_snapshot_id, result)
+        return result
 
     def _already_trusted_current(self, task_id: str, snapshot_id: str, preflight_id: str, old_trust) -> tuple:
         """(snapshot_id, trust_result) for a snapshot that is ALREADY

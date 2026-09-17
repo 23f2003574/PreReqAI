@@ -35,6 +35,7 @@ from .models import (
     AgentTaskRecoveryPreflightDependencySnapshotTrustChangeResult,
     AgentTaskRecoveryPreflightDependencySnapshotTrustHistoryRecord,
     AgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationResult,
+    AgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryAuditRecord,
     AgentTaskRecoveryPreflightDependencySnapshotTrustResult,
     AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult,
     AgentTaskRecoveryPreflightDependencySnapshotVersion,
@@ -79,6 +80,11 @@ from .trust_history import (
 from .trust_invalidation import (
     InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationError,
     LLMAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationService,
+)
+from .trust_recovery_audit import (
+    TRUST_RECOVERY_AUDIT_EVENT_TYPE,
+    InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryAuditError,
+    LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryAuditService,
 )
 from .trust_revalidation import (
     InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationError,
@@ -166,4 +172,8 @@ __all__ = [
     "AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult",
     "LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationService",
     "InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationError",
+    "TRUST_RECOVERY_AUDIT_EVENT_TYPE",
+    "AgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryAuditRecord",
+    "LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryAuditService",
+    "InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryAuditError",
 ]
