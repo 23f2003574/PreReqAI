@@ -153,3 +153,68 @@ class AgentTaskRecoveryPreflightDependencySnapshotDiff:
     state_changed: tuple
     changed: bool
     diffed_at: datetime
+
+
+# Commit #2's own overall verdict vocabulary -- a status ONE LEVEL UP from
+# AgentTaskRecoveryPreflightDependencySnapshotDiff's own per-dependency
+# buckets (which this commit reuses verbatim, never re-derives): UNCHANGED
+# is exactly `not diff.changed`; CHANGED is exactly `diff.changed`;
+# INDETERMINATE is a THIRD value neither of those two booleans can express
+# on its own -- the live dependency graph could not be resolved at all
+# this call (Rule: "Clearly distinguish unchanged, changed, and
+# indeterminate states"), so nothing about "changed" can be honestly
+# claimed either way.
+UNCHANGED = "unchanged"
+CHANGED = "changed"
+INDETERMINATE = "indeterminate"
+RECONCILIATION_STATUSES = frozenset({UNCHANGED, CHANGED, INDETERMINATE})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotReconciliation:
+    """LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService.
+    reconcile()'s complete, read-only verdict on whether one Commit #1
+    snapshot still matches task_id's CURRENT dependency graph -- never a
+    second dependency comparison engine (Rule: "Reuse #1's snapshot
+    service ... do not create another dependency resolver"): every
+    per-dependency fact here (added/removed/resolved/blocked/changed) is
+    Commit #1's own AgentTaskRecoveryPreflightDependencySnapshotDiff,
+    carried through unchanged -- this class only adds the single overall
+    `status` verdict and fail-closed handling on top.
+
+    status/reliable are the two views of the same fact: reliable is
+    exactly `status != INDETERMINATE`. blocked is Commit #1's own
+    `newly_blocked` (Rule's own wording, "blocked", used here verbatim);
+    changed is Commit #1's own `state_changed`. added/removed/resolved
+    are Commit #1's own fields of the same name, untouched.
+
+    reason is populated only when status is INDETERMINATE (Rule: "Never
+    silently treat missing evidence as fresh/unchanged" -- the same
+    fail-closed discipline backend.agent_task_recovery_schedule_dependencies'
+    own reconciliation.py already establishes for a comparable case,
+    reused here rather than re-derived): every other field is then empty/
+    False, never a fabricated partial comparison.
+
+    Deterministic and idempotent by construction (Rule): unlike backend.
+    agent_task_recovery_schedule_dependencies' own reconciliation service
+    (which persists an append-only observation history and diffs against
+    the PREVIOUS stored observation -- a fire-once signal, non-idempotent
+    across two reads taken moments apart), this class writes nothing at
+    all. Every call is a pure function of (Commit #1's already-persisted,
+    immutable snapshot, one fresh live dependency resolution) -- calling
+    reconcile() twice in a row with nothing having changed in between
+    always returns the exact same result, with no history to drift.
+    """
+
+    task_id: str
+    snapshot_id: str
+    preflight_id: str
+    status: str
+    reliable: bool
+    added: tuple
+    removed: tuple
+    resolved: tuple
+    blocked: tuple
+    changed: tuple
+    reason: Optional[str]
+    reconciled_at: datetime
