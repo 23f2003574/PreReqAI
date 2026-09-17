@@ -34,6 +34,7 @@ from .models import (
     AgentTaskRecoveryPreflightDependencySnapshotSignatureVerification,
     AgentTaskRecoveryPreflightDependencySnapshotTrustChangeResult,
     AgentTaskRecoveryPreflightDependencySnapshotTrustHistoryRecord,
+    AgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationResult,
     AgentTaskRecoveryPreflightDependencySnapshotTrustResult,
     AgentTaskRecoveryPreflightDependencySnapshotVersion,
     INVALID,
@@ -68,6 +69,10 @@ from .trust_history import (
     TRUST_HISTORY_EVENT_TYPE,
     InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustHistoryError,
     LLMAgentTaskRecoveryPreflightDependencySnapshotTrustHistoryService,
+)
+from .trust_invalidation import (
+    InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationError,
+    LLMAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationService,
 )
 from .versioning import (
     AgentTaskRecoveryPreflightDependencySnapshotVersionCollisionError,
@@ -140,4 +145,7 @@ __all__ = [
     "AgentTaskRecoveryPreflightDependencySnapshotTrustChangeResult",
     "LLMAgentTaskRecoveryPreflightDependencySnapshotTrustChangeService",
     "InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustChangeError",
+    "AgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationResult",
+    "LLMAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationService",
+    "InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationError",
 ]

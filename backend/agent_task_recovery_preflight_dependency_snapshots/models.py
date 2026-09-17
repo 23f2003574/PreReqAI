@@ -478,3 +478,44 @@ class AgentTaskRecoveryPreflightDependencySnapshotTrustChangeResult:
     evidence: tuple
     revalidation_required: bool
     checked_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationResult:
+    """Commit #9's own report of whether task_id's exact snapshot_id
+    warranted invalidating its referencing preflight -- never a second
+    invalidation framework (Rule: "Do not create another invalidation
+    framework"): invalidated, when True via invalidate(), is always the
+    direct result of backend.agent_task_recovery_guardrails' own
+    LLMAgentTaskRecoveryPreflightInvalidationService.invalidate(), never
+    a parallel state machine this class maintains itself.
+
+    warranted is exactly `not current trust` (Commit #8's own
+    current_trust.trusted, fresh every call) -- Rule: "Invalidate only
+    when a real trust failure/change is detected". invalidated is False
+    whenever warranted is False (check()/invalidate() both refuse to
+    invalidate a still-trusted snapshot); True whenever the referenced
+    preflight is already invalid for any reason (freshly invalidated
+    this call, already invalidated on a prior call, or already obsolete/
+    superseded -- Rule: "Already-invalidated/obsolete snapshots must
+    remain historical and non-actionable").
+
+    affected_preflight_ids/affected_schedule_ids name every downstream
+    record this snapshot's loss of trust touches (Rule: "Identify
+    affected preflights/schedules referencing that snapshot") --
+    affected_schedule_ids is only ever populated when a scheduling_service
+    was configured, () otherwise, never fabricated. evidence is Commit
+    #8's own change.evidence (or, lacking any dimension diff, the fresh
+    trust result's own blocking_reasons) -- never re-derived.
+    """
+
+    task_id: str
+    snapshot_id: str
+    preflight_id: Optional[str]
+    warranted: bool
+    invalidated: bool
+    reason: Optional[str]
+    affected_preflight_ids: tuple
+    affected_schedule_ids: tuple
+    evidence: tuple
+    checked_at: datetime
