@@ -164,7 +164,24 @@ class LLMAgentTaskRecoveryPreflightSchedulingService:
         authorization_service: LLMAgentTaskRecoveryPreflightAuthorizationService = None,
         validation_service: LLMAgentTaskRecoveryPreflightAuthorizationValidationService = None,
         store: AgentTaskRecoveryScheduleStore = None,
+        dependency_snapshot_service=None,
     ):
+        """
+        Args:
+            dependency_snapshot_service: Optional, duck-typed (never
+                imported here, so this package never depends on
+                backend.agent_task_recovery_preflight_dependency_snapshots
+                -- the same additive, unimported hook shape backend.
+                agent_task_recovery_schedule_dependencies' own commit #1
+                already established for validation.py's own
+                dependency_service). When given, schedule() calls its
+                own create(task_id, preflight_id) once a NEW schedule
+                record is actually created, so the dependency graph
+                relevant to this preflight is captured at the exact
+                moment it is scheduled. Best-effort only: any exception
+                it raises is swallowed, never allowed to break
+                scheduling itself.
+        """
         self._approval_service = (
             approval_service if approval_service is not None else LLMAgentTaskRecoveryPreflightApprovalService()
         )
@@ -179,6 +196,7 @@ class LLMAgentTaskRecoveryPreflightSchedulingService:
             else LLMAgentTaskRecoveryPreflightAuthorizationValidationService()
         )
         self._store = store if store is not None else InMemoryAgentTaskRecoveryScheduleStore()
+        self._dependency_snapshot_service = dependency_snapshot_service
 
     def schedule(
         self, task_id: str, preflight_id: str, execute_at: datetime = None
@@ -222,7 +240,17 @@ class LLMAgentTaskRecoveryPreflightSchedulingService:
             execute_at=execute_at, status=SCHEDULED, created_at=datetime.now(timezone.utc),
             cancelled_at=None, cancellation_reason=None,
         )
-        return self._store.save(record)
+        saved = self._store.save(record)
+        self._maybe_snapshot_dependencies(task_id, preflight_id)
+        return saved
+
+    def _maybe_snapshot_dependencies(self, task_id: str, preflight_id: str) -> None:
+        if self._dependency_snapshot_service is None:
+            return
+        try:
+            self._dependency_snapshot_service.create(task_id, preflight_id)
+        except Exception:
+            pass
 
     def cancel(self, task_id: str, schedule_id: str, reason: str = None) -> AgentTaskRecoveryPreflightSchedule:
         """Cancel task_id's exact schedule_id. Idempotent: an already-
