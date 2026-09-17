@@ -586,3 +586,36 @@ class AgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryAuditRecord:
     revalidated_at: Optional[datetime]
     recorded_at: datetime
     audit_id: str
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryReconciliationResult:
+    """Commit #12's own report of propagating a #10-produced replacement
+    snapshot into its consumers -- never a second snapshot/trust system
+    (Rule: "Do not create another snapshot/trust system"): every write
+    here is delegated to an existing optional collaborator (guardrails'
+    own preflight revalidation, schedule_dependencies' own schedule
+    reconciliation); this class only decides WHICH consumers are safe to
+    touch.
+
+    reconciled is exactly `not reasons` blocking anything (True even when
+    there was simply nothing to do). updated_references names every
+    preflight_id/schedule_id this call actually caused a downstream
+    revalidation/reconciliation call for; skipped_conflicts names every
+    one deliberately left untouched (a newer replacement already exists,
+    or the given new_snapshot_id itself was not trusted) -- Rule: "Detect
+    conflicting/current replacements rather than blindly overwriting
+    references".
+    """
+
+    task_id: str
+    preflight_id: Optional[str]
+    old_snapshot_id: str
+    new_snapshot_id: str
+    reconciled: bool
+    affected_preflight_ids: tuple
+    affected_schedule_ids: tuple
+    updated_references: tuple
+    skipped_conflicts: tuple
+    reasons: tuple
+    reconciled_at: datetime
