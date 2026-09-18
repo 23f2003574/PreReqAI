@@ -37,6 +37,12 @@ from .impact_cache_batch_reconciliation import (
     InvalidAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationError,
     LLMAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationService,
 )
+from .impact_cache_export import (
+    EXPORT_STATUSES,
+    InvalidAgentTaskRecoveryPreflightDependencyImpactCacheExportError,
+    LLMAgentTaskRecoveryPreflightDependencyImpactCacheExportService,
+    UnsupportedFormatError as ImpactCacheExportUnsupportedFormatError,
+)
 from .impact_cache_batch_eviction import (
     BATCH_EVICTION_STATUSES,
     EVICTED as BATCH_EVICTED,
@@ -145,6 +151,8 @@ from .models import (
     AgentTaskRecoveryPreflightDependencyImpactCacheRepairAction,
     AgentTaskRecoveryPreflightDependencyImpactCacheRepairResult,
     AgentTaskRecoveryPreflightDependencyImpactCacheBatchCandidate,
+    AgentTaskRecoveryPreflightDependencyImpactCacheExport,
+    AgentTaskRecoveryPreflightDependencyImpactCacheExportEntry,
     AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionItem,
     AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionPlan,
     AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionResult,
@@ -456,4 +464,10 @@ __all__ = [
     "BATCH_EVICTED",
     "BATCH_EVICTION_SKIPPED",
     "BATCH_EVICTION_FAILED",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheExport",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheExportEntry",
+    "LLMAgentTaskRecoveryPreflightDependencyImpactCacheExportService",
+    "InvalidAgentTaskRecoveryPreflightDependencyImpactCacheExportError",
+    "ImpactCacheExportUnsupportedFormatError",
+    "EXPORT_STATUSES",
 ]

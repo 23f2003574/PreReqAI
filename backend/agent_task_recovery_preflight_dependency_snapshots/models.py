@@ -1117,3 +1117,68 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionResult:
     failed_count: int
     evicted_at: datetime
 
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheExportEntry:
+    """One preflight's exported cache state -- persisted data only, every
+    timestamp an ISO-8601 string (this repository's to_dict() convention).
+
+    `status` is one of cached (a consistent, trusted entry), missing (no
+    entry although a snapshot exists to compute one from), stale (bound to
+    a snapshot/version that is no longer current), invalid (corrupted or
+    mismatched) or unavailable (no snapshot, or trust in it cannot be
+    established). snapshot_id/version are the ENTRY's exact identity;
+    current_snapshot_id/current_version the source's. `consistency` lists
+    every violation found; `impact` is the cached result (or
+    {"readable": False} when it cannot be read); the last_*_at fields come
+    from the recorded event history and are None when none is recorded or
+    no history is wired."""
+
+    preflight_id: str
+    status: str
+    snapshot_id: Optional[str]
+    version: Optional[int]
+    current_snapshot_id: Optional[str]
+    current_version: Optional[int]
+    cached_at: Optional[str]
+    reconciled_at: Optional[str]
+    trust_status: str
+    consistency: tuple
+    impact: Optional[dict]
+    preflight_invalidated: Optional[bool]
+    preflight_invalidation_reason: Optional[str]
+    last_refreshed_at: Optional[str]
+    last_invalidated_at: Optional[str]
+    last_evicted_at: Optional[str]
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["consistency"] = [dict(item) for item in self.consistency]
+        return data
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheExport:
+    """export()'s complete result: one entry per preflight, ordered by
+    preflight_id. `redaction_applied` is True when anything in the export
+    matched the repository's secret patterns and was redacted."""
+
+    task_id: str
+    requested_preflight_ids: Optional[tuple]
+    entries: tuple
+    total: int
+    status_counts: dict
+    redaction_applied: bool
+    generated_at: datetime
+
+    def to_dict(self) -> dict:
+        return {
+            "task_id": self.task_id,
+            "requested_preflight_ids": list(self.requested_preflight_ids) if self.requested_preflight_ids is not None else None,
+            "entries": [entry.to_dict() for entry in self.entries],
+            "total": self.total,
+            "status_counts": dict(self.status_counts),
+            "redaction_applied": self.redaction_applied,
+            "generated_at": self.generated_at.isoformat(),
+        }
+
