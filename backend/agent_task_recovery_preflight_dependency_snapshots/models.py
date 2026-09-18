@@ -906,3 +906,41 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheRepairResult:
     is_consistent: bool
     repaired_at: datetime
 
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheRefreshResult:
+    """refresh()'s report for one preflight. `status` is one of REFRESHED
+    (a fresh result was stored), CURRENT (already consistent; nothing
+    done), NOT_TRUSTED (trust in the latest snapshot cannot be
+    established; nothing changed), NEWER_ENTRY (a newer entry was kept)
+    or NOT_REFRESHED (nothing to refresh from, or no result could be
+    stored). `categories` are the consistency violations that prompted a
+    refresh; `result` is the reconciliation now cached, only when
+    REFRESHED."""
+
+    task_id: str
+    preflight_id: str
+    status: str
+    snapshot_id: Optional[str]
+    version: Optional[int]
+    categories: tuple
+    reasons: tuple
+    result: Optional[object]
+    refreshed_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheRefreshSummary:
+    """refresh_stale()'s report: one refresh result per INCONSISTENT
+    preflight (consistent ones are left alone and only counted)."""
+
+    task_id: str
+    results: tuple
+    checked_count: int
+    consistent_count: int
+    refreshed_count: int
+    not_trusted_count: int
+    newer_entry_count: int
+    not_refreshed_count: int
+    refreshed_at: datetime
+

@@ -21,6 +21,17 @@ from .impact_cache_consistency import (
     InvalidAgentTaskRecoveryPreflightDependencyImpactCacheConsistencyError,
     LLMAgentTaskRecoveryPreflightDependencyImpactCacheConsistencyService,
 )
+from .impact_cache_refresh import (
+    CURRENT,
+    IMPACT_CACHE_REFRESHED_EVENT_TYPE,
+    NEWER_ENTRY,
+    NOT_REFRESHED,
+    NOT_TRUSTED,
+    REFRESH_STATUSES,
+    REFRESHED,
+    InvalidAgentTaskRecoveryPreflightDependencyImpactCacheRefreshError,
+    LLMAgentTaskRecoveryPreflightDependencyImpactCacheRefreshService,
+)
 from .impact_cache_eviction import (
     EXPIRED_UNPROVABLE,
     IMPACT_CACHE_EVICTED_EVENT_TYPE,
@@ -93,6 +104,8 @@ from .models import (
     AgentTaskRecoveryPreflightDependencyImpactCacheConsistencyViolation,
     AgentTaskRecoveryPreflightDependencyImpactCacheRepairAction,
     AgentTaskRecoveryPreflightDependencyImpactCacheRepairResult,
+    AgentTaskRecoveryPreflightDependencyImpactCacheRefreshResult,
+    AgentTaskRecoveryPreflightDependencyImpactCacheRefreshSummary,
     AgentTaskRecoveryPreflightDependencyImpactCacheEvictionCandidate,
     AgentTaskRecoveryPreflightDependencyImpactCacheEvictionPlan,
     AgentTaskRecoveryPreflightDependencyImpactCacheEvictionProtection,
@@ -338,4 +351,15 @@ __all__ = [
     "REMOVED",
     "KEPT_NEWER",
     "UNREPAIRABLE",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheRefreshResult",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheRefreshSummary",
+    "LLMAgentTaskRecoveryPreflightDependencyImpactCacheRefreshService",
+    "InvalidAgentTaskRecoveryPreflightDependencyImpactCacheRefreshError",
+    "IMPACT_CACHE_REFRESHED_EVENT_TYPE",
+    "REFRESH_STATUSES",
+    "REFRESHED",
+    "CURRENT",
+    "NOT_TRUSTED",
+    "NEWER_ENTRY",
+    "NOT_REFRESHED",
 ]

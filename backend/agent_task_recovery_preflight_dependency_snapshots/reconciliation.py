@@ -52,6 +52,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         impact_cache_invalidation_service=None,
         impact_cache_metrics_service=None,
         impact_cache_consistency_service=None,
+        impact_cache_refresh_service=None,
     ):
         """
         Args:
@@ -111,6 +112,12 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         # enforced trust, so no live dependency read or second validation is added). A cached
         # result that fails it is not used; any error also means not used.
         self._impact_cache_consistency_service = impact_cache_consistency_service
+        # Optional #7 refresh service (duck-typed, only refresh() is called): when a
+        # cached entry FAILS the consistency check, it is refreshed in place and the
+        # refreshed result is returned, so the bad entry is replaced by the very
+        # analysis this call needed anyway. Any error just falls through to the
+        # ordinary fresh analysis below.
+        self._impact_cache_refresh_service = impact_cache_refresh_service
 
     def is_current(self, task_id: str, snapshot_id: str) -> bool:
         """Shorthand for reconcile(task_id, snapshot_id).status ==
@@ -181,6 +188,9 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
                         task_id, snapshot.preflight_id, deep=False, verify_trust=False
                     ).is_consistent:
                         cached = None
+                        refreshed = self._refresh_inconsistent(task_id, snapshot)
+                        if refreshed is not None:
+                            return refreshed
             except Exception:
                 cached = None
             if cached is not None and cached.snapshot_id == snapshot_id:
@@ -217,6 +227,20 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
             except Exception:
                 pass  # caching is best-effort; the fresh result is still correct
         return result
+
+    def _refresh_inconsistent(self, task_id: str, snapshot):
+        """The refreshed result for snapshot, or None to fall back to the
+        ordinary fresh analysis (no refresh service, refresh failed, or it
+        rebuilt a different snapshot's entry)."""
+        if self._impact_cache_refresh_service is None:
+            return None
+        try:
+            outcome = self._impact_cache_refresh_service.refresh(task_id, snapshot.preflight_id)
+        except Exception:
+            return None
+        if outcome.status == "refreshed" and outcome.result is not None and outcome.result.snapshot_id == snapshot.snapshot_id:
+            return outcome.result
+        return None
 
     def _resolve_version(self, task_id: str, preflight_id: str, snapshot_id: str):
         if self._version_service is None:
