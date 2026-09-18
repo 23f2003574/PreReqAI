@@ -61,6 +61,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationService:
         preflight_store: LLMAgentTaskRecoveryPreflightStore = None,
         preflight_invalidation_service: LLMAgentTaskRecoveryPreflightInvalidationService = None,
         scheduling_service=None,
+        impact_cache_invalidation_service=None,
     ):
         """
         Args:
@@ -68,6 +69,12 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationService:
                 LLMAgentTaskRecoveryPreflightSchedulingService (duck-
                 typed, only list() is called) -- enables
                 affected_schedule_ids; () without it, never fabricated.
+            impact_cache_invalidation_service: Optional
+                LLMAgentTaskRecoveryPreflightDependencyImpactCacheInvalidationService
+                (duck-typed, only invalidate_for_preflight() is called).
+                When given, a genuinely performed invalidation also
+                removes that preflight's cached dependency impact, so a
+                preflight that lost trust can never be served from cache.
         """
         self._snapshot_service = (
             snapshot_service if snapshot_service is not None else LLMAgentTaskRecoveryPreflightDependencySnapshotService()
@@ -84,6 +91,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationService:
             else LLMAgentTaskRecoveryPreflightInvalidationService(preflight_store=self._preflight_store)
         )
         self._scheduling_service = scheduling_service
+        self._impact_cache_invalidation_service = impact_cache_invalidation_service
 
     def check(self, task_id: str, snapshot_id: str) -> AgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationResult:
         """Read-only dry run: would task_id's exact snapshot_id warrant
@@ -173,6 +181,12 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationService:
         else:
             invalidated = True  # no longer the live preflight at all -- already non-actionable
             recorded_reason = already.reason if already is not None else final_reason
+
+        if self._impact_cache_invalidation_service is not None and snapshot.preflight_id:
+            try:
+                self._impact_cache_invalidation_service.invalidate_for_preflight(task_id, snapshot.preflight_id)
+            except Exception:
+                pass  # the cache also re-checks trust on every get(); this only removes the entry early
 
         return AgentTaskRecoveryPreflightDependencySnapshotTrustInvalidationResult(
             task_id=task_id, snapshot_id=snapshot_id, preflight_id=snapshot.preflight_id,

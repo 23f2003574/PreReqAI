@@ -686,3 +686,37 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheInvalidation:
     invalidated: bool
     reason: Optional[str]
     invalidated_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheInvalidationOutcome:
+    """One cached entry an invalidation pass judged affected, with the
+    exact identity it was bound to and every reason it was judged stale.
+    `invalidated` is True only when THIS pass actually removed the entry
+    (False if it was already gone by then)."""
+
+    preflight_id: str
+    snapshot_id: str
+    version: Optional[int]
+    invalidated: bool
+    reasons: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheInvalidationResult:
+    """The complete report of one invalidation pass over task_id's cached
+    impact entries. `trigger` is which operation ran (dependency/
+    preflight/snapshot/reconcile) and `subject_id` the changed entity it
+    was given (None for reconcile). `affected` holds only entries judged
+    stale; `retained_preflight_ids` names every entry left intact, so an
+    unrelated change is visibly a no-op. A repeated pass over unchanged
+    state reports no affected entries and changes nothing."""
+
+    task_id: str
+    trigger: str
+    subject_id: Optional[str]
+    affected: tuple
+    retained_preflight_ids: tuple
+    invalidated_count: int
+    checked_at: datetime
+

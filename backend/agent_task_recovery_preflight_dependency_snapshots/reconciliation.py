@@ -49,6 +49,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         trust_service=None,
         trust_change_service=None,
         impact_cache_service=None,
+        impact_cache_invalidation_service=None,
     ):
         """
         Args:
@@ -93,6 +94,12 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         # the trust gate above, so a cache hit never bypasses it; any
         # cache failure falls back to the fresh diff below.
         self._impact_cache_service = impact_cache_service
+        # Optional LLMAgentTaskRecoveryPreflightDependencyImpactCacheInvalidationService
+        # (duck-typed, only reconcile() is called), run immediately before
+        # every cache lookup so a change signalled since the entry was
+        # computed is removed first; if it fails, the cache is not
+        # consulted at all (fail closed to a fresh diff).
+        self._impact_cache_invalidation_service = impact_cache_invalidation_service
 
     def is_current(self, task_id: str, snapshot_id: str) -> bool:
         """Shorthand for reconcile(task_id, snapshot_id).status ==
@@ -148,6 +155,8 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
 
         if self._impact_cache_service is not None:
             try:
+                if self._impact_cache_invalidation_service is not None:
+                    self._impact_cache_invalidation_service.reconcile(task_id)
                 cached = self._impact_cache_service.get(task_id, snapshot.preflight_id)
             except Exception:
                 cached = None

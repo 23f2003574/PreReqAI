@@ -38,6 +38,10 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheStore(ABC):
     def delete(self, task_id: str, preflight_id: str) -> bool:
         ...
 
+    @abstractmethod
+    def list_for_task(self, task_id: str) -> list:
+        ...
+
 
 class InMemoryAgentTaskRecoveryPreflightDependencyImpactCacheStore(AgentTaskRecoveryPreflightDependencyImpactCacheStore):
     def __init__(self):
@@ -55,6 +59,10 @@ class InMemoryAgentTaskRecoveryPreflightDependencyImpactCacheStore(AgentTaskReco
 
     def delete(self, task_id: str, preflight_id: str) -> bool:
         return self._entries.pop((task_id, preflight_id), None) is not None
+
+    def list_for_task(self, task_id: str) -> list:
+        matching = [entry for (entry_task_id, _), entry in self._entries.items() if entry_task_id == task_id]
+        return [deepcopy(entry) for entry in sorted(matching, key=lambda item: (item.cached_at, item.preflight_id))]
 
 
 class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
@@ -154,6 +162,25 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
         if not self._is_trusted(task_id, entry.snapshot_id):
             return None
         return entry.result
+
+    def list_entries(self, task_id: str) -> list:
+        """Every entry currently cached for task_id, oldest first -- a pure
+        read that applies no staleness/trust check (that is get()'s job),
+        for the invalidation service to decide which entries a change
+        affects.
+
+        Raises:
+            InvalidAgentTaskRecoveryPreflightDependencyImpactCacheError: If
+                task_id is not a non-empty string
+        """
+        self._require_text(task_id, "task_id")
+        return self._store.list_for_task(task_id)
+
+    def is_current(self, entry: AgentTaskRecoveryPreflightDependencyImpactCacheEntry) -> bool:
+        """Whether entry's (snapshot_id, version) is still its preflight's
+        current identity -- the same check get() applies, exposed so the
+        invalidation service never re-derives version identity itself."""
+        return self._current_identity(entry.task_id, entry.preflight_id) == (entry.snapshot_id, entry.version)
 
     def put(
         self, task_id: str, preflight_id: str, impact_result: AgentTaskRecoveryPreflightDependencySnapshotReconciliation
