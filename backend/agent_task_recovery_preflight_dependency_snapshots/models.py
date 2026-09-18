@@ -720,3 +720,41 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheInvalidationResult:
     invalidated_count: int
     checked_at: datetime
 
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheWarmResult:
+    """warm()'s report for one preflight. `status` is one of WARMED (a
+    fresh impact result was stored), ALREADY_CURRENT (a valid entry was
+    kept, or a newer one won), SKIPPED (the preflight is not eligible --
+    `reasons` says why, and nothing was analysed or written) or NOT_CACHED
+    (analysis ran but its result could not be cached). `replaced` is True
+    only when a WARMED result took the place of an existing, stale entry.
+    `impact_status` is the stored reconciliation's own status
+    (unchanged/changed/indeterminate) when analysis ran."""
+
+    task_id: str
+    preflight_id: str
+    status: str
+    snapshot_id: Optional[str]
+    version: Optional[int]
+    replaced: bool
+    impact_status: Optional[str]
+    reasons: tuple
+    warmed_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheWarmSummary:
+    """warm_active()'s report: one warm result per processed preflight,
+    newest first, plus the preflights excluded outright (explicitly
+    invalidated, so never processed at all)."""
+
+    task_id: str
+    results: tuple
+    warmed_count: int
+    already_current_count: int
+    skipped_count: int
+    not_cached_count: int
+    excluded_preflight_ids: tuple
+    warmed_at: datetime
+

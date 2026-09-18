@@ -4,6 +4,15 @@ from .impact_cache import (
     InvalidAgentTaskRecoveryPreflightDependencyImpactCacheError,
     LLMAgentTaskRecoveryPreflightDependencyImpactCacheService,
 )
+from .impact_cache_warming import (
+    ALREADY_CURRENT,
+    NOT_CACHED,
+    SKIPPED,
+    WARM_STATUSES,
+    WARMED,
+    InvalidAgentTaskRecoveryPreflightDependencyImpactCacheWarmingError,
+    LLMAgentTaskRecoveryPreflightDependencyImpactCacheWarmingService,
+)
 from .impact_cache_invalidation import (
     IMPACT_CACHE_INVALIDATED_EVENT_TYPE,
     TRIGGER_DEPENDENCY,
@@ -44,6 +53,8 @@ from .models import (
     AgentTaskRecoveryPreflightDependencyImpactCacheInvalidation,
     AgentTaskRecoveryPreflightDependencyImpactCacheInvalidationOutcome,
     AgentTaskRecoveryPreflightDependencyImpactCacheInvalidationResult,
+    AgentTaskRecoveryPreflightDependencyImpactCacheWarmResult,
+    AgentTaskRecoveryPreflightDependencyImpactCacheWarmSummary,
     AgentTaskRecoveryPreflightDependencySnapshot,
     AgentTaskRecoveryPreflightDependencySnapshotDiff,
     AgentTaskRecoveryPreflightDependencySnapshotIntegrityRecord,
@@ -228,4 +239,13 @@ __all__ = [
     "TRIGGER_PREFLIGHT",
     "TRIGGER_SNAPSHOT",
     "TRIGGER_RECONCILE",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheWarmResult",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheWarmSummary",
+    "LLMAgentTaskRecoveryPreflightDependencyImpactCacheWarmingService",
+    "InvalidAgentTaskRecoveryPreflightDependencyImpactCacheWarmingError",
+    "WARMED",
+    "ALREADY_CURRENT",
+    "SKIPPED",
+    "NOT_CACHED",
+    "WARM_STATUSES",
 ]

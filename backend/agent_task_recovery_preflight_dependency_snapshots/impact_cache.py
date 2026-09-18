@@ -190,7 +190,9 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
         unreliable, is not for the CURRENT snapshot/version, or (with a
         version service) carries no version. Idempotent: re-putting an
         identical result (ignoring reconciled_at) returns the original
-        entry unchanged.
+        entry unchanged. An existing entry for the same snapshot/version
+        computed LATER than impact_result is likewise returned unchanged:
+        older evidence never replaces newer.
 
         Raises:
             InvalidAgentTaskRecoveryPreflightDependencyImpactCacheError: If
@@ -215,6 +217,13 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
             return None
 
         existing = self._store.get(task_id, preflight_id)
+        if (
+            existing is not None
+            and existing.snapshot_id == impact_result.snapshot_id
+            and existing.version == impact_result.version
+            and existing.result.reconciled_at > impact_result.reconciled_at
+        ):
+            return existing  # never overwrite newer evidence for the same snapshot with older
         if (
             existing is not None
             and existing.snapshot_id == impact_result.snapshot_id
