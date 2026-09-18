@@ -944,3 +944,34 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheRefreshSummary:
     not_refreshed_count: int
     refreshed_at: datetime
 
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCachePrecomputeOutcome:
+    """One preflight's precompute outcome: `status` is SKIPPED (not
+    eligible, or already current/consistent, or a newer entry kept),
+    REFRESHED (its entry was rebuilt) or FAILED (the rebuild could not
+    complete). `refresh_status` is the refresh service's own verdict when
+    it ran, so nothing it said is lost; `reasons` explains the status."""
+
+    preflight_id: str
+    status: str
+    snapshot_id: Optional[str]
+    version: Optional[int]
+    refresh_status: Optional[str]
+    reasons: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCachePrecomputeResult:
+    """precompute()'s report: one outcome per requested preflight, in the
+    order processed, plus the counts. `excluded_preflight_ids` lists the
+    explicitly invalidated preflights an active run never considered."""
+
+    task_id: str
+    outcomes: tuple
+    refreshed_count: int
+    skipped_count: int
+    failed_count: int
+    excluded_preflight_ids: tuple
+    precomputed_at: datetime
+

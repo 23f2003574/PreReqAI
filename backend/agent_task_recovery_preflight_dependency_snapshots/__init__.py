@@ -21,6 +21,14 @@ from .impact_cache_consistency import (
     InvalidAgentTaskRecoveryPreflightDependencyImpactCacheConsistencyError,
     LLMAgentTaskRecoveryPreflightDependencyImpactCacheConsistencyService,
 )
+from .impact_cache_precompute import (
+    FAILED as PRECOMPUTE_FAILED,
+    PRECOMPUTE_STATUSES,
+    REFRESHED as PRECOMPUTE_REFRESHED,
+    SKIPPED as PRECOMPUTE_SKIPPED,
+    InvalidAgentTaskRecoveryPreflightDependencyImpactCachePrecomputeError,
+    LLMAgentTaskRecoveryPreflightDependencyImpactCachePrecomputeService,
+)
 from .impact_cache_refresh import (
     CURRENT,
     IMPACT_CACHE_REFRESHED_EVENT_TYPE,
@@ -104,6 +112,8 @@ from .models import (
     AgentTaskRecoveryPreflightDependencyImpactCacheConsistencyViolation,
     AgentTaskRecoveryPreflightDependencyImpactCacheRepairAction,
     AgentTaskRecoveryPreflightDependencyImpactCacheRepairResult,
+    AgentTaskRecoveryPreflightDependencyImpactCachePrecomputeOutcome,
+    AgentTaskRecoveryPreflightDependencyImpactCachePrecomputeResult,
     AgentTaskRecoveryPreflightDependencyImpactCacheRefreshResult,
     AgentTaskRecoveryPreflightDependencyImpactCacheRefreshSummary,
     AgentTaskRecoveryPreflightDependencyImpactCacheEvictionCandidate,
@@ -362,4 +372,12 @@ __all__ = [
     "NOT_TRUSTED",
     "NEWER_ENTRY",
     "NOT_REFRESHED",
+    "AgentTaskRecoveryPreflightDependencyImpactCachePrecomputeOutcome",
+    "AgentTaskRecoveryPreflightDependencyImpactCachePrecomputeResult",
+    "LLMAgentTaskRecoveryPreflightDependencyImpactCachePrecomputeService",
+    "InvalidAgentTaskRecoveryPreflightDependencyImpactCachePrecomputeError",
+    "PRECOMPUTE_STATUSES",
+    "PRECOMPUTE_SKIPPED",
+    "PRECOMPUTE_REFRESHED",
+    "PRECOMPUTE_FAILED",
 ]

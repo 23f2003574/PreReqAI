@@ -171,12 +171,8 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheWarmingService:
         self._require_text(task_id, "task_id")
         self._require_store()
 
-        results, excluded = [], []
-        for record in reversed(self._preflight_store.history(task_id)):
-            if self._invalidation_of(record.preflight_id) is not None:
-                excluded.append(record.preflight_id)
-                continue
-            results.append(self._warm(task_id, record.preflight_id))
+        relevant, excluded = self.active_preflight_ids(task_id)
+        results = [self._warm(task_id, preflight_id) for preflight_id in relevant]
 
         def count(status):
             return sum(1 for result in results if result.status == status)
@@ -184,7 +180,7 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheWarmingService:
         return AgentTaskRecoveryPreflightDependencyImpactCacheWarmSummary(
             task_id=task_id, results=tuple(results), warmed_count=count(WARMED),
             already_current_count=count(ALREADY_CURRENT), skipped_count=count(SKIPPED),
-            not_cached_count=count(NOT_CACHED), excluded_preflight_ids=tuple(excluded), warmed_at=self._now(),
+            not_cached_count=count(NOT_CACHED), excluded_preflight_ids=excluded, warmed_at=self._now(),
         )
 
     def _warm(self, task_id: str, preflight_id: str) -> AgentTaskRecoveryPreflightDependencyImpactCacheWarmResult:
@@ -196,40 +192,76 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheWarmingService:
                 pass  # metrics must never change a warming outcome
         return result
 
-    def _warm_uncounted(
-        self, task_id: str, preflight_id: str
-    ) -> AgentTaskRecoveryPreflightDependencyImpactCacheWarmResult:
+    def eligibility(self, task_id: str, preflight_id: str) -> tuple:
+        """(reasons, snapshot_id, version) for whether task_id's preflight_id
+        may be warmed/precomputed: reasons is () when it is current, not
+        invalidated, not DENY, fresh (if checked), has a snapshot, and that
+        snapshot is trusted -- otherwise every reason found first. snapshot_id/
+        version are set only once a snapshot was resolved. A pure read.
+
+        Raises:
+            InvalidAgentTaskRecoveryPreflightDependencyImpactCacheWarmingError:
+                If task_id or preflight_id is not a non-empty string, or no
+                preflight_store was configured
+        """
+        self._require_text(task_id, "task_id")
+        self._require_text(preflight_id, "preflight_id")
+        self._require_store()
+        return self._eligibility(task_id, preflight_id)
+
+    def active_preflight_ids(self, task_id: str) -> tuple:
+        """(relevant, excluded) preflight ids recorded for task_id: relevant
+        newest-first, excluding any explicitly invalidated (excluded).
+
+        Raises:
+            InvalidAgentTaskRecoveryPreflightDependencyImpactCacheWarmingError:
+                If task_id is not a non-empty string, or no preflight_store
+                was configured
+        """
+        self._require_text(task_id, "task_id")
+        self._require_store()
+        relevant, excluded = [], []
+        for record in reversed(self._preflight_store.history(task_id)):
+            (excluded if self._invalidation_of(record.preflight_id) is not None else relevant).append(record.preflight_id)
+        return tuple(relevant), tuple(excluded)
+
+    def _eligibility(self, task_id: str, preflight_id: str) -> tuple:
         record = next((r for r in self._preflight_store.history(task_id) if r.preflight_id == preflight_id), None)
         if record is None:
-            return self._result(task_id, preflight_id, SKIPPED, reasons=("no such preflight is recorded for this task",))
+            return ("no such preflight is recorded for this task",), None, None
 
         current = self._preflight_store.get(task_id)
         if current is None or current.preflight_id != preflight_id:
-            return self._result(task_id, preflight_id, SKIPPED, reasons=("preflight is no longer the task's current preflight",))
+            return ("preflight is no longer the task's current preflight",), None, None
 
         invalidation = self._invalidation_of(preflight_id)
         if invalidation is not None:
-            return self._result(task_id, preflight_id, SKIPPED, reasons=(f"preflight was invalidated: {invalidation.reason}",))
+            return (f"preflight was invalidated: {invalidation.reason}",), None, None
 
         if record.decision == DENY:
-            return self._result(task_id, preflight_id, SKIPPED, reasons=("preflight decision is deny",))
+            return ("preflight decision is deny",), None, None
 
         if self._freshness_service is not None:
             freshness = self._freshness_service.check(task_id, preflight=record)
             if not freshness.is_fresh:
-                return self._result(
-                    task_id, preflight_id, SKIPPED,
-                    reasons=("preflight is stale: " + "; ".join(freshness.stale_reasons),),
-                )
+                return ("preflight is stale: " + "; ".join(freshness.stale_reasons),), None, None
 
         identity = self._current_identity(task_id, preflight_id)
         if identity is None:
-            return self._result(task_id, preflight_id, SKIPPED, reasons=("preflight has no dependency snapshot",))
+            return ("preflight has no dependency snapshot",), None, None
         snapshot_id, version = identity
 
         trust_reasons = self._trust_failures(task_id, snapshot_id)
         if trust_reasons:
-            return self._result(task_id, preflight_id, SKIPPED, snapshot_id, version, reasons=trust_reasons)
+            return trust_reasons, snapshot_id, version
+        return (), snapshot_id, version
+
+    def _warm_uncounted(
+        self, task_id: str, preflight_id: str
+    ) -> AgentTaskRecoveryPreflightDependencyImpactCacheWarmResult:
+        reasons, snapshot_id, version = self._eligibility(task_id, preflight_id)
+        if reasons:
+            return self._result(task_id, preflight_id, SKIPPED, snapshot_id, version, reasons=reasons)
 
         # Read BEFORE the invalidation pass, which may remove the very entry being replaced.
         had_entry = any(entry.preflight_id == preflight_id for entry in self._cache_service.list_entries(task_id))
