@@ -163,6 +163,21 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotService:
             return None
         return record
 
+    def latest_for_preflight(self, task_id: str, preflight_id: str) -> Optional[AgentTaskRecoveryPreflightDependencySnapshot]:
+        """The most recently captured snapshot bound to task_id's exact
+        preflight_id -- None if none exists. A pure read of the existing
+        store's own list_for_task(); never captures anything.
+
+        Raises:
+            InvalidAgentTaskRecoveryPreflightDependencySnapshotError: If
+                task_id or preflight_id is not a non-empty string
+        """
+        self._require_text(task_id, "task_id")
+        self._require_text(preflight_id, "preflight_id")
+
+        matching = [record for record in self._store.list_for_task(task_id) if record.preflight_id == preflight_id]
+        return matching[-1] if matching else None
+
     def diff(self, task_id: str, snapshot_id: str) -> AgentTaskRecoveryPreflightDependencySnapshotDiff:
         """Compare task_id's exact, already-persisted snapshot_id against
         task_id's CURRENT dependency graph, right now. Read-only: never

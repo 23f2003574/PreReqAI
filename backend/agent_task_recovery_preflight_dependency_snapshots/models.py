@@ -656,3 +656,33 @@ class AgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryOrchestrationResu
     reconciliation: Optional[object]
     partial_failure: Optional[str]
     recovered_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheEntry:
+    """One cached dependency-impact result, bound to the exact
+    (task_id, preflight_id, snapshot_id, version) it was computed for --
+    `result` is an AgentTaskRecoveryPreflightDependencySnapshotReconciliation
+    carried through unchanged, never a re-derived copy. `version` is the
+    result's own version (None only when no version service was
+    configured when it was computed)."""
+
+    task_id: str
+    preflight_id: str
+    snapshot_id: str
+    version: Optional[int]
+    result: object
+    cached_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheInvalidation:
+    """invalidate()'s own report. `invalidated` is True only when an entry
+    was actually removed by THIS call -- a repeated invalidate() (or one
+    for a never-cached preflight) reports False, never an error."""
+
+    task_id: str
+    preflight_id: str
+    invalidated: bool
+    reason: Optional[str]
+    invalidated_at: datetime

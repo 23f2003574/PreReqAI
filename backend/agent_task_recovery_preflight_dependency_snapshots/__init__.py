@@ -1,3 +1,9 @@
+from .impact_cache import (
+    AgentTaskRecoveryPreflightDependencyImpactCacheStore,
+    InMemoryAgentTaskRecoveryPreflightDependencyImpactCacheStore,
+    InvalidAgentTaskRecoveryPreflightDependencyImpactCacheError,
+    LLMAgentTaskRecoveryPreflightDependencyImpactCacheService,
+)
 from .integrity import (
     AgentTaskRecoveryPreflightDependencySnapshotIntegrityStore,
     InMemoryAgentTaskRecoveryPreflightDependencySnapshotIntegrityStore,
@@ -25,6 +31,8 @@ from .models import (
     VALID,
     AgentTaskDependencySnapshotEntry,
     AgentTaskDependencySnapshotStateChange,
+    AgentTaskRecoveryPreflightDependencyImpactCacheEntry,
+    AgentTaskRecoveryPreflightDependencyImpactCacheInvalidation,
     AgentTaskRecoveryPreflightDependencySnapshot,
     AgentTaskRecoveryPreflightDependencySnapshotDiff,
     AgentTaskRecoveryPreflightDependencySnapshotIntegrityRecord,
@@ -194,4 +202,10 @@ __all__ = [
     "AgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryOrchestrationResult",
     "LLMAgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryOrchestrationService",
     "InvalidAgentTaskRecoveryPreflightDependencySnapshotTrustRecoveryOrchestrationError",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheEntry",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheInvalidation",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheStore",
+    "InMemoryAgentTaskRecoveryPreflightDependencyImpactCacheStore",
+    "LLMAgentTaskRecoveryPreflightDependencyImpactCacheService",
+    "InvalidAgentTaskRecoveryPreflightDependencyImpactCacheError",
 ]

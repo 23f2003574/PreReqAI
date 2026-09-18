@@ -48,6 +48,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         signing_service=None,
         trust_service=None,
         trust_change_service=None,
+        impact_cache_service=None,
     ):
         """
         Args:
@@ -87,6 +88,11 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         # invalidate its previous dependency evidence") -- checking for
         # drift, not merely a fresh trust_service.validate() a second time.
         self._trust_change_service = trust_change_service
+        # Optional LLMAgentTaskRecoveryPreflightDependencyImpactCacheService
+        # (duck-typed, only get()/put() are called). Consulted only AFTER
+        # the trust gate above, so a cache hit never bypasses it; any
+        # cache failure falls back to the fresh diff below.
+        self._impact_cache_service = impact_cache_service
 
     def is_current(self, task_id: str, snapshot_id: str) -> bool:
         """Shorthand for reconcile(task_id, snapshot_id).status ==
@@ -140,6 +146,14 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
                     reconciled_at=self._now(), version=version, integrity=integrity, signature=signature,
                 )
 
+        if self._impact_cache_service is not None:
+            try:
+                cached = self._impact_cache_service.get(task_id, snapshot.preflight_id)
+            except Exception:
+                cached = None
+            if cached is not None and cached.snapshot_id == snapshot_id:
+                return cached
+
         try:
             diff = self._snapshot_service.diff(task_id, snapshot_id)
         except Exception as error:
@@ -151,7 +165,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
                 reconciled_at=self._now(), version=version, integrity=integrity, signature=signature,
             )
 
-        return AgentTaskRecoveryPreflightDependencySnapshotReconciliation(
+        result = AgentTaskRecoveryPreflightDependencySnapshotReconciliation(
             task_id=task_id, snapshot_id=snapshot_id, preflight_id=diff.preflight_id,
             status=CHANGED if diff.changed else UNCHANGED, reliable=True,
             added=diff.added, removed=diff.removed, resolved=diff.resolved,
@@ -159,6 +173,13 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
             reason=None,
             reconciled_at=self._now(), version=version, integrity=integrity, signature=signature,
         )
+
+        if self._impact_cache_service is not None:
+            try:
+                self._impact_cache_service.put(task_id, snapshot.preflight_id, result)
+            except Exception:
+                pass  # caching is best-effort; the fresh result is still correct
+        return result
 
     def _resolve_version(self, task_id: str, preflight_id: str, snapshot_id: str):
         if self._version_service is None:
