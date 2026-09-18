@@ -313,6 +313,20 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
         self._require_text(preflight_id, "preflight_id")
         return self._store.delete(task_id, preflight_id)
 
+    def is_superseded(self, entry: AgentTaskRecoveryPreflightDependencyImpactCacheEntry) -> bool:
+        """Whether entry is provably obsolete: the preflight has no current
+        snapshot, or the entry is bound to an OLDER identity than the
+        source's. An entry AHEAD of the source (a higher version than the
+        latest known one) is not superseded -- it is unverifiable, so it is
+        neither served (get() misses it) nor treated as proven obsolete."""
+        identity = self._current_identity(entry.task_id, entry.preflight_id)
+        if identity is None:
+            return True
+        if identity == (entry.snapshot_id, entry.version):
+            return False
+        ahead = entry.version is not None and identity[1] is not None and entry.version > identity[1]
+        return not ahead
+
     def current_identity(self, task_id: str, preflight_id: str) -> Optional[tuple]:
         """(snapshot_id, version) of task_id/preflight_id's current
         snapshot -- None when there is none. The same identity get()

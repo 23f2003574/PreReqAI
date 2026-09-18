@@ -24,8 +24,12 @@ CANDIDATE_MISSING = "missing"
 CANDIDATE_INCONSISTENT = "inconsistent"
 CANDIDATE_OBSOLETE = "obsolete"
 CANDIDATE_UNAVAILABLE = "unavailable"
+CANDIDATE_INELIGIBLE = "ineligible"  # not eligible and nothing cached: nothing to maintain
 CANDIDATE_CLASSIFICATIONS = frozenset(
-    {CANDIDATE_CURRENT, CANDIDATE_STALE, CANDIDATE_MISSING, CANDIDATE_INCONSISTENT, CANDIDATE_OBSOLETE, CANDIDATE_UNAVAILABLE}
+    {
+        CANDIDATE_CURRENT, CANDIDATE_STALE, CANDIDATE_MISSING, CANDIDATE_INCONSISTENT, CANDIDATE_OBSOLETE,
+        CANDIDATE_UNAVAILABLE, CANDIDATE_INELIGIBLE,
+    }
 )
 _REFRESHABLE = frozenset({CANDIDATE_STALE, CANDIDATE_MISSING, CANDIDATE_INCONSISTENT})
 
@@ -171,8 +175,10 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationServi
         try:
             reasons, snapshot_id, version = self._warming_service.eligibility(task_id, preflight_id)
             if reasons:  # a snapshot_id alongside reasons means the evidence is untrusted (see _one)
-                if snapshot_id is None and self._has_entry(task_id, preflight_id):
-                    return candidate(CANDIDATE_OBSOLETE, reasons)
+                if snapshot_id is None:
+                    if self._has_entry(task_id, preflight_id):
+                        return candidate(CANDIDATE_OBSOLETE, reasons)
+                    return candidate(CANDIDATE_INELIGIBLE, reasons)
                 return candidate(CANDIDATE_UNAVAILABLE, reasons, snapshot_id, version)
             check = self._refresh_service.assess(task_id, preflight_id)
         except Exception as error:

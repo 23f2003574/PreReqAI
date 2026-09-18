@@ -211,7 +211,7 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheInvalidationService:
         eviction service reuses these exact signals instead of
         re-deriving them; reconcile() removes exactly what this reports."""
         reasons = []
-        if not self._cache_service.is_current(entry):
+        if self._cache_service.is_superseded(entry):
             reasons.append("snapshot/version is no longer the preflight's current one")
 
         if self._preflight_invalidation_service is not None:

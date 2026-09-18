@@ -1019,7 +1019,8 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheBatchCandidate:
     `classification` is one of CURRENT (consistent), STALE, MISSING,
     INCONSISTENT (a refreshable defect), OBSOLETE (an entry for a
     preflight that is no longer eligible -- a reconciliation would remove
-    it, a refresh must not rebuild it) or UNAVAILABLE (untrusted or absent
+    it, a refresh must not rebuild it), INELIGIBLE (not eligible and nothing
+    cached -- nothing to maintain) or UNAVAILABLE (untrusted or absent
     evidence). `refreshable` is True only for the three refreshable
     defects."""
 
@@ -1181,4 +1182,48 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheExport:
             "redaction_applied": self.redaction_applied,
             "generated_at": self.generated_at.isoformat(),
         }
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheLifecycleAction:
+    """One preflight's net outcome from a maintenance run. `action` is one
+    of NONE (already consistent, nothing to do), REFRESHED, EVICTED (an
+    obsolete entry was removed), UNAVAILABLE (untrusted or absent
+    evidence: nothing was built or removed) or FAILED (a phase that
+    touched it failed; it was left as it was). `classification` is the
+    reconciliation plan's; `refresh_status`/`eviction_status` are the
+    delegate services' own verdicts when they ran; `reasons` is theirs."""
+
+    preflight_id: str
+    action: str
+    classification: Optional[str]
+    refresh_status: Optional[str]
+    eviction_status: Optional[str]
+    reasons: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheLifecycleResult:
+    """maintain()'s report: per-preflight actions (ordered by
+    preflight_id), aggregate counts (none + refreshed + evicted +
+    unavailable + failed == total), each delegate phase's own result
+    (None if that phase itself failed -- see `phase_errors`, a tuple of
+    (phase, message)), and the current cache metrics summary (None when
+    no metrics service is wired). The result carries no export."""
+
+    task_id: str
+    requested_preflight_ids: Optional[tuple]
+    actions: tuple
+    total: int
+    none_count: int
+    refreshed_count: int
+    evicted_count: int
+    unavailable_count: int
+    failed_count: int
+    plan: Optional[object]
+    refresh: Optional[object]
+    eviction: Optional[object]
+    phase_errors: tuple
+    metrics: Optional[object]
+    maintained_at: datetime
 

@@ -191,7 +191,7 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheEvictionService:
         if self._invalidation_service is not None:
             obsolete = tuple(self._invalidation_service.stale_reasons(task_id, entry))
         else:
-            obsolete = () if self._cache_service.is_current(entry) else ("snapshot/version is no longer the preflight's current one",)
+            obsolete = () if not self._cache_service.is_superseded(entry) else ("snapshot/version is no longer the preflight's current one",)
         if obsolete:
             return obsolete, None
         if self._cache_service.peek(task_id, entry.preflight_id) is not None:
