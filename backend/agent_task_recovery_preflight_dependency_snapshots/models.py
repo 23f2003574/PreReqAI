@@ -1012,3 +1012,65 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheBatchResult:
     excluded_preflight_ids: tuple
     reconciled_at: datetime
 
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheBatchCandidate:
+    """One preflight's READ-ONLY classification from the batch plan.
+    `classification` is one of CURRENT (consistent), STALE, MISSING,
+    INCONSISTENT (a refreshable defect), OBSOLETE (an entry for a
+    preflight that is no longer eligible -- a reconciliation would remove
+    it, a refresh must not rebuild it) or UNAVAILABLE (untrusted or absent
+    evidence). `refreshable` is True only for the three refreshable
+    defects."""
+
+    preflight_id: str
+    classification: str
+    refreshable: bool
+    snapshot_id: Optional[str]
+    version: Optional[int]
+    categories: tuple
+    reasons: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheBatchPlan:
+    """plan()'s read-only classification of a batch; nothing was written."""
+
+    task_id: str
+    candidates: tuple
+    excluded_preflight_ids: tuple
+    planned_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheBatchRefreshItem:
+    """One preflight's batch-refresh outcome: `status` is REFRESHED,
+    SKIPPED (not a refreshable candidate, or the refresh service declined:
+    already current, untrusted, newer entry kept) or FAILED. `classification`
+    is the plan's; `refresh_status` the refresh service's own verdict when
+    it ran."""
+
+    preflight_id: str
+    status: str
+    classification: str
+    snapshot_id: Optional[str]
+    version: Optional[int]
+    refresh_status: Optional[str]
+    categories: tuple
+    reasons: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheBatchRefreshResult:
+    """refresh()'s report: one item per preflight considered plus counts
+    (refreshed + skipped + failed == total)."""
+
+    task_id: str
+    items: tuple
+    total: int
+    refreshed_count: int
+    skipped_count: int
+    failed_count: int
+    excluded_preflight_ids: tuple
+    refreshed_at: datetime
+

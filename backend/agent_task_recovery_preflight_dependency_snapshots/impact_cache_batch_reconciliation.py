@@ -6,7 +6,9 @@ from .impact_cache_refresh import CURRENT, NEWER_ENTRY, REFRESHED as REFRESH_REF
 from .impact_cache_refresh import LLMAgentTaskRecoveryPreflightDependencyImpactCacheRefreshService
 from .impact_cache_warming import LLMAgentTaskRecoveryPreflightDependencyImpactCacheWarmingService
 from .models import (
+    AgentTaskRecoveryPreflightDependencyImpactCacheBatchCandidate,
     AgentTaskRecoveryPreflightDependencyImpactCacheBatchOutcome,
+    AgentTaskRecoveryPreflightDependencyImpactCacheBatchPlan,
     AgentTaskRecoveryPreflightDependencyImpactCacheBatchResult,
 )
 
@@ -15,6 +17,17 @@ REFRESHED = "refreshed"
 INVALIDATED = "invalidated"
 UNAVAILABLE = "unavailable"
 BATCH_STATUSES = frozenset({CONSISTENT, REFRESHED, INVALIDATED, UNAVAILABLE})
+
+CANDIDATE_CURRENT = "current"
+CANDIDATE_STALE = "stale"
+CANDIDATE_MISSING = "missing"
+CANDIDATE_INCONSISTENT = "inconsistent"
+CANDIDATE_OBSOLETE = "obsolete"
+CANDIDATE_UNAVAILABLE = "unavailable"
+CANDIDATE_CLASSIFICATIONS = frozenset(
+    {CANDIDATE_CURRENT, CANDIDATE_STALE, CANDIDATE_MISSING, CANDIDATE_INCONSISTENT, CANDIDATE_OBSOLETE, CANDIDATE_UNAVAILABLE}
+)
+_REFRESHABLE = frozenset({CANDIDATE_STALE, CANDIDATE_MISSING, CANDIDATE_INCONSISTENT})
 
 
 class InvalidAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationError(ValueError):
@@ -115,6 +128,68 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationServi
             for preflight_id in preflight_ids:
                 self._require_text(preflight_id, "preflight_id")
         return self._run(task_id, preflight_ids)
+
+    def plan(
+        self, task_id: str, preflight_ids: Optional[list] = None
+    ) -> AgentTaskRecoveryPreflightDependencyImpactCacheBatchPlan:
+        """Classify the same preflights reconcile() would process, WITHOUT
+        writing anything: no refresh, no removal, no history. Uses the same
+        eligibility (#3) and consistency assessment (#7's assess(), i.e.
+        #6's check) reconcile() acts on, so a plan and a reconciliation
+        agree. A preflight whose classification cannot be established
+        (any error) is UNAVAILABLE, never omitted.
+
+        Raises:
+            InvalidAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationError:
+                If task_id is not a non-empty string, or preflight_ids is
+                given and is not a list/tuple of non-empty strings
+        """
+        self._require_text(task_id, "task_id")
+        if preflight_ids is not None:
+            if not isinstance(preflight_ids, (list, tuple)):
+                raise InvalidAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationError(
+                    "preflight_ids must be a list or tuple when given"
+                )
+            for preflight_id in preflight_ids:
+                self._require_text(preflight_id, "preflight_id")
+        excluded = ()
+        if preflight_ids is None:
+            preflight_ids, excluded = self._warming_service.active_preflight_ids(task_id)
+        return AgentTaskRecoveryPreflightDependencyImpactCacheBatchPlan(
+            task_id=task_id,
+            candidates=tuple(self._candidate(task_id, preflight_id) for preflight_id in dict.fromkeys(preflight_ids)),
+            excluded_preflight_ids=tuple(excluded), planned_at=datetime.now(timezone.utc),
+        )
+
+    def _candidate(self, task_id: str, preflight_id: str) -> AgentTaskRecoveryPreflightDependencyImpactCacheBatchCandidate:
+        def candidate(classification, reasons, snapshot_id=None, version=None, categories=()):
+            return AgentTaskRecoveryPreflightDependencyImpactCacheBatchCandidate(
+                preflight_id=preflight_id, classification=classification, refreshable=classification in _REFRESHABLE,
+                snapshot_id=snapshot_id, version=version, categories=tuple(categories), reasons=tuple(reasons),
+            )
+
+        try:
+            reasons, snapshot_id, version = self._warming_service.eligibility(task_id, preflight_id)
+            if reasons:  # a snapshot_id alongside reasons means the evidence is untrusted (see _one)
+                if snapshot_id is None and self._has_entry(task_id, preflight_id):
+                    return candidate(CANDIDATE_OBSOLETE, reasons)
+                return candidate(CANDIDATE_UNAVAILABLE, reasons, snapshot_id, version)
+            check = self._refresh_service.assess(task_id, preflight_id)
+        except Exception as error:
+            return candidate(CANDIDATE_UNAVAILABLE, (f"could not be classified: {error}",))
+
+        categories = tuple(sorted({violation.category for violation in check.violations}))
+        ids = (snapshot_id, version, categories)
+        if check.is_consistent:
+            return candidate(CANDIDATE_CURRENT, ("the cached impact is consistent with the trusted snapshot",), *ids)
+        if "untrusted" in categories:
+            return candidate(CANDIDATE_UNAVAILABLE, ("trust in the current snapshot cannot be established",), *ids)
+        reason = "; ".join(violation.reason for violation in check.violations)
+        if "missing" in categories:
+            return candidate(CANDIDATE_MISSING, (reason,), *ids)
+        if "stale" in categories:
+            return candidate(CANDIDATE_STALE, (reason,), *ids)
+        return candidate(CANDIDATE_INCONSISTENT, (reason,), *ids)
 
     def reconcile_active(self, task_id: str) -> AgentTaskRecoveryPreflightDependencyImpactCacheBatchResult:
         """Reconcile every relevant preflight of task_id.

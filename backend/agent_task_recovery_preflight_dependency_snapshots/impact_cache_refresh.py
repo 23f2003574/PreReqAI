@@ -109,6 +109,19 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheRefreshService:
         self._require_text(preflight_id, "preflight_id")
         return self._refresh(task_id, preflight_id, self._consistency_service.check(task_id, preflight_id))
 
+    def assess(self, task_id: str, preflight_id: str):
+        """The #6 consistency result refresh() would act on for
+        preflight_id -- a pure read that refreshes nothing, exposed so
+        batch planning reuses this service's own gate.
+
+        Raises:
+            InvalidAgentTaskRecoveryPreflightDependencyImpactCacheRefreshError:
+                If task_id or preflight_id is not a non-empty string
+        """
+        self._require_text(task_id, "task_id")
+        self._require_text(preflight_id, "preflight_id")
+        return self._consistency_service.check(task_id, preflight_id)
+
     def refresh_stale(self, task_id: str) -> AgentTaskRecoveryPreflightDependencyImpactCacheRefreshSummary:
         """Refresh every inconsistent preflight of task_id.
 
