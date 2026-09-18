@@ -50,6 +50,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         trust_change_service=None,
         impact_cache_service=None,
         impact_cache_invalidation_service=None,
+        impact_cache_metrics_service=None,
     ):
         """
         Args:
@@ -100,6 +101,10 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         # computed is removed first; if it fails, the cache is not
         # consulted at all (fail closed to a fresh diff).
         self._impact_cache_invalidation_service = impact_cache_invalidation_service
+        # Optional #4 metrics service (duck-typed, only record_computation_avoided()
+        # is called), recorded exactly when a cached result is returned in place
+        # of a fresh diff. Any failure there is swallowed.
+        self._impact_cache_metrics_service = impact_cache_metrics_service
 
     def is_current(self, task_id: str, snapshot_id: str) -> bool:
         """Shorthand for reconcile(task_id, snapshot_id).status ==
@@ -107,9 +112,16 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         INDETERMINATE."""
         return self.reconcile(task_id, snapshot_id).status == UNCHANGED
 
-    def reconcile(self, task_id: str, snapshot_id: str) -> AgentTaskRecoveryPreflightDependencySnapshotReconciliation:
+    def reconcile(
+        self, task_id: str, snapshot_id: str, use_cache: bool = True
+    ) -> AgentTaskRecoveryPreflightDependencySnapshotReconciliation:
         """Compare task_id's exact, already-persisted snapshot_id against
         task_id's CURRENT dependency graph, right now.
+
+        use_cache=False skips the cache lookup (and the invalidation pass
+        before it) and always analyses fresh; the result is still stored.
+        The cache warming service uses it, since its own analysis is not
+        validation-path traffic and must not register as a lookup miss.
 
         Raises:
             InvalidAgentTaskRecoveryPreflightDependencySnapshotError:
@@ -153,7 +165,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
                     reconciled_at=self._now(), version=version, integrity=integrity, signature=signature,
                 )
 
-        if self._impact_cache_service is not None:
+        if self._impact_cache_service is not None and use_cache:
             try:
                 if self._impact_cache_invalidation_service is not None:
                     self._impact_cache_invalidation_service.reconcile(task_id)
@@ -161,6 +173,11 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
             except Exception:
                 cached = None
             if cached is not None and cached.snapshot_id == snapshot_id:
+                if self._impact_cache_metrics_service is not None:
+                    try:
+                        self._impact_cache_metrics_service.record_computation_avoided(task_id, snapshot.preflight_id)
+                    except Exception:
+                        pass  # metrics must never change the returned result
                 return cached
 
         try:

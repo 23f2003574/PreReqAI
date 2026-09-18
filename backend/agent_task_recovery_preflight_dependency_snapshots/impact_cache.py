@@ -4,6 +4,7 @@ from dataclasses import replace
 from datetime import datetime, timezone
 from typing import Optional
 
+from .impact_cache_metrics import MISS_NOT_CACHED, MISS_STALE, MISS_UNTRUSTED
 from .models import (
     AgentTaskRecoveryPreflightDependencyImpactCacheEntry,
     AgentTaskRecoveryPreflightDependencyImpactCacheInvalidation,
@@ -114,6 +115,7 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
         trust_service=None,
         integrity_service=None,
         store: AgentTaskRecoveryPreflightDependencyImpactCacheStore = None,
+        metrics_service=None,
     ):
         """
         Args:
@@ -130,6 +132,11 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
             integrity_service: Optional Commit #4 integrity service (duck-
                 typed, only verify() is called).
             store: Defaults to a fresh in-memory store.
+            metrics_service: Optional #4 metrics service (duck-typed,
+                record_hit()/record_miss()/record_invalidation() only).
+                get() and invalidate() report to it; every failure there
+                is swallowed, so metrics can never change a lookup or an
+                invalidation. peek() is never recorded.
         """
         self._snapshot_service = (
             snapshot_service if snapshot_service is not None else LLMAgentTaskRecoveryPreflightDependencySnapshotService()
@@ -138,11 +145,13 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
         self._trust_service = trust_service
         self._integrity_service = integrity_service
         self._store = store if store is not None else InMemoryAgentTaskRecoveryPreflightDependencyImpactCacheStore()
+        self._metrics_service = metrics_service
 
     def get(self, task_id: str, preflight_id: str) -> Optional[AgentTaskRecoveryPreflightDependencySnapshotReconciliation]:
         """The cached impact result for task_id's exact preflight_id, or
         None on a miss: nothing cached, the entry's snapshot/version is no
-        longer current, or trust/integrity validation fails.
+        longer current, or trust/integrity validation fails. This is the
+        validation path's lookup, so it is the one reported to metrics.
 
         Raises:
             InvalidAgentTaskRecoveryPreflightDependencyImpactCacheError: If
@@ -151,17 +160,40 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
         self._require_text(task_id, "task_id")
         self._require_text(preflight_id, "preflight_id")
 
+        result, miss_reason = self._lookup(task_id, preflight_id)
+        if self._metrics_service is not None:
+            try:
+                if miss_reason is None:
+                    self._metrics_service.record_hit(task_id, preflight_id)
+                else:
+                    self._metrics_service.record_miss(task_id, preflight_id, miss_reason)
+            except Exception:
+                pass  # metrics must never change a lookup result
+        return result
+
+    def peek(self, task_id: str, preflight_id: str) -> Optional[AgentTaskRecoveryPreflightDependencySnapshotReconciliation]:
+        """get() without reporting to metrics -- for callers (warming) whose
+        own lookups are not validation-path traffic and would distort the
+        hit/miss figures.
+
+        Raises:
+            InvalidAgentTaskRecoveryPreflightDependencyImpactCacheError: If
+                task_id or preflight_id is not a non-empty string
+        """
+        self._require_text(task_id, "task_id")
+        self._require_text(preflight_id, "preflight_id")
+        return self._lookup(task_id, preflight_id)[0]
+
+    def _lookup(self, task_id: str, preflight_id: str) -> tuple:
+        """(result, miss_reason) -- exactly one of them is None."""
         entry = self._store.get(task_id, preflight_id)
         if entry is None:
-            return None
-
-        current = self._current_identity(task_id, preflight_id)
-        if current != (entry.snapshot_id, entry.version):
-            return None
-
+            return None, MISS_NOT_CACHED
+        if self._current_identity(task_id, preflight_id) != (entry.snapshot_id, entry.version):
+            return None, MISS_STALE
         if not self._is_trusted(task_id, entry.snapshot_id):
-            return None
-        return entry.result
+            return None, MISS_UNTRUSTED
+        return entry.result, None
 
     def list_entries(self, task_id: str) -> list:
         """Every entry currently cached for task_id, oldest first -- a pure
@@ -256,8 +288,14 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
         if reason is not None and not isinstance(reason, str):
             raise InvalidAgentTaskRecoveryPreflightDependencyImpactCacheError("reason must be a string when given")
 
+        removed = self._store.delete(task_id, preflight_id)
+        if removed and self._metrics_service is not None:
+            try:
+                self._metrics_service.record_invalidation(task_id, preflight_id, reason or None)
+            except Exception:
+                pass  # metrics must never change an invalidation
         return AgentTaskRecoveryPreflightDependencyImpactCacheInvalidation(
-            task_id=task_id, preflight_id=preflight_id, invalidated=self._store.delete(task_id, preflight_id),
+            task_id=task_id, preflight_id=preflight_id, invalidated=removed,
             reason=reason, invalidated_at=self._now(),
         )
 

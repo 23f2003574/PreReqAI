@@ -299,7 +299,7 @@ def test_analysis_failure_is_not_cached():
     s = _stack()
     task, _, preflight_id, _ = _prepared(s)
     s["warming"]._reconciliation_service = type(
-        "R", (), {"reconcile": lambda self, *a: (_ for _ in ()).throw(RuntimeError("resolver down"))}
+        "R", (), {"reconcile": lambda self, *a, **k: (_ for _ in ()).throw(RuntimeError("resolver down"))}
     )()
 
     result = s["warming"].warm(task.task_id, preflight_id)
@@ -342,8 +342,8 @@ def test_warm_reports_newer_entry_that_wins_a_race():
     task, _, preflight_id, snapshot = _prepared(s)
     real = s["reconciliation_service"].reconcile
 
-    def racing_reconcile(task_id, snapshot_id):
-        result = real(task_id, snapshot_id)
+    def racing_reconcile(task_id, snapshot_id, **kwargs):
+        result = real(task_id, snapshot_id, **kwargs)
         s["cache"].invalidate(task_id, preflight_id)
         newer = replace(result, added=("raced-dep",), status=CHANGED, reconciled_at=result.reconciled_at + timedelta(seconds=5))
         s["cache"].put(task_id, preflight_id, newer)  # a concurrent, newer computation lands first

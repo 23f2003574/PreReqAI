@@ -758,3 +758,38 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheWarmSummary:
     excluded_preflight_ids: tuple
     warmed_at: datetime
 
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheMetrics:
+    """summary()'s aggregate of one task's recorded cache activity, every
+    figure a plain count over recorded events -- never an estimate.
+
+    lookups is hits + misses. hit_rate/miss_rate/warm_success_rate are
+    count / total as a float, 0.0 when the total is zero -- the same
+    convention backend.agent_policy_metrics' own denial_rate uses.
+    stale_misses is the subset of misses whose reason was "stale" (an
+    entry existed but its snapshot/version was no longer current);
+    miss_reasons breaks every miss down by its recorded reason.
+    warm_attempts counts warmings that actually did work (a result stored
+    or a failure); warm_failures = warm_attempts - warm_successes.
+    computations_avoided counts cached results a caller actually
+    consumed INSTEAD of running a fresh impact analysis -- not merely
+    hits, since a hit can still be discarded (e.g. it belongs to a newer
+    snapshot than the one asked about)."""
+
+    task_id: str
+    hits: int
+    misses: int
+    lookups: int
+    hit_rate: float
+    miss_rate: float
+    stale_misses: int
+    miss_reasons: dict
+    invalidations: int
+    warm_attempts: int
+    warm_successes: int
+    warm_failures: int
+    warm_success_rate: float
+    computations_avoided: int
+    generated_at: datetime
+

@@ -97,6 +97,7 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheWarmingService:
         trust_service=None,
         integrity_service=None,
         invalidation_service=None,
+        metrics_service=None,
     ):
         """
         Args:
@@ -141,6 +142,7 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheWarmingService:
         self._trust_service = trust_service
         self._integrity_service = integrity_service
         self._invalidation_service = invalidation_service
+        self._metrics_service = metrics_service
 
     def warm(self, task_id: str, preflight_id: str) -> AgentTaskRecoveryPreflightDependencyImpactCacheWarmResult:
         """Warm task_id's exact preflight_id if it is current, trusted and
@@ -186,6 +188,17 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheWarmingService:
         )
 
     def _warm(self, task_id: str, preflight_id: str) -> AgentTaskRecoveryPreflightDependencyImpactCacheWarmResult:
+        result = self._warm_uncounted(task_id, preflight_id)
+        if self._metrics_service is not None and result.status in (WARMED, NOT_CACHED):
+            try:
+                self._metrics_service.record_warm(task_id, preflight_id, result.status == WARMED)
+            except Exception:
+                pass  # metrics must never change a warming outcome
+        return result
+
+    def _warm_uncounted(
+        self, task_id: str, preflight_id: str
+    ) -> AgentTaskRecoveryPreflightDependencyImpactCacheWarmResult:
         record = next((r for r in self._preflight_store.history(task_id) if r.preflight_id == preflight_id), None)
         if record is None:
             return self._result(task_id, preflight_id, SKIPPED, reasons=("no such preflight is recorded for this task",))
@@ -225,11 +238,11 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheWarmingService:
                 self._invalidation_service.reconcile(task_id)
             except Exception:
                 pass  # staleness unknown: fall through and recompute rather than rely on an unchecked entry
-        if self._cache_service.get(task_id, preflight_id) is not None:
+        if self._cache_service.peek(task_id, preflight_id) is not None:  # not a validation-path lookup
             return self._result(task_id, preflight_id, ALREADY_CURRENT, snapshot_id, version, reasons=("a valid entry is already cached",))
 
         try:
-            impact = self._reconciliation_service.reconcile(task_id, snapshot_id)
+            impact = self._reconciliation_service.reconcile(task_id, snapshot_id, use_cache=False)
         except Exception as error:
             return self._result(task_id, preflight_id, NOT_CACHED, snapshot_id, version, reasons=(f"impact analysis failed: {error}",))
 
