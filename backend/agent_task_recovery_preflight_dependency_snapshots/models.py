@@ -1074,3 +1074,46 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheBatchRefreshResult:
     excluded_preflight_ids: tuple
     refreshed_at: datetime
 
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionPlan:
+    """plan()'s read-only proposal for a batch: `plan` is #5's own
+    eviction plan (eligible/protected entries, the retention cutoff),
+    narrowed to the requested preflights. `unmatched_preflight_ids` names
+    requested preflights that have no cached entry at all."""
+
+    task_id: str
+    plan: object
+    requested_preflight_ids: Optional[tuple]
+    unmatched_preflight_ids: tuple
+    planned_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionItem:
+    """One entry's batch-eviction outcome: `status` is EVICTED, SKIPPED
+    (protected -- e.g. the current valid entry -- already gone, replaced
+    or made valid since planning, or no entry) or FAILED (the removal
+    raised; the entry was left as it was)."""
+
+    preflight_id: str
+    status: str
+    snapshot_id: Optional[str]
+    version: Optional[int]
+    reasons: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionResult:
+    """evict()'s report: the plan acted on, one item per entry considered,
+    and counts (evicted + skipped + failed == total)."""
+
+    task_id: str
+    plan: object
+    items: tuple
+    total: int
+    evicted_count: int
+    skipped_count: int
+    failed_count: int
+    evicted_at: datetime
+

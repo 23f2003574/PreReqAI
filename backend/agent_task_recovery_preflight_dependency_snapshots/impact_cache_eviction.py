@@ -146,30 +146,45 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheEvictionService:
                 f"plan must be an eviction plan built for task_id {task_id!r}"
             )
 
-        current = {entry.preflight_id: entry for entry in self._cache_service.list_entries(task_id)}
         evicted, already_evicted, newly_protected = [], [], []
+        buckets = {"evicted": evicted, "already_evicted": already_evicted, "newly_protected": newly_protected}
         for candidate in plan.eligible:
-            entry = current.get(candidate.preflight_id)
-            if entry is None:
-                already_evicted.append(candidate)
-                continue
-            if (entry.snapshot_id, entry.version) != (candidate.snapshot_id, candidate.version):
-                newly_protected.append(self._protection(entry, REPLACED_SINCE_PLAN))
-                continue
-            reasons, protection = self._classify(task_id, entry, plan.before)
-            if not reasons:
-                newly_protected.append(self._protection(entry, protection))
-                continue
-            if self._cache_service.evict(task_id, entry.preflight_id):
-                evicted.append(self._candidate(entry, reasons))
-                self._record(task_id, entry, reasons)
-            else:
-                already_evicted.append(candidate)
+            bucket, item = self.evict_candidate(task_id, candidate, plan.before)
+            buckets[bucket].append(item)
 
         return AgentTaskRecoveryPreflightDependencyImpactCacheEvictionResult(
             plan=plan, evicted=tuple(evicted), already_evicted=tuple(already_evicted),
             newly_protected=tuple(newly_protected), evicted_at=datetime.now(timezone.utc),
         )
+
+    def evict_candidate(
+        self, task_id: str, candidate: AgentTaskRecoveryPreflightDependencyImpactCacheEvictionCandidate, before: datetime
+    ) -> tuple:
+        """Apply ONE planned candidate: re-read its entry, re-classify it
+        against `before`, and evict only if it is still evictable. Returns
+        (bucket, item): "evicted"/"already_evicted" with the candidate, or
+        "newly_protected" with the protection that spared it (entry became
+        valid, or was replaced by a fresher one, since planning). This is
+        the single-entry step evict() loops over, exposed so a batch caller
+        can apply candidates independently.
+
+        Raises:
+            InvalidAgentTaskRecoveryPreflightDependencyImpactCacheEvictionError:
+                If task_id is not a non-empty string
+        """
+        self._require_text(task_id, "task_id")
+        entry = next((e for e in self._cache_service.list_entries(task_id) if e.preflight_id == candidate.preflight_id), None)
+        if entry is None:
+            return "already_evicted", candidate
+        if (entry.snapshot_id, entry.version) != (candidate.snapshot_id, candidate.version):
+            return "newly_protected", self._protection(entry, REPLACED_SINCE_PLAN)
+        reasons, protection = self._classify(task_id, entry, before)
+        if not reasons:
+            return "newly_protected", self._protection(entry, protection)
+        if self._cache_service.evict(task_id, entry.preflight_id):
+            self._record(task_id, entry, reasons)
+            return "evicted", self._candidate(entry, reasons)
+        return "already_evicted", candidate
 
     def _classify(self, task_id: str, entry, before: datetime) -> tuple:
         """(eviction reasons, protection reason) -- exactly one is empty."""

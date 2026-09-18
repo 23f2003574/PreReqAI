@@ -37,6 +37,14 @@ from .impact_cache_batch_reconciliation import (
     InvalidAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationError,
     LLMAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationService,
 )
+from .impact_cache_batch_eviction import (
+    BATCH_EVICTION_STATUSES,
+    EVICTED as BATCH_EVICTED,
+    FAILED as BATCH_EVICTION_FAILED,
+    SKIPPED as BATCH_EVICTION_SKIPPED,
+    InvalidAgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionError,
+    LLMAgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionService,
+)
 from .impact_cache_batch_refresh import (
     BATCH_REFRESH_STATUSES,
     FAILED as BATCH_REFRESH_FAILED,
@@ -137,6 +145,9 @@ from .models import (
     AgentTaskRecoveryPreflightDependencyImpactCacheRepairAction,
     AgentTaskRecoveryPreflightDependencyImpactCacheRepairResult,
     AgentTaskRecoveryPreflightDependencyImpactCacheBatchCandidate,
+    AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionItem,
+    AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionPlan,
+    AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionResult,
     AgentTaskRecoveryPreflightDependencyImpactCacheBatchOutcome,
     AgentTaskRecoveryPreflightDependencyImpactCacheBatchPlan,
     AgentTaskRecoveryPreflightDependencyImpactCacheBatchRefreshItem,
@@ -436,4 +447,13 @@ __all__ = [
     "CANDIDATE_INCONSISTENT",
     "CANDIDATE_OBSOLETE",
     "CANDIDATE_UNAVAILABLE",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionPlan",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionItem",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionResult",
+    "LLMAgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionService",
+    "InvalidAgentTaskRecoveryPreflightDependencyImpactCacheBatchEvictionError",
+    "BATCH_EVICTION_STATUSES",
+    "BATCH_EVICTED",
+    "BATCH_EVICTION_SKIPPED",
+    "BATCH_EVICTION_FAILED",
 ]
