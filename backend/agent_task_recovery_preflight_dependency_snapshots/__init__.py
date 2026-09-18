@@ -21,6 +21,15 @@ from .impact_cache_consistency import (
     InvalidAgentTaskRecoveryPreflightDependencyImpactCacheConsistencyError,
     LLMAgentTaskRecoveryPreflightDependencyImpactCacheConsistencyService,
 )
+from .impact_cache_batch_reconciliation import (
+    BATCH_STATUSES,
+    CONSISTENT as BATCH_CONSISTENT,
+    INVALIDATED as BATCH_INVALIDATED,
+    REFRESHED as BATCH_REFRESHED,
+    UNAVAILABLE as BATCH_UNAVAILABLE,
+    InvalidAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationError,
+    LLMAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationService,
+)
 from .impact_cache_precompute import (
     FAILED as PRECOMPUTE_FAILED,
     PRECOMPUTE_STATUSES,
@@ -112,6 +121,8 @@ from .models import (
     AgentTaskRecoveryPreflightDependencyImpactCacheConsistencyViolation,
     AgentTaskRecoveryPreflightDependencyImpactCacheRepairAction,
     AgentTaskRecoveryPreflightDependencyImpactCacheRepairResult,
+    AgentTaskRecoveryPreflightDependencyImpactCacheBatchOutcome,
+    AgentTaskRecoveryPreflightDependencyImpactCacheBatchResult,
     AgentTaskRecoveryPreflightDependencyImpactCachePrecomputeOutcome,
     AgentTaskRecoveryPreflightDependencyImpactCachePrecomputeResult,
     AgentTaskRecoveryPreflightDependencyImpactCacheRefreshResult,
@@ -380,4 +391,13 @@ __all__ = [
     "PRECOMPUTE_SKIPPED",
     "PRECOMPUTE_REFRESHED",
     "PRECOMPUTE_FAILED",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheBatchOutcome",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheBatchResult",
+    "LLMAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationService",
+    "InvalidAgentTaskRecoveryPreflightDependencyImpactCacheBatchReconciliationError",
+    "BATCH_STATUSES",
+    "BATCH_CONSISTENT",
+    "BATCH_REFRESHED",
+    "BATCH_INVALIDATED",
+    "BATCH_UNAVAILABLE",
 ]

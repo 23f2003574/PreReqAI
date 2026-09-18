@@ -975,3 +975,40 @@ class AgentTaskRecoveryPreflightDependencyImpactCachePrecomputeResult:
     excluded_preflight_ids: tuple
     precomputed_at: datetime
 
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheBatchOutcome:
+    """One preflight's batch-reconciliation outcome. `status` is CONSISTENT
+    (its cached impact already matches the trusted snapshot, or a newer
+    entry was kept), REFRESHED (rebuilt), INVALIDATED (an obsolete entry
+    was removed) or UNAVAILABLE (nothing could be established or built:
+    untrusted or missing evidence, or a failure -- `reasons` says which,
+    and the cache was left as it was). `refresh_status` is the refresh
+    service's own verdict when it ran."""
+
+    preflight_id: str
+    status: str
+    snapshot_id: Optional[str]
+    version: Optional[int]
+    refresh_status: Optional[str]
+    categories: tuple
+    reasons: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheBatchResult:
+    """reconcile()'s report: one outcome per preflight processed plus
+    aggregate counts (consistent + refreshed + invalidated + unavailable
+    == total). `excluded_preflight_ids` lists the explicitly invalidated
+    preflights an active run never considered."""
+
+    task_id: str
+    outcomes: tuple
+    total: int
+    consistent_count: int
+    refreshed_count: int
+    invalidated_count: int
+    unavailable_count: int
+    excluded_preflight_ids: tuple
+    reconciled_at: datetime
+
