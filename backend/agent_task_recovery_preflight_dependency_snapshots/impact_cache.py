@@ -299,6 +299,20 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
             reason=reason, invalidated_at=self._now(),
         )
 
+    def evict(self, task_id: str, preflight_id: str) -> bool:
+        """Remove task_id's entry for preflight_id as housekeeping, not as
+        a reaction to a change: unlike invalidate() it is not reported to
+        metrics as an invalidation. True only when this call removed one;
+        idempotent.
+
+        Raises:
+            InvalidAgentTaskRecoveryPreflightDependencyImpactCacheError: If
+                task_id or preflight_id is not a non-empty string
+        """
+        self._require_text(task_id, "task_id")
+        self._require_text(preflight_id, "preflight_id")
+        return self._store.delete(task_id, preflight_id)
+
     def _current_identity(self, task_id: str, preflight_id: str) -> Optional[tuple]:
         """(snapshot_id, version) of task_id/preflight_id's current
         snapshot -- None when there is none."""

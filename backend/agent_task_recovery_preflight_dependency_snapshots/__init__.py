@@ -4,6 +4,15 @@ from .impact_cache import (
     InvalidAgentTaskRecoveryPreflightDependencyImpactCacheError,
     LLMAgentTaskRecoveryPreflightDependencyImpactCacheService,
 )
+from .impact_cache_eviction import (
+    EXPIRED_UNPROVABLE,
+    IMPACT_CACHE_EVICTED_EVENT_TYPE,
+    PROTECTED_VALID,
+    PROTECTED_WITHIN_RETENTION,
+    REPLACED_SINCE_PLAN,
+    InvalidAgentTaskRecoveryPreflightDependencyImpactCacheEvictionError,
+    LLMAgentTaskRecoveryPreflightDependencyImpactCacheEvictionService,
+)
 from .impact_cache_metrics import (
     IMPACT_CACHE_METRIC_EVENT_TYPE,
     METRIC_COMPUTATION_AVOIDED,
@@ -63,6 +72,10 @@ from .models import (
     AgentTaskDependencySnapshotEntry,
     AgentTaskDependencySnapshotStateChange,
     AgentTaskRecoveryPreflightDependencyImpactCacheEntry,
+    AgentTaskRecoveryPreflightDependencyImpactCacheEvictionCandidate,
+    AgentTaskRecoveryPreflightDependencyImpactCacheEvictionPlan,
+    AgentTaskRecoveryPreflightDependencyImpactCacheEvictionProtection,
+    AgentTaskRecoveryPreflightDependencyImpactCacheEvictionResult,
     AgentTaskRecoveryPreflightDependencyImpactCacheInvalidation,
     AgentTaskRecoveryPreflightDependencyImpactCacheInvalidationOutcome,
     AgentTaskRecoveryPreflightDependencyImpactCacheInvalidationResult,
@@ -274,4 +287,15 @@ __all__ = [
     "MISS_NOT_CACHED",
     "MISS_STALE",
     "MISS_UNTRUSTED",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheEvictionCandidate",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheEvictionProtection",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheEvictionPlan",
+    "AgentTaskRecoveryPreflightDependencyImpactCacheEvictionResult",
+    "LLMAgentTaskRecoveryPreflightDependencyImpactCacheEvictionService",
+    "InvalidAgentTaskRecoveryPreflightDependencyImpactCacheEvictionError",
+    "IMPACT_CACHE_EVICTED_EVENT_TYPE",
+    "PROTECTED_VALID",
+    "PROTECTED_WITHIN_RETENTION",
+    "EXPIRED_UNPROVABLE",
+    "REPLACED_SINCE_PLAN",
 ]

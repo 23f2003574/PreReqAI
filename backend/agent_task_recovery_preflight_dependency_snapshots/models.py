@@ -793,3 +793,59 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheMetrics:
     computations_avoided: int
     generated_at: datetime
 
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheEvictionCandidate:
+    """One cache entry the eviction plan proposes to remove, identified
+    by the exact (task_id, preflight_id, snapshot_id, version) it holds,
+    with every reason it qualified."""
+
+    task_id: str
+    preflight_id: str
+    snapshot_id: str
+    version: Optional[int]
+    cached_at: datetime
+    reasons: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheEvictionProtection:
+    """One cache entry that was kept, and the concrete reason why -- the
+    evidence, not a bare tally, that an entry was deliberately spared."""
+
+    task_id: str
+    preflight_id: str
+    snapshot_id: str
+    version: Optional[int]
+    reason: str
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheEvictionPlan:
+    """plan()'s read-only proposal for one task. `before` is the
+    retention cutoff actually used (always concrete, never "the default"):
+    an entry cached at or before it is older than the retention window.
+    Every entry currently cached for task_id appears in exactly one of
+    `eligible` and `protected`."""
+
+    task_id: str
+    before: datetime
+    eligible: tuple
+    protected: tuple
+    planned_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheEvictionResult:
+    """evict()'s outcome for one plan, embedded verbatim. `evicted` is what
+    THIS call removed; `already_evicted` is what the plan named that was
+    already gone (re-running a plan is never an error); `newly_protected`
+    is what evict() re-checked at apply time and spared because it had
+    become valid, or been replaced by a fresher entry, since planning."""
+
+    plan: AgentTaskRecoveryPreflightDependencyImpactCacheEvictionPlan
+    evicted: tuple
+    already_evicted: tuple
+    newly_protected: tuple
+    evicted_at: datetime
+

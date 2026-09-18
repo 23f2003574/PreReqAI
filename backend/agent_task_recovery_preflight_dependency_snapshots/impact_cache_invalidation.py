@@ -200,12 +200,16 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheInvalidationService:
 
         selected = []
         for entry in self._cache_service.list_entries(task_id):
-            reasons = self._stale_reasons(task_id, entry)
+            reasons = list(self.stale_reasons(task_id, entry))
             if reasons:
                 selected.append((entry, tuple(reasons)))
         return self._apply(task_id, TRIGGER_RECONCILE, None, selected)
 
-    def _stale_reasons(self, task_id: str, entry) -> list:
+    def stale_reasons(self, task_id: str, entry) -> tuple:
+        """Every reason entry is stale right now -- () when none is
+        found. A pure read (it queries, never removes), exposed so the
+        eviction service reuses these exact signals instead of
+        re-deriving them; reconcile() removes exactly what this reports."""
         reasons = []
         if not self._cache_service.is_current(entry):
             reasons.append("snapshot/version is no longer the preflight's current one")
@@ -224,7 +228,7 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheInvalidationService:
             if evidence is None:
                 reasons.append("dependency evidence cannot be verified")
             reasons.extend(self._event_reasons(task_id, entry, evidence or set()))
-        return reasons
+        return tuple(reasons)
 
     def _event_reasons(self, task_id: str, entry, evidence: set) -> list:
         since = entry.result.reconciled_at
