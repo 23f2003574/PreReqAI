@@ -313,6 +313,17 @@ class LLMAgentTaskRecoveryPreflightDependencyImpactCacheService:
         self._require_text(preflight_id, "preflight_id")
         return self._store.delete(task_id, preflight_id)
 
+    def current_identity(self, task_id: str, preflight_id: str) -> Optional[tuple]:
+        """(snapshot_id, version) of task_id/preflight_id's current
+        snapshot -- None when there is none. The same identity get()
+        compares entries against, exposed for consistency checking."""
+        return self._current_identity(task_id, preflight_id)
+
+    def is_trusted(self, task_id: str, snapshot_id: str) -> bool:
+        """Whether snapshot_id passes this cache's own trust/integrity
+        gate (True when none is configured; False on any error)."""
+        return self._is_trusted(task_id, snapshot_id)
+
     def _current_identity(self, task_id: str, preflight_id: str) -> Optional[tuple]:
         """(snapshot_id, version) of task_id/preflight_id's current
         snapshot -- None when there is none."""

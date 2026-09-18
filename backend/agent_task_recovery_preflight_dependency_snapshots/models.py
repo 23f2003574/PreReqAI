@@ -849,3 +849,60 @@ class AgentTaskRecoveryPreflightDependencyImpactCacheEvictionResult:
     newly_protected: tuple
     evicted_at: datetime
 
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheConsistencyViolation:
+    """One concrete disagreement between a cached entry (or its absence)
+    and the source it should reflect, anchored to one preflight_id.
+    `category` is one of the CONSISTENCY_CATEGORIES; snapshot_id/version
+    are the entry's own when one exists, else the current source's."""
+
+    preflight_id: str
+    snapshot_id: Optional[str]
+    version: Optional[int]
+    category: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheConsistencyResult:
+    """check()'s complete, read-only outcome. is_consistent is exactly
+    `not violations` (the convention every consistency result in this
+    repository uses); `checked_preflight_ids` names everything examined,
+    so an empty result is distinguishable from an unexamined one."""
+
+    task_id: str
+    preflight_id: Optional[str]
+    is_consistent: bool
+    violations: tuple
+    checked_preflight_ids: tuple
+    deep: bool
+    checked_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheRepairAction:
+    """What repair() did (or declined to do) for one preflight: `action`
+    is one of RECOMPUTED, REMOVED, KEPT_NEWER, UNREPAIRABLE."""
+
+    preflight_id: str
+    categories: tuple
+    action: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryPreflightDependencyImpactCacheRepairResult:
+    """repair()'s outcome: the check it acted on, every action taken, and
+    a fresh re-check. is_consistent is that re-check's verdict, so a
+    repair that could not fix something (e.g. untrusted) says so."""
+
+    task_id: str
+    preflight_id: Optional[str]
+    before: AgentTaskRecoveryPreflightDependencyImpactCacheConsistencyResult
+    actions: tuple
+    after: AgentTaskRecoveryPreflightDependencyImpactCacheConsistencyResult
+    repaired_count: int
+    is_consistent: bool
+    repaired_at: datetime
+

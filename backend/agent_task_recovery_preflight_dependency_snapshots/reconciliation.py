@@ -51,6 +51,7 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         impact_cache_service=None,
         impact_cache_invalidation_service=None,
         impact_cache_metrics_service=None,
+        impact_cache_consistency_service=None,
     ):
         """
         Args:
@@ -105,6 +106,11 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
         # is called), recorded exactly when a cached result is returned in place
         # of a fresh diff. Any failure there is swallowed.
         self._impact_cache_metrics_service = impact_cache_metrics_service
+        # Optional #6 consistency service (duck-typed, only check() is called,
+        # always deep=False, verify_trust=False: the lookup just done already
+        # enforced trust, so no live dependency read or second validation is added). A cached
+        # result that fails it is not used; any error also means not used.
+        self._impact_cache_consistency_service = impact_cache_consistency_service
 
     def is_current(self, task_id: str, snapshot_id: str) -> bool:
         """Shorthand for reconcile(task_id, snapshot_id).status ==
@@ -170,6 +176,11 @@ class LLMAgentTaskRecoveryPreflightDependencySnapshotReconciliationService:
                 if self._impact_cache_invalidation_service is not None:
                     self._impact_cache_invalidation_service.reconcile(task_id)
                 cached = self._impact_cache_service.get(task_id, snapshot.preflight_id)
+                if cached is not None and self._impact_cache_consistency_service is not None:
+                    if not self._impact_cache_consistency_service.check(
+                        task_id, snapshot.preflight_id, deep=False, verify_trust=False
+                    ).is_consistent:
+                        cached = None
             except Exception:
                 cached = None
             if cached is not None and cached.snapshot_id == snapshot_id:
