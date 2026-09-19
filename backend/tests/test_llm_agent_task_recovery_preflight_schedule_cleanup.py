@@ -309,3 +309,13 @@ def test_invalid_task_id_is_rejected(task_id):
 def test_invalid_now_is_rejected():
     with pytest.raises(InvalidAgentTaskRecoveryScheduleCleanupError):
         _stack()["cleanup_service"].cleanup("task-1", now="soon")
+
+
+def test_cleaned_reasons_pair_each_id_with_its_terminal_reason():
+    s = _stack(max_overdue_age=TTL)
+    schedule = _scheduled(s, execute_at=OVERDUE)
+
+    result = s["cleanup_service"].cleanup("task-1", now=NOW)
+
+    assert result.cleaned_reasons == ((schedule.schedule_id, "expired"),)
+    assert result.failures == ()

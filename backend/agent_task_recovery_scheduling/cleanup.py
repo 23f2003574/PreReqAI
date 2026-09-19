@@ -11,6 +11,10 @@ from .reconciliation import LLMAgentTaskRecoveryPreflightScheduleReconciliationS
 from .service import LLMAgentTaskRecoveryPreflightSchedulingService
 
 
+EXPIRED_REASON = "expired"
+INVALIDATED_REASON = "invalidated"
+
+
 class InvalidAgentTaskRecoveryScheduleCleanupError(ValueError):
     """Raised when cleanup() is given invalid arguments."""
 
@@ -21,7 +25,13 @@ class AgentTaskRecoveryScheduleCleanupResult:
     actually moved to their persisted terminal form (cleaned) versus
     left exactly as they were (skipped), and which schedule_ids fell in
     each bucket. Every schedule ever recorded for task_id lands in
-    exactly one of the two."""
+    exactly one of cleaned, skipped, or failures.
+
+    cleaned_reasons pairs each cleaned schedule_id with the terminal
+    reason it was cleaned for (EXPIRED_REASON or INVALIDATED_REASON), in
+    cleaned order; failures pairs a schedule_id with the error text of a
+    cleanup attempt that raised (that one schedule is left as it was and
+    the pass continues)."""
 
     task_id: str
     cleaned_count: int
@@ -29,6 +39,8 @@ class AgentTaskRecoveryScheduleCleanupResult:
     cleaned_schedule_ids: tuple
     skipped_schedule_ids: tuple
     cleaned_at: datetime
+    cleaned_reasons: tuple = ()
+    failures: tuple = ()
 
 
 class LLMAgentTaskRecoveryPreflightScheduleCleanupService:
@@ -124,20 +136,37 @@ class LLMAgentTaskRecoveryPreflightScheduleCleanupService:
 
         cleaned: list = []
         skipped: list = []
+        reasons: list = []
+        failures: list = []
         for schedule in self._scheduling_service.list(task_id):
             schedule_id = schedule.schedule_id
-            if schedule_id in dispatched_ids or schedule.status == CANCELLED:
+            try:
+                reason = self._clean(task_id, schedule, dispatched_ids, now)
+            except Exception as error:
+                failures.append((schedule_id, str(error)))
+                continue
+            if reason is None:
                 skipped.append(schedule_id)
-            elif schedule.status == INVALIDATED:
-                result = self._reconciliation_service.reconcile(task_id, schedule_id)
-                (cleaned if result.affected else skipped).append(schedule_id)
-            elif self._expiration_service.check(task_id, schedule_id, now=now).expired:
-                self._expiration_service.expire(task_id, schedule_id, now=now)
-                cleaned.append(schedule_id)
             else:
-                skipped.append(schedule_id)
+                cleaned.append(schedule_id)
+                reasons.append((schedule_id, reason))
 
         return AgentTaskRecoveryScheduleCleanupResult(
             task_id=task_id, cleaned_count=len(cleaned), skipped_count=len(skipped),
             cleaned_schedule_ids=tuple(cleaned), skipped_schedule_ids=tuple(skipped), cleaned_at=now,
+            cleaned_reasons=tuple(reasons), failures=tuple(failures),
         )
+
+    def _clean(self, task_id: str, schedule, dispatched_ids: set, now: datetime) -> Optional[str]:
+        """The terminal reason schedule was just cleaned for, or None
+        when it was left untouched."""
+        schedule_id = schedule.schedule_id
+        if schedule_id in dispatched_ids or schedule.status == CANCELLED:
+            return None
+        if schedule.status == INVALIDATED:
+            result = self._reconciliation_service.reconcile(task_id, schedule_id)
+            return INVALIDATED_REASON if result.affected else None
+        if self._expiration_service.check(task_id, schedule_id, now=now).expired:
+            self._expiration_service.expire(task_id, schedule_id, now=now)
+            return EXPIRED_REASON
+        return None

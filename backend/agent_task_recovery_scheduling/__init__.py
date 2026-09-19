@@ -116,9 +116,16 @@ from .capacity import (
     LLMAgentTaskRecoveryPreflightScheduleCapacityService,
 )
 from .cleanup import (
+    EXPIRED_REASON,
+    INVALIDATED_REASON,
     AgentTaskRecoveryScheduleCleanupResult,
     InvalidAgentTaskRecoveryScheduleCleanupError,
     LLMAgentTaskRecoveryPreflightScheduleCleanupService,
+)
+from .cleanup_reporting import (
+    AgentTaskRecoveryScheduleCleanupReport,
+    InvalidAgentTaskRecoveryScheduleCleanupReportingError,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupReportingService,
 )
 
 __all__ = [
@@ -214,4 +221,9 @@ __all__ = [
     "AgentTaskRecoveryScheduleCleanupResult",
     "LLMAgentTaskRecoveryPreflightScheduleCleanupService",
     "InvalidAgentTaskRecoveryScheduleCleanupError",
+    "EXPIRED_REASON",
+    "INVALIDATED_REASON",
+    "AgentTaskRecoveryScheduleCleanupReport",
+    "LLMAgentTaskRecoveryPreflightScheduleCleanupReportingService",
+    "InvalidAgentTaskRecoveryScheduleCleanupReportingError",
 ]
