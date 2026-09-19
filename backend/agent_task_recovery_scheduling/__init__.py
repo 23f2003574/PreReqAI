@@ -115,6 +115,11 @@ from .capacity import (
     JsonAgentTaskRecoveryScheduleAdmissionStore,
     LLMAgentTaskRecoveryPreflightScheduleCapacityService,
 )
+from .cleanup import (
+    AgentTaskRecoveryScheduleCleanupResult,
+    InvalidAgentTaskRecoveryScheduleCleanupError,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupService,
+)
 
 __all__ = [
     "SCHEDULED",
@@ -206,4 +211,7 @@ __all__ = [
     "AgentTaskRecoveryScheduleLearningResult",
     "LLMAgentTaskRecoveryPreflightScheduleLearningService",
     "InvalidAgentTaskRecoveryScheduleLearningError",
+    "AgentTaskRecoveryScheduleCleanupResult",
+    "LLMAgentTaskRecoveryPreflightScheduleCleanupService",
+    "InvalidAgentTaskRecoveryScheduleCleanupError",
 ]
