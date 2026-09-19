@@ -135,6 +135,10 @@ from .cleanup_candidates import (
     InvalidAgentTaskRecoveryScheduleCleanupCandidateError,
     LLMAgentTaskRecoveryPreflightScheduleCleanupCandidateService,
 )
+from .cleanup_ordering import (
+    InvalidAgentTaskRecoveryScheduleCleanupOrderingError,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupOrderingService,
+)
 from .cleanup_dry_run import (
     AgentTaskRecoveryScheduleCleanupPlan,
     InvalidAgentTaskRecoveryScheduleCleanupDryRunError,
@@ -256,4 +260,6 @@ __all__ = [
     "AgentTaskRecoveryScheduleCleanupCandidate",
     "LLMAgentTaskRecoveryPreflightScheduleCleanupCandidateService",
     "InvalidAgentTaskRecoveryScheduleCleanupCandidateError",
+    "LLMAgentTaskRecoveryPreflightScheduleCleanupOrderingService",
+    "InvalidAgentTaskRecoveryScheduleCleanupOrderingError",
 ]
