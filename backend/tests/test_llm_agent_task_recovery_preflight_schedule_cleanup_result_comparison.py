@@ -37,7 +37,17 @@ from backend.agent_task_recovery_scheduling import (
     LLMAgentTaskRecoveryPreflightScheduleCleanupIdempotencyService,
     LLMAgentTaskRecoveryPreflightScheduleCleanupService,
     InvalidAgentTaskRecoveryScheduleCleanupIdempotencyError,
-    InvalidAgentTaskRecoveryScheduleCleanupOrderingError,
+    BATCH_CLEANED,
+    BATCH_FAILED,
+    BATCH_SKIPPED,
+    InMemoryAgentTaskRecoveryScheduleCleanupResultStore,
+    InvalidAgentTaskRecoveryScheduleCleanupResultComparisonError,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupResultComparisonService,
+    JsonAgentTaskRecoveryScheduleCleanupResultStore,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupResultService,
+    InvalidAgentTaskRecoveryScheduleCleanupBatchPlanError,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupBatchService,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupBatchPlanService,
     LLMAgentTaskRecoveryPreflightScheduleCleanupOrderingService,
     LLMAgentTaskRecoveryPreflightScheduleCleanupCandidateService,
     LLMAgentTaskRecoveryPreflightScheduleCleanupDryRunService,
@@ -182,7 +192,15 @@ def _stack(readiness=None, dispatch_service=None, max_overdue_age=None):
     ordering_service = LLMAgentTaskRecoveryPreflightScheduleCleanupOrderingService(
         candidate_service=candidate_service
     )
+    batch_plan_service = LLMAgentTaskRecoveryPreflightScheduleCleanupBatchPlanService(
+        candidate_service=candidate_service, ordering_service=ordering_service
+    )
+    batch_service = LLMAgentTaskRecoveryPreflightScheduleCleanupBatchService(
+        plan_service=batch_plan_service, cleanup_service=cleanup_service
+    )
     return {
+        "batch_service": batch_service,
+        "batch_plan_service": batch_plan_service,
         "ordering_service": ordering_service,
         "candidate_service": candidate_service,
         "dry_run_service": dry_run_service,
@@ -225,102 +243,151 @@ TTL = timedelta(hours=24)
 OVERDUE = NOW - TTL - timedelta(minutes=1)
 
 
-def _order(s, candidates=None):
-    return s["ordering_service"].order("task-1", candidates, now=NOW)
+class _FailingFor:
+    """Real cleanup service, except it raises for the given schedule_ids."""
+
+    def __init__(self, real, fail_ids):
+        self._real, self._fail_ids = real, set(fail_ids)
+
+    def clean_schedule(self, task_id, schedule_id, now=None):
+        if schedule_id in self._fail_ids:
+            raise RuntimeError("boom")
+        return self._real.clean_schedule(task_id, schedule_id, now=now)
 
 
-def _ids(candidates):
-    return [c.schedule_id for c in candidates]
+def _execute(s, plan=None):
+    return s["batch_service"].execute("task-1", plan, now=NOW)
 
 
-def test_empty_candidates_order_to_empty():
-    s = _stack()
-
-    assert s["ordering_service"].order("no-such-task", now=NOW) == ()
-    assert _order(s, []) == ()
+def _status(s, schedule_id):
+    return s["scheduling_service"].get("task-1", schedule_id).status
 
 
-def test_orders_expired_candidates_oldest_deadline_first():
+def _mixed(s):
+    expired_new = _scheduled(s, execute_at=OVERDUE - timedelta(minutes=30))
+    expired_old = _extra(s, expired_new, OVERDUE - timedelta(hours=5), "p1")
+    invalidated = _extra(s, expired_new, NOW + timedelta(hours=1), "p2")
+    s["scheduling_service"]._store.save(replace(invalidated, authorization_id="no-such-authorization"))
+    _extra(s, expired_new, NOW + timedelta(hours=1), "p3")
+    dispatched = _extra(s, expired_new, NOW - timedelta(hours=1), "p4")
+    s["dispatch_service"].dispatch("task-1", dispatched.schedule_id)
+    cancelled = _extra(s, expired_new, OVERDUE, "p5")
+    s["scheduling_service"].cancel("task-1", cancelled.schedule_id, reason="manual")
+    return expired_new, expired_old, invalidated
+
+
+
+
+def _services():
+    results = LLMAgentTaskRecoveryPreflightScheduleCleanupResultService()
+    return results, LLMAgentTaskRecoveryPreflightScheduleCleanupResultComparisonService(result_service=results)
+
+
+def _failed_then_retried():
+    """First run: expired_old fails (2 cleaned, 1 failed). Second run: it succeeds."""
     s = _stack(max_overdue_age=TTL)
-    newer = _scheduled(s, execute_at=OVERDUE - timedelta(minutes=30))
-    older = _extra(s, newer, OVERDUE - timedelta(hours=2), "p1")
-    oldest = _extra(s, newer, OVERDUE - timedelta(hours=5), "p2")
+    invalidated_ids = _mixed(s)
+    expired_new, expired_old, invalidated = invalidated_ids
+    failing = LLMAgentTaskRecoveryPreflightScheduleCleanupBatchService(
+        plan_service=s["batch_plan_service"], cleanup_service=_FailingFor(s["cleanup_service"], [expired_old.schedule_id])
+    )
+    results, comparison = _services()
+    first = results.record("task-1", failing.execute("task-1", now=NOW))
+    second = results.record("task-1", s["batch_service"].execute("task-1", now=NOW + timedelta(hours=1)))
+    return comparison, first, second, invalidated, expired_old, expired_new
 
-    assert _ids(_order(s)) == [oldest.schedule_id, older.schedule_id, newer.schedule_id]
 
-
-def test_result_does_not_depend_on_input_order():
+def test_identical_result_compares_unchanged():
     s = _stack(max_overdue_age=TTL)
-    base = _scheduled(s, execute_at=OVERDUE)
-    _extra(s, base, OVERDUE - timedelta(hours=2), "p1")
-    _extra(s, base, OVERDUE - timedelta(hours=5), "p2")
-    found = s["candidate_service"].find("task-1", now=NOW)
+    _mixed(s)
+    results, comparison = _services()
+    record = results.record("task-1", _execute(s))
 
-    assert _order(s, list(found)) == _order(s, list(reversed(found))) == _order(s)
+    result = comparison.compare("task-1", record.result_id, record.result_id)
+
+    assert result.changed is False
+    assert (result.appeared, result.disappeared, result.outcome_changes) == ((), (), ())
+    assert (result.newly_failing, result.newly_cleaned) == ((), ())
+    assert all(before == after for _, before, after in result.count_changes)
 
 
-def test_ties_break_on_created_at_then_schedule_id():
+def test_two_empty_results_with_different_ids_compare_unchanged():
+    results, comparison = _services()
+    empty = _stack()["batch_service"]
+    first = results.record("task-1", empty.execute("task-1", now=NOW))
+    second = results.record("task-1", empty.execute("task-1", now=NOW + timedelta(hours=1)))
+
+    result = comparison.compare("task-1", first.result_id, second.result_id)
+
+    assert first.result_id != second.result_id
+    assert result.changed is False
+
+
+def test_retry_after_failure_shows_changes_and_newly_cleaned():
+    comparison, first, second, invalidated, expired_old, expired_new = _failed_then_retried()
+
+    result = comparison.compare("task-1", first.result_id, second.result_id)
+
+    assert result.changed is True
+    assert result.count_changes == (("processed", 3, 1), ("cleaned", 2, 1), ("skipped", 0, 0), ("failed", 1, 0))
+    assert result.disappeared == (invalidated.schedule_id, expired_new.schedule_id)
+    assert result.appeared == ()
+    (before, after), = result.outcome_changes
+    assert (before.schedule_id, before.outcome, before.error) == (expired_old.schedule_id, BATCH_FAILED, "boom")
+    assert (after.schedule_id, after.outcome, after.reason) == (expired_old.schedule_id, BATCH_CLEANED, "expired")
+    assert result.newly_cleaned == (expired_old.schedule_id,)
+    assert result.newly_failing == ()
+
+
+def test_reverse_order_shows_newly_failing_and_appeared_schedules():
+    comparison, first, second, invalidated, expired_old, expired_new = _failed_then_retried()
+
+    result = comparison.compare("task-1", second.result_id, first.result_id)
+
+    assert result.appeared == (invalidated.schedule_id, expired_new.schedule_id)
+    assert result.disappeared == ()
+    assert result.newly_failing == (expired_old.schedule_id,)
+    assert result.newly_cleaned == (invalidated.schedule_id, expired_new.schedule_id)
+    (before, after), = result.outcome_changes
+    assert (before.outcome, after.outcome) == (BATCH_CLEANED, BATCH_FAILED)
+
+
+def test_empty_versus_populated_result():
     s = _stack(max_overdue_age=TTL)
-    first = _scheduled(s, execute_at=OVERDUE)
-    second = _extra(s, first, OVERDUE, "p1")
-    third = replace(second, schedule_id="00000000-0000-4000-8000-000000000000", preflight_id="p2")
-    s["scheduling_service"]._store.save(third)
+    _mixed(s)
+    results, comparison = _services()
+    populated = results.record("task-1", _execute(s, s["batch_plan_service"].plan("task-1", now=NOW)))
+    empty = results.record("task-1", s["batch_service"].execute("task-1", now=NOW + timedelta(hours=1)))
 
-    ordered = _order(s)
+    result = comparison.compare("task-1", populated.result_id, empty.result_id)
 
-    assert _ids(ordered) == [first.schedule_id, *sorted([second.schedule_id, third.schedule_id])]
-    assert [c.created_at for c in ordered][1] == [c.created_at for c in ordered][2]
-
-
-def test_invalidated_precedes_expired():
-    s = _stack(max_overdue_age=TTL)
-    expired = _scheduled(s, execute_at=OVERDUE)
-    invalidated = _extra(s, expired, NOW + timedelta(hours=1), "p1")
-    invalidated = s["scheduling_service"]._store.save(replace(invalidated, authorization_id="no-such-authorization"))
-    assert s["scheduling_service"].get("task-1", invalidated.schedule_id).status == "invalidated"
-
-    assert _ids(_order(s)) == [invalidated.schedule_id, expired.schedule_id]
+    assert result.changed is True
+    assert result.disappeared == populated.schedule_ids
+    assert result.count_changes[0] == ("processed", 3, 0)
+    assert (result.appeared, result.newly_cleaned, result.newly_failing) == ((), (), ())
 
 
-def test_active_schedules_are_never_ordered_even_when_supplied():
-    s = _stack(max_overdue_age=TTL)
-    expired = _scheduled(s, execute_at=OVERDUE)
-    active = _extra(s, expired, NOW + timedelta(hours=1), "p1")
-    (candidate,) = s["candidate_service"].find("task-1", now=NOW)
-    fake_active = replace(candidate, schedule_id=active.schedule_id)
+def test_comparison_is_deterministic_and_read_only():
+    comparison, first, second, *_ = _failed_then_retried()
+    results = comparison._result_service
+    history = results.history("task-1")
 
-    assert _ids(_order(s, [fake_active, candidate])) == [expired.schedule_id]
-
-
-def test_stale_candidate_dropped_once_cleaned_and_other_tasks_ignored():
-    s = _stack(max_overdue_age=TTL)
-    _scheduled(s, execute_at=OVERDUE)
-    (candidate,) = s["candidate_service"].find("task-1", now=NOW)
-
-    assert _order(s, [candidate, candidate]) == (candidate,)
-    assert s["ordering_service"].order("task-2", [candidate], now=NOW) == ()
-    s["cleanup_service"].cleanup("task-1", now=NOW)
-    assert _order(s, [candidate]) == ()
+    assert comparison.compare("task-1", first.result_id, second.result_id) == comparison.compare(
+        "task-1", first.result_id, second.result_id
+    )
+    assert results.history("task-1") == history
 
 
-def test_ordering_is_read_only_and_deterministic():
-    s = _stack(max_overdue_age=TTL)
-    base = _scheduled(s, execute_at=OVERDUE)
-    _extra(s, base, NOW + timedelta(hours=1), "p1")
-    before = s["scheduling_service"].list("task-1")
-
-    assert _order(s) == _order(s)
-    assert s["scheduling_service"].list("task-1") == before
-
-
-@pytest.mark.parametrize("task_id", [None, "", 5])
-def test_invalid_task_id_is_rejected(task_id):
-    with pytest.raises(InvalidAgentTaskRecoveryScheduleCleanupOrderingError):
-        _stack()["ordering_service"].order(task_id)
-
-
-def test_non_candidates_and_bad_now_are_rejected():
-    with pytest.raises(InvalidAgentTaskRecoveryScheduleCleanupOrderingError):
-        _stack()["ordering_service"].order("task-1", ["s1"])
-    with pytest.raises(InvalidAgentTaskRecoveryScheduleCleanupOrderingError):
-        _stack()["ordering_service"].order("task-1", now="soon")
+def test_missing_results_and_bad_arguments_are_rejected():
+    results, comparison = _services()
+    record = results.record("task-1", _stack()["batch_service"].execute("task-1", now=NOW))
+    for call in (
+        lambda: comparison.compare("task-1", record.result_id, "no-such-result"),
+        lambda: comparison.compare("task-1", "no-such-result", record.result_id),
+        lambda: comparison.compare("task-2", record.result_id, record.result_id),
+        lambda: comparison.compare("", record.result_id, record.result_id),
+        lambda: comparison.compare("task-1", None, record.result_id),
+        lambda: comparison.compare("task-1", record.result_id, ""),
+    ):
+        with pytest.raises(InvalidAgentTaskRecoveryScheduleCleanupResultComparisonError):
+            call()
