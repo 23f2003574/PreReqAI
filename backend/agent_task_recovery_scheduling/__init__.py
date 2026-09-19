@@ -130,6 +130,11 @@ from .cleanup_idempotency import (
     InvalidAgentTaskRecoveryScheduleCleanupIdempotencyError,
     LLMAgentTaskRecoveryPreflightScheduleCleanupIdempotencyService,
 )
+from .cleanup_candidates import (
+    AgentTaskRecoveryScheduleCleanupCandidate,
+    InvalidAgentTaskRecoveryScheduleCleanupCandidateError,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupCandidateService,
+)
 from .cleanup_dry_run import (
     AgentTaskRecoveryScheduleCleanupPlan,
     InvalidAgentTaskRecoveryScheduleCleanupDryRunError,
@@ -248,4 +253,7 @@ __all__ = [
     "AgentTaskRecoveryScheduleCleanupPlan",
     "LLMAgentTaskRecoveryPreflightScheduleCleanupDryRunService",
     "InvalidAgentTaskRecoveryScheduleCleanupDryRunError",
+    "AgentTaskRecoveryScheduleCleanupCandidate",
+    "LLMAgentTaskRecoveryPreflightScheduleCleanupCandidateService",
+    "InvalidAgentTaskRecoveryScheduleCleanupCandidateError",
 ]

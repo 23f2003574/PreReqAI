@@ -37,7 +37,8 @@ from backend.agent_task_recovery_scheduling import (
     LLMAgentTaskRecoveryPreflightScheduleCleanupIdempotencyService,
     LLMAgentTaskRecoveryPreflightScheduleCleanupService,
     InvalidAgentTaskRecoveryScheduleCleanupIdempotencyError,
-    InvalidAgentTaskRecoveryScheduleCleanupDryRunError,
+    InvalidAgentTaskRecoveryScheduleCleanupCandidateError,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupCandidateService,
     LLMAgentTaskRecoveryPreflightScheduleCleanupDryRunService,
     ALREADY_CLEANED,
     CLEANUP_ELIGIBLE,
@@ -173,7 +174,12 @@ def _stack(readiness=None, dispatch_service=None, max_overdue_age=None):
         scheduling_service=scheduling_service, dispatch_service=dispatch_service,
         cleanup_service=cleanup_service, idempotency_service=idempotency_service,
     )
+    candidate_service = LLMAgentTaskRecoveryPreflightScheduleCleanupCandidateService(
+        scheduling_service=scheduling_service, dispatch_service=dispatch_service,
+        expiration_service=expiration_service, cleanup_service=cleanup_service,
+    )
     return {
+        "candidate_service": candidate_service,
         "dry_run_service": dry_run_service,
         "idempotency_service": idempotency_service,
         "cleanup_service": cleanup_service,
@@ -214,134 +220,123 @@ TTL = timedelta(hours=24)
 OVERDUE = NOW - TTL - timedelta(minutes=1)
 
 
-def _snapshot(s, task_id="task-1"):
-    return (s["scheduling_service"].list(task_id), s["dispatch_service"].list(task_id))
+def _find(s, now=NOW):
+    return s["candidate_service"].find("task-1", now=now)
 
 
-def _plan(s, now=NOW):
-    return s["dry_run_service"].dry_run("task-1", now=now)
+def test_empty_task_has_no_candidates():
+    assert _stack()["candidate_service"].find("no-such-task", now=NOW) == ()
 
 
-def test_empty_task_has_empty_plan():
-    plan = _stack()["dry_run_service"].dry_run("no-such-task", now=NOW)
+def test_only_active_schedules_yield_no_candidates():
+    s = _stack(max_overdue_age=TTL)
+    schedule = _scheduled(s, execute_at=NOW + timedelta(hours=1))
 
-    assert (plan.candidates, plan.skipped, plan.failures) == ((), (), ())
-    assert (plan.candidate_count, plan.skipped_count) == (0, 0)
-    assert plan.planned_at == NOW
+    assert _find(s) == ()
+    assert s["candidate_service"].is_candidate("task-1", schedule.schedule_id, now=NOW) is False
 
 
-def test_expired_schedule_is_a_candidate_with_reason():
+def test_expired_candidate_carries_id_state_reason_and_timestamps():
     s = _stack(max_overdue_age=TTL)
     schedule = _scheduled(s, execute_at=OVERDUE)
 
-    plan = _plan(s)
+    (candidate,) = _find(s)
 
-    assert plan.candidates == ((schedule.schedule_id, "expired"),)
-    assert plan.skipped == ()
+    assert candidate.schedule_id == schedule.schedule_id
+    assert candidate.preflight_id == schedule.preflight_id
+    assert candidate.status == "scheduled"
+    assert candidate.reason == "expired"
+    assert candidate.created_at == schedule.created_at
+    assert candidate.eligible_since == OVERDUE + TTL
+    assert s["candidate_service"].is_candidate("task-1", schedule.schedule_id, now=NOW) is True
 
 
-def test_invalidated_schedule_is_a_candidate_with_reason():
+def test_invalidated_candidate_has_no_eligible_since():
     s = _stack(max_overdue_age=TTL)
     schedule = _scheduled(s, execute_at=NOW + timedelta(hours=1))
     s["invalidation_service"].invalidate("task-1", reason="operator flagged this")
 
-    assert _plan(s).candidates == ((schedule.schedule_id, "invalidated"),)
+    (candidate,) = _find(s)
+
+    assert (candidate.schedule_id, candidate.status, candidate.reason) == (
+        schedule.schedule_id, "invalidated", "invalidated",
+    )
+    assert candidate.eligible_since is None
 
 
-def test_active_schedule_is_skipped_as_still_active():
+def test_cancelled_and_dispatched_schedules_are_not_candidates():
     s = _stack(max_overdue_age=TTL)
-    schedule = _scheduled(s, execute_at=NOW + timedelta(hours=1))
-
-    plan = _plan(s)
-
-    assert plan.candidates == ()
-    assert plan.skipped == ((schedule.schedule_id, STILL_ACTIVE),)
-
-
-def test_cancelled_and_dispatched_schedules_are_skipped():
-    s = _stack(max_overdue_age=TTL)
-    cancelled = _scheduled(s, task_id="task-1", execute_at=OVERDUE)
+    cancelled = _scheduled(s, execute_at=OVERDUE)
     s["scheduling_service"].cancel("task-1", cancelled.schedule_id, reason="manual")
 
-    assert _plan(s).skipped == ((cancelled.schedule_id, ALREADY_CLEANED),)
+    assert _find(s) == ()
+    assert s["candidate_service"].is_candidate("task-1", cancelled.schedule_id, now=NOW) is False
 
     s2 = _stack(max_overdue_age=TTL)
     dispatched = _scheduled(s2, execute_at=NOW - timedelta(hours=1))
     s2["dispatch_service"].dispatch("task-1", dispatched.schedule_id)
 
-    assert _plan(s2, now=NOW + TTL * 2).skipped == ((dispatched.schedule_id, DISPATCHED),)
+    assert _find(s2, now=NOW + TTL * 2) == ()
+    assert s2["candidate_service"].is_candidate("task-1", dispatched.schedule_id, now=NOW + TTL * 2) is False
 
 
-def test_dry_run_matches_what_real_cleanup_then_does():
+def test_mixed_schedules_yield_exactly_what_cleanup_cleans_in_order():
     s = _stack(max_overdue_age=TTL)
     expired = _scheduled(s, execute_at=OVERDUE)
-    _extra(s, expired, NOW + timedelta(hours=1), "p1")
+    active = _extra(s, expired, NOW + timedelta(hours=1), "p1")
     dispatched = _extra(s, expired, NOW - timedelta(hours=1), "p2")
     s["dispatch_service"].dispatch("task-1", dispatched.schedule_id)
-    plan = _plan(s)
+    cancelled = _extra(s, expired, OVERDUE, "p3")
+    s["scheduling_service"].cancel("task-1", cancelled.schedule_id, reason="manual")
 
-    assert [i for i, _ in plan.candidates] == [expired.schedule_id]
-    assert plan.skipped_count == 2
+    candidates = _find(s)
+
+    assert [c.schedule_id for c in candidates] == [expired.schedule_id]
+    for schedule in (active, dispatched, cancelled):
+        assert s["candidate_service"].is_candidate("task-1", schedule.schedule_id, now=NOW) is False
     result = s["cleanup_service"].cleanup("task-1", now=NOW)
-
-    assert plan.candidates == result.cleaned_reasons
-    assert plan.candidate_count == result.cleaned_count
-    assert tuple(i for i, _ in plan.skipped) == result.skipped_schedule_ids
-    assert plan.skipped_count == result.skipped_count
-    assert plan.failures == result.failures
+    assert tuple((c.schedule_id, c.reason) for c in candidates) == result.cleaned_reasons
+    assert _find(s) == ()
 
 
-def test_dry_run_causes_zero_state_changes_and_is_repeatable():
+def test_several_candidates_are_ordered_by_creation():
     s = _stack(max_overdue_age=TTL)
-    expired = _scheduled(s, execute_at=OVERDUE)
-    _extra(s, expired, NOW + timedelta(hours=1), "p1")
-    before = _snapshot(s)
+    first = _scheduled(s, execute_at=OVERDUE)
+    second = _extra(s, first, OVERDUE, "p1")
+    third = _extra(s, first, OVERDUE, "p2")
 
-    first = _plan(s)
-    second = _plan(s)
-
-    assert first.candidate_count == 1
-    assert first == second
-    assert _snapshot(s) == before
+    assert [c.schedule_id for c in _find(s)] == [first.schedule_id, second.schedule_id, third.schedule_id]
 
 
-def test_plan_still_lists_candidates_until_cleanup_actually_runs():
+def test_find_is_read_only_and_deterministic():
     s = _stack(max_overdue_age=TTL)
-    schedule = _scheduled(s, execute_at=OVERDUE)
+    _scheduled(s, execute_at=OVERDUE)
+    _scheduled(s, execute_at=NOW + timedelta(hours=1))
+    before = (s["scheduling_service"].list("task-1"), s["dispatch_service"].list("task-1"))
 
-    assert _plan(s).candidates == ((schedule.schedule_id, "expired"),)
-    s["cleanup_service"].cleanup("task-1", now=NOW)
+    first, second = _find(s), _find(s)
 
-    plan = _plan(s)
-    assert plan.candidates == ()
-    assert plan.skipped == ((schedule.schedule_id, ALREADY_CLEANED),)
+    assert first and first == second
+    assert (s["scheduling_service"].list("task-1"), s["dispatch_service"].list("task-1")) == before
 
 
-def test_failing_schedule_is_reported_as_failure_like_cleanup():
-    class _Scheduling:
-        def list(self, task_id):
-            return [type("S", (), {"schedule_id": "s1", "status": "scheduled"})()]
-
-    class _Idempotency:
-        def check(self, task_id, schedule_id, now=None):
-            raise RuntimeError("boom")
-
-    service = LLMAgentTaskRecoveryPreflightScheduleCleanupDryRunService(
-        scheduling_service=_Scheduling(), idempotency_service=_Idempotency()
-    )
-
-    plan = service.dry_run("task-1", now=NOW)
-
-    assert plan.failures == (("s1", "boom"),)
-    assert (plan.candidate_count, plan.skipped_count) == (0, 0)
+def test_unknown_schedule_is_not_a_candidate():
+    assert _stack()["candidate_service"].is_candidate("task-1", "no-such-schedule", now=NOW) is False
 
 
 @pytest.mark.parametrize("task_id", [None, "", 5])
 def test_invalid_task_id_is_rejected(task_id):
-    with pytest.raises(InvalidAgentTaskRecoveryScheduleCleanupDryRunError):
-        _stack()["dry_run_service"].dry_run(task_id)
+    with pytest.raises(InvalidAgentTaskRecoveryScheduleCleanupCandidateError):
+        _stack()["candidate_service"].find(task_id)
+
+
+@pytest.mark.parametrize("schedule_id", [None, ""])
+def test_invalid_schedule_id_is_rejected(schedule_id):
+    with pytest.raises(InvalidAgentTaskRecoveryScheduleCleanupCandidateError):
+        _stack()["candidate_service"].is_candidate("task-1", schedule_id)
 
 
 def test_invalid_now_is_rejected():
-    with pytest.raises(InvalidAgentTaskRecoveryScheduleCleanupDryRunError):
-        _stack()["dry_run_service"].dry_run("task-1", now="soon")
+    with pytest.raises(InvalidAgentTaskRecoveryScheduleCleanupCandidateError):
+        _stack()["candidate_service"].find("task-1", now="soon")
+
