@@ -144,6 +144,14 @@ from .cleanup_batch import (
     InvalidAgentTaskRecoveryScheduleCleanupBatchError,
     LLMAgentTaskRecoveryPreflightScheduleCleanupBatchService,
 )
+from .cleanup_result import (
+    AgentTaskRecoveryScheduleCleanupResultRecord,
+    AgentTaskRecoveryScheduleCleanupResultStore,
+    InMemoryAgentTaskRecoveryScheduleCleanupResultStore,
+    InvalidAgentTaskRecoveryScheduleCleanupResultError,
+    JsonAgentTaskRecoveryScheduleCleanupResultStore,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupResultService,
+)
 from .cleanup_batch_plan import (
     AgentTaskRecoveryScheduleCleanupBatchPlan,
     InvalidAgentTaskRecoveryScheduleCleanupBatchPlanError,
@@ -286,4 +294,10 @@ __all__ = [
     "AgentTaskRecoveryScheduleCleanupBatchResult",
     "LLMAgentTaskRecoveryPreflightScheduleCleanupBatchService",
     "InvalidAgentTaskRecoveryScheduleCleanupBatchError",
+    "AgentTaskRecoveryScheduleCleanupResultRecord",
+    "AgentTaskRecoveryScheduleCleanupResultStore",
+    "InMemoryAgentTaskRecoveryScheduleCleanupResultStore",
+    "JsonAgentTaskRecoveryScheduleCleanupResultStore",
+    "LLMAgentTaskRecoveryPreflightScheduleCleanupResultService",
+    "InvalidAgentTaskRecoveryScheduleCleanupResultError",
 ]
