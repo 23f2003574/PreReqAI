@@ -130,9 +130,7 @@ class LLMAgentTaskRecoveryPreflightScheduleCleanupService:
         elif not isinstance(now, datetime):
             raise InvalidAgentTaskRecoveryScheduleCleanupError("now must be a datetime when given")
 
-        dispatched_ids = set()
-        if self._dispatch_service is not None:
-            dispatched_ids = {d.schedule_id for d in self._dispatch_service.list(task_id)}
+        dispatched_ids = self._dispatched_ids(task_id)
 
         cleaned: list = []
         skipped: list = []
@@ -157,16 +155,36 @@ class LLMAgentTaskRecoveryPreflightScheduleCleanupService:
             cleaned_reasons=tuple(reasons), failures=tuple(failures),
         )
 
+    def terminal_reason(self, task_id: str, schedule, now: Optional[datetime] = None) -> Optional[str]:
+        """Read-only: the terminal reason cleanup() would clean schedule
+        (one of task_id's own, as returned by the scheduling service's
+        list()/get()) for right now, or None when cleanup() would leave
+        it untouched. Never writes."""
+        return self._terminal_reason(
+            task_id, schedule, self._dispatched_ids(task_id), now or datetime.now(timezone.utc)
+        )
+
+    def _dispatched_ids(self, task_id: str) -> set:
+        if self._dispatch_service is None:
+            return set()
+        return {d.schedule_id for d in self._dispatch_service.list(task_id)}
+
+    def _terminal_reason(self, task_id: str, schedule, dispatched_ids: set, now: datetime) -> Optional[str]:
+        if schedule.schedule_id in dispatched_ids or schedule.status == CANCELLED:
+            return None
+        if schedule.status == INVALIDATED:
+            return INVALIDATED_REASON
+        if self._expiration_service.check(task_id, schedule.schedule_id, now=now).expired:
+            return EXPIRED_REASON
+        return None
+
     def _clean(self, task_id: str, schedule, dispatched_ids: set, now: datetime) -> Optional[str]:
         """The terminal reason schedule was just cleaned for, or None
         when it was left untouched."""
-        schedule_id = schedule.schedule_id
-        if schedule_id in dispatched_ids or schedule.status == CANCELLED:
-            return None
-        if schedule.status == INVALIDATED:
-            result = self._reconciliation_service.reconcile(task_id, schedule_id)
-            return INVALIDATED_REASON if result.affected else None
-        if self._expiration_service.check(task_id, schedule_id, now=now).expired:
-            self._expiration_service.expire(task_id, schedule_id, now=now)
-            return EXPIRED_REASON
-        return None
+        reason = self._terminal_reason(task_id, schedule, dispatched_ids, now)
+        if reason == INVALIDATED_REASON:
+            result = self._reconciliation_service.reconcile(task_id, schedule.schedule_id)
+            return reason if result.affected else None
+        if reason == EXPIRED_REASON:
+            self._expiration_service.expire(task_id, schedule.schedule_id, now=now)
+        return reason

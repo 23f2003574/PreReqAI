@@ -122,6 +122,14 @@ from .cleanup import (
     InvalidAgentTaskRecoveryScheduleCleanupError,
     LLMAgentTaskRecoveryPreflightScheduleCleanupService,
 )
+from .cleanup_idempotency import (
+    ALREADY_CLEANED,
+    CLEANUP_ELIGIBLE,
+    STILL_ACTIVE,
+    AgentTaskRecoveryScheduleCleanupIdempotencyResult,
+    InvalidAgentTaskRecoveryScheduleCleanupIdempotencyError,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupIdempotencyService,
+)
 from .cleanup_reporting import (
     AgentTaskRecoveryScheduleCleanupReport,
     InvalidAgentTaskRecoveryScheduleCleanupReportingError,
@@ -226,4 +234,10 @@ __all__ = [
     "AgentTaskRecoveryScheduleCleanupReport",
     "LLMAgentTaskRecoveryPreflightScheduleCleanupReportingService",
     "InvalidAgentTaskRecoveryScheduleCleanupReportingError",
+    "ALREADY_CLEANED",
+    "CLEANUP_ELIGIBLE",
+    "STILL_ACTIVE",
+    "AgentTaskRecoveryScheduleCleanupIdempotencyResult",
+    "LLMAgentTaskRecoveryPreflightScheduleCleanupIdempotencyService",
+    "InvalidAgentTaskRecoveryScheduleCleanupIdempotencyError",
 ]
