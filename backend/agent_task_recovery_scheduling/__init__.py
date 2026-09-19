@@ -162,6 +162,14 @@ from .cleanup_result_comparison import (
     InvalidAgentTaskRecoveryScheduleCleanupResultComparisonError,
     LLMAgentTaskRecoveryPreflightScheduleCleanupResultComparisonService,
 )
+from .cleanup_result_retention import (
+    PROTECTED_LATEST,
+    PROTECTED_UNRESOLVED_FAILURE,
+    AgentTaskRecoveryScheduleCleanupResultRetentionPlan,
+    AgentTaskRecoveryScheduleCleanupResultRetentionResult,
+    InvalidAgentTaskRecoveryScheduleCleanupResultRetentionError,
+    LLMAgentTaskRecoveryPreflightScheduleCleanupResultRetentionService,
+)
 from .cleanup_batch_plan import (
     AgentTaskRecoveryScheduleCleanupBatchPlan,
     InvalidAgentTaskRecoveryScheduleCleanupBatchPlanError,
@@ -316,4 +324,10 @@ __all__ = [
     "AgentTaskRecoveryScheduleCleanupResultComparison",
     "LLMAgentTaskRecoveryPreflightScheduleCleanupResultComparisonService",
     "InvalidAgentTaskRecoveryScheduleCleanupResultComparisonError",
+    "PROTECTED_LATEST",
+    "PROTECTED_UNRESOLVED_FAILURE",
+    "AgentTaskRecoveryScheduleCleanupResultRetentionPlan",
+    "AgentTaskRecoveryScheduleCleanupResultRetentionResult",
+    "LLMAgentTaskRecoveryPreflightScheduleCleanupResultRetentionService",
+    "InvalidAgentTaskRecoveryScheduleCleanupResultRetentionError",
 ]

@@ -74,6 +74,11 @@ class AgentTaskRecoveryScheduleCleanupResultStore(ABC):
     def list_for_task(self, task_id: str) -> list:
         ...
 
+    @abstractmethod
+    def delete(self, result_id: str) -> bool:
+        """Remove one record; True if it existed. Used only by the
+        retention service."""
+
 
 def _history_order(record: AgentTaskRecoveryScheduleCleanupResultRecord) -> tuple:
     return (record.executed_at, record.recorded_at, record.result_id)
@@ -96,6 +101,9 @@ class InMemoryAgentTaskRecoveryScheduleCleanupResultStore(AgentTaskRecoverySched
 
     def list_for_task(self, task_id):
         return sorted((deepcopy(r) for r in self._by_id.values() if r.task_id == task_id), key=_history_order)
+
+    def delete(self, result_id):
+        return self._by_id.pop(result_id, None) is not None
 
 
 class JsonAgentTaskRecoveryScheduleCleanupResultStore(AgentTaskRecoveryScheduleCleanupResultStore):
@@ -122,6 +130,14 @@ class JsonAgentTaskRecoveryScheduleCleanupResultStore(AgentTaskRecoveryScheduleC
             if data.get("task_id") == task_id
         ]
         return sorted(matching, key=_history_order)
+
+    def delete(self, result_id):
+        records = self.file.read()
+        if result_id not in records:
+            return False
+        del records[result_id]
+        self.file.write(records)
+        return True
 
 
 class LLMAgentTaskRecoveryPreflightScheduleCleanupResultService:
@@ -202,6 +218,22 @@ class LLMAgentTaskRecoveryPreflightScheduleCleanupResultService:
         """
         self._require_text(task_id, "task_id")
         return tuple(self._store.list_for_task(task_id))
+
+    def remove(self, task_id: str, result_id: str) -> bool:
+        """Remove task_id's result_id; True if it was recorded. Only the
+        retention service calls this -- record() stays append-only and
+        nothing else ever deletes.
+
+        Raises:
+            InvalidAgentTaskRecoveryScheduleCleanupResultError: If
+                task_id or result_id is not a non-empty string
+        """
+        self._require_text(task_id, "task_id")
+        self._require_text(result_id, "result_id")
+        record = self._store.get(result_id)
+        if record is None or record.task_id != task_id:
+            return False
+        return self._store.delete(result_id)
 
     @staticmethod
     def _require_text(value, field_name: str) -> None:
