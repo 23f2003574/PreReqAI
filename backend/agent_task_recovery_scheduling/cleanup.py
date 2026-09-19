@@ -155,6 +155,33 @@ class LLMAgentTaskRecoveryPreflightScheduleCleanupService:
             cleaned_reasons=tuple(reasons), failures=tuple(failures),
         )
 
+    def clean_schedule(self, task_id: str, schedule_id: str, now: Optional[datetime] = None) -> Optional[str]:
+        """Clean just task_id's schedule_id, by the same rules and the
+        same write cleanup() itself uses: the terminal reason it was
+        cleaned for, or None when it was left untouched (already
+        cleaned, dispatched, or still active).
+
+        Raises:
+            InvalidAgentTaskRecoveryScheduleCleanupError: If task_id/
+                schedule_id is not a non-empty string, now is given and
+                is not a datetime, or schedule_id names no recorded
+                schedule for task_id
+        """
+        for value, name in ((task_id, "task_id"), (schedule_id, "schedule_id")):
+            if not value or not isinstance(value, str):
+                raise InvalidAgentTaskRecoveryScheduleCleanupError(f"{name} is required and must be a non-empty string")
+        if now is None:
+            now = datetime.now(timezone.utc)
+        elif not isinstance(now, datetime):
+            raise InvalidAgentTaskRecoveryScheduleCleanupError("now must be a datetime when given")
+
+        schedule = self._scheduling_service.get(task_id, schedule_id)
+        if schedule is None:
+            raise InvalidAgentTaskRecoveryScheduleCleanupError(
+                f"no schedule {schedule_id!r} is recorded for task_id {task_id!r}"
+            )
+        return self._clean(task_id, schedule, self._dispatched_ids(task_id), now)
+
     def terminal_reason(self, task_id: str, schedule, now: Optional[datetime] = None) -> Optional[str]:
         """Read-only: the terminal reason cleanup() would clean schedule
         (one of task_id's own, as returned by the scheduling service's
