@@ -373,3 +373,71 @@ class AgentTaskRecoveryExecutionPreconditionRevalidationResult:
     eligible: bool
     reason: Optional[str]
     revalidated_at: datetime
+
+
+# LLMAgentTaskRecoveryExecutionPreconditionApprovalReconciliationService's
+# own verdict vocabulary -- a closed, three-valued scale describing whether
+# an EXISTING backend.agent_task_recovery_guardrails.
+# AgentTaskRecoveryPreflightApproval record still applies, never a fourth
+# approval store or a new status value written onto that record itself
+# (Rule: "Do not create another approval system"; "Keep old approval
+# history immutable"): PRESERVED is exactly "the original approval is
+# APPROVED, and Commit #4's own revalidate() found nothing blocking at all
+# for the exact snapshot/preflight/authorization it was granted against."
+# REVOKED is exactly "Commit #4 could not resolve any active authorization
+# at all" (its own fail-closed REVALIDATION_FAILED-with-no-snapshot case).
+# REQUIRES_REVIEW is every other case -- material drift, a rebuilt/
+# different preflight, a changed recommended action, or an approval that
+# was never granted (missing/pending/rejected) in the first place -- Rule:
+# "Never automatically approve a materially changed recovery" means this
+# class only ever reports REQUIRES_REVIEW here; it never calls approve()
+# itself.
+RECONCILED_PRESERVED = "preserved"
+RECONCILED_REQUIRES_REVIEW = "requires_review"
+RECONCILED_REVOKED = "revoked"
+APPROVAL_RECONCILIATION_STATES = frozenset({RECONCILED_PRESERVED, RECONCILED_REQUIRES_REVIEW, RECONCILED_REVOKED})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult:
+    """LLMAgentTaskRecoveryExecutionPreconditionApprovalReconciliationService.
+    reconcile()'s complete, read-only verdict on whether task_id's existing
+    backend.agent_task_recovery_guardrails.AgentTaskRecoveryPreflightApproval
+    still applies to the CURRENT execution-precondition state -- never a
+    second approval/authorization framework (Rule: "Reuse existing
+    approval/authorization state transitions"): `revalidation` is Commit
+    #4's own AgentTaskRecoveryExecutionPreconditionRevalidationResult,
+    embedded verbatim, and `previous_approval`/`current_approval` are
+    backend.agent_task_recovery_guardrails' own AgentTaskRecoveryPreflightApproval
+    records, read straight off its own store -- nothing here writes to
+    that store, ever (Rule: "Keep old approval history immutable"; "Never
+    automatically approve a materially changed recovery").
+
+    previous_snapshot_id/previous_preflight_id/previous_authorization_id
+    are exactly the (task_id, snapshot_id) reconcile() was called with,
+    and what that snapshot was itself bound to; current_snapshot_id/
+    current_preflight_id/current_authorization_id are Commit #4's own
+    new_snapshot_id and whatever it is bound to -- all three current_*
+    fields are None together exactly when state is REVOKED (Commit #4
+    could not resolve any active authorization to rebuild against at
+    all).
+
+    Idempotent by composition (Rule): every field here is derived purely
+    from Commit #4's own already-idempotent revalidate() plus a read-only
+    approval_service.get() -- calling reconcile() twice in a row with
+    nothing else changed always returns an identical result.
+    """
+
+    task_id: str
+    previous_snapshot_id: str
+    current_snapshot_id: Optional[str]
+    previous_preflight_id: str
+    current_preflight_id: Optional[str]
+    previous_authorization_id: str
+    current_authorization_id: Optional[str]
+    state: str
+    previous_approval: Optional[object]
+    current_approval: Optional[object]
+    revalidation: AgentTaskRecoveryExecutionPreconditionRevalidationResult
+    reason: str
+    reconciled_at: datetime
