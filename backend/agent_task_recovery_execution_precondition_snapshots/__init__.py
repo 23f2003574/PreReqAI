@@ -2,6 +2,10 @@ from .approval_reconciliation import (
     InvalidAgentTaskRecoveryExecutionPreconditionApprovalReconciliationError,
     LLMAgentTaskRecoveryExecutionPreconditionApprovalReconciliationService,
 )
+from .decision import (
+    InvalidAgentTaskRecoveryExecutionPreconditionDecisionError,
+    LLMAgentTaskRecoveryExecutionPreconditionDecisionService,
+)
 from .drift import (
     InvalidAgentTaskRecoveryExecutionPreconditionDriftError,
     LLMAgentTaskRecoveryExecutionPreconditionDriftService,
@@ -13,6 +17,10 @@ from .models import (
     DRIFT_NON_BLOCKING,
     DRIFT_NONE,
     DRIFT_REQUIRES_REVALIDATION,
+    EXECUTION_DECISION_ALLOW,
+    EXECUTION_DECISION_BLOCK,
+    EXECUTION_DECISION_REVIEW,
+    EXECUTION_DECISIONS,
     RECONCILED_PRESERVED,
     RECONCILED_REQUIRES_REVIEW,
     RECONCILED_REVOKED,
@@ -21,6 +29,7 @@ from .models import (
     REVALIDATION_REPLACED,
     REVALIDATION_REUSED,
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
+    AgentTaskRecoveryExecutionPreconditionDecision,
     AgentTaskRecoveryExecutionPreconditionDriftItem,
     AgentTaskRecoveryExecutionPreconditionDriftResult,
     AgentTaskRecoveryExecutionPreconditionFieldChange,
@@ -82,4 +91,11 @@ __all__ = [
     "AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult",
     "LLMAgentTaskRecoveryExecutionPreconditionApprovalReconciliationService",
     "InvalidAgentTaskRecoveryExecutionPreconditionApprovalReconciliationError",
+    "EXECUTION_DECISION_ALLOW",
+    "EXECUTION_DECISION_REVIEW",
+    "EXECUTION_DECISION_BLOCK",
+    "EXECUTION_DECISIONS",
+    "AgentTaskRecoveryExecutionPreconditionDecision",
+    "LLMAgentTaskRecoveryExecutionPreconditionDecisionService",
+    "InvalidAgentTaskRecoveryExecutionPreconditionDecisionError",
 ]

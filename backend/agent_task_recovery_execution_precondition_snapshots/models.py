@@ -441,3 +441,70 @@ class AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult:
     revalidation: AgentTaskRecoveryExecutionPreconditionRevalidationResult
     reason: str
     reconciled_at: datetime
+
+
+# LLMAgentTaskRecoveryExecutionPreconditionDecisionService's own verdict
+# vocabulary -- named distinctly from backend.agent_policy_engine.ALLOW/DENY
+# (a different decision space entirely: that one is a single policy-rule
+# verdict, this one composes three whole precondition services) to avoid
+# any reader confusing the two despite the shared English word. BLOCK is
+# whenever Commit #2's own validation_result.valid is False, or Commit #3's
+# own drift.category is DRIFT_EXECUTION_BLOCKED (the same underlying fact,
+# checked both ways for explicitness -- Rule: "invalid/unsafe precondition
+# -> block"). REVIEW covers two independent, non-blocking signals (Rule:
+# "material drift requiring human review -> review"; "approval no longer
+# applicable -> review"): Commit #3's own DRIFT_REQUIRES_REVALIDATION, or
+# Commit #5's own reconciliation.state not being RECONCILED_PRESERVED.
+# ALLOW is reported only when none of the above apply at all.
+EXECUTION_DECISION_ALLOW = "allow"
+EXECUTION_DECISION_REVIEW = "review"
+EXECUTION_DECISION_BLOCK = "block"
+EXECUTION_DECISIONS = frozenset({EXECUTION_DECISION_ALLOW, EXECUTION_DECISION_REVIEW, EXECUTION_DECISION_BLOCK})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionDecision:
+    """LLMAgentTaskRecoveryExecutionPreconditionDecisionService.decide()'s
+    single, canonical, read-only verdict on whether task_id's exact
+    snapshot_id may proceed to recovery execution right now -- never a
+    second precondition engine (Rule: "Do not invent new infrastructure or
+    duplicate their rules"): validation_result/drift_classification/
+    approval_reconciliation are exactly Commits #2/#3/#5's own result
+    objects, embedded verbatim -- decision/reason/blocking_conditions are
+    the only new judgment this class adds, and that judgment is a pure,
+    deterministic function of those three objects' own already-computed
+    fields, nothing re-derived a second way.
+
+    authorization_id is the snapshot's own bound authorization_id (Commit
+    #1's own snapshot.authorization_id) whenever the snapshot could be
+    found at all -- not merely the caller-supplied value, so a caller who
+    passed None still gets a fully identified decision back; when a
+    caller-supplied authorization_id does not match the snapshot's own
+    binding, that mismatch is itself fail-closed to BLOCK (Rule: "Fail
+    closed if required evidence is unavailable" applied to identity, not
+    only presence).
+
+    validation_result/drift_classification/approval_reconciliation are
+    None only when they could not even be computed at all (the named
+    snapshot_id does not exist, or a composed service raised) -- Rule:
+    "Fail closed if required evidence is unavailable" means decision is
+    always BLOCK whenever any of them is None, never ALLOW/REVIEW guessed
+    from partial evidence.
+
+    Never itself executes, authorizes, schedules, or approves anything
+    (Rule: "Never execute recovery from this service; it is the canonical
+    decision boundary only") -- decide() only ever calls other services'
+    own read methods.
+    """
+
+    task_id: str
+    snapshot_id: str
+    authorization_id: Optional[str]
+    decision: str
+    reason: str
+    blocking_conditions: tuple
+    warnings: tuple
+    validation_result: Optional[AgentTaskRecoveryExecutionPreconditionValidationResult]
+    drift_classification: Optional[AgentTaskRecoveryExecutionPreconditionDriftResult]
+    approval_reconciliation: Optional[AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult]
+    created_at: datetime

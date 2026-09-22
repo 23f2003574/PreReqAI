@@ -86,6 +86,27 @@ class LLMAgentTaskFailureRecoveryService:
     existing error/state semantics") -- only through whatever readiness/
     queue/dead-letter service was supplied, and only ever via their own
     already-existing, already-guarded methods.
+
+    Optionally gated by backend.agent_task_recovery_execution_precondition_snapshots'
+    own LLMAgentTaskRecoveryExecutionPreconditionDecisionService -- the
+    canonical decision boundary that composes that package's own snapshot/
+    validation/drift/approval-reconciliation services (Rule: "Update the
+    recovery execution boundary so it can consume this decision service
+    instead of independently duplicating precondition checks"). Duck-typed
+    and never imported here (that package is built on top of this module's
+    own AgentTaskFailureRecoveryPlan, so importing it back here would be
+    circular): `decision_service` need only expose a `decide(task_id,
+    snapshot_id, authorization_id=None)` method returning an object whose
+    `.decision` is the string "allow" when execution may proceed. Both
+    `decision_service` (constructor) and `snapshot_id` (call-time) default
+    to None, and the gate is only ever consulted when BOTH are given --
+    every existing caller that never passes either keeps working exactly
+    as before (Rule: "Do not break existing callers. Preserve backward
+    compatibility with the repository's current APIs"). A non-"allow"
+    decision is reported as an ordinary structured failure, the same
+    "attempt, catch, report" discipline this class already uses for every
+    other precondition it cannot satisfy -- never raised, and never
+    silently ignored.
     """
 
     def __init__(
@@ -97,6 +118,7 @@ class LLMAgentTaskFailureRecoveryService:
         context_refresh_service: LLMAgentTaskContextRefreshService = None,
         retry_repair_service: LLMAgentTaskRetryRepairService = None,
         dead_letter_service: LLMAgentTaskDeadLetterService = None,
+        decision_service=None,
     ):
         self._planner = planner if planner is not None else LLMAgentTaskEventFailureRecoveryPlanner()
         self._retry_scheduler = retry_scheduler
@@ -108,10 +130,14 @@ class LLMAgentTaskFailureRecoveryService:
             LLMAgentTaskRetryRepairExecutor(retry_scheduler) if retry_scheduler is not None else None
         )
         self._dead_letter_service = dead_letter_service
+        self._decision_service = decision_service
 
-    def execute(self, task_id: str) -> AgentTaskFailureRecoveryResult:
+    def execute(
+        self, task_id: str, snapshot_id: str = None, authorization_id: str = None
+    ) -> AgentTaskFailureRecoveryResult:
         """Plan (via Commit #3) and immediately execute the recommended
-        recovery action for task_id.
+        recovery action for task_id. snapshot_id/authorization_id are
+        forwarded to execute_plan()'s own decision gate unchanged.
 
         Raises:
             InvalidAgentTaskFailureRecoveryExecutionError: If task_id is
@@ -121,11 +147,16 @@ class LLMAgentTaskFailureRecoveryService:
             raise InvalidAgentTaskFailureRecoveryExecutionError("task_id is required and must be a non-empty string")
 
         plan = self._planner.plan(task_id)
-        return self.execute_plan(plan)
+        return self.execute_plan(plan, snapshot_id=snapshot_id, authorization_id=authorization_id)
 
-    def execute_plan(self, plan: AgentTaskFailureRecoveryPlan) -> AgentTaskFailureRecoveryResult:
+    def execute_plan(
+        self, plan: AgentTaskFailureRecoveryPlan, snapshot_id: str = None, authorization_id: str = None
+    ) -> AgentTaskFailureRecoveryResult:
         """Execute an already-computed AgentTaskFailureRecoveryPlan
-        exactly as given -- never re-planned or second-guessed.
+        exactly as given -- never re-planned or second-guessed. When both
+        a decision_service was supplied at construction and snapshot_id is
+        given here, that snapshot's own canonical decision is consulted
+        first and execution is refused unless it is "allow".
 
         Raises:
             InvalidAgentTaskFailureRecoveryExecutionError: If plan is not
@@ -135,6 +166,14 @@ class LLMAgentTaskFailureRecoveryService:
             raise InvalidAgentTaskFailureRecoveryExecutionError(
                 "plan must be an AgentTaskFailureRecoveryPlan"
             )
+
+        if self._decision_service is not None and snapshot_id is not None:
+            decision = self._decision_service.decide(plan.task_id, snapshot_id, authorization_id)
+            if decision.decision != "allow":
+                return self._failure(
+                    plan, None,
+                    f"execution precondition decision is {decision.decision!r}, not 'allow': {decision.reason}",
+                )
 
         action = plan.recommended_action
 
