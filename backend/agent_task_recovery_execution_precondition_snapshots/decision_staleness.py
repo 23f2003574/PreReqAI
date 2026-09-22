@@ -2,14 +2,14 @@ from datetime import datetime, timezone
 
 from backend.agent_task_recovery_guardrails import LLMAgentTaskRecoveryPreflightAuthorizationService
 
+from .decision_freshness_policy import LLMAgentTaskRecoveryExecutionDecisionFreshnessPolicy
 from .decision_integrity import LLMAgentTaskRecoveryExecutionDecisionIntegrityService
 from .decision_store import LLMAgentTaskRecoveryExecutionPreconditionDecisionStore
-from .drift import DRIFT_NON_BLOCKING, DRIFT_NONE, LLMAgentTaskRecoveryExecutionPreconditionDriftService
+from .drift import LLMAgentTaskRecoveryExecutionPreconditionDriftService
 from .models import (
-    FRESHNESS_FRESH,
-    FRESHNESS_STALE,
     FRESHNESS_UNKNOWN,
     INTEGRITY_VALID,
+    AgentTaskRecoveryExecutionCurrentStateEvidence,
     AgentTaskRecoveryExecutionDecisionStalenessResult,
 )
 from .service import LLMAgentTaskRecoveryExecutionPreconditionSnapshotService
@@ -49,6 +49,13 @@ class LLMAgentTaskRecoveryExecutionDecisionStalenessService:
     #3's own ambiguous-collaborator-missing wording) forces UNKNOWN, even
     if every other signal looks clean.
 
+    Delegates the actual fresh/stale/indeterminate verdict to Commit #3's
+    own LLMAgentTaskRecoveryExecutionDecisionFreshnessPolicy (Rule:
+    "Integrate it into the staleness service from #2"): check() only ever
+    gathers the evidence (integrity, latest snapshot version, drift), then
+    calls the policy's own explain() -- the comparison logic itself lives
+    in exactly one place, never duplicated here.
+
     Read-only (Rule): every call here only ever reads.
     """
 
@@ -59,6 +66,7 @@ class LLMAgentTaskRecoveryExecutionDecisionStalenessService:
         drift_service: LLMAgentTaskRecoveryExecutionPreconditionDriftService = None,
         authorization_service: LLMAgentTaskRecoveryPreflightAuthorizationService = None,
         integrity_service: LLMAgentTaskRecoveryExecutionDecisionIntegrityService = None,
+        policy: LLMAgentTaskRecoveryExecutionDecisionFreshnessPolicy = None,
     ):
         """
         Args:
@@ -97,6 +105,7 @@ class LLMAgentTaskRecoveryExecutionDecisionStalenessService:
                 authorization_service=authorization_service,
             )
         )
+        self._policy = policy if policy is not None else LLMAgentTaskRecoveryExecutionDecisionFreshnessPolicy()
 
     def check(self, task_id: str, decision_id: str) -> AgentTaskRecoveryExecutionDecisionStalenessResult:
         """Check whether task_id's exact decision_id is still fresh.
@@ -120,14 +129,11 @@ class LLMAgentTaskRecoveryExecutionDecisionStalenessService:
                 checked_at=self._now(),
             )
 
-        decision_state_version = decision.snapshot_id
-        current_state_version = decision_state_version
+        current_state_version = None
         if decision.authorization_id is not None:
             latest = self._snapshot_service.latest_for_authorization(task_id, decision.authorization_id)
             if latest is not None:
                 current_state_version = latest.snapshot_id
-
-        version_changed = current_state_version != decision_state_version
 
         try:
             drift = self._drift_service.classify(task_id, decision.snapshot_id)
@@ -136,31 +142,15 @@ class LLMAgentTaskRecoveryExecutionDecisionStalenessService:
                 task_id=task_id, decision_id=decision_id, status=FRESHNESS_UNKNOWN,
                 reason=f"drift classification could not be computed: {error}",
                 decision_timestamp=decision.created_at,
-                current_state_version=current_state_version, decision_state_version=decision_state_version,
+                current_state_version=current_state_version, decision_state_version=decision.snapshot_id,
                 checked_at=self._now(),
             )
 
         ambiguous = any(_AMBIGUOUS_MARKER in item.reason for item in drift.items)
-        if ambiguous:
-            status, reason = FRESHNESS_UNKNOWN, (
-                "required freshness evidence is no longer available to compare against the current state"
-            )
-        elif version_changed:
-            status, reason = FRESHNESS_STALE, (
-                f"a newer snapshot ({current_state_version!r}) has been captured for this authorization since "
-                f"this decision was made"
-            )
-        elif drift.category not in (DRIFT_NONE, DRIFT_NON_BLOCKING):
-            status, reason = FRESHNESS_STALE, f"recovery state has drifted since the decision was made: {drift.category!r}"
-        else:
-            status, reason = FRESHNESS_FRESH, "no version or state changes detected since the decision was made"
-
-        return AgentTaskRecoveryExecutionDecisionStalenessResult(
-            task_id=task_id, decision_id=decision_id, status=status, reason=reason,
-            decision_timestamp=decision.created_at,
-            current_state_version=current_state_version, decision_state_version=decision_state_version,
-            checked_at=self._now(),
+        evidence = AgentTaskRecoveryExecutionCurrentStateEvidence(
+            current_state_version=current_state_version, drift_category=drift.category, ambiguous=ambiguous
         )
+        return self._policy.explain(decision, evidence)
 
     @staticmethod
     def _now() -> datetime:

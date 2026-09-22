@@ -6,6 +6,7 @@ from .decision import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionService,
 )
+from .decision_freshness_policy import LLMAgentTaskRecoveryExecutionDecisionFreshnessPolicy
 from .decision_staleness import (
     InvalidAgentTaskRecoveryExecutionDecisionStalenessError,
     LLMAgentTaskRecoveryExecutionDecisionStalenessService,
@@ -76,6 +77,7 @@ from .models import (
     REVALIDATION_REPLACED,
     REVALIDATION_REUSED,
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
+    AgentTaskRecoveryExecutionCurrentStateEvidence,
     AgentTaskRecoveryExecutionDecisionIntegrityResult,
     AgentTaskRecoveryExecutionDecisionStalenessResult,
     AgentTaskRecoveryExecutionPreconditionDecision,
@@ -192,4 +194,6 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionStalenessResult",
     "LLMAgentTaskRecoveryExecutionDecisionStalenessService",
     "InvalidAgentTaskRecoveryExecutionDecisionStalenessError",
+    "AgentTaskRecoveryExecutionCurrentStateEvidence",
+    "LLMAgentTaskRecoveryExecutionDecisionFreshnessPolicy",
 ]

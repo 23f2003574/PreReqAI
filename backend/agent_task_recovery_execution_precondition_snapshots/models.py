@@ -785,6 +785,24 @@ class AgentTaskRecoveryExecutionDecisionStalenessResult:
 
 
 @dataclass(frozen=True)
+class AgentTaskRecoveryExecutionCurrentStateEvidence:
+    """The small, already-computed evidence bundle
+    LLMAgentTaskRecoveryExecutionDecisionFreshnessPolicy.explain() compares
+    a decision against -- deliberately just plain values, never a live
+    service handle, so the policy itself can stay pure/read-only (Rule:
+    "Keep the policy pure/read-only"). current_state_version is Commit
+    #1's own latest snapshot_id for the decision's own authorization_id
+    (None when it could not be resolved at all -- e.g. the decision itself
+    carries no authorization_id); drift_category is Commit #3's own
+    category for the decision's snapshot_id; ambiguous is true when any
+    compared field's current value could not be safely read at all."""
+
+    current_state_version: Optional[str]
+    drift_category: Optional[str]
+    ambiguous: bool
+
+
+@dataclass(frozen=True)
 class AgentTaskRecoveryExecutionPreconditionDecisionReport:
     """LLMAgentTaskRecoveryExecutionPreconditionDecisionReportingService.
     report()'s compact, structured, task-level operational report -- never
