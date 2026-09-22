@@ -2,6 +2,7 @@ from .models import (
     AgentTaskRecoveryExecutionPreconditionFieldChange,
     AgentTaskRecoveryExecutionPreconditionSnapshot,
     AgentTaskRecoveryExecutionPreconditionSnapshotDiff,
+    AgentTaskRecoveryExecutionPreconditionValidationResult,
 )
 from .service import (
     InvalidAgentTaskRecoveryExecutionPreconditionSnapshotError,
@@ -11,6 +12,10 @@ from .store import (
     AgentTaskRecoveryExecutionPreconditionSnapshotStore,
     InMemoryAgentTaskRecoveryExecutionPreconditionSnapshotStore,
     JsonAgentTaskRecoveryExecutionPreconditionSnapshotStore,
+)
+from .validation import (
+    InvalidAgentTaskRecoveryExecutionPreconditionValidationError,
+    LLMAgentTaskRecoveryExecutionPreconditionValidationService,
 )
 
 __all__ = [
@@ -22,4 +27,7 @@ __all__ = [
     "AgentTaskRecoveryExecutionPreconditionSnapshotStore",
     "InMemoryAgentTaskRecoveryExecutionPreconditionSnapshotStore",
     "JsonAgentTaskRecoveryExecutionPreconditionSnapshotStore",
+    "AgentTaskRecoveryExecutionPreconditionValidationResult",
+    "LLMAgentTaskRecoveryExecutionPreconditionValidationService",
+    "InvalidAgentTaskRecoveryExecutionPreconditionValidationError",
 ]

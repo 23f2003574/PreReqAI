@@ -153,3 +153,49 @@ class AgentTaskRecoveryExecutionPreconditionSnapshotDiff:
     current_retry_eligibility: Optional[RetryEligibilityResult]
     current_readiness: Optional[AgentTaskReadinessResult]
     compared_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionValidationResult:
+    """LLMAgentTaskRecoveryExecutionPreconditionValidationService.
+    validate()'s complete, read-only verdict on whether a Commit #1
+    snapshot's captured baseline still holds, right now -- never a
+    second policy/dependency/authorization engine (Rule: "Reuse existing
+    validators; don't recreate policy/dependency logic"): every blocking
+    fact here is read straight from backend.agent_task_recovery_guardrails'
+    own already-existing LLMAgentTaskRecoveryPreflightAuthorizationValidationService
+    (authorization validity/binding: revoked/superseded/invalidated/
+    stale/lapsed-approval/policy-blocked) and
+    LLMAgentTaskRecoveryGuardService (task eligibility, plan freshness --
+    "authorized recovery action/plan is unchanged", action/policy
+    permission, retry/budget limits, dependency readiness, conflicting
+    active recovery) -- nothing here re-derives any of their own logic a
+    second way.
+
+    Clearly distinguishes harmless changes from execution-blocking ones
+    (Rule): `diff` is Commit #1's own, purely informational
+    AgentTaskRecoveryExecutionPreconditionSnapshotDiff -- it can be
+    `changed=True` (e.g. a dependency resolved, retry eligibility
+    improved) while `valid` stays True, since `valid`/`blocking_reasons`
+    are derived ONLY from authorization_validation/guard_result, never
+    from diff's own booleans. guard_result is None only when the
+    snapshot itself captured no recovery_plan to validate (itself then
+    an unconditional blocking_reasons entry -- Rule: "Fail closed on
+    material state changes").
+
+    valid is exactly `not blocking_reasons`; warnings never affect it,
+    the same failed-checks/warnings split every comparable result in
+    this repository already keeps.
+    """
+
+    task_id: str
+    snapshot_id: str
+    authorization_id: str
+    preflight_id: str
+    valid: bool
+    blocking_reasons: tuple
+    warnings: tuple
+    diff: AgentTaskRecoveryExecutionPreconditionSnapshotDiff
+    authorization_validation: object
+    guard_result: Optional[object]
+    validated_at: datetime
