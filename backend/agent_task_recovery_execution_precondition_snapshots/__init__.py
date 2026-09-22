@@ -10,6 +10,10 @@ from .decision_comparison import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionComparisonError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionComparisonService,
 )
+from .decision_transition import (
+    InvalidAgentTaskRecoveryExecutionPreconditionDecisionTransitionError,
+    LLMAgentTaskRecoveryExecutionPreconditionDecisionTransitionService,
+)
 from .decision_store import (
     AgentTaskRecoveryExecutionPreconditionDecisionRawStore,
     InMemoryAgentTaskRecoveryExecutionPreconditionDecisionRawStore,
@@ -41,6 +45,7 @@ from .models import (
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
     AgentTaskRecoveryExecutionPreconditionDecision,
     AgentTaskRecoveryExecutionPreconditionDecisionComparison,
+    AgentTaskRecoveryExecutionPreconditionDecisionTransition,
     AgentTaskRecoveryExecutionPreconditionDriftItem,
     AgentTaskRecoveryExecutionPreconditionDriftResult,
     AgentTaskRecoveryExecutionPreconditionFieldChange,
@@ -116,4 +121,7 @@ __all__ = [
     "AgentTaskRecoveryExecutionPreconditionDecisionComparison",
     "LLMAgentTaskRecoveryExecutionPreconditionDecisionComparisonService",
     "InvalidAgentTaskRecoveryExecutionPreconditionDecisionComparisonError",
+    "AgentTaskRecoveryExecutionPreconditionDecisionTransition",
+    "LLMAgentTaskRecoveryExecutionPreconditionDecisionTransitionService",
+    "InvalidAgentTaskRecoveryExecutionPreconditionDecisionTransitionError",
 ]

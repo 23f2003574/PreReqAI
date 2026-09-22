@@ -558,3 +558,43 @@ class AgentTaskRecoveryExecutionPreconditionDecisionComparison:
     changed_fields: tuple
     changed: bool
     compared_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionDecisionTransition:
+    """LLMAgentTaskRecoveryExecutionPreconditionDecisionTransitionService.
+    analyze()'s structured explanation of how execution eligibility moved
+    between two Commit #7-persisted decisions -- never a second diff
+    engine (Rule: "Do not duplicate comparison logic"): every field below
+    is read straight off Commit #8's own
+    AgentTaskRecoveryExecutionPreconditionDecisionComparison, plus one
+    new classification (transition_type/requires_attention) computed only
+    from that comparison's own already-computed fields.
+
+    transition_type is exactly f"{from_decision}_to_{to_decision}" -- one
+    of the nine allow/review/block combinations named in the goal, never
+    re-derived from raw evidence. eligibility_changed is Commit #8's own
+    comparison.eligibility_changed, unchanged.
+
+    requires_attention is true exactly when severity worsened (allow <
+    review < block, so allow->review/block or review->block) or a
+    genuinely NEW blocking condition appeared even without the coarse
+    category moving (e.g. review->review with a different blocker) --
+    never true for an improving or unchanged transition, since "needs
+    attention" means something got worse, not better.
+    """
+
+    task_id: str
+    from_decision_id: str
+    to_decision_id: str
+    from_decision: str
+    to_decision: str
+    transition_type: str
+    eligibility_changed: bool
+    blocking_conditions_added: tuple
+    blocking_conditions_removed: tuple
+    warnings_added: tuple
+    warnings_removed: tuple
+    material_changes: tuple
+    requires_attention: bool
+    analyzed_at: datetime
