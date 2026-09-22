@@ -803,6 +803,40 @@ class AgentTaskRecoveryExecutionCurrentStateEvidence:
 
 
 @dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessAuditRecord:
+    """LLMAgentTaskRecoveryExecutionDecisionFreshnessAuditService.
+    record()'s durable, append-only capture of one freshness evaluation --
+    never a second audit framework (Rule: "Do not create a second audit
+    framework"; same dual-index, append-only shape Commit #12's own
+    AgentTaskRecoveryExecutionPreconditionDecisionAuditRecord already
+    establishes). freshness_status/freshness_reason/decision_state_version/
+    current_state_version are Commit #2's own AgentTaskRecoveryExecutionDecisionStalenessResult
+    fields, preserved verbatim.
+
+    revalidated is whether a Commit #4 revalidation_result was given at
+    all; revalidation_action is that result's own action
+    (REUSED/REPLACED/FAILED) when given, else None.
+    replacement_decision_id is that result's own new_decision_id only when
+    it names a genuinely DIFFERENT decision than decision_id (a fresh
+    replacement actually created) -- None when revalidation reused the
+    same decision unchanged, produced no replacement, or was never run at
+    all (Rule: "Link old/new decisions when revalidation occurs").
+    """
+
+    task_id: str
+    decision_id: str
+    freshness_status: str
+    freshness_reason: str
+    decision_state_version: Optional[str]
+    current_state_version: Optional[str]
+    revalidated: bool
+    revalidation_action: Optional[str]
+    replacement_decision_id: Optional[str]
+    recorded_at: datetime
+    audit_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+@dataclass(frozen=True)
 class AgentTaskRecoveryExecutionDecisionFreshnessRevalidationResult:
     """LLMAgentTaskRecoveryExecutionDecisionFreshnessRevalidationService.
     revalidate()'s complete report -- never a second decision engine
