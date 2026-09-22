@@ -6,6 +6,10 @@ from .decision import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionService,
 )
+from .decision_integrity import (
+    InvalidAgentTaskRecoveryExecutionDecisionIntegrityError,
+    LLMAgentTaskRecoveryExecutionDecisionIntegrityService,
+)
 from .decision_comparison import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionComparisonError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionComparisonService,
@@ -53,6 +57,9 @@ from .models import (
     EXECUTION_DECISION_BLOCK,
     EXECUTION_DECISION_REVIEW,
     EXECUTION_DECISIONS,
+    INTEGRITY_INVALID,
+    INTEGRITY_STATUSES,
+    INTEGRITY_VALID,
     RECONCILED_PRESERVED,
     RECONCILED_REQUIRES_REVIEW,
     RECONCILED_REVOKED,
@@ -61,6 +68,7 @@ from .models import (
     REVALIDATION_REPLACED,
     REVALIDATION_REUSED,
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
+    AgentTaskRecoveryExecutionDecisionIntegrityResult,
     AgentTaskRecoveryExecutionPreconditionDecision,
     AgentTaskRecoveryExecutionPreconditionDecisionAuditRecord,
     AgentTaskRecoveryExecutionPreconditionDecisionAuditVerification,
@@ -162,4 +170,10 @@ __all__ = [
     "AgentTaskRecoveryExecutionPreconditionDecisionAuditVerification",
     "LLMAgentTaskRecoveryExecutionPreconditionDecisionAuditVerificationService",
     "InvalidAgentTaskRecoveryExecutionPreconditionDecisionAuditVerificationError",
+    "INTEGRITY_VALID",
+    "INTEGRITY_INVALID",
+    "INTEGRITY_STATUSES",
+    "AgentTaskRecoveryExecutionDecisionIntegrityResult",
+    "LLMAgentTaskRecoveryExecutionDecisionIntegrityService",
+    "InvalidAgentTaskRecoveryExecutionDecisionIntegrityError",
 ]

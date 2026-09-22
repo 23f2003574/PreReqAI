@@ -709,6 +709,37 @@ class AgentTaskRecoveryExecutionPreconditionDecisionAuditVerification:
     verified_at: datetime
 
 
+INTEGRITY_VALID = "valid"
+INTEGRITY_INVALID = "invalid"
+INTEGRITY_STATUSES = frozenset({INTEGRITY_VALID, INTEGRITY_INVALID})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionIntegrityResult:
+    """LLMAgentTaskRecoveryExecutionDecisionIntegrityService.check()'s
+    complete, read-only verdict on whether one Commit #7-persisted
+    decision is internally sound -- never a second persistence/audit
+    framework (Rule: "Do not create another persistence or audit
+    framework"): every issue is found by reading through Commit #7's own
+    decision store, Commit #1's own snapshot service, backend.
+    agent_task_recovery_guardrails' own authorization service, and
+    Commit #12/#13's own audit service/verification -- nothing here
+    recomputes the decision itself.
+
+    status is INTEGRITY_INVALID exactly when `issues` is non-empty;
+    a missing/task-mismatched decision_id is fail-closed to
+    INTEGRITY_INVALID immediately (Rule: "Fail closed on missing critical
+    evidence"), with every other check skipped since there is nothing
+    left to check against.
+    """
+
+    task_id: str
+    decision_id: str
+    status: str
+    issues: tuple
+    checked_at: datetime
+
+
 @dataclass(frozen=True)
 class AgentTaskRecoveryExecutionPreconditionDecisionReport:
     """LLMAgentTaskRecoveryExecutionPreconditionDecisionReportingService.
