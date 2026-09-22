@@ -740,6 +740,50 @@ class AgentTaskRecoveryExecutionDecisionIntegrityResult:
     checked_at: datetime
 
 
+FRESHNESS_FRESH = "fresh"
+FRESHNESS_STALE = "stale"
+FRESHNESS_UNKNOWN = "unknown"
+FRESHNESS_STATUSES = frozenset({FRESHNESS_FRESH, FRESHNESS_STALE, FRESHNESS_UNKNOWN})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionStalenessResult:
+    """LLMAgentTaskRecoveryExecutionDecisionStalenessService.check()'s
+    complete, read-only verdict on whether a Commit #7-persisted decision
+    still safely represents CURRENT recovery state -- never a new
+    lifecycle/TTL policy (Rule: "Do not invent a new lifecycle policy";
+    "Prefer explicit version changes over arbitrary time-based TTLs"):
+    every signal is either an explicit identity change (decision_state_version/
+    current_state_version -- the decision's own bound snapshot_id vs.
+    Commit #1's own latest_for_authorization() snapshot_id for that same
+    authorization, right now) or Commit #3's own drift classification of
+    the decision's own snapshot_id -- nothing here measures elapsed wall-
+    clock time at all.
+
+    UNKNOWN is reported whenever required freshness evidence itself
+    cannot be established (Commit #1's own integrity check failed, drift
+    classification could not even run, or a compared field's own current
+    value cannot be read at all) -- Rule: "Never declare a decision fresh
+    when required freshness evidence is unavailable" means UNKNOWN, never
+    a guessed FRESH, is the honest answer in that case.
+
+    current_state_version/decision_state_version are both the identity of
+    a Commit #1 snapshot (never a fabricated version number this project
+    has no real concept of) -- current_state_version is None only when no
+    later snapshot could be resolved for the decision's own
+    authorization_id at all.
+    """
+
+    task_id: str
+    decision_id: str
+    status: str
+    reason: str
+    decision_timestamp: datetime
+    current_state_version: Optional[str]
+    decision_state_version: Optional[str]
+    checked_at: datetime
+
+
 @dataclass(frozen=True)
 class AgentTaskRecoveryExecutionPreconditionDecisionReport:
     """LLMAgentTaskRecoveryExecutionPreconditionDecisionReportingService.

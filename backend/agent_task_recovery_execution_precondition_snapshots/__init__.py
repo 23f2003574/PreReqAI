@@ -6,6 +6,10 @@ from .decision import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionService,
 )
+from .decision_staleness import (
+    InvalidAgentTaskRecoveryExecutionDecisionStalenessError,
+    LLMAgentTaskRecoveryExecutionDecisionStalenessService,
+)
 from .decision_integrity import (
     InvalidAgentTaskRecoveryExecutionDecisionIntegrityError,
     LLMAgentTaskRecoveryExecutionDecisionIntegrityService,
@@ -57,6 +61,10 @@ from .models import (
     EXECUTION_DECISION_BLOCK,
     EXECUTION_DECISION_REVIEW,
     EXECUTION_DECISIONS,
+    FRESHNESS_FRESH,
+    FRESHNESS_STALE,
+    FRESHNESS_STATUSES,
+    FRESHNESS_UNKNOWN,
     INTEGRITY_INVALID,
     INTEGRITY_STATUSES,
     INTEGRITY_VALID,
@@ -69,6 +77,7 @@ from .models import (
     REVALIDATION_REUSED,
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
     AgentTaskRecoveryExecutionDecisionIntegrityResult,
+    AgentTaskRecoveryExecutionDecisionStalenessResult,
     AgentTaskRecoveryExecutionPreconditionDecision,
     AgentTaskRecoveryExecutionPreconditionDecisionAuditRecord,
     AgentTaskRecoveryExecutionPreconditionDecisionAuditVerification,
@@ -176,4 +185,11 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionIntegrityResult",
     "LLMAgentTaskRecoveryExecutionDecisionIntegrityService",
     "InvalidAgentTaskRecoveryExecutionDecisionIntegrityError",
+    "FRESHNESS_FRESH",
+    "FRESHNESS_STALE",
+    "FRESHNESS_UNKNOWN",
+    "FRESHNESS_STATUSES",
+    "AgentTaskRecoveryExecutionDecisionStalenessResult",
+    "LLMAgentTaskRecoveryExecutionDecisionStalenessService",
+    "InvalidAgentTaskRecoveryExecutionDecisionStalenessError",
 ]
