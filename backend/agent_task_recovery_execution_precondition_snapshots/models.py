@@ -598,3 +598,62 @@ class AgentTaskRecoveryExecutionPreconditionDecisionTransition:
     material_changes: tuple
     requires_attention: bool
     analyzed_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionDecisionHistory:
+    """LLMAgentTaskRecoveryExecutionPreconditionDecisionHistoryService.
+    get_history()'s complete, read-only view of one task's own decision
+    history -- never a second persistence/comparison engine (Rule): every
+    entry in `decisions` and `transitions` is read straight through
+    Commit #7's own store and Commit #9's own analyze(), nothing here
+    recomputes validation/drift/authorization/approval state.
+
+    `decisions` is the (possibly limit-truncated) chronological slice
+    get_history() was actually asked for; `decision_count`/
+    `counts_by_decision`/`transitions`/`eligibility_change_count`/
+    `review_or_block_transition_count` are always computed over the
+    task's COMPLETE history regardless of `limit` -- limiting only ever
+    trims which raw records are returned for display, never the
+    aggregate facts describing the task's real, complete history.
+
+    `transitions` holds one Commit #9 AgentTaskRecoveryExecutionPreconditionDecisionTransition
+    per consecutive pair in the complete history, oldest pair first (N
+    decisions produce N-1 transitions, 0 for an empty or single-decision
+    history). current_eligible is exactly `latest_decision.decision ==
+    EXECUTION_DECISION_ALLOW`, False when there is no decision at all.
+    """
+
+    task_id: str
+    decisions: tuple
+    first_decision: Optional[object]
+    latest_decision: Optional[object]
+    decision_count: int
+    counts_by_decision: dict
+    transitions: tuple
+    eligibility_change_count: int
+    review_or_block_transition_count: int
+    current_eligible: bool
+    first_decision_at: Optional[datetime]
+    last_decision_at: Optional[datetime]
+    generated_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionDecisionHistorySummary:
+    """summarize()'s compact rollup of one task's own decision history --
+    exactly get_history()'s own aggregate fields, minus the raw
+    decisions/transitions lists (Rule: "Do not duplicate decision/
+    comparison logic" -- summarize() is built ON TOP of get_history(),
+    never a second aggregation pass over the store)."""
+
+    task_id: str
+    decision_count: int
+    counts_by_decision: dict
+    eligibility_change_count: int
+    review_or_block_transition_count: int
+    current_eligible: bool
+    latest_decision: Optional[object]
+    first_decision_at: Optional[datetime]
+    last_decision_at: Optional[datetime]
+    generated_at: datetime
