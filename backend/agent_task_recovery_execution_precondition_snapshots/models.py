@@ -803,6 +803,44 @@ class AgentTaskRecoveryExecutionCurrentStateEvidence:
 
 
 @dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessRevalidationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionFreshnessRevalidationService.
+    revalidate()'s complete report -- never a second decision engine
+    (Rule: "Do not create another decision engine"): every write here is
+    delegated to an already-existing service (Commit #4-of-the-earlier-
+    series' own precondition revalidate(), Commit #6-of-the-earlier-
+    series' own decide(), Commit #7-of-the-earlier-series' own decision
+    store) -- this class only decides WHETHER a rebuild is needed and
+    links the result.
+
+    Reuses the earlier series' own REVALIDATION_REUSED/REVALIDATION_REPLACED/
+    REVALIDATION_FAILED vocabulary verbatim (same meaning: REUSED -- the
+    old decision was already fresh, or an already-persisted later decision
+    is already equivalent and fresh, returned unchanged; REPLACED -- a
+    fresh decision was computed and persisted, whatever its own allow/
+    review/block value; REVALIDATION_FAILED -- no usable current snapshot
+    could be established at all, a process failure, never merely an
+    unfavorable new decision).
+
+    new_decision_id equals old_decision_id exactly when action is REUSED
+    with no rebuild at all; it is a DIFFERENT, already-persisted
+    decision_id when REUSED because an equivalent fresh decision already
+    exists; it is a freshly persisted decision_id for REPLACED; it is None
+    only for REVALIDATION_FAILED.
+    """
+
+    task_id: str
+    old_decision_id: str
+    new_decision_id: Optional[str]
+    action: str
+    staleness: AgentTaskRecoveryExecutionDecisionStalenessResult
+    old_decision: object
+    new_decision: Optional[object]
+    reason: Optional[str]
+    revalidated_at: datetime
+
+
+@dataclass(frozen=True)
 class AgentTaskRecoveryExecutionPreconditionDecisionReport:
     """LLMAgentTaskRecoveryExecutionPreconditionDecisionReportingService.
     report()'s compact, structured, task-level operational report -- never
