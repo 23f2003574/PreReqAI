@@ -673,6 +673,43 @@ class AgentTaskRecoveryExecutionPreconditionDecisionAuditRecord:
 
 
 @dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionDecisionAuditVerification:
+    """LLMAgentTaskRecoveryExecutionPreconditionDecisionAuditVerificationService.
+    verify()'s complete, read-only verdict on whether one Commit #12 audit
+    record still faithfully represents the Commit #7-persisted decision it
+    references -- never a second audit/persistence system (Rule: "Do not
+    create another audit or persistence system"): every fact here is a
+    plain field-by-field comparison between the audit record and the
+    decision Commit #7's own store returns for its exact decision_id,
+    never a recomputed decision.
+
+    decision_found is False exactly when Commit #7's store no longer has
+    any record for the audit's own decision_id -- valid is then always
+    False too (Rule: "Fail closed when the referenced decision cannot be
+    found"), and mismatches is empty (there is nothing left to compare
+    field-by-field), the fact itself carried in `reason`.
+
+    mismatches names every field whose audit-recorded value no longer
+    equals the decision's own current value (task_id/snapshot_id/
+    authorization_id/decision/reason/blocking_conditions/warnings);
+    missing_fields names every required audit field (decision/snapshot_id/
+    reason) that is itself blank on the audit record, independent of
+    whether the referenced decision could be found at all. valid is
+    exactly `decision_found and not mismatches and not missing_fields`.
+    """
+
+    task_id: str
+    audit_id: str
+    decision_id: str
+    decision_found: bool
+    valid: bool
+    mismatches: tuple
+    missing_fields: tuple
+    reason: Optional[str]
+    verified_at: datetime
+
+
+@dataclass(frozen=True)
 class AgentTaskRecoveryExecutionPreconditionDecisionReport:
     """LLMAgentTaskRecoveryExecutionPreconditionDecisionReportingService.
     report()'s compact, structured, task-level operational report -- never

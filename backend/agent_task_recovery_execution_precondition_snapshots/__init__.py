@@ -16,6 +16,10 @@ from .decision_audit import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionAuditError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionAuditService,
 )
+from .decision_audit_verification import (
+    InvalidAgentTaskRecoveryExecutionPreconditionDecisionAuditVerificationError,
+    LLMAgentTaskRecoveryExecutionPreconditionDecisionAuditVerificationService,
+)
 from .decision_reporting import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionReportError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionReportingService,
@@ -59,6 +63,7 @@ from .models import (
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
     AgentTaskRecoveryExecutionPreconditionDecision,
     AgentTaskRecoveryExecutionPreconditionDecisionAuditRecord,
+    AgentTaskRecoveryExecutionPreconditionDecisionAuditVerification,
     AgentTaskRecoveryExecutionPreconditionDecisionComparison,
     AgentTaskRecoveryExecutionPreconditionDecisionHistory,
     AgentTaskRecoveryExecutionPreconditionDecisionHistorySummary,
@@ -154,4 +159,7 @@ __all__ = [
     "InMemoryAgentTaskRecoveryExecutionPreconditionDecisionAuditStore",
     "LLMAgentTaskRecoveryExecutionPreconditionDecisionAuditService",
     "InvalidAgentTaskRecoveryExecutionPreconditionDecisionAuditError",
+    "AgentTaskRecoveryExecutionPreconditionDecisionAuditVerification",
+    "LLMAgentTaskRecoveryExecutionPreconditionDecisionAuditVerificationService",
+    "InvalidAgentTaskRecoveryExecutionPreconditionDecisionAuditVerificationError",
 ]
