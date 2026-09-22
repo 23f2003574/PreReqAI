@@ -199,3 +199,103 @@ class AgentTaskRecoveryExecutionPreconditionValidationResult:
     authorization_validation: object
     guard_result: Optional[object]
     validated_at: datetime
+
+
+# LLMAgentTaskRecoveryExecutionPreconditionDriftService's own drift-category
+# vocabulary -- a closed, four-valued scale (Rule: "classify ... into
+# existing repository concepts") deliberately graduated between Commit #2's
+# own binary valid/blocking_reasons: NONE is exactly "nothing changed at
+# all" (diff.changed is False); NON_BLOCKING is a real, observed change that
+# Commit #2's own fresh re-validation already confirmed is not currently
+# blocking; REQUIRES_REVALIDATION is reserved for a change that is *also*
+# not currently blocking but is significant/ambiguous enough (a lifecycle
+# move between two live states, a collaborator becoming newly wired/
+# unwired between capture and compare) to warrant an operator's or a later
+# audit's explicit attention, even though the fresh validators already
+# looked; EXECUTION_BLOCKED is exactly whenever Commit #2's own
+# validation_result.valid is False -- this class never overrides that
+# verdict, only explains it per field (Rule: "Never approve or execute
+# recovery itself"; "Base classification only on the existing validation
+# diff").
+DRIFT_NONE = "none"
+DRIFT_NON_BLOCKING = "non_blocking"
+DRIFT_REQUIRES_REVALIDATION = "requires_revalidation"
+DRIFT_EXECUTION_BLOCKED = "execution_blocked"
+DRIFT_CATEGORIES = frozenset({DRIFT_NONE, DRIFT_NON_BLOCKING, DRIFT_REQUIRES_REVALIDATION, DRIFT_EXECUTION_BLOCKED})
+
+# The severity ordering DRIFT_CATEGORIES are combined under -- the overall
+# drift category is always the single worst category among all per-field
+# items, never merely the last one computed.
+_DRIFT_SEVERITY = {DRIFT_NONE: 0, DRIFT_NON_BLOCKING: 1, DRIFT_REQUIRES_REVALIDATION: 2, DRIFT_EXECUTION_BLOCKED: 3}
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionDriftItem:
+    """One Commit #1 snapshot field's own drift classification -- `field`/
+    `previous_value`/`current_value` are exactly Commit #2's own diff.changes
+    entries where one exists (`concern` is this class's own, added mapping
+    from that field to the recovery concern it governs -- "authorization",
+    "task_eligibility", "retry_budget", or "dependency_and_policy_readiness",
+    the same named concerns backend.agent_task_recovery_guardrails.
+    LLMAgentTaskRecoveryGuardService.validate() already checks under, never
+    a newly-invented taxonomy), plus one synthetic "unclassified" entry
+    (`field=None`) only when validation_result reported blocking_reasons
+    that no tracked field's own comparison explains (Rule: "Fail closed
+    when a material difference cannot be classified safely" -- its own
+    category is always EXECUTION_BLOCKED, never guessed softer).
+
+    execution_may_continue is exactly `category != DRIFT_EXECUTION_BLOCKED`
+    -- true for NONE/NON_BLOCKING/REQUIRES_REVALIDATION alike, since a
+    REQUIRES_REVALIDATION item, by construction, only ever appears when
+    Commit #2's own fresh validation_result.valid is already True (that
+    fresh check already ran and did not block it); it is a stronger,
+    audit-worthy flag layered on top of "not currently blocking," never a
+    softer form of "blocked."
+    """
+
+    field: Optional[str]
+    concern: str
+    category: str
+    previous_value: object
+    current_value: object
+    reason: str
+    execution_may_continue: bool
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionDriftResult:
+    """LLMAgentTaskRecoveryExecutionPreconditionDriftService.classify()'s
+    complete, read-only drift classification for one Commit #1 snapshot_id
+    -- never a second validation engine (Rule: "Do not create another
+    validation engine"): `validation` is Commit #2's own
+    AgentTaskRecoveryExecutionPreconditionValidationResult, embedded
+    verbatim, and every `items` entry is derived only from its own
+    `diff`/`blocking_reasons` -- nothing here re-derives policy, dependency,
+    retry-budget, or authorization logic a second way.
+
+    category is the single worst (highest-severity) category among `items`
+    (NONE when there are none at all); execution_may_continue is exactly
+    `validation.valid`, so it can never disagree with the validator it was
+    computed from, whatever the per-item detail says (Rule: "Never approve
+    or execute recovery itself" -- this class only explains a verdict
+    Commit #2 already reached, never substitutes its own).
+
+    Preserves enough detail for later audit/recovery analysis (Rule):
+    `items` names every changed field with its own previous/current value,
+    concern, category, and reason; `blocking_reasons`/`warnings` are Commit
+    #2's own fields, carried through unchanged, so nothing about why
+    execution is or is not blocked is ever only inferable from `category`
+    alone.
+    """
+
+    task_id: str
+    snapshot_id: str
+    authorization_id: str
+    preflight_id: str
+    category: str
+    execution_may_continue: bool
+    items: tuple
+    blocking_reasons: tuple
+    warnings: tuple
+    validation: AgentTaskRecoveryExecutionPreconditionValidationResult
+    classified_at: datetime

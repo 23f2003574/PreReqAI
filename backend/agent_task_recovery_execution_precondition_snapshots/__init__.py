@@ -1,4 +1,15 @@
+from .drift import (
+    InvalidAgentTaskRecoveryExecutionPreconditionDriftError,
+    LLMAgentTaskRecoveryExecutionPreconditionDriftService,
+)
 from .models import (
+    DRIFT_CATEGORIES,
+    DRIFT_EXECUTION_BLOCKED,
+    DRIFT_NON_BLOCKING,
+    DRIFT_NONE,
+    DRIFT_REQUIRES_REVALIDATION,
+    AgentTaskRecoveryExecutionPreconditionDriftItem,
+    AgentTaskRecoveryExecutionPreconditionDriftResult,
     AgentTaskRecoveryExecutionPreconditionFieldChange,
     AgentTaskRecoveryExecutionPreconditionSnapshot,
     AgentTaskRecoveryExecutionPreconditionSnapshotDiff,
@@ -30,4 +41,13 @@ __all__ = [
     "AgentTaskRecoveryExecutionPreconditionValidationResult",
     "LLMAgentTaskRecoveryExecutionPreconditionValidationService",
     "InvalidAgentTaskRecoveryExecutionPreconditionValidationError",
+    "DRIFT_NONE",
+    "DRIFT_NON_BLOCKING",
+    "DRIFT_REQUIRES_REVALIDATION",
+    "DRIFT_EXECUTION_BLOCKED",
+    "DRIFT_CATEGORIES",
+    "AgentTaskRecoveryExecutionPreconditionDriftItem",
+    "AgentTaskRecoveryExecutionPreconditionDriftResult",
+    "LLMAgentTaskRecoveryExecutionPreconditionDriftService",
+    "InvalidAgentTaskRecoveryExecutionPreconditionDriftError",
 ]
