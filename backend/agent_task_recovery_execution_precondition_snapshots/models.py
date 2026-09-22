@@ -509,3 +509,52 @@ class AgentTaskRecoveryExecutionPreconditionDecision:
     approval_reconciliation: Optional[AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult]
     created_at: datetime
     decision_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionDecisionComparison:
+    """LLMAgentTaskRecoveryExecutionPreconditionDecisionComparisonService.
+    compare()'s complete, read-only diff between two Commit #7-persisted
+    AgentTaskRecoveryExecutionPreconditionDecision records -- never a
+    second diff engine (Rule: "Do not invent infrastructure or duplicate
+    snapshot/validation logic"): every field here is a plain comparison of
+    two already-persisted decisions' own fields, read straight through
+    Commit #7's own store -- nothing here reruns validate()/classify()/
+    reconcile()/decide().
+
+    decision_id/other_decision_id echo compare()'s own arguments exactly
+    (other_decision_id resolved to the task's chronologically previous
+    decision when the caller omitted it); earlier_decision_id/
+    later_decision_id are the same two decisions ordered by their own
+    created_at instead, since decision_transition/changed_fields/added-
+    removed-* all describe a FROM -> TO change and must mean the same
+    thing regardless of which argument position the caller happened to
+    pass each decision_id in (Rule: "Preserve deterministic output
+    ordering").
+
+    changed_fields reuses Commit #2's own AgentTaskRecoveryExecutionPreconditionFieldChange
+    shape verbatim (never a second field-change type), one entry per
+    field that actually differs, sorted by field name; a field that did
+    not change contributes no entry at all. changed is exactly whether
+    changed_fields/added_*/removed_* is non-empty; comparing a decision
+    against itself always produces changed=False with every tuple empty.
+    """
+
+    task_id: str
+    decision_id: str
+    other_decision_id: str
+    earlier_decision_id: str
+    later_decision_id: str
+    decision_transition: str
+    eligibility_changed: bool
+    snapshot_changed: bool
+    authorization_changed: bool
+    drift_classification_changed: bool
+    approval_reconciliation_changed: bool
+    added_blocking_conditions: tuple
+    removed_blocking_conditions: tuple
+    added_warnings: tuple
+    removed_warnings: tuple
+    changed_fields: tuple
+    changed: bool
+    compared_at: datetime

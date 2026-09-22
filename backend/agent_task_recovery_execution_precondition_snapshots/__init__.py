@@ -6,6 +6,10 @@ from .decision import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionService,
 )
+from .decision_comparison import (
+    InvalidAgentTaskRecoveryExecutionPreconditionDecisionComparisonError,
+    LLMAgentTaskRecoveryExecutionPreconditionDecisionComparisonService,
+)
 from .decision_store import (
     AgentTaskRecoveryExecutionPreconditionDecisionRawStore,
     InMemoryAgentTaskRecoveryExecutionPreconditionDecisionRawStore,
@@ -36,6 +40,7 @@ from .models import (
     REVALIDATION_REUSED,
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
     AgentTaskRecoveryExecutionPreconditionDecision,
+    AgentTaskRecoveryExecutionPreconditionDecisionComparison,
     AgentTaskRecoveryExecutionPreconditionDriftItem,
     AgentTaskRecoveryExecutionPreconditionDriftResult,
     AgentTaskRecoveryExecutionPreconditionFieldChange,
@@ -108,4 +113,7 @@ __all__ = [
     "InMemoryAgentTaskRecoveryExecutionPreconditionDecisionRawStore",
     "LLMAgentTaskRecoveryExecutionPreconditionDecisionStore",
     "InvalidAgentTaskRecoveryExecutionPreconditionDecisionPersistenceError",
+    "AgentTaskRecoveryExecutionPreconditionDecisionComparison",
+    "LLMAgentTaskRecoveryExecutionPreconditionDecisionComparisonService",
+    "InvalidAgentTaskRecoveryExecutionPreconditionDecisionComparisonError",
 ]
