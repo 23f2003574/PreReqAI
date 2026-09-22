@@ -193,6 +193,25 @@ class LLMAgentTaskRecoveryExecutionPreconditionSnapshotService:
             return None
         return record
 
+    def latest_for_authorization(
+        self, task_id: str, authorization_id: str
+    ) -> Optional[AgentTaskRecoveryExecutionPreconditionSnapshot]:
+        """The most recently captured snapshot bound to task_id's exact
+        authorization_id -- None if none exists. A pure read of the
+        existing store's own list_for_task(); never captures anything.
+
+        Raises:
+            InvalidAgentTaskRecoveryExecutionPreconditionSnapshotError: If
+                task_id or authorization_id is not a non-empty string
+        """
+        self._require_text(task_id, "task_id")
+        self._require_text(authorization_id, "authorization_id")
+
+        matching = [
+            record for record in self._store.list_for_task(task_id) if record.authorization_id == authorization_id
+        ]
+        return matching[-1] if matching else None
+
     def compare(self, task_id: str, snapshot_id: str) -> AgentTaskRecoveryExecutionPreconditionSnapshotDiff:
         """Compare task_id's exact, already-persisted snapshot_id against
         task_id's CURRENT state, right now. Read-only: never mutates the

@@ -8,12 +8,21 @@ from .models import (
     DRIFT_NON_BLOCKING,
     DRIFT_NONE,
     DRIFT_REQUIRES_REVALIDATION,
+    REVALIDATION_ACTIONS,
+    REVALIDATION_FAILED,
+    REVALIDATION_REPLACED,
+    REVALIDATION_REUSED,
     AgentTaskRecoveryExecutionPreconditionDriftItem,
     AgentTaskRecoveryExecutionPreconditionDriftResult,
     AgentTaskRecoveryExecutionPreconditionFieldChange,
+    AgentTaskRecoveryExecutionPreconditionRevalidationResult,
     AgentTaskRecoveryExecutionPreconditionSnapshot,
     AgentTaskRecoveryExecutionPreconditionSnapshotDiff,
     AgentTaskRecoveryExecutionPreconditionValidationResult,
+)
+from .revalidation import (
+    InvalidAgentTaskRecoveryExecutionPreconditionRevalidationError,
+    LLMAgentTaskRecoveryExecutionPreconditionRevalidationService,
 )
 from .service import (
     InvalidAgentTaskRecoveryExecutionPreconditionSnapshotError,
@@ -50,4 +59,11 @@ __all__ = [
     "AgentTaskRecoveryExecutionPreconditionDriftResult",
     "LLMAgentTaskRecoveryExecutionPreconditionDriftService",
     "InvalidAgentTaskRecoveryExecutionPreconditionDriftError",
+    "REVALIDATION_REUSED",
+    "REVALIDATION_REPLACED",
+    "REVALIDATION_FAILED",
+    "REVALIDATION_ACTIONS",
+    "AgentTaskRecoveryExecutionPreconditionRevalidationResult",
+    "LLMAgentTaskRecoveryExecutionPreconditionRevalidationService",
+    "InvalidAgentTaskRecoveryExecutionPreconditionRevalidationError",
 ]

@@ -299,3 +299,77 @@ class AgentTaskRecoveryExecutionPreconditionDriftResult:
     warnings: tuple
     validation: AgentTaskRecoveryExecutionPreconditionValidationResult
     classified_at: datetime
+
+
+# LLMAgentTaskRecoveryExecutionPreconditionRevalidationService's own outcome
+# vocabulary -- the same REUSED/REPLACED/FAILED *shape* backend.
+# agent_task_recovery_preflight_dependency_snapshots'
+# AgentTaskRecoveryPreflightDependencySnapshotTrustRevalidationResult already
+# establishes for a comparable "reuse an existing valid record, or rebuild
+# it, or honestly report a rebuild that still fails" decision -- defined
+# locally rather than imported, since that package's own revalidation is
+# scoped to dependency-graph trust, a genuinely different domain (Rule
+# elsewhere in this project: reuse conventions/shapes across domains, never
+# the tightly-coupled classes themselves). REUSED: no blocking drift existed
+# at all, or an already-rebuilt snapshot for the same authorization is still
+# current -- returned unchanged, never a copy. REPLACED: a fresh snapshot
+# was captured and it is now eligible. REVALIDATION_FAILED: a fresh snapshot
+# was captured but it is STILL blocked -- reported honestly, never retried
+# in a loop or fabricated as eligible. There is no "MISSING" value: an
+# unknown snapshot_id is raised (InvalidAgentTaskRecoveryExecutionPrecondition
+# RevalidationError), the same "not found is an error" convention Commits
+# #1-#3 of this series already establish for themselves.
+REVALIDATION_REUSED = "reused"
+REVALIDATION_REPLACED = "replaced"
+REVALIDATION_FAILED = "failed"
+REVALIDATION_ACTIONS = frozenset({REVALIDATION_REUSED, REVALIDATION_REPLACED, REVALIDATION_FAILED})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionRevalidationResult:
+    """LLMAgentTaskRecoveryExecutionPreconditionRevalidationService.
+    revalidate()'s complete report -- never a second snapshot/validation
+    system (Rule: "Do not create another snapshot or validation system"):
+    old_drift/new_drift are exactly Commit #3's own
+    AgentTaskRecoveryExecutionPreconditionDriftResult objects, carried
+    through unchanged, and new_snapshot_id (when not equal to
+    old_snapshot_id) is a genuinely new Commit #1 snapshot, captured
+    through Commit #1's own capture() -- never a second capture mechanism.
+
+    new_snapshot_id equals old_snapshot_id exactly when action is REUSED
+    with no rebuild at all (Rule: "If no blocking drift exists, return the
+    existing snapshot" -- never a copy); it is a DIFFERENT, already-
+    existing snapshot_id when action is REUSED because an earlier rebuild
+    already produced a still-current one (Rule: "Idempotent when current
+    state already has an equivalent valid snapshot"); it is a fresh
+    snapshot_id for REPLACED/REVALIDATION_FAILED alike (Rule: "a fresh
+    snapshot was created, but it ALSO failed trust" -- the same honest
+    "rebuilt but still bad" reporting, never silently discarded); it is
+    None only when no rebuild could even be attempted at all (Rule: "Fail
+    closed if current state cannot be safely captured"; "Never silently
+    preserve an invalid authorization" -- no ACTIVE authorization exists
+    for the task's current preflight to bind a rebuild against).
+
+    eligible is exactly the returned snapshot's own execution_may_continue
+    (new_drift.execution_may_continue when new_drift is not None, else
+    False) -- never independently decided, and never used to authorize or
+    execute anything itself (Rule: "Do not execute recovery" -- this class
+    only ever calls capture()/classify(), both already read-only or
+    write-once-immutable).
+
+    Complete history is preserved implicitly (Rule): Commit #1's own
+    snapshot store is append-only (nothing here ever deletes or rewrites
+    old_snapshot_id's own record), and old_snapshot_id/new_snapshot_id
+    together are this result's own explicit link between the superseded
+    and superseding snapshot.
+    """
+
+    task_id: str
+    old_snapshot_id: str
+    new_snapshot_id: Optional[str]
+    action: str
+    old_drift: AgentTaskRecoveryExecutionPreconditionDriftResult
+    new_drift: Optional[AgentTaskRecoveryExecutionPreconditionDriftResult]
+    eligible: bool
+    reason: Optional[str]
+    revalidated_at: datetime
