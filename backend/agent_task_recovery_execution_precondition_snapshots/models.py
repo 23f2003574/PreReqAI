@@ -640,6 +640,39 @@ class AgentTaskRecoveryExecutionPreconditionDecisionHistory:
 
 
 @dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionDecisionAuditRecord:
+    """LLMAgentTaskRecoveryExecutionPreconditionDecisionAuditService.
+    record()'s durable, append-only capture of one Commit #7-persisted
+    AgentTaskRecoveryExecutionPreconditionDecision -- never a second audit
+    framework (Rule: "Do not invent a new audit framework"): decision/
+    snapshot_id/authorization_id/reason/blocking_conditions/warnings are
+    that decision's own fields, preserved verbatim (Rule: "Preserve
+    enough evidence to reconstruct what decision was being acted upon"),
+    never re-derived a second way.
+
+    actor/operation_id are this call's own, purely additive context (who/
+    what triggered recording this entry) -- both None when the caller
+    supplied neither, never fabricated. Immutable once recorded (Rule:
+    "Audit records are append-only; never mutate historical entries"):
+    a frozen dataclass, and the underlying store this class is persisted
+    through has no update()/delete() at all.
+    """
+
+    task_id: str
+    decision_id: str
+    decision: str
+    snapshot_id: str
+    authorization_id: Optional[str]
+    reason: str
+    blocking_conditions: tuple
+    warnings: tuple
+    actor: Optional[str]
+    operation_id: Optional[str]
+    recorded_at: datetime
+    audit_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+@dataclass(frozen=True)
 class AgentTaskRecoveryExecutionPreconditionDecisionReport:
     """LLMAgentTaskRecoveryExecutionPreconditionDecisionReportingService.
     report()'s compact, structured, task-level operational report -- never

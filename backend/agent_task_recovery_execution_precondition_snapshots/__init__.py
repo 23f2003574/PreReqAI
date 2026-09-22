@@ -10,6 +10,12 @@ from .decision_comparison import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionComparisonError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionComparisonService,
 )
+from .decision_audit import (
+    AgentTaskRecoveryExecutionPreconditionDecisionAuditStore,
+    InMemoryAgentTaskRecoveryExecutionPreconditionDecisionAuditStore,
+    InvalidAgentTaskRecoveryExecutionPreconditionDecisionAuditError,
+    LLMAgentTaskRecoveryExecutionPreconditionDecisionAuditService,
+)
 from .decision_reporting import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionReportError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionReportingService,
@@ -52,6 +58,7 @@ from .models import (
     REVALIDATION_REUSED,
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
     AgentTaskRecoveryExecutionPreconditionDecision,
+    AgentTaskRecoveryExecutionPreconditionDecisionAuditRecord,
     AgentTaskRecoveryExecutionPreconditionDecisionComparison,
     AgentTaskRecoveryExecutionPreconditionDecisionHistory,
     AgentTaskRecoveryExecutionPreconditionDecisionHistorySummary,
@@ -142,4 +149,9 @@ __all__ = [
     "AgentTaskRecoveryExecutionPreconditionDecisionReport",
     "LLMAgentTaskRecoveryExecutionPreconditionDecisionReportingService",
     "InvalidAgentTaskRecoveryExecutionPreconditionDecisionReportError",
+    "AgentTaskRecoveryExecutionPreconditionDecisionAuditRecord",
+    "AgentTaskRecoveryExecutionPreconditionDecisionAuditStore",
+    "InMemoryAgentTaskRecoveryExecutionPreconditionDecisionAuditStore",
+    "LLMAgentTaskRecoveryExecutionPreconditionDecisionAuditService",
+    "InvalidAgentTaskRecoveryExecutionPreconditionDecisionAuditError",
 ]
