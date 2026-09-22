@@ -640,6 +640,42 @@ class AgentTaskRecoveryExecutionPreconditionDecisionHistory:
 
 
 @dataclass(frozen=True)
+class AgentTaskRecoveryExecutionPreconditionDecisionReport:
+    """LLMAgentTaskRecoveryExecutionPreconditionDecisionReportingService.
+    report()'s compact, structured, task-level operational report -- never
+    a second history/aggregation engine (Rule: "Reuse its existing
+    transition and aggregation results"; "Do not turn this into
+    analytics"): every field is read straight off Commit #10's own
+    AgentTaskRecoveryExecutionPreconditionDecisionHistory, nothing here
+    recomputes a count, transition, or decision a second way.
+
+    latest_transition/material_changes are Commit #9's own last transition
+    in `decision_history.transitions` (None/() when fewer than two
+    decisions exist at all); blocking_conditions/warnings are exactly the
+    LATEST decision's own fields (the currently relevant ones, not a
+    union across history). decision_history is Commit #10's own
+    (possibly limit-truncated) `decisions` tuple, carried through
+    unchanged.
+    """
+
+    task_id: str
+    latest_decision: Optional[object]
+    latest_decision_at: Optional[datetime]
+    current_eligible: bool
+    decision_count: int
+    counts_by_decision: dict
+    transition_count: int
+    eligibility_change_count: int
+    review_or_block_transition_count: int
+    latest_transition: Optional[object]
+    material_changes: tuple
+    blocking_conditions: tuple
+    warnings: tuple
+    decision_history: tuple
+    generated_at: datetime
+
+
+@dataclass(frozen=True)
 class AgentTaskRecoveryExecutionPreconditionDecisionHistorySummary:
     """summarize()'s compact rollup of one task's own decision history --
     exactly get_history()'s own aggregate fields, minus the raw
