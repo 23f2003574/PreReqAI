@@ -508,3 +508,4 @@ class AgentTaskRecoveryExecutionPreconditionDecision:
     drift_classification: Optional[AgentTaskRecoveryExecutionPreconditionDriftResult]
     approval_reconciliation: Optional[AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult]
     created_at: datetime
+    decision_id: str = field(default_factory=lambda: str(uuid4()))

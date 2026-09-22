@@ -6,6 +6,12 @@ from .decision import (
     InvalidAgentTaskRecoveryExecutionPreconditionDecisionError,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionService,
 )
+from .decision_store import (
+    AgentTaskRecoveryExecutionPreconditionDecisionRawStore,
+    InMemoryAgentTaskRecoveryExecutionPreconditionDecisionRawStore,
+    InvalidAgentTaskRecoveryExecutionPreconditionDecisionPersistenceError,
+    LLMAgentTaskRecoveryExecutionPreconditionDecisionStore,
+)
 from .drift import (
     InvalidAgentTaskRecoveryExecutionPreconditionDriftError,
     LLMAgentTaskRecoveryExecutionPreconditionDriftService,
@@ -98,4 +104,8 @@ __all__ = [
     "AgentTaskRecoveryExecutionPreconditionDecision",
     "LLMAgentTaskRecoveryExecutionPreconditionDecisionService",
     "InvalidAgentTaskRecoveryExecutionPreconditionDecisionError",
+    "AgentTaskRecoveryExecutionPreconditionDecisionRawStore",
+    "InMemoryAgentTaskRecoveryExecutionPreconditionDecisionRawStore",
+    "LLMAgentTaskRecoveryExecutionPreconditionDecisionStore",
+    "InvalidAgentTaskRecoveryExecutionPreconditionDecisionPersistenceError",
 ]

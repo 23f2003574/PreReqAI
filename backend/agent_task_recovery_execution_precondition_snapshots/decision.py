@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from .approval_reconciliation import LLMAgentTaskRecoveryExecutionPreconditionApprovalReconciliationService
+from .decision_store import LLMAgentTaskRecoveryExecutionPreconditionDecisionStore
 from .drift import DRIFT_REQUIRES_REVALIDATION
 from .models import (
     EXECUTION_DECISION_ALLOW,
@@ -78,6 +79,7 @@ class LLMAgentTaskRecoveryExecutionPreconditionDecisionService:
         self,
         snapshot_service: LLMAgentTaskRecoveryExecutionPreconditionSnapshotService = None,
         approval_reconciliation_service: LLMAgentTaskRecoveryExecutionPreconditionApprovalReconciliationService = None,
+        store: LLMAgentTaskRecoveryExecutionPreconditionDecisionStore = None,
     ):
         """
         Args:
@@ -89,6 +91,12 @@ class LLMAgentTaskRecoveryExecutionPreconditionDecisionService:
                 LLMAgentTaskRecoveryExecutionPreconditionApprovalReconciliationService
                 (itself composing Commits #2-#4); pass the real instance
                 wired to the same guard/authorization/approval stack.
+            store: No default -- omitted entirely means decide() never
+                persists anything (Rule: "Do not make the store
+                responsible for recomputing decisions" cuts both ways:
+                this service never assumes one exists either). Pass a
+                Commit #7 LLMAgentTaskRecoveryExecutionPreconditionDecisionStore
+                to persist every computed decision.
         """
         self._snapshot_service = (
             snapshot_service
@@ -100,18 +108,38 @@ class LLMAgentTaskRecoveryExecutionPreconditionDecisionService:
             if approval_reconciliation_service is not None
             else LLMAgentTaskRecoveryExecutionPreconditionApprovalReconciliationService()
         )
+        self._store = store
 
     def decide(
         self, task_id: str, snapshot_id: str, authorization_id: Optional[str] = None
     ) -> AgentTaskRecoveryExecutionPreconditionDecision:
         """Decide whether task_id's exact snapshot_id may proceed to
-        recovery execution right now.
+        recovery execution right now, persisting the result through
+        Commit #7's own store when one was supplied at construction.
+
+        A persistence failure is never silently swallowed into a returned
+        ALLOW (Rule: "Persistence failure must not silently turn an allow
+        into an unsafe execution") -- it propagates as
+        InvalidAgentTaskRecoveryExecutionPreconditionDecisionPersistenceError,
+        the exact same fail-closed discipline this whole package already
+        applies to missing/invalid evidence.
 
         Raises:
             InvalidAgentTaskRecoveryExecutionPreconditionDecisionError: If
                 task_id/snapshot_id is not a non-empty string, or
                 authorization_id is given but is not a string
+            InvalidAgentTaskRecoveryExecutionPreconditionDecisionPersistenceError:
+                If a store was supplied and persisting the computed
+                decision failed
         """
+        decision = self._evaluate(task_id, snapshot_id, authorization_id)
+        if self._store is not None:
+            self._store.save(decision)
+        return decision
+
+    def _evaluate(
+        self, task_id: str, snapshot_id: str, authorization_id: Optional[str] = None
+    ) -> AgentTaskRecoveryExecutionPreconditionDecision:
         self._require_text(task_id, "task_id")
         self._require_text(snapshot_id, "snapshot_id")
         if authorization_id is not None and not isinstance(authorization_id, str):
