@@ -1132,3 +1132,36 @@ class AgentTaskRecoveryExecutionDecisionFreshnessReconciliationAuditRecord:
     reconciled_at: datetime
     recorded_at: datetime
     audit_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+RECONCILIATION_RESULT_SCHEMA_VERSION = 1
+RECONCILIATION_COMPLETED = "completed"
+RECONCILIATION_UNRESOLVED = "unresolved"
+RECONCILIATION_STATUSES = frozenset({RECONCILIATION_COMPLETED, RECONCILIATION_UNRESOLVED})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessReconciliationResultRecord:
+    """LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationResultService.
+    record()'s persisted, immutable outcome of one freshness-chain
+    reconciliation. status is RECONCILIATION_COMPLETED only when the chain
+    was valid and nothing was left unresolved or conflicting -- otherwise
+    RECONCILIATION_UNRESOLVED, so a later run can tell a finished
+    reconciliation from one still needing attention. Every other field is
+    copied verbatim from the reconciliation result; schema_version is
+    RECONCILIATION_RESULT_SCHEMA_VERSION at the time of recording."""
+
+    task_id: str
+    status: str
+    previous_current_decision_id: Optional[str]
+    authoritative_decision_id: Optional[str]
+    current_decision_id: Optional[str]
+    changed: bool
+    changes: tuple
+    conflicts: tuple
+    unresolved: tuple
+    chain_valid: bool
+    reconciled_at: datetime
+    recorded_at: datetime
+    schema_version: int = RECONCILIATION_RESULT_SCHEMA_VERSION
+    result_id: str = field(default_factory=lambda: str(uuid4()))
