@@ -12,6 +12,10 @@ from .decision_freshness_audit import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessAuditError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessAuditService,
 )
+from .decision_freshness_history import (
+    InvalidAgentTaskRecoveryExecutionDecisionFreshnessHistoryError,
+    LLMAgentTaskRecoveryExecutionDecisionFreshnessHistoryService,
+)
 from .decision_freshness_policy import LLMAgentTaskRecoveryExecutionDecisionFreshnessPolicy
 from .decision_freshness_revalidation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessRevalidationError,
@@ -73,6 +77,14 @@ from .models import (
     EXECUTION_DECISION_REVIEW,
     EXECUTION_DECISIONS,
     FRESHNESS_FRESH,
+    FRESHNESS_HISTORY_DECISION_RECORDED,
+    FRESHNESS_HISTORY_EVENT_TYPES,
+    FRESHNESS_HISTORY_FRESH_REUSE,
+    FRESHNESS_HISTORY_INDETERMINATE_DETECTED,
+    FRESHNESS_HISTORY_REVALIDATION_FAILED,
+    FRESHNESS_HISTORY_REVALIDATION_REPLACED,
+    FRESHNESS_HISTORY_REVALIDATION_REUSED,
+    FRESHNESS_HISTORY_STALE_DETECTED,
     FRESHNESS_STALE,
     FRESHNESS_STATUSES,
     FRESHNESS_UNKNOWN,
@@ -89,6 +101,9 @@ from .models import (
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
     AgentTaskRecoveryExecutionCurrentStateEvidence,
     AgentTaskRecoveryExecutionDecisionFreshnessAuditRecord,
+    AgentTaskRecoveryExecutionDecisionFreshnessHistory,
+    AgentTaskRecoveryExecutionDecisionFreshnessHistoryEvent,
+    AgentTaskRecoveryExecutionDecisionFreshnessHistoryLink,
     AgentTaskRecoveryExecutionDecisionFreshnessRevalidationResult,
     AgentTaskRecoveryExecutionDecisionIntegrityResult,
     AgentTaskRecoveryExecutionDecisionStalenessResult,
@@ -216,4 +231,17 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionFreshnessRevalidationResult",
     "LLMAgentTaskRecoveryExecutionDecisionFreshnessRevalidationService",
     "InvalidAgentTaskRecoveryExecutionDecisionFreshnessRevalidationError",
+    "FRESHNESS_HISTORY_DECISION_RECORDED",
+    "FRESHNESS_HISTORY_FRESH_REUSE",
+    "FRESHNESS_HISTORY_STALE_DETECTED",
+    "FRESHNESS_HISTORY_INDETERMINATE_DETECTED",
+    "FRESHNESS_HISTORY_REVALIDATION_REUSED",
+    "FRESHNESS_HISTORY_REVALIDATION_REPLACED",
+    "FRESHNESS_HISTORY_REVALIDATION_FAILED",
+    "FRESHNESS_HISTORY_EVENT_TYPES",
+    "AgentTaskRecoveryExecutionDecisionFreshnessHistory",
+    "AgentTaskRecoveryExecutionDecisionFreshnessHistoryEvent",
+    "AgentTaskRecoveryExecutionDecisionFreshnessHistoryLink",
+    "LLMAgentTaskRecoveryExecutionDecisionFreshnessHistoryService",
+    "InvalidAgentTaskRecoveryExecutionDecisionFreshnessHistoryError",
 ]

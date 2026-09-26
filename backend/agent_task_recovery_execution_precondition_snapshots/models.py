@@ -928,3 +928,91 @@ class AgentTaskRecoveryExecutionPreconditionDecisionHistorySummary:
     first_decision_at: Optional[datetime]
     last_decision_at: Optional[datetime]
     generated_at: datetime
+
+
+FRESHNESS_HISTORY_DECISION_RECORDED = "decision_recorded"
+FRESHNESS_HISTORY_FRESH_REUSE = "fresh_reuse"
+FRESHNESS_HISTORY_STALE_DETECTED = "stale_detected"
+FRESHNESS_HISTORY_INDETERMINATE_DETECTED = "indeterminate_detected"
+FRESHNESS_HISTORY_REVALIDATION_REUSED = "revalidation_reused"
+FRESHNESS_HISTORY_REVALIDATION_REPLACED = "revalidation_replaced"
+FRESHNESS_HISTORY_REVALIDATION_FAILED = "revalidation_failed"
+FRESHNESS_HISTORY_EVENT_TYPES = (
+    FRESHNESS_HISTORY_DECISION_RECORDED,
+    FRESHNESS_HISTORY_FRESH_REUSE,
+    FRESHNESS_HISTORY_STALE_DETECTED,
+    FRESHNESS_HISTORY_INDETERMINATE_DETECTED,
+    FRESHNESS_HISTORY_REVALIDATION_REUSED,
+    FRESHNESS_HISTORY_REVALIDATION_REPLACED,
+    FRESHNESS_HISTORY_REVALIDATION_FAILED,
+)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessHistoryEvent:
+    """One entry in LLMAgentTaskRecoveryExecutionDecisionFreshnessHistoryService.
+    get_history()'s chronological chain -- either a persisted decision
+    (event_type DECISION_RECORDED, sourced from the decision store) or one
+    freshness audit record (sourced from Commit #5's own audit trail),
+    every field copied verbatim, never recomputed.
+
+    revalidated distinguishes a decision accepted as fresh (False) from
+    one that actually went through Commit #4's revalidation (True), even
+    when that revalidation merely reused the same decision.
+    """
+
+    sequence: int
+    event_type: str
+    occurred_at: datetime
+    decision_id: str
+    freshness_status: Optional[str]
+    freshness_reason: Optional[str]
+    decision_state_version: Optional[str]
+    current_state_version: Optional[str]
+    revalidated: bool
+    revalidation_action: Optional[str]
+    replacement_decision_id: Optional[str]
+    execution_decision: Optional[str]
+    audit_id: Optional[str]
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessHistoryLink:
+    """One old -> new decision replacement, taken from a freshness audit
+    record's own replacement_decision_id. replacement_found is False when
+    the decision store holds no decision under new_decision_id -- the link
+    is still reported (the audit says it happened), never dropped or
+    invented around."""
+
+    old_decision_id: str
+    new_decision_id: str
+    audit_id: str
+    linked_at: datetime
+    replacement_found: bool
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessHistory:
+    """LLMAgentTaskRecoveryExecutionDecisionFreshnessHistoryService.
+    get_history()'s read-only, chronological view of freshness-driven
+    decision replacement for one task.
+
+    original_decision_id is the task's earliest persisted decision (or, if
+    the store holds none, the earliest audited one); current_decision_id
+    is where the old -> new replacement chain starting there ends. gaps
+    names every place the recorded chain is missing or interrupted --
+    complete is True only when there are none.
+    """
+
+    task_id: str
+    events: tuple
+    links: tuple
+    original_decision_id: Optional[str]
+    current_decision_id: Optional[str]
+    fresh_reuse_count: int
+    revalidation_count: int
+    replacement_count: int
+    failed_revalidation_count: int
+    gaps: tuple
+    complete: bool
+    generated_at: datetime
