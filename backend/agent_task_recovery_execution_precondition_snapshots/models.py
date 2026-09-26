@@ -1016,3 +1016,36 @@ class AgentTaskRecoveryExecutionDecisionFreshnessHistory:
     gaps: tuple
     complete: bool
     generated_at: datetime
+
+
+CHAIN_VALID = "valid"
+CHAIN_INVALID = "invalid"
+CHAIN_STATUSES = frozenset({CHAIN_VALID, CHAIN_INVALID})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessChainValidationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService.
+    validate()'s read-only verdict on whether task_id's freshness-driven
+    replacement chain is internally consistent.
+
+    chain is the decision_ids from the original decision to the chain's
+    terminal point, as far as it could be followed. latest_decision_id is
+    that terminal decision only when status is CHAIN_VALID -- fail closed:
+    None whenever the current chain cannot be established.
+    """
+
+    task_id: str
+    status: str
+    issues: tuple
+    chain: tuple
+    latest_decision_id: Optional[str]
+    validated_at: datetime
+
+    @property
+    def valid(self) -> bool:
+        return self.status == CHAIN_VALID
+
+    @property
+    def invalid(self) -> bool:
+        return self.status != CHAIN_VALID

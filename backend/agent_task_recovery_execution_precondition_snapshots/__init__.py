@@ -12,6 +12,10 @@ from .decision_freshness_audit import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessAuditError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessAuditService,
 )
+from .decision_freshness_chain_validation import (
+    InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
+    LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
+)
 from .decision_freshness_history import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessHistoryError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessHistoryService,
@@ -67,6 +71,9 @@ from .drift import (
 )
 from .models import (
     APPROVAL_RECONCILIATION_STATES,
+    CHAIN_INVALID,
+    CHAIN_STATUSES,
+    CHAIN_VALID,
     DRIFT_CATEGORIES,
     DRIFT_EXECUTION_BLOCKED,
     DRIFT_NON_BLOCKING,
@@ -101,6 +108,7 @@ from .models import (
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
     AgentTaskRecoveryExecutionCurrentStateEvidence,
     AgentTaskRecoveryExecutionDecisionFreshnessAuditRecord,
+    AgentTaskRecoveryExecutionDecisionFreshnessChainValidationResult,
     AgentTaskRecoveryExecutionDecisionFreshnessHistory,
     AgentTaskRecoveryExecutionDecisionFreshnessHistoryEvent,
     AgentTaskRecoveryExecutionDecisionFreshnessHistoryLink,
@@ -244,4 +252,10 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionFreshnessHistoryLink",
     "LLMAgentTaskRecoveryExecutionDecisionFreshnessHistoryService",
     "InvalidAgentTaskRecoveryExecutionDecisionFreshnessHistoryError",
+    "CHAIN_VALID",
+    "CHAIN_INVALID",
+    "CHAIN_STATUSES",
+    "AgentTaskRecoveryExecutionDecisionFreshnessChainValidationResult",
+    "LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService",
+    "InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError",
 ]
