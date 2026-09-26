@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_supersession_validation import (
+    InvalidAgentTaskRecoveryExecutionDecisionSupersessionValidationError,
+    LLMAgentTaskRecoveryExecutionDecisionSupersessionValidationService,
+)
 from .decision_supersession import (
     AgentTaskRecoveryExecutionDecisionSupersessionStore,
     InMemoryAgentTaskRecoveryExecutionDecisionSupersessionStore,
@@ -154,6 +158,9 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationResult,
     AgentTaskRecoveryExecutionDecisionFreshnessReconciliationLifecycleResult,
     AgentTaskRecoveryExecutionDecisionSupersessionRecord,
+    AgentTaskRecoveryExecutionDecisionSupersessionValidationResult,
+    SUPERSESSION_INVALID,
+    SUPERSESSION_VALID,
     LIFECYCLE_COMPLETED,
     LIFECYCLE_FAILED,
     LIFECYCLE_STATUSES,
@@ -352,4 +359,9 @@ __all__ = [
     "InMemoryAgentTaskRecoveryExecutionDecisionSupersessionStore",
     "LLMAgentTaskRecoveryExecutionDecisionSupersessionService",
     "InvalidAgentTaskRecoveryExecutionDecisionSupersessionError",
+    "SUPERSESSION_VALID",
+    "SUPERSESSION_INVALID",
+    "AgentTaskRecoveryExecutionDecisionSupersessionValidationResult",
+    "LLMAgentTaskRecoveryExecutionDecisionSupersessionValidationService",
+    "InvalidAgentTaskRecoveryExecutionDecisionSupersessionValidationError",
 ]

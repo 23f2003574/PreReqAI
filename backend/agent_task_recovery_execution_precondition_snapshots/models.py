@@ -1248,3 +1248,32 @@ class AgentTaskRecoveryExecutionDecisionSupersessionRecord:
     reason: str
     recorded_at: datetime
     supersession_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+SUPERSESSION_VALID = "valid"
+SUPERSESSION_INVALID = "invalid"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionValidationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionValidationService.
+    validate()'s deterministic verdict on task_id's supersession lineage.
+    chain is the decision_ids from the earliest decision along recorded
+    supersessions, as far as it could be followed; terminal_decision_id
+    is its end only when status is SUPERSESSION_VALID (fail closed: None
+    otherwise). Carries no timestamp, so repeated validation of unchanged
+    records is identical."""
+
+    task_id: str
+    status: str
+    issues: tuple
+    chain: tuple
+    terminal_decision_id: Optional[str]
+
+    @property
+    def valid(self) -> bool:
+        return self.status == SUPERSESSION_VALID
+
+    @property
+    def invalid(self) -> bool:
+        return self.status != SUPERSESSION_VALID
