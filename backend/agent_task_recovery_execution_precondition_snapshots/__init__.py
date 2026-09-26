@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_supersession_conflict_resolution import (
+    InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionError,
+    LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionService,
+)
 from .decision_supersession_conflict_plan_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationError,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationService,
@@ -186,6 +190,12 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionSupersessionConflictPlanItem,
     AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlan,
     AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationResult,
+    AgentTaskRecoveryExecutionDecisionSupersessionConflictActionOutcome,
+    AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionResult,
+    CONFLICT_ACTION_APPLIED,
+    CONFLICT_ACTION_DELEGATED,
+    CONFLICT_ACTION_FAILED,
+    CONFLICT_ACTION_SKIPPED,
     PLAN_VALIDATION_INVALID,
     PLAN_VALIDATION_VALID,
     PLAN_CLASSIFICATIONS,
@@ -466,4 +476,12 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationResult",
     "LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationService",
     "InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationError",
+    "CONFLICT_ACTION_APPLIED",
+    "CONFLICT_ACTION_DELEGATED",
+    "CONFLICT_ACTION_FAILED",
+    "CONFLICT_ACTION_SKIPPED",
+    "AgentTaskRecoveryExecutionDecisionSupersessionConflictActionOutcome",
+    "AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionResult",
+    "LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionService",
+    "InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionError",
 ]

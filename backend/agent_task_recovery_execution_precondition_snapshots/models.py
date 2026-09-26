@@ -1473,3 +1473,43 @@ class AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValida
     @property
     def invalid(self) -> bool:
         return self.status != PLAN_VALIDATION_VALID
+
+
+CONFLICT_ACTION_APPLIED = "applied"
+CONFLICT_ACTION_DELEGATED = "delegated"
+CONFLICT_ACTION_SKIPPED = "skipped"
+CONFLICT_ACTION_FAILED = "failed"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionConflictActionOutcome:
+    """What happened to one plan item during execution."""
+
+    conflict_id: str
+    conflict_type: str
+    classification: str
+    outcome: str
+    detail: str
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionResult:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionService.
+    execute()'s outcome. applied holds safe repairs and delegated
+    revalidations that ran; skipped holds items deliberately left alone
+    (manual review, unresolvable, or not validated against current
+    evidence); failed holds items whose execution raised or did not take
+    effect. still_blocking is every conflict_id detected AFTER execution.
+    batch_validations are the supersession-chain validations run after
+    each mutation batch; final_validation is the last one (or the
+    pre-execution one when nothing was mutated)."""
+
+    task_id: str
+    plan_valid: bool
+    plan_issues: tuple
+    applied: tuple
+    skipped: tuple
+    failed: tuple
+    still_blocking: tuple
+    batch_validations: tuple
+    final_validation: object
