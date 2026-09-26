@@ -1230,3 +1230,21 @@ class AgentTaskRecoveryExecutionDecisionFreshnessReconciliationLifecycleResult:
     final_verification: Optional[object]
     errors: tuple
     completed_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionRecord:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionService.supersede()'s
+    durable, append-only record that replacement_decision_id supersedes
+    previous_decision_id for task_id. The verdicts are copied verbatim
+    from the two persisted decisions for traceability -- supersession
+    never changes either decision."""
+
+    task_id: str
+    previous_decision_id: str
+    replacement_decision_id: str
+    previous_decision: str
+    replacement_decision: str
+    reason: str
+    recorded_at: datetime
+    supersession_id: str = field(default_factory=lambda: str(uuid4()))
