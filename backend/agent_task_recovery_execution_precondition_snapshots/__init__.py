@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_supersession_conflict_plan_validation import (
+    InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationError,
+    LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationService,
+)
 from .decision_supersession_conflict_plan import (
     InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanError,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanService,
@@ -181,6 +185,9 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionSupersessionConflictReport,
     AgentTaskRecoveryExecutionDecisionSupersessionConflictPlanItem,
     AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlan,
+    AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationResult,
+    PLAN_VALIDATION_INVALID,
+    PLAN_VALIDATION_VALID,
     PLAN_CLASSIFICATIONS,
     PLAN_REPAIRABLE_METADATA,
     PLAN_REQUIRES_MANUAL_REVIEW,
@@ -454,4 +461,9 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlan",
     "LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanService",
     "InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanError",
+    "PLAN_VALIDATION_VALID",
+    "PLAN_VALIDATION_INVALID",
+    "AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationResult",
+    "LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationService",
+    "InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationError",
 ]

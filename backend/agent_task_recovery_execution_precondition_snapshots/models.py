@@ -1445,3 +1445,31 @@ class AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlan:
     counts_by_classification: dict
     execution_blocked: bool
     resolution_state: str
+
+
+PLAN_VALIDATION_VALID = "valid"
+PLAN_VALIDATION_INVALID = "invalid"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationService.
+    validate()'s deterministic verdict on whether a conflict-resolution
+    plan is still safe and current. validated_conflicts are the plan's
+    conflict_ids that still match current evidence exactly;
+    blocking_conflicts are every currently-detected conflict_id, all of
+    which keep execution blocked."""
+
+    task_id: str
+    status: str
+    issues: tuple
+    validated_conflicts: tuple
+    blocking_conflicts: tuple
+
+    @property
+    def valid(self) -> bool:
+        return self.status == PLAN_VALIDATION_VALID
+
+    @property
+    def invalid(self) -> bool:
+        return self.status != PLAN_VALIDATION_VALID
