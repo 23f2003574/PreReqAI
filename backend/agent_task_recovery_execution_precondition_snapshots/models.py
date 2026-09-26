@@ -1103,7 +1103,32 @@ class AgentTaskRecoveryExecutionDecisionFreshnessChainReconciliationResult:
     unresolved: tuple
     final_chain_valid: bool
     reconciled_at: datetime
+    # The subset of unresolved that are conflicting current pointers.
+    conflicts: tuple = ()
 
     @property
     def changed(self) -> bool:
         return bool(self.changes)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessReconciliationAuditRecord:
+    """LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationAuditService.
+    record()'s durable, append-only capture of one freshness-chain
+    reconciliation -- the same dual-index, append-only shape as
+    AgentTaskRecoveryExecutionDecisionFreshnessAuditRecord. Every field is
+    copied verbatim from the reconciliation result; reconciled_at is the
+    reconciliation's own timestamp, recorded_at when it was audited."""
+
+    task_id: str
+    previous_current_decision_id: Optional[str]
+    authoritative_decision_id: Optional[str]
+    current_decision_id: Optional[str]
+    changed: bool
+    changes: tuple
+    conflicts: tuple
+    chain_valid: bool
+    unresolved: tuple
+    reconciled_at: datetime
+    recorded_at: datetime
+    audit_id: str = field(default_factory=lambda: str(uuid4()))

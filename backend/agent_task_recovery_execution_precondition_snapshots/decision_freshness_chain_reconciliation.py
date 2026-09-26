@@ -90,7 +90,7 @@ class LLMAgentTaskRecoveryExecutionDecisionFreshnessChainReconciliationService:
         index = self._index_store.get(task_id)
         previous = index.current_decision_id if index is not None else None
         authoritative = validation.latest_decision_id
-        changes, unresolved, transition = [], [], None
+        changes, unresolved, conflicts, transition = [], [], [], None
         current = previous
 
         if not validation.valid:
@@ -99,10 +99,11 @@ class LLMAgentTaskRecoveryExecutionDecisionFreshnessChainReconciliationService:
         elif previous == authoritative:
             pass
         elif previous is not None and self._decision_store.get(previous) is not None and previous not in validation.chain:
-            unresolved.append(
+            conflicts.append(
                 f"current pointer {previous} names an existing decision that is not on the validated chain "
                 f"(which ends at {authoritative}); conflicting pointers were not guessed between"
             )
+            unresolved.extend(conflicts)
         else:
             if previous is not None and self._decision_store.get(previous) is not None:
                 try:
@@ -138,4 +139,5 @@ class LLMAgentTaskRecoveryExecutionDecisionFreshnessChainReconciliationService:
             current_decision_state=current_decision.decision if current_decision is not None else None,
             changes=tuple(changes), transition=transition, unresolved=tuple(unresolved),
             final_chain_valid=final.valid, reconciled_at=datetime.now(timezone.utc),
+            conflicts=tuple(conflicts),
         )
