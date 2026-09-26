@@ -1194,3 +1194,39 @@ class AgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationResul
     @property
     def invalid(self) -> bool:
         return self.status != RECONCILIATION_VERIFICATION_VALID
+
+
+LIFECYCLE_COMPLETED = "completed"
+LIFECYCLE_UNRESOLVED = "unresolved"
+LIFECYCLE_FAILED = "failed"
+LIFECYCLE_STATUSES = frozenset({LIFECYCLE_COMPLETED, LIFECYCLE_UNRESOLVED, LIFECYCLE_FAILED})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessReconciliationLifecycleResult:
+    """LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationLifecycleService.
+    reconcile()'s outcome. status is COMPLETED only when the final
+    verification is valid, the persisted result is complete and nothing
+    failed; UNRESOLVED when everything was recorded faithfully but
+    conflicts/unresolved issues remain (including when no authoritative
+    decision can be established -- fail closed); FAILED when persistence,
+    audit or verification failed. result_id/audit_id reference the
+    persisted records (result_id is the reused latest result when no
+    reconciliation was needed)."""
+
+    task_id: str
+    status: str
+    reconciliation_performed: bool
+    previous_current_decision_id: Optional[str]
+    current_decision_id: Optional[str]
+    authoritative_decision_id: Optional[str]
+    changes: tuple
+    conflicts: tuple
+    unresolved: tuple
+    result_id: Optional[str]
+    audit_id: Optional[str]
+    initial_chain_valid: bool
+    prior_verification: Optional[object]
+    final_verification: Optional[object]
+    errors: tuple
+    completed_at: datetime

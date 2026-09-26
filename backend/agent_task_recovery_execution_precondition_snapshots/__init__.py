@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_freshness_reconciliation_lifecycle import (
+    InvalidAgentTaskRecoveryExecutionDecisionFreshnessReconciliationLifecycleError,
+    LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationLifecycleService,
+)
 from .decision_freshness_reconciliation_verification import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationService,
@@ -142,6 +146,11 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionFreshnessReconciliationAuditRecord,
     AgentTaskRecoveryExecutionDecisionFreshnessReconciliationResultRecord,
     AgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationResult,
+    AgentTaskRecoveryExecutionDecisionFreshnessReconciliationLifecycleResult,
+    LIFECYCLE_COMPLETED,
+    LIFECYCLE_FAILED,
+    LIFECYCLE_STATUSES,
+    LIFECYCLE_UNRESOLVED,
     RECONCILIATION_VERIFICATION_INVALID,
     RECONCILIATION_VERIFICATION_VALID,
     RECONCILIATION_COMPLETED,
@@ -324,4 +333,11 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationResult",
     "LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationService",
     "InvalidAgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationError",
+    "LIFECYCLE_COMPLETED",
+    "LIFECYCLE_UNRESOLVED",
+    "LIFECYCLE_FAILED",
+    "LIFECYCLE_STATUSES",
+    "AgentTaskRecoveryExecutionDecisionFreshnessReconciliationLifecycleResult",
+    "LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationLifecycleService",
+    "InvalidAgentTaskRecoveryExecutionDecisionFreshnessReconciliationLifecycleError",
 ]
