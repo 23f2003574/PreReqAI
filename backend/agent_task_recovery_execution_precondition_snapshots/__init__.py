@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_freshness_reconciliation_verification import (
+    InvalidAgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationError,
+    LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationService,
+)
 from .decision_freshness_reconciliation_result import (
     AgentTaskRecoveryExecutionDecisionFreshnessReconciliationResultRawStore,
     InMemoryAgentTaskRecoveryExecutionDecisionFreshnessReconciliationResultRawStore,
@@ -137,6 +141,9 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionFreshnessHistory,
     AgentTaskRecoveryExecutionDecisionFreshnessReconciliationAuditRecord,
     AgentTaskRecoveryExecutionDecisionFreshnessReconciliationResultRecord,
+    AgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationResult,
+    RECONCILIATION_VERIFICATION_INVALID,
+    RECONCILIATION_VERIFICATION_VALID,
     RECONCILIATION_COMPLETED,
     RECONCILIATION_RESULT_SCHEMA_VERSION,
     RECONCILIATION_STATUSES,
@@ -312,4 +319,9 @@ __all__ = [
     "InMemoryAgentTaskRecoveryExecutionDecisionFreshnessReconciliationResultRawStore",
     "LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationResultService",
     "InvalidAgentTaskRecoveryExecutionDecisionFreshnessReconciliationResultError",
+    "RECONCILIATION_VERIFICATION_VALID",
+    "RECONCILIATION_VERIFICATION_INVALID",
+    "AgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationResult",
+    "LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationService",
+    "InvalidAgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationError",
 ]

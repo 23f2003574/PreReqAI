@@ -1165,3 +1165,32 @@ class AgentTaskRecoveryExecutionDecisionFreshnessReconciliationResultRecord:
     recorded_at: datetime
     schema_version: int = RECONCILIATION_RESULT_SCHEMA_VERSION
     result_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+RECONCILIATION_VERIFICATION_VALID = "valid"
+RECONCILIATION_VERIFICATION_INVALID = "invalid"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionFreshnessReconciliationVerificationService.
+    verify()'s deterministic verdict on whether one persisted
+    reconciliation result still matches the decision chain. mismatches
+    are contradictions between the record and persisted evidence;
+    missing_evidence is evidence the record depends on that no longer
+    exists. status is VALID only when both are empty. Carries no
+    timestamp, so verifying unchanged records twice is identical."""
+
+    task_id: str
+    result_id: str
+    status: str
+    mismatches: tuple
+    missing_evidence: tuple
+
+    @property
+    def valid(self) -> bool:
+        return self.status == RECONCILIATION_VERIFICATION_VALID
+
+    @property
+    def invalid(self) -> bool:
+        return self.status != RECONCILIATION_VERIFICATION_VALID
