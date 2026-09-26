@@ -1404,3 +1404,44 @@ class AgentTaskRecoveryExecutionDecisionSupersessionConflictReport:
         ]
         data["generated_at"] = self.generated_at.isoformat()
         return data
+
+
+PLAN_REPAIRABLE_METADATA = "repairable_metadata"
+PLAN_REQUIRES_REVALIDATION = "requires_revalidation"
+PLAN_REQUIRES_MANUAL_REVIEW = "requires_manual_review"
+PLAN_UNRESOLVABLE = "unresolvable"
+PLAN_CLASSIFICATIONS = (
+    PLAN_REPAIRABLE_METADATA, PLAN_REQUIRES_REVALIDATION, PLAN_REQUIRES_MANUAL_REVIEW, PLAN_UNRESOLVABLE,
+)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionConflictPlanItem:
+    """One planned (never executed) step for a single detected conflict.
+    conflict_id is a stable id derived from the conflict's own type,
+    decisions and evidence; depends_on names the freshness/reconciliation
+    state the step relies on."""
+
+    conflict_id: str
+    conflict_type: str
+    classification: str
+    decision_ids: tuple
+    evidence_ids: tuple
+    proposed_action: str
+    evidence_required: tuple
+    execution_blocked: bool
+    depends_on: tuple
+    detail: str
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlan:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanService.
+    plan()'s deterministic, read-only plan. execution_blocked is True
+    whenever any conflict remains or the lineage did not resolve."""
+
+    task_id: str
+    items: tuple
+    counts_by_classification: dict
+    execution_blocked: bool
+    resolution_state: str

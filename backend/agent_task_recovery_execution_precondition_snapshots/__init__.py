@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_supersession_conflict_plan import (
+    InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanError,
+    LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanService,
+)
 from .decision_supersession_conflict_reporting import (
     InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictReportError,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictReportingService,
@@ -175,6 +179,13 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionSupersessionConflict,
     AgentTaskRecoveryExecutionDecisionSupersessionConflictResult,
     AgentTaskRecoveryExecutionDecisionSupersessionConflictReport,
+    AgentTaskRecoveryExecutionDecisionSupersessionConflictPlanItem,
+    AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlan,
+    PLAN_CLASSIFICATIONS,
+    PLAN_REPAIRABLE_METADATA,
+    PLAN_REQUIRES_MANUAL_REVIEW,
+    PLAN_REQUIRES_REVALIDATION,
+    PLAN_UNRESOLVABLE,
     POINTER_STATUS_AGREES,
     POINTER_STATUS_DISAGREES,
     POINTER_STATUS_UNSET,
@@ -434,4 +445,13 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionSupersessionConflictReport",
     "LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictReportingService",
     "InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictReportError",
+    "PLAN_CLASSIFICATIONS",
+    "PLAN_REPAIRABLE_METADATA",
+    "PLAN_REQUIRES_MANUAL_REVIEW",
+    "PLAN_REQUIRES_REVALIDATION",
+    "PLAN_UNRESOLVABLE",
+    "AgentTaskRecoveryExecutionDecisionSupersessionConflictPlanItem",
+    "AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlan",
+    "LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanService",
+    "InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanError",
 ]
