@@ -1304,3 +1304,59 @@ class AgentTaskRecoveryExecutionDecisionSupersessionResolutionResult:
     superseded_decision_ids: tuple
     reconciled_pointer: Optional[str]
     issues: tuple
+
+
+SUPERSESSION_CONFLICT_MULTIPLE_SUCCESSORS = "multiple_successors"
+SUPERSESSION_CONFLICT_CYCLE = "cycle"
+SUPERSESSION_CONFLICT_CROSS_TASK = "cross_task_link"
+SUPERSESSION_CONFLICT_MISSING_DECISION = "missing_decision"
+SUPERSESSION_CONFLICT_SUCCESSOR_NOT_NEWER = "successor_not_newer"
+SUPERSESSION_CONFLICT_INVALID_REASON = "invalid_reason"
+SUPERSESSION_CONFLICT_POINTER_DISAGREEMENT = "pointer_disagreement"
+SUPERSESSION_CONFLICT_FRESHNESS_DISAGREEMENT = "freshness_disagreement"
+# Deterministic ordering of conflict types in results.
+SUPERSESSION_CONFLICT_TYPES = (
+    SUPERSESSION_CONFLICT_CYCLE,
+    SUPERSESSION_CONFLICT_MULTIPLE_SUCCESSORS,
+    SUPERSESSION_CONFLICT_CROSS_TASK,
+    SUPERSESSION_CONFLICT_MISSING_DECISION,
+    SUPERSESSION_CONFLICT_SUCCESSOR_NOT_NEWER,
+    SUPERSESSION_CONFLICT_FRESHNESS_DISAGREEMENT,
+    SUPERSESSION_CONFLICT_POINTER_DISAGREEMENT,
+    SUPERSESSION_CONFLICT_INVALID_REASON,
+)
+CONFLICT_SEVERITY_NONE = "none"
+CONFLICT_SEVERITY_MEDIUM = "medium"
+CONFLICT_SEVERITY_HIGH = "high"
+CONFLICT_SEVERITY_CRITICAL = "critical"
+CONFLICT_SEVERITIES = (
+    CONFLICT_SEVERITY_NONE, CONFLICT_SEVERITY_MEDIUM, CONFLICT_SEVERITY_HIGH, CONFLICT_SEVERITY_CRITICAL,
+)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionConflict:
+    """One detected lineage conflict. decision_ids are every decision it
+    involves; evidence_ids are the exact supersession_id/audit_id records
+    that produce it -- all preserved, no winner chosen."""
+
+    conflict_type: str
+    severity: str
+    decision_ids: tuple
+    evidence_ids: tuple
+    detail: str
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionConflictResult:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictService.
+    detect()'s deterministic, read-only report. severity is the highest
+    conflict severity (CONFLICT_SEVERITY_NONE when there are none);
+    resolution_state is the supersession resolution's own verdict."""
+
+    task_id: str
+    has_conflicts: bool
+    conflicts: tuple
+    affected_decision_ids: tuple
+    severity: str
+    resolution_state: str
