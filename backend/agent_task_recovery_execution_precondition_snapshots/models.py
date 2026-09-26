@@ -1360,3 +1360,47 @@ class AgentTaskRecoveryExecutionDecisionSupersessionConflictResult:
     affected_decision_ids: tuple
     severity: str
     resolution_state: str
+
+
+POINTER_STATUS_AGREES = "agrees"
+POINTER_STATUS_DISAGREES = "disagrees"
+POINTER_STATUS_UNSET = "unset"
+POINTER_STATUS_UNVERIFIABLE = "unverifiable"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionConflictReport:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictReportingService.
+    report()'s task-level operational view of lineage conflicts.
+    unresolved_conflicts are the detector's own conflict objects, verbatim
+    and in its order -- nothing is resolved here, so every detected
+    conflict is unresolved. pointer_status says whether the reconciled
+    current pointer agrees with the resolved terminal decision;
+    chain_validation_status is "valid"/"invalid" from the supersession
+    validation behind the resolution."""
+
+    task_id: str
+    conflict_count: int
+    affected_decision_ids: tuple
+    conflict_types: tuple
+    counts_by_type: dict
+    severity: str
+    pointer_status: str
+    reconciled_pointer: Optional[str]
+    terminal_decision_id: Optional[str]
+    resolution_state: str
+    chain_validation_status: str
+    unresolved_conflicts: tuple
+    generated_at: datetime
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        for key in ("affected_decision_ids", "conflict_types"):
+            data[key] = list(data[key])
+        data["unresolved_conflicts"] = [
+            {**conflict, "decision_ids": list(conflict["decision_ids"]),
+             "evidence_ids": list(conflict["evidence_ids"])}
+            for conflict in data["unresolved_conflicts"]
+        ]
+        data["generated_at"] = self.generated_at.isoformat()
+        return data

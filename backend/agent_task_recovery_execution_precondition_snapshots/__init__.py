@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_supersession_conflict_reporting import (
+    InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictReportError,
+    LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictReportingService,
+)
 from .decision_supersession_conflict import (
     InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictError,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictService,
@@ -170,6 +174,11 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionSupersessionResolutionResult,
     AgentTaskRecoveryExecutionDecisionSupersessionConflict,
     AgentTaskRecoveryExecutionDecisionSupersessionConflictResult,
+    AgentTaskRecoveryExecutionDecisionSupersessionConflictReport,
+    POINTER_STATUS_AGREES,
+    POINTER_STATUS_DISAGREES,
+    POINTER_STATUS_UNSET,
+    POINTER_STATUS_UNVERIFIABLE,
     CONFLICT_SEVERITIES,
     CONFLICT_SEVERITY_CRITICAL,
     CONFLICT_SEVERITY_HIGH,
@@ -418,4 +427,11 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionSupersessionConflictResult",
     "LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictService",
     "InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictError",
+    "POINTER_STATUS_AGREES",
+    "POINTER_STATUS_DISAGREES",
+    "POINTER_STATUS_UNSET",
+    "POINTER_STATUS_UNVERIFIABLE",
+    "AgentTaskRecoveryExecutionDecisionSupersessionConflictReport",
+    "LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictReportingService",
+    "InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictReportError",
 ]
