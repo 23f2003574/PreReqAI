@@ -12,6 +12,12 @@ from .decision_freshness_audit import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessAuditError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessAuditService,
 )
+from .decision_freshness_chain_repair import (
+    AgentTaskRecoveryExecutionDecisionFreshnessChainIndexStore,
+    InMemoryAgentTaskRecoveryExecutionDecisionFreshnessChainIndexStore,
+    InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainRepairError,
+    LLMAgentTaskRecoveryExecutionDecisionFreshnessChainRepairService,
+)
 from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
@@ -108,6 +114,8 @@ from .models import (
     AgentTaskRecoveryExecutionPreconditionApprovalReconciliationResult,
     AgentTaskRecoveryExecutionCurrentStateEvidence,
     AgentTaskRecoveryExecutionDecisionFreshnessAuditRecord,
+    AgentTaskRecoveryExecutionDecisionFreshnessChainIndex,
+    AgentTaskRecoveryExecutionDecisionFreshnessChainRepairResult,
     AgentTaskRecoveryExecutionDecisionFreshnessChainValidationResult,
     AgentTaskRecoveryExecutionDecisionFreshnessHistory,
     AgentTaskRecoveryExecutionDecisionFreshnessHistoryEvent,
@@ -258,4 +266,10 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionFreshnessChainValidationResult",
     "LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService",
     "InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError",
+    "AgentTaskRecoveryExecutionDecisionFreshnessChainIndex",
+    "AgentTaskRecoveryExecutionDecisionFreshnessChainIndexStore",
+    "InMemoryAgentTaskRecoveryExecutionDecisionFreshnessChainIndexStore",
+    "AgentTaskRecoveryExecutionDecisionFreshnessChainRepairResult",
+    "LLMAgentTaskRecoveryExecutionDecisionFreshnessChainRepairService",
+    "InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainRepairError",
 ]

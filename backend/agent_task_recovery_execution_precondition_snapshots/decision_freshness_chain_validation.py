@@ -40,7 +40,16 @@ class LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService:
         decision_store: LLMAgentTaskRecoveryExecutionPreconditionDecisionStore = None,
         freshness_audit_service: LLMAgentTaskRecoveryExecutionDecisionFreshnessAuditService = None,
         integrity_service=None,
+        chain_index_store=None,
     ):
+        """
+        Args:
+            chain_index_store: Optional
+                AgentTaskRecoveryExecutionDecisionFreshnessChainIndexStore
+                whose derived links (written only by the chain repair
+                service) supplement the audit trail's own linkage.
+        """
+        self._chain_index_store = chain_index_store
         self._decision_store = (
             decision_store if decision_store is not None else LLMAgentTaskRecoveryExecutionPreconditionDecisionStore()
         )
@@ -87,6 +96,31 @@ class LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService:
                 issues.append(f"decision {decision.decision_id} has no authorization reference")
 
         successors, predecessors, seen_links = {}, {}, set()
+        unnamed_replacements = []
+
+        def add_link(old_id, new_id, source):
+            if new_id == old_id:
+                issues.append(f"{source} links decision {old_id} to itself")
+                return
+            if old_id in successors:
+                issues.append(
+                    f"decision {old_id} is replaced by both {successors[old_id]} and {new_id} (contradictory links)"
+                )
+                return
+            if new_id in predecessors:
+                issues.append(
+                    f"decision {new_id} replaces both {predecessors[new_id]} and {old_id} (contradictory links)"
+                )
+                return
+            successors[old_id] = new_id
+            predecessors[new_id] = old_id
+            new = by_id.get(new_id)
+            old = by_id.get(old_id)
+            if new is None:
+                issues.append(f"replacement decision {new_id} (for {old_id}) does not exist")
+            elif old is not None and new.created_at <= old.created_at:
+                issues.append(f"replacement decision {new_id} is not newer than the decision {old_id} it replaces")
+
         for audit in audits:
             if audit.task_id != task_id:
                 issues.append(f"audit {audit.audit_id} belongs to task {audit.task_id!r}, not {task_id!r}")
@@ -95,7 +129,7 @@ class LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService:
             new_id = audit.replacement_decision_id
             if new_id is None:
                 if audit.revalidation_action == REVALIDATION_REPLACED:
-                    issues.append(f"audit {audit.audit_id} records a replacement but names no replacement decision")
+                    unnamed_replacements.append(audit)
                 continue
             old_id = audit.decision_id
             if audit.revalidation_action != REVALIDATION_REPLACED:
@@ -109,27 +143,26 @@ class LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService:
                 issues.append(f"link {old_id} -> {new_id} is recorded more than once")
                 continue
             seen_links.add((old_id, new_id))
-            if new_id == old_id:
-                issues.append(f"audit {audit.audit_id} links decision {old_id} to itself")
+            add_link(old_id, new_id, f"audit {audit.audit_id}")
+
+        # Derived (non-authoritative) links from the chain index -- only
+        # ever ADD linkage the audit trail itself lacks; a link the audit
+        # trail already records, or a repeated derived link, is ignored.
+        index = self._chain_index_store.get(task_id) if self._chain_index_store is not None else None
+        for old_id, new_id in (index.links if index is not None else ()):
+            if (old_id, new_id) in seen_links:
                 continue
-            if old_id in successors:
-                issues.append(
-                    f"decision {old_id} is replaced by both {successors[old_id]} and {new_id} (contradictory links)"
-                )
+            seen_links.add((old_id, new_id))
+            if old_id not in by_id:
+                issues.append(f"derived link {old_id} -> {new_id} references decision {old_id}, which does not exist")
                 continue
-            if new_id in predecessors:
-                issues.append(
-                    f"decision {new_id} replaces both {predecessors[new_id]} and {old_id} (contradictory links)"
-                )
-                continue
-            successors[old_id] = new_id
-            predecessors[new_id] = old_id
-            new = by_id.get(new_id)
-            old = by_id.get(old_id)
-            if new is None:
-                issues.append(f"replacement decision {new_id} (for {old_id}) does not exist")
-            elif old is not None and new.created_at <= old.created_at:
-                issues.append(f"replacement decision {new_id} is not newer than the decision {old_id} it replaces")
+            add_link(old_id, new_id, "derived link")
+
+        # A REPLACED audit that lost its replacement id is only an issue
+        # while no derived link supplies that decision's successor.
+        for audit in unnamed_replacements:
+            if audit.decision_id not in successors:
+                issues.append(f"audit {audit.audit_id} records a replacement but names no replacement decision")
 
         chain = [decisions[0].decision_id]
         while chain[-1] in successors:

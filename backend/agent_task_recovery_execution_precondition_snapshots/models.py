@@ -1049,3 +1049,36 @@ class AgentTaskRecoveryExecutionDecisionFreshnessChainValidationResult:
     @property
     def invalid(self) -> bool:
         return self.status != CHAIN_VALID
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessChainIndex:
+    """Derived, non-authoritative chain metadata for one task, written only
+    by LLMAgentTaskRecoveryExecutionDecisionFreshnessChainRepairService.
+    links are (old_decision_id, new_decision_id) pairs; current_decision_id
+    is the validated chain terminal, or None when the chain could not be
+    validated. Safe to rebuild at any time -- decisions and audit records
+    remain the source of truth."""
+
+    task_id: str
+    links: tuple
+    current_decision_id: Optional[str]
+    updated_at: datetime
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessChainRepairResult:
+    """LLMAgentTaskRecoveryExecutionDecisionFreshnessChainRepairService.
+    repair()'s outcome: what was repaired, what could not be, and the
+    chain validation results before and after."""
+
+    task_id: str
+    repaired: tuple
+    unresolved: tuple
+    initial_validation: "AgentTaskRecoveryExecutionDecisionFreshnessChainValidationResult"
+    final_validation: "AgentTaskRecoveryExecutionDecisionFreshnessChainValidationResult"
+    repaired_at: datetime
+
+    @property
+    def valid(self) -> bool:
+        return self.final_validation.valid
