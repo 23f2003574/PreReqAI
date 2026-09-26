@@ -42,10 +42,15 @@ class LLMAgentTaskRecoveryExecutionDecisionSupersessionValidationService:
         supersession_service: LLMAgentTaskRecoveryExecutionDecisionSupersessionService = None,
         chain_validation_service: LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService = None,
         integrity_service=None,
+        check_reconciled_pointer: bool = True,
     ):
         """Pass the same decision_store/supersession_store/
         freshness_audit_service/chain_index_store the supersession service
-        writes through; the defaults are wired to one another."""
+        writes through; the defaults are wired to one another.
+        check_reconciled_pointer=False leaves the reconciled current
+        pointer out of validation, for callers that report a pointer
+        disagreement separately as a conflict."""
+        self._check_reconciled_pointer = check_reconciled_pointer
         self._decision_store = (
             decision_store if decision_store is not None else LLMAgentTaskRecoveryExecutionPreconditionDecisionStore()
         )
@@ -179,7 +184,7 @@ class LLMAgentTaskRecoveryExecutionDecisionSupersessionValidationService:
             issues.append(
                 f"the freshness chain ends at {freshness.latest_decision_id}, not the lineage terminal {terminal}"
             )
-        index = self._index_store.get(task_id)
+        index = self._index_store.get(task_id) if self._check_reconciled_pointer else None
         if index is not None and index.current_decision_id not in (None, terminal):
             issues.append(
                 f"the reconciled current pointer {index.current_decision_id} disagrees with the lineage terminal {terminal}"

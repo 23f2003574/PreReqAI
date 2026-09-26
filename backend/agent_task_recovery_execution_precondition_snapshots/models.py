@@ -1277,3 +1277,30 @@ class AgentTaskRecoveryExecutionDecisionSupersessionValidationResult:
     @property
     def invalid(self) -> bool:
         return self.status != SUPERSESSION_VALID
+
+
+RESOLUTION_RESOLVED = "resolved"
+RESOLUTION_CONFLICT = "conflict"
+RESOLUTION_REJECTED = "rejected"
+RESOLUTION_STATES = frozenset({RESOLUTION_RESOLVED, RESOLUTION_CONFLICT, RESOLUTION_REJECTED})
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionResolutionResult:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionService.
+    resolve()'s deterministic outcome. resolution_state is RESOLVED only
+    when the supersession lineage validated and agrees with the reconciled
+    current pointer (or none is set yet); CONFLICT when the lineage is
+    valid but the pointer names a different decision; REJECTED when the
+    lineage itself is invalid. terminal_decision_id/terminal_decision are
+    set only when RESOLVED; terminal_decision is the persisted verdict,
+    copied verbatim."""
+
+    task_id: str
+    resolution_state: str
+    terminal_decision_id: Optional[str]
+    terminal_decision: Optional[str]
+    chain: tuple
+    superseded_decision_ids: tuple
+    reconciled_pointer: Optional[str]
+    issues: tuple
