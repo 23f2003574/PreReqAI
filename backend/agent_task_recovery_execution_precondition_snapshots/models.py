@@ -1082,3 +1082,28 @@ class AgentTaskRecoveryExecutionDecisionFreshnessChainRepairResult:
     @property
     def valid(self) -> bool:
         return self.final_validation.valid
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionFreshnessChainReconciliationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionFreshnessChainReconciliationService.
+    reconcile()'s outcome. previous_current_decision_id is the chain
+    index's current pointer before reconciling; authoritative_latest_decision_id
+    is the validated chain's terminal decision (None when the chain is
+    invalid -- fail closed). transition is the existing decision-state
+    transition analysis for a pointer move, when one happened."""
+
+    task_id: str
+    previous_current_decision_id: Optional[str]
+    authoritative_latest_decision_id: Optional[str]
+    current_decision_id: Optional[str]
+    current_decision_state: Optional[str]
+    changes: tuple
+    transition: Optional[object]
+    unresolved: tuple
+    final_chain_valid: bool
+    reconciled_at: datetime
+
+    @property
+    def changed(self) -> bool:
+        return bool(self.changes)
