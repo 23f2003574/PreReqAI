@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_change_impact import (
+    InvalidAgentTaskRecoveryExecutionDecisionChangeImpactError,
+    LLMAgentTaskRecoveryExecutionDecisionChangeImpactService,
+)
 from .decision_supersession_lifecycle_verification import (
     InvalidAgentTaskRecoveryExecutionDecisionSupersessionLifecycleVerificationError,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionLifecycleVerificationService,
@@ -223,6 +227,13 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultRecord,
     SUPERSESSION_LIFECYCLE_RESULT_SCHEMA_VERSION,
     AgentTaskRecoveryExecutionDecisionSupersessionLifecycleVerificationResult,
+    AgentTaskRecoveryExecutionDecisionChangeImpactResult,
+    CHANGE_IMPACT_ENABLED,
+    CHANGE_IMPACT_RELAXED,
+    CHANGE_IMPACT_RESTRICTED,
+    CHANGE_IMPACT_STILL_BLOCKED,
+    CHANGE_IMPACT_UNCHANGED,
+    CHANGE_IMPACT_UNKNOWN,
     LIFECYCLE_VERIFICATION_INVALID,
     LIFECYCLE_VERIFICATION_VALID,
     SUPERSESSION_LIFECYCLE_BLOCKED,
@@ -556,4 +567,13 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionSupersessionLifecycleVerificationResult",
     "LLMAgentTaskRecoveryExecutionDecisionSupersessionLifecycleVerificationService",
     "InvalidAgentTaskRecoveryExecutionDecisionSupersessionLifecycleVerificationError",
+    "CHANGE_IMPACT_UNCHANGED",
+    "CHANGE_IMPACT_ENABLED",
+    "CHANGE_IMPACT_RESTRICTED",
+    "CHANGE_IMPACT_RELAXED",
+    "CHANGE_IMPACT_STILL_BLOCKED",
+    "CHANGE_IMPACT_UNKNOWN",
+    "AgentTaskRecoveryExecutionDecisionChangeImpactResult",
+    "LLMAgentTaskRecoveryExecutionDecisionChangeImpactService",
+    "InvalidAgentTaskRecoveryExecutionDecisionChangeImpactError",
 ]

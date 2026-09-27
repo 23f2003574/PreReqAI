@@ -1689,3 +1689,35 @@ class AgentTaskRecoveryExecutionDecisionSupersessionLifecycleVerificationResult:
     @property
     def invalid(self) -> bool:
         return self.status != LIFECYCLE_VERIFICATION_VALID
+
+
+CHANGE_IMPACT_UNCHANGED = "unchanged"
+CHANGE_IMPACT_ENABLED = "enabled"
+CHANGE_IMPACT_RESTRICTED = "restricted"
+CHANGE_IMPACT_RELAXED = "relaxed"
+CHANGE_IMPACT_STILL_BLOCKED = "still_blocked"
+CHANGE_IMPACT_UNKNOWN = "unknown"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionChangeImpactResult:
+    """LLMAgentTaskRecoveryExecutionDecisionChangeImpactService.analyze()'s
+    deterministic, read-only impact of moving from previous_decision_id to
+    current_decision_id. changed_areas only names areas the persisted
+    decisions/snapshots actually show changing; missing_evidence names
+    what could not be compared (never guessed). execution_impact is
+    UNKNOWN whenever either decision is missing -- fail closed, with
+    requires_revalidation True."""
+
+    task_id: str
+    previous_decision_id: str
+    current_decision_id: str
+    previous_decision: Optional[str]
+    current_decision: Optional[str]
+    changed_areas: tuple
+    stale_artifacts: tuple
+    blocking_conditions: tuple
+    requires_revalidation: bool
+    execution_impact: str
+    transition: Optional[object]
+    missing_evidence: tuple
