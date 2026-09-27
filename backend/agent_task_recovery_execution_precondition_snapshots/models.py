@@ -1840,3 +1840,32 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationPlanValidationResult:
     @property
     def invalid(self) -> bool:
         return self.status != IMPACT_PLAN_VALIDATION_VALID
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationOutcome:
+    """What happened to one invalidation-plan item during execution;
+    outcome is one of the CONFLICT_ACTION_* values."""
+
+    artifact_id: str
+    artifact_type: str
+    action: str
+    outcome: str
+    detail: str
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationService.
+    execute()'s outcome. still_blocking are the artifact_ids a fresh plan
+    still requires (and that keep execution blocked) after execution;
+    final_staleness is the staleness re-check run afterwards."""
+
+    task_id: str
+    plan_valid: bool
+    plan_issues: tuple
+    applied: tuple
+    skipped: tuple
+    failed: tuple
+    still_blocking: tuple
+    final_staleness: object
