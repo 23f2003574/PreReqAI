@@ -1548,3 +1548,35 @@ class AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditRecor
     recorded_at: datetime
     schema_version: int = CONFLICT_RESOLUTION_AUDIT_SCHEMA_VERSION
     audit_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+RESOLUTION_VERIFICATION_VALID = "valid"
+RESOLUTION_VERIFICATION_INVALID = "invalid"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionResolutionVerificationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionVerificationService.
+    verify()'s deterministic verdict on a completed conflict-resolution
+    operation. mismatches are contradictions between what the operation
+    recorded and the persisted state; blocking_issues are unsafe
+    conditions still present (remaining conflicts, an unresolvable or
+    review/block terminal). status is VALID only when both are empty;
+    terminal_decision_id is set only when the lineage resolves."""
+
+    task_id: str
+    operation_id: str
+    status: str
+    applied_actions_verified: tuple
+    remaining_conflicts: tuple
+    mismatches: tuple
+    blocking_issues: tuple
+    terminal_decision_id: Optional[str]
+
+    @property
+    def valid(self) -> bool:
+        return self.status == RESOLUTION_VERIFICATION_VALID
+
+    @property
+    def invalid(self) -> bool:
+        return self.status != RESOLUTION_VERIFICATION_VALID
