@@ -2109,3 +2109,29 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliatio
             value = getattr(self, key)
             data[key] = value.isoformat() if value is not None else None
         return data
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationReconciliationVerificationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationReconciliationVerificationService.
+    verify()'s deterministic verdict on a persisted lifecycle
+    reconciliation (#12). authoritative_lifecycle_result_id is the
+    lifecycle result that reconciliation makes current (the replacement,
+    or the previous result for a no-op) -- set only when the verdict is
+    LIFECYCLE_VERIFICATION_VALID (fail closed)."""
+
+    task_id: str
+    reconciliation_result_id: str
+    status: str
+    mismatches: tuple
+    missing_evidence: tuple
+    remaining_blockers: tuple
+    authoritative_lifecycle_result_id: Optional[str]
+
+    @property
+    def valid(self) -> bool:
+        return self.status == LIFECYCLE_VERIFICATION_VALID
+
+    @property
+    def invalid(self) -> bool:
+        return self.status != LIFECYCLE_VERIFICATION_VALID
