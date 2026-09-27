@@ -1769,3 +1769,43 @@ class AgentTaskRecoveryExecutionDecisionImpactStalenessResult:
     @property
     def unknown(self) -> bool:
         return self.status == ARTIFACT_UNKNOWN
+
+
+INVALIDATION_REFRESH = "refresh"
+INVALIDATION_INVALIDATE = "invalidate"
+INVALIDATION_REVALIDATE = "revalidate"
+INVALIDATION_CANCEL = "cancel"
+INVALIDATION_MANUAL_REVIEW = "manual_review"
+INVALIDATION_ACTIONS = (
+    INVALIDATION_REFRESH, INVALIDATION_INVALIDATE, INVALIDATION_REVALIDATE, INVALIDATION_CANCEL,
+    INVALIDATION_MANUAL_REVIEW,
+)
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationPlanItem:
+    """One planned (never executed) remediation step for a stale or
+    unknown artifact. mechanism names the existing service call that
+    would carry it out (None for manual_review); depends_on lists the
+    artifact_ids whose steps must run first."""
+
+    artifact_id: str
+    artifact_type: str
+    stale_reason: str
+    action: str
+    mechanism: Optional[str]
+    evidence_required: tuple
+    execution_blocked: bool
+    depends_on: tuple
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationPlan:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationPlanService.
+    plan()'s deterministic, read-only remediation plan -- one item per
+    stale or unknown artifact, dependencies before dependents."""
+
+    task_id: str
+    items: tuple
+    counts_by_action: dict
+    execution_blocked: bool
