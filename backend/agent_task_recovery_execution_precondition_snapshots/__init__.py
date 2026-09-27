@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_impact_invalidation_lifecycle_reconciliation import (
+    InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationError,
+    LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationService,
+)
 from .decision_impact_invalidation_lifecycle_verification import (
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleVerificationError,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleVerificationService,
@@ -290,6 +294,11 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultRecord,
     IMPACT_LIFECYCLE_RESULT_SCHEMA_VERSION,
     AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleVerificationResult,
+    IMPACT_RECONCILIATION_NO_OP,
+    IMPACT_RECONCILIATION_REPLACED,
+    IMPACT_RECONCILIATION_ALREADY_REPLACED,
+    IMPACT_RECONCILIATION_FAILED_CLOSED,
+    AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResult,
     IMPACT_INVALIDATION_VERIFICATION_INVALID,
     IMPACT_INVALIDATION_VERIFICATION_VALID,
     IMPACT_PLAN_VALIDATION_INVALID,
@@ -708,4 +717,11 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleVerificationResult",
     "LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleVerificationService",
     "InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleVerificationError",
+    "IMPACT_RECONCILIATION_NO_OP",
+    "IMPACT_RECONCILIATION_REPLACED",
+    "IMPACT_RECONCILIATION_ALREADY_REPLACED",
+    "IMPACT_RECONCILIATION_FAILED_CLOSED",
+    "AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResult",
+    "LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationService",
+    "InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationError",
 ]

@@ -2043,3 +2043,31 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleVerificationR
     @property
     def invalid(self) -> bool:
         return self.status != LIFECYCLE_VERIFICATION_VALID
+
+
+IMPACT_RECONCILIATION_NO_OP = "no_op"
+IMPACT_RECONCILIATION_REPLACED = "replaced"
+IMPACT_RECONCILIATION_ALREADY_REPLACED = "already_replaced"
+IMPACT_RECONCILIATION_FAILED_CLOSED = "failed_closed"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationService.
+    reconcile()'s outcome. state is NO_OP when the persisted result still
+    describes current state, REPLACED when a new remediation lifecycle run
+    was recorded, ALREADY_REPLACED when a later, still-valid result
+    already supersedes it, FAILED_CLOSED when current state cannot be
+    established. The previous lifecycle result is never modified."""
+
+    task_id: str
+    previous_result_id: str
+    previous_status: Optional[str]
+    state: str
+    current_decision_id: Optional[str]
+    newly_stale_artifacts: tuple
+    replacement_result_id: Optional[str]
+    replacement_operation_id: Optional[str]
+    unresolved_blockers: tuple
+    final_verification_status: Optional[str]
+    issues: tuple
