@@ -1757,6 +1757,8 @@ class AgentTaskRecoveryExecutionDecisionImpactStalenessResult:
     blocking_artifacts: tuple
     revalidation_required: bool
     unchecked: tuple
+    previous_decision_id: Optional[str] = None
+    current_decision_id: Optional[str] = None
 
     @property
     def stale(self) -> bool:
@@ -1809,3 +1811,32 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationPlan:
     items: tuple
     counts_by_action: dict
     execution_blocked: bool
+    previous_decision_id: Optional[str] = None
+    current_decision_id: Optional[str] = None
+
+
+IMPACT_PLAN_VALIDATION_VALID = "valid"
+IMPACT_PLAN_VALIDATION_INVALID = "invalid"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationPlanValidationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationPlanValidationService.
+    validate()'s deterministic verdict. validated_actions are the plan's
+    artifact_ids whose step still exactly matches current state;
+    blocking_actions are the currently-required steps that keep execution
+    blocked."""
+
+    task_id: str
+    status: str
+    issues: tuple
+    validated_actions: tuple
+    blocking_actions: tuple
+
+    @property
+    def valid(self) -> bool:
+        return self.status == IMPACT_PLAN_VALIDATION_VALID
+
+    @property
+    def invalid(self) -> bool:
+        return self.status != IMPACT_PLAN_VALIDATION_VALID

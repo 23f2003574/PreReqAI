@@ -130,6 +130,8 @@ class LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationPlanService:
         return AgentTaskRecoveryExecutionDecisionImpactInvalidationPlan(
             task_id=task_id, items=tuple(items), counts_by_action=counts,
             execution_blocked=any(item.execution_blocked for item in items),
+            previous_decision_id=getattr(staleness_result, "previous_decision_id", None),
+            current_decision_id=getattr(staleness_result, "current_decision_id", None),
         )
 
     @staticmethod

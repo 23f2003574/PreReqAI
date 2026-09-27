@@ -131,5 +131,5 @@ class LLMAgentTaskRecoveryExecutionDecisionImpactStalenessService:
             task_id=task_id, status=status, artifacts=tuple(artifacts), stale_artifacts=stale,
             unknown_artifacts=unknown, blocking_artifacts=tuple(a for a in artifacts if a.blocking),
             revalidation_required=bool(stale or unknown or impact_result.requires_revalidation),
-            unchecked=tuple(unchecked),
+            unchecked=tuple(unchecked), previous_decision_id=previous, current_decision_id=current,
         )
