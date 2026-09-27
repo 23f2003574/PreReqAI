@@ -1490,6 +1490,7 @@ class AgentTaskRecoveryExecutionDecisionSupersessionConflictActionOutcome:
     classification: str
     outcome: str
     detail: str
+    decision_ids: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -1513,3 +1514,37 @@ class AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionResult:
     still_blocking: tuple
     batch_validations: tuple
     final_validation: object
+    initial_validation: object = None
+    executed_at: Optional[datetime] = None
+    operation_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+CONFLICT_RESOLUTION_AUDIT_SCHEMA_VERSION = 1
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditRecord:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditService.
+    record()'s append-only, immutable account of one conflict-resolution
+    operation. applied/delegated/skipped are the exact action outcomes;
+    failed pairs each failed outcome with its reason via the outcome's own
+    detail. Chain status/terminal decision ids are the supersession
+    validation results before and after execution, copied verbatim."""
+
+    task_id: str
+    operation_id: str
+    conflict_ids: tuple
+    applied: tuple
+    delegated: tuple
+    skipped: tuple
+    failed: tuple
+    still_blocking: tuple
+    plan_valid: bool
+    pre_chain_status: Optional[str]
+    pre_terminal_decision_id: Optional[str]
+    post_chain_status: Optional[str]
+    post_terminal_decision_id: Optional[str]
+    executed_at: Optional[datetime]
+    recorded_at: datetime
+    schema_version: int = CONFLICT_RESOLUTION_AUDIT_SCHEMA_VERSION
+    audit_id: str = field(default_factory=lambda: str(uuid4()))

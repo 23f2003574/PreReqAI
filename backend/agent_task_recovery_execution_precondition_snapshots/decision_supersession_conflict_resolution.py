@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from .decision_freshness_chain_reconciliation import (
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainReconciliationService,
 )
@@ -97,6 +99,7 @@ class LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionService
             raise InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionError("plan is required")
 
         validation = self._plan_validation_service.validate(task_id, plan)
+        initial_chain = self._supersession_validation_service.validate(task_id)
         validated = set(validation.validated_conflicts)
         applied, skipped, failed, batches = [], [], [], []
 
@@ -104,6 +107,7 @@ class LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionService
             return AgentTaskRecoveryExecutionDecisionSupersessionConflictActionOutcome(
                 conflict_id=item.conflict_id, conflict_type=item.conflict_type,
                 classification=item.classification, outcome=result, detail=detail,
+                decision_ids=tuple(item.decision_ids),
             )
 
         repairs, revalidations, seen = [], [], set()
@@ -146,6 +150,7 @@ class LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionService
             still_blocking=tuple(item.conflict_id for item in remaining.items if item.execution_blocked),
             batch_validations=tuple(batches),
             final_validation=batches[-1] if batches else self._supersession_validation_service.validate(task_id),
+            initial_validation=initial_chain, executed_at=datetime.now(timezone.utc),
         )
 
     def _repair(self, task_id, item):

@@ -26,6 +26,12 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_supersession_conflict_resolution_audit import (
+    AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditStore,
+    InMemoryAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditStore,
+    InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditError,
+    LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditService,
+)
 from .decision_supersession_conflict_resolution import (
     InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionError,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionService,
@@ -192,6 +198,8 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionPlanValidationResult,
     AgentTaskRecoveryExecutionDecisionSupersessionConflictActionOutcome,
     AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionResult,
+    AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditRecord,
+    CONFLICT_RESOLUTION_AUDIT_SCHEMA_VERSION,
     CONFLICT_ACTION_APPLIED,
     CONFLICT_ACTION_DELEGATED,
     CONFLICT_ACTION_FAILED,
@@ -484,4 +492,10 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionResult",
     "LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionService",
     "InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionError",
+    "CONFLICT_RESOLUTION_AUDIT_SCHEMA_VERSION",
+    "AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditRecord",
+    "AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditStore",
+    "InMemoryAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditStore",
+    "LLMAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditService",
+    "InvalidAgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditError",
 ]
