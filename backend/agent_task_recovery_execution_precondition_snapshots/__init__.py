@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_impact_staleness import (
+    InvalidAgentTaskRecoveryExecutionDecisionImpactStalenessError,
+    LLMAgentTaskRecoveryExecutionDecisionImpactStalenessService,
+)
 from .decision_change_impact import (
     InvalidAgentTaskRecoveryExecutionDecisionChangeImpactError,
     LLMAgentTaskRecoveryExecutionDecisionChangeImpactService,
@@ -228,6 +232,11 @@ from .models import (
     SUPERSESSION_LIFECYCLE_RESULT_SCHEMA_VERSION,
     AgentTaskRecoveryExecutionDecisionSupersessionLifecycleVerificationResult,
     AgentTaskRecoveryExecutionDecisionChangeImpactResult,
+    AgentTaskRecoveryExecutionDecisionImpactArtifact,
+    AgentTaskRecoveryExecutionDecisionImpactStalenessResult,
+    ARTIFACT_FRESH,
+    ARTIFACT_STALE,
+    ARTIFACT_UNKNOWN,
     CHANGE_IMPACT_ENABLED,
     CHANGE_IMPACT_RELAXED,
     CHANGE_IMPACT_RESTRICTED,
@@ -576,4 +585,11 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionChangeImpactResult",
     "LLMAgentTaskRecoveryExecutionDecisionChangeImpactService",
     "InvalidAgentTaskRecoveryExecutionDecisionChangeImpactError",
+    "ARTIFACT_FRESH",
+    "ARTIFACT_STALE",
+    "ARTIFACT_UNKNOWN",
+    "AgentTaskRecoveryExecutionDecisionImpactArtifact",
+    "AgentTaskRecoveryExecutionDecisionImpactStalenessResult",
+    "LLMAgentTaskRecoveryExecutionDecisionImpactStalenessService",
+    "InvalidAgentTaskRecoveryExecutionDecisionImpactStalenessError",
 ]

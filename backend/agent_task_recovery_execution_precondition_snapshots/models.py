@@ -1721,3 +1721,51 @@ class AgentTaskRecoveryExecutionDecisionChangeImpactResult:
     execution_impact: str
     transition: Optional[object]
     missing_evidence: tuple
+
+
+ARTIFACT_STALE = "stale"
+ARTIFACT_FRESH = "fresh"
+ARTIFACT_UNKNOWN = "unknown"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactArtifact:
+    """One downstream artifact checked for staleness. reference is the
+    exact persisted id/version it carries; expected is the version it
+    should carry now (None when that cannot be established)."""
+
+    kind: str
+    reference: Optional[str]
+    expected: Optional[str]
+    status: str
+    blocking: bool
+    reason: str
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactStalenessResult:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactStalenessService.check()'s
+    deterministic verdict. status is STALE if any artifact is stale, else
+    UNKNOWN if any is unknown (never treated as fresh), else FRESH.
+    unchecked names artifact kinds whose persistence was not configured."""
+
+    task_id: str
+    status: str
+    artifacts: tuple
+    stale_artifacts: tuple
+    unknown_artifacts: tuple
+    blocking_artifacts: tuple
+    revalidation_required: bool
+    unchecked: tuple
+
+    @property
+    def stale(self) -> bool:
+        return self.status == ARTIFACT_STALE
+
+    @property
+    def fresh(self) -> bool:
+        return self.status == ARTIFACT_FRESH
+
+    @property
+    def unknown(self) -> bool:
+        return self.status == ARTIFACT_UNKNOWN
