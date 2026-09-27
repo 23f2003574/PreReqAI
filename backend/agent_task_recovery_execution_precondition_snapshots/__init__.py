@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_impact_invalidation_verification import (
+    InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationError,
+    LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService,
+)
 from .decision_impact_invalidation_audit import (
     AgentTaskRecoveryExecutionDecisionImpactInvalidationAuditStore,
     InMemoryAgentTaskRecoveryExecutionDecisionImpactInvalidationAuditStore,
@@ -259,6 +263,9 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionImpactInvalidationResult,
     AgentTaskRecoveryExecutionDecisionImpactInvalidationAuditRecord,
     IMPACT_INVALIDATION_AUDIT_SCHEMA_VERSION,
+    AgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationResult,
+    IMPACT_INVALIDATION_VERIFICATION_INVALID,
+    IMPACT_INVALIDATION_VERIFICATION_VALID,
     IMPACT_PLAN_VALIDATION_INVALID,
     IMPACT_PLAN_VALIDATION_VALID,
     INVALIDATION_ACTIONS,
@@ -650,4 +657,9 @@ __all__ = [
     "InMemoryAgentTaskRecoveryExecutionDecisionImpactInvalidationAuditStore",
     "LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationAuditService",
     "InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationAuditError",
+    "IMPACT_INVALIDATION_VERIFICATION_VALID",
+    "IMPACT_INVALIDATION_VERIFICATION_INVALID",
+    "AgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationResult",
+    "LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService",
+    "InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationError",
 ]

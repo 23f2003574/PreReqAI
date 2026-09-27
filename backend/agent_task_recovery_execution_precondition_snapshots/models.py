@@ -1908,3 +1908,34 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationAuditRecord:
     recorded_at: datetime
     schema_version: int = IMPACT_INVALIDATION_AUDIT_SCHEMA_VERSION
     audit_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+IMPACT_INVALIDATION_VERIFICATION_VALID = "valid"
+IMPACT_INVALIDATION_VERIFICATION_INVALID = "invalid"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService.
+    verify()'s deterministic verdict on one impact-invalidation operation.
+    verified_artifacts reached their expected state; unresolved_artifacts
+    are skipped/manual-review/failed artifacts that correctly remain
+    unresolved; mismatches contradict the recorded operation;
+    blocking_issues are states that could not be established (fail
+    closed) or that still block execution."""
+
+    task_id: str
+    operation_id: str
+    status: str
+    verified_artifacts: tuple
+    unresolved_artifacts: tuple
+    mismatches: tuple
+    blocking_issues: tuple
+
+    @property
+    def valid(self) -> bool:
+        return self.status == IMPACT_INVALIDATION_VERIFICATION_VALID
+
+    @property
+    def invalid(self) -> bool:
+        return self.status != IMPACT_INVALIDATION_VERIFICATION_VALID
