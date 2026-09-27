@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from .decision_freshness_audit import LLMAgentTaskRecoveryExecutionDecisionFreshnessAuditService
 from .decision_freshness_chain_reconciliation import (
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainReconciliationService,
@@ -220,4 +222,5 @@ class LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleServic
             failed=tuple(execution.failed) if execution is not None else (),
             remaining_blockers=tuple(blockers), terminal_decision_id=terminal, plan_validation=plan_validation,
             audit_id=audit.audit_id if audit is not None else None, verification=verification, errors=tuple(errors),
+            completed_at=datetime.now(timezone.utc),
         )

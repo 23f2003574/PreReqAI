@@ -1616,3 +1616,45 @@ class AgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleResult:
     audit_id: Optional[str]
     verification: Optional[object]
     errors: tuple
+    completed_at: Optional[datetime] = None
+    lifecycle_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+SUPERSESSION_LIFECYCLE_RESULT_SCHEMA_VERSION = 1
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultRecord:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultService.
+    record()'s persisted, immutable copy of one supersession-resolution
+    lifecycle run. Conflicts, plan items, action outcomes and the
+    verification result are the lifecycle's own objects, copied verbatim;
+    verification_status is None when verification never ran."""
+
+    task_id: str
+    lifecycle_id: str
+    operation_id: Optional[str]
+    state: str
+    partial: bool
+    conflicts: tuple
+    planned_actions: tuple
+    applied: tuple
+    skipped: tuple
+    failed: tuple
+    remaining_blockers: tuple
+    terminal_decision_id: Optional[str]
+    audit_id: Optional[str]
+    verification: Optional[object]
+    verification_status: Optional[str]
+    errors: tuple
+    completed_at: Optional[datetime]
+    recorded_at: datetime
+    schema_version: int = SUPERSESSION_LIFECYCLE_RESULT_SCHEMA_VERSION
+    result_id: str = field(default_factory=lambda: str(uuid4()))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        for key in ("completed_at", "recorded_at"):
+            value = getattr(self, key)
+            data[key] = value.isoformat() if value is not None else None
+        return data

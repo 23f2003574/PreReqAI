@@ -26,6 +26,12 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_supersession_lifecycle_result import (
+    AgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultRawStore,
+    InMemoryAgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultRawStore,
+    InvalidAgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultError,
+    LLMAgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultService,
+)
 from .decision_supersession_resolution_lifecycle import (
     InvalidAgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleError,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleService,
@@ -210,6 +216,8 @@ from .models import (
     CONFLICT_RESOLUTION_AUDIT_SCHEMA_VERSION,
     AgentTaskRecoveryExecutionDecisionSupersessionResolutionVerificationResult,
     AgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleResult,
+    AgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultRecord,
+    SUPERSESSION_LIFECYCLE_RESULT_SCHEMA_VERSION,
     SUPERSESSION_LIFECYCLE_BLOCKED,
     SUPERSESSION_LIFECYCLE_CLEAN,
     SUPERSESSION_LIFECYCLE_EXECUTION_FAILED,
@@ -530,4 +538,10 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleResult",
     "LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleService",
     "InvalidAgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleError",
+    "SUPERSESSION_LIFECYCLE_RESULT_SCHEMA_VERSION",
+    "AgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultRecord",
+    "AgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultRawStore",
+    "InMemoryAgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultRawStore",
+    "LLMAgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultService",
+    "InvalidAgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultError",
 ]
