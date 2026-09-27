@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from .models import (
     ARTIFACT_STALE,
     IMPACT_RECONCILIATION_ALREADY_REPLACED,
@@ -129,4 +131,5 @@ class LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconcilia
             replacement_result_id=replacement.result_id if replacement is not None else None,
             replacement_operation_id=replacement.operation_id if replacement is not None else None,
             unresolved_blockers=tuple(blockers), final_verification_status=final, issues=tuple(issues),
+            reconciled_at=datetime.now(timezone.utc),
         )

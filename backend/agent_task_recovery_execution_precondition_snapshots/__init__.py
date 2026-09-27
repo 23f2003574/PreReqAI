@@ -26,6 +26,12 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_impact_invalidation_lifecycle_reconciliation_result import (
+    AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultRawStore,
+    InMemoryAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultRawStore,
+    InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultError,
+    LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultService,
+)
 from .decision_impact_invalidation_lifecycle_reconciliation import (
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationError,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationService,
@@ -299,6 +305,8 @@ from .models import (
     IMPACT_RECONCILIATION_ALREADY_REPLACED,
     IMPACT_RECONCILIATION_FAILED_CLOSED,
     AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResult,
+    AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultRecord,
+    IMPACT_RECONCILIATION_RESULT_SCHEMA_VERSION,
     IMPACT_INVALIDATION_VERIFICATION_INVALID,
     IMPACT_INVALIDATION_VERIFICATION_VALID,
     IMPACT_PLAN_VALIDATION_INVALID,
@@ -724,4 +732,10 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResult",
     "LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationService",
     "InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationError",
+    "IMPACT_RECONCILIATION_RESULT_SCHEMA_VERSION",
+    "AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultRecord",
+    "AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultRawStore",
+    "InMemoryAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultRawStore",
+    "LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultService",
+    "InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultError",
 ]

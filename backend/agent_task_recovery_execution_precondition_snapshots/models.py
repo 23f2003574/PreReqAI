@@ -2071,3 +2071,41 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliatio
     unresolved_blockers: tuple
     final_verification_status: Optional[str]
     issues: tuple
+    reconciled_at: Optional[datetime] = None
+    reconciliation_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+IMPACT_RECONCILIATION_RESULT_SCHEMA_VERSION = 1
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultRecord:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultService.
+    record()'s persisted, immutable copy of one lifecycle reconciliation.
+    previous_result_id -> replacement_result_id is the old -> new
+    lifecycle linkage (replacement is None for a no-op or failed-closed
+    reconciliation); neither lifecycle result is modified."""
+
+    task_id: str
+    reconciliation_id: str
+    previous_result_id: str
+    previous_status: Optional[str]
+    state: str
+    current_decision_id: Optional[str]
+    newly_stale_artifacts: tuple
+    replacement_result_id: Optional[str]
+    replacement_operation_id: Optional[str]
+    unresolved_blockers: tuple
+    verification_status: Optional[str]
+    issues: tuple
+    reconciled_at: Optional[datetime]
+    recorded_at: datetime
+    schema_version: int = IMPACT_RECONCILIATION_RESULT_SCHEMA_VERSION
+    result_id: str = field(default_factory=lambda: str(uuid4()))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        for key in ("reconciled_at", "recorded_at"):
+            value = getattr(self, key)
+            data[key] = value.isoformat() if value is not None else None
+        return data
