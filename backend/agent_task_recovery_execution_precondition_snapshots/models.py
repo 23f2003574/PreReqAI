@@ -1939,3 +1939,40 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationResult:
     @property
     def invalid(self) -> bool:
         return self.status != IMPACT_INVALIDATION_VERIFICATION_VALID
+
+
+IMPACT_LIFECYCLE_CLEAN = "clean"
+IMPACT_LIFECYCLE_UP_TO_DATE = "up_to_date"
+IMPACT_LIFECYCLE_REMEDIATED = "remediated"
+IMPACT_LIFECYCLE_BLOCKED = "blocked"
+IMPACT_LIFECYCLE_UNSAFE = "unsafe"
+IMPACT_LIFECYCLE_UNRESOLVED = "unresolved"
+IMPACT_LIFECYCLE_VALIDATION_FAILED = "validation_failed"
+IMPACT_LIFECYCLE_EXECUTION_FAILED = "execution_failed"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResult:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleService.
+    run()'s consolidated outcome. status is REMEDIATED only when the
+    verification passed; BLOCKED when it found no mismatch but blockers
+    remain; UNSAFE when it found mismatches or could not run; CLEAN when
+    there was no decision change or nothing stale; UP_TO_DATE when every
+    actionable step was already applied by an earlier verified operation;
+    UNRESOLVED when no authoritative decision exists."""
+
+    task_id: str
+    status: str
+    operation_id: Optional[str]
+    authoritative_decision_id: Optional[str]
+    previous_decision_id: Optional[str]
+    affected_artifacts: tuple
+    planned_actions: tuple
+    applied: tuple
+    skipped: tuple
+    failed: tuple
+    remaining_stale: tuple
+    blocking_artifacts: tuple
+    audit_id: Optional[str]
+    verification: Optional[object]
+    errors: tuple

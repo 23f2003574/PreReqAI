@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_impact_invalidation_lifecycle import (
+    InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleError,
+    LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleService,
+)
 from .decision_impact_invalidation_verification import (
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationError,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService,
@@ -264,6 +268,15 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionImpactInvalidationAuditRecord,
     IMPACT_INVALIDATION_AUDIT_SCHEMA_VERSION,
     AgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationResult,
+    IMPACT_LIFECYCLE_BLOCKED,
+    IMPACT_LIFECYCLE_CLEAN,
+    IMPACT_LIFECYCLE_EXECUTION_FAILED,
+    IMPACT_LIFECYCLE_REMEDIATED,
+    IMPACT_LIFECYCLE_UNRESOLVED,
+    IMPACT_LIFECYCLE_UNSAFE,
+    IMPACT_LIFECYCLE_UP_TO_DATE,
+    IMPACT_LIFECYCLE_VALIDATION_FAILED,
+    AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResult,
     IMPACT_INVALIDATION_VERIFICATION_INVALID,
     IMPACT_INVALIDATION_VERIFICATION_VALID,
     IMPACT_PLAN_VALIDATION_INVALID,
@@ -662,4 +675,15 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationResult",
     "LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService",
     "InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationError",
+    "IMPACT_LIFECYCLE_BLOCKED",
+    "IMPACT_LIFECYCLE_CLEAN",
+    "IMPACT_LIFECYCLE_EXECUTION_FAILED",
+    "IMPACT_LIFECYCLE_REMEDIATED",
+    "IMPACT_LIFECYCLE_UNRESOLVED",
+    "IMPACT_LIFECYCLE_UNSAFE",
+    "IMPACT_LIFECYCLE_UP_TO_DATE",
+    "IMPACT_LIFECYCLE_VALIDATION_FAILED",
+    "AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResult",
+    "LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleService",
+    "InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleError",
 ]
