@@ -1869,3 +1869,42 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationResult:
     failed: tuple
     still_blocking: tuple
     final_staleness: object
+    initial_staleness: object = None
+    previous_decision_id: Optional[str] = None
+    current_decision_id: Optional[str] = None
+    executed_at: Optional[datetime] = None
+    operation_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+IMPACT_INVALIDATION_AUDIT_SCHEMA_VERSION = 1
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationAuditRecord:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationAuditService.
+    record()'s append-only, immutable account of one impact-invalidation
+    operation. previous_artifact_states are (artifact_id, status) pairs
+    from the staleness check taken before execution; applied/skipped/
+    failed are the exact outcomes (failed ones carry their reason in
+    detail); manual_review is the subset of skipped left for review."""
+
+    task_id: str
+    operation_id: str
+    previous_decision_id: Optional[str]
+    current_decision_id: Optional[str]
+    artifact_ids: tuple
+    previous_artifact_states: tuple
+    applied: tuple
+    skipped: tuple
+    manual_review: tuple
+    failed: tuple
+    remaining_stale: tuple
+    still_blocking: tuple
+    plan_valid: bool
+    plan_issues: tuple
+    pre_staleness_status: Optional[str]
+    post_staleness_status: Optional[str]
+    executed_at: Optional[datetime]
+    recorded_at: datetime
+    schema_version: int = IMPACT_INVALIDATION_AUDIT_SCHEMA_VERSION
+    audit_id: str = field(default_factory=lambda: str(uuid4()))

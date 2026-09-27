@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from .decision_change_impact import LLMAgentTaskRecoveryExecutionDecisionChangeImpactService
 from .decision_impact_invalidation_plan import LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationPlanService
 from .decision_impact_invalidation_plan_validation import (
@@ -102,6 +104,9 @@ class LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationService:
             raise InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationError("plan is required")
 
         validation = self._validation_service.validate(task_id, plan)
+        initial_staleness = (
+            self._staleness(task_id, plan) if plan.previous_decision_id and plan.current_decision_id else None
+        )
         validated = set(validation.validated_actions)
         applied, skipped, failed = [], [], []
         done = set()  # artifact_ids applied in this run
@@ -154,7 +159,9 @@ class LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationService:
         return AgentTaskRecoveryExecutionDecisionImpactInvalidationResult(
             task_id=task_id, plan_valid=validation.valid, plan_issues=validation.issues, applied=tuple(applied),
             skipped=tuple(skipped), failed=tuple(failed), still_blocking=still_blocking,
-            final_staleness=final_staleness,
+            final_staleness=final_staleness, initial_staleness=initial_staleness,
+            previous_decision_id=plan.previous_decision_id, current_decision_id=plan.current_decision_id,
+            executed_at=datetime.now(timezone.utc),
         )
 
     def _staleness(self, task_id, plan):
