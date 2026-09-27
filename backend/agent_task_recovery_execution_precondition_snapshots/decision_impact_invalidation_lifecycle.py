@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from .models import (
     ARTIFACT_STALE,
     IMPACT_LIFECYCLE_BLOCKED,
@@ -167,5 +169,5 @@ class LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleService:
             applied=tuple(execution.applied) if execution else (), skipped=tuple(execution.skipped) if execution else (),
             failed=tuple(execution.failed) if execution else (), remaining_stale=tuple(stale),
             blocking_artifacts=tuple(blocking), audit_id=audit.audit_id if audit is not None else None,
-            verification=verification, errors=tuple(errors),
+            verification=verification, errors=tuple(errors), completed_at=datetime.now(timezone.utc),
         )

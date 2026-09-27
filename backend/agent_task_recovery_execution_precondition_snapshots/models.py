@@ -1976,3 +1976,45 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResult:
     audit_id: Optional[str]
     verification: Optional[object]
     errors: tuple
+    completed_at: Optional[datetime] = None
+    lifecycle_id: str = field(default_factory=lambda: str(uuid4()))
+
+
+IMPACT_LIFECYCLE_RESULT_SCHEMA_VERSION = 1
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultRecord:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultService.
+    record()'s persisted, immutable copy of one impact-invalidation
+    lifecycle run; plan items, outcomes and the verification result are
+    the lifecycle's own objects, copied verbatim."""
+
+    task_id: str
+    lifecycle_id: str
+    operation_id: Optional[str]
+    status: str
+    authoritative_decision_id: Optional[str]
+    previous_decision_id: Optional[str]
+    affected_artifacts: tuple
+    planned_actions: tuple
+    applied: tuple
+    skipped: tuple
+    failed: tuple
+    remaining_stale: tuple
+    blocking_artifacts: tuple
+    audit_id: Optional[str]
+    verification: Optional[object]
+    verification_status: Optional[str]
+    errors: tuple
+    completed_at: Optional[datetime]
+    recorded_at: datetime
+    schema_version: int = IMPACT_LIFECYCLE_RESULT_SCHEMA_VERSION
+    result_id: str = field(default_factory=lambda: str(uuid4()))
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        for key in ("completed_at", "recorded_at"):
+            value = getattr(self, key)
+            data[key] = value.isoformat() if value is not None else None
+        return data
