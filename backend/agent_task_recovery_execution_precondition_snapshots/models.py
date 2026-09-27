@@ -1580,3 +1580,39 @@ class AgentTaskRecoveryExecutionDecisionSupersessionResolutionVerificationResult
     @property
     def invalid(self) -> bool:
         return self.status != RESOLUTION_VERIFICATION_VALID
+
+
+SUPERSESSION_LIFECYCLE_CLEAN = "clean"
+SUPERSESSION_LIFECYCLE_RESOLVED = "resolved"
+SUPERSESSION_LIFECYCLE_BLOCKED = "blocked"
+SUPERSESSION_LIFECYCLE_UNSAFE = "unsafe"
+SUPERSESSION_LIFECYCLE_VALIDATION_FAILED = "validation_failed"
+SUPERSESSION_LIFECYCLE_EXECUTION_FAILED = "execution_failed"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleResult:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleService.
+    resolve()'s consolidated outcome. state is CLEAN when there was
+    nothing to resolve, RESOLVED only when verification passed, BLOCKED
+    when verification found no mismatch but blockers remain (partial is
+    True if something was nevertheless applied or delegated), UNSAFE when
+    verification found mismatches or could not run, and
+    VALIDATION_FAILED / EXECUTION_FAILED when the plan was rejected or
+    execution/audit raised -- never reported as success."""
+
+    task_id: str
+    state: str
+    partial: bool
+    operation_id: Optional[str]
+    conflicts: tuple
+    planned_actions: tuple
+    applied: tuple
+    skipped: tuple
+    failed: tuple
+    remaining_blockers: tuple
+    terminal_decision_id: Optional[str]
+    plan_validation: Optional[object]
+    audit_id: Optional[str]
+    verification: Optional[object]
+    errors: tuple

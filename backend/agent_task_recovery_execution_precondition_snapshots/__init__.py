@@ -26,6 +26,10 @@ from .decision_freshness_chain_validation import (
     InvalidAgentTaskRecoveryExecutionDecisionFreshnessChainValidationError,
     LLMAgentTaskRecoveryExecutionDecisionFreshnessChainValidationService,
 )
+from .decision_supersession_resolution_lifecycle import (
+    InvalidAgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleError,
+    LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleService,
+)
 from .decision_supersession_resolution_verification import (
     InvalidAgentTaskRecoveryExecutionDecisionSupersessionResolutionVerificationError,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionVerificationService,
@@ -205,6 +209,13 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionSupersessionConflictResolutionAuditRecord,
     CONFLICT_RESOLUTION_AUDIT_SCHEMA_VERSION,
     AgentTaskRecoveryExecutionDecisionSupersessionResolutionVerificationResult,
+    AgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleResult,
+    SUPERSESSION_LIFECYCLE_BLOCKED,
+    SUPERSESSION_LIFECYCLE_CLEAN,
+    SUPERSESSION_LIFECYCLE_EXECUTION_FAILED,
+    SUPERSESSION_LIFECYCLE_RESOLVED,
+    SUPERSESSION_LIFECYCLE_UNSAFE,
+    SUPERSESSION_LIFECYCLE_VALIDATION_FAILED,
     RESOLUTION_VERIFICATION_INVALID,
     RESOLUTION_VERIFICATION_VALID,
     CONFLICT_ACTION_APPLIED,
@@ -510,4 +521,13 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionSupersessionResolutionVerificationResult",
     "LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionVerificationService",
     "InvalidAgentTaskRecoveryExecutionDecisionSupersessionResolutionVerificationError",
+    "SUPERSESSION_LIFECYCLE_CLEAN",
+    "SUPERSESSION_LIFECYCLE_RESOLVED",
+    "SUPERSESSION_LIFECYCLE_BLOCKED",
+    "SUPERSESSION_LIFECYCLE_UNSAFE",
+    "SUPERSESSION_LIFECYCLE_VALIDATION_FAILED",
+    "SUPERSESSION_LIFECYCLE_EXECUTION_FAILED",
+    "AgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleResult",
+    "LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleService",
+    "InvalidAgentTaskRecoveryExecutionDecisionSupersessionResolutionLifecycleError",
 ]
