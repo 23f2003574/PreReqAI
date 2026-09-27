@@ -2018,3 +2018,28 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultRecord:
             value = getattr(self, key)
             data[key] = value.isoformat() if value is not None else None
         return data
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleVerificationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleVerificationService.
+    verify()'s deterministic verdict on whether a persisted
+    impact-invalidation lifecycle result (#9) still accurately describes
+    current decision and artifact state. status is LIFECYCLE_VERIFICATION_VALID
+    when there are no mismatches and no missing evidence;
+    remaining_blockers lists what still blocks execution either way."""
+
+    task_id: str
+    lifecycle_result_id: str
+    status: str
+    mismatches: tuple
+    missing_evidence: tuple
+    remaining_blockers: tuple
+
+    @property
+    def valid(self) -> bool:
+        return self.status == LIFECYCLE_VERIFICATION_VALID
+
+    @property
+    def invalid(self) -> bool:
+        return self.status != LIFECYCLE_VERIFICATION_VALID
