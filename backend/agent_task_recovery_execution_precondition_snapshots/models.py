@@ -1658,3 +1658,34 @@ class AgentTaskRecoveryExecutionDecisionSupersessionLifecycleResultRecord:
             value = getattr(self, key)
             data[key] = value.isoformat() if value is not None else None
         return data
+
+
+LIFECYCLE_VERIFICATION_VALID = "valid"
+LIFECYCLE_VERIFICATION_INVALID = "invalid"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionSupersessionLifecycleVerificationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionSupersessionLifecycleVerificationService.
+    verify()'s deterministic verdict on whether a persisted lifecycle
+    result (#12) still accurately describes the repository. status is
+    VALID when there are no mismatches and no missing evidence -- the
+    record is truthful; remaining_blockers lists what still blocks
+    execution either way. terminal_decision_id is the currently
+    authoritative decision, only when it can be established."""
+
+    task_id: str
+    lifecycle_result_id: str
+    status: str
+    mismatches: tuple
+    missing_evidence: tuple
+    remaining_blockers: tuple
+    terminal_decision_id: Optional[str]
+
+    @property
+    def valid(self) -> bool:
+        return self.status == LIFECYCLE_VERIFICATION_VALID
+
+    @property
+    def invalid(self) -> bool:
+        return self.status != LIFECYCLE_VERIFICATION_VALID
