@@ -10,11 +10,13 @@ from backend.agent_task_recovery_execution_precondition_snapshots import (
     HEALTH_UNAVAILABLE,
     InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError,
     InvalidAgentTaskRecoveryExecutionDecisionLifecycleHealthError,
+    InvalidAgentTaskRecoveryExecutionDecisionLifecycleReadinessError,
 )
 
 from backend.cli import (
     build_recovery_decision_facade,
     build_recovery_decision_health_service,
+    build_recovery_decision_readiness_service,
 )
 
 router = APIRouter(
@@ -30,6 +32,10 @@ facade = (
 
 health_service = (
     build_recovery_decision_health_service()
+)
+
+readiness_service = (
+    build_recovery_decision_readiness_service()
 )
 
 
@@ -125,5 +131,51 @@ def diagnose_recovery_decision(task_id: str):
             status_code=503,
             content=result.to_dict(),
         )
+
+    return result.to_dict()
+
+
+@router.get("/recovery-decision/readiness")
+def recovery_decision_readiness(task_id: str = None):
+    """Deploy/CI readiness gate (#13): composes configuration validation
+    (#12), dependency diagnostics (#7), and -- when task_id is given --
+    that task's lifecycle health (#6) into one ready/blocked verdict.
+    Diagnostic-only: never calls facade.evaluate() or any mutating
+    service.
+
+    Both READY and BLOCKED return 200 with the full result body, the
+    same "a domain outcome is not an HTTP error" convention this
+    router's other endpoints already use -- a CI/deployment check reads
+    the body's own status field, exactly like a Kubernetes readiness
+    probe reads its response payload rather than relying on status code
+    alone for a "blocked" verdict.
+    """
+
+    if task_id is not None and not task_id.strip():
+
+        raise HTTPException(
+            status_code=422,
+            detail="task_id must be a non-empty string when given",
+        )
+
+    try:
+
+        result = readiness_service.check(
+            task_id,
+        )
+
+    except InvalidAgentTaskRecoveryExecutionDecisionLifecycleReadinessError as exc:
+
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+    except Exception as exc:
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to compute recovery execution decision lifecycle readiness",
+        ) from exc
 
     return result.to_dict()
