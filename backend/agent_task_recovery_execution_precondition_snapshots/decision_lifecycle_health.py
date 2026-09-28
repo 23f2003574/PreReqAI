@@ -1,16 +1,18 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
+from .decision_lifecycle_dependency_diagnostics import (
+    LLMAgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnostics,
+)
 from .models import (
+    HEALTH_BLOCKED,
+    HEALTH_DEGRADED,
+    HEALTH_HEALTHY,
+    HEALTH_UNAVAILABLE,
     LIFECYCLE_VERIFICATION_VALID,
     RESOLUTION_RESOLVED,
     SUPERSESSION_VALID,
 )
-
-HEALTH_HEALTHY = "healthy"
-HEALTH_DEGRADED = "degraded"
-HEALTH_BLOCKED = "blocked"
-HEALTH_UNAVAILABLE = "unavailable"
 
 CHECK_TASK_EXISTENCE = "task_existence"
 CHECK_DECISION_STORE_AVAILABILITY = "decision_store_availability"
@@ -50,6 +52,7 @@ class AgentTaskRecoveryExecutionDecisionLifecycleHealthResult:
     issues: tuple
     authoritative_decision_id: object
     latest_lifecycle_result_id: object
+    dependency_diagnostics: tuple
     checked_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     schema_version: int = HEALTH_RESULT_SCHEMA_VERSION
 
@@ -61,6 +64,11 @@ class AgentTaskRecoveryExecutionDecisionLifecycleHealthResult:
             "issues": list(self.issues),
             "authoritative_decision_id": self.authoritative_decision_id,
             "latest_lifecycle_result_id": self.latest_lifecycle_result_id,
+            "dependency_diagnostics": [
+                dict(dependency=d.dependency, status=d.status, failure_reason=d.failure_reason,
+                     last_verified_state=d.last_verified_state, blocking=d.blocking)
+                for d in self.dependency_diagnostics
+            ],
             "checked_at": self.checked_at.isoformat(),
             "schema_version": self.schema_version,
         }
@@ -108,13 +116,18 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService:
         staleness_service,
         lifecycle_result_service,
         lifecycle_verification_service,
+        dependency_diagnostics_service: LLMAgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnostics = None,
     ):
         """All seven are the existing, read-only-safe services from this
         package (decision_store.py, decision_supersession_resolution.py,
         decision_supersession_validation.py, decision_change_impact.py,
         decision_impact_staleness.py, decision_impact_invalidation_
         lifecycle_result.py, decision_impact_invalidation_lifecycle_
-        verification.py)."""
+        verification.py). dependency_diagnostics_service is #7's
+        LLMAgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnostics;
+        when not given, one is built from the same seven collaborators
+        above (the same "default when none given" convention this
+        package's other services already use)."""
         self._decision_store = decision_store
         self._resolution = resolution_service
         self._supersession_validation = supersession_validation_service
@@ -122,6 +135,15 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService:
         self._staleness = staleness_service
         self._results = lifecycle_result_service
         self._verification = lifecycle_verification_service
+        self._dependency_diagnostics = dependency_diagnostics_service or LLMAgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnostics(
+            decision_store=decision_store,
+            resolution_service=resolution_service,
+            supersession_validation_service=supersession_validation_service,
+            impact_service=impact_service,
+            staleness_service=staleness_service,
+            lifecycle_result_service=lifecycle_result_service,
+            lifecycle_verification_service=lifecycle_verification_service,
+        )
 
     def check(self, task_id: str) -> AgentTaskRecoveryExecutionDecisionLifecycleHealthResult:
         """Diagnose task_id's recovery execution decision lifecycle
@@ -283,6 +305,7 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService:
             issues=tuple(issues),
             authoritative_decision_id=authoritative_decision_id,
             latest_lifecycle_result_id=latest_lifecycle_result_id,
+            dependency_diagnostics=self._dependency_diagnostics.diagnose(task_id),
         )
 
     @staticmethod

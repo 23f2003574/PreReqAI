@@ -2171,3 +2171,12 @@ class AgentTaskRecoveryExecutionDecisionLifecycleResult:
         for key in ("affected_artifacts", "blocking_conditions", "diagnostics"):
             data[key] = list(data[key])
         return data
+
+
+# Shared health-status vocabulary for decision_lifecycle_health.py (#6)
+# and decision_lifecycle_dependency_diagnostics.py (#7) -- defined once
+# here so neither module has to import the other for it.
+HEALTH_HEALTHY = "healthy"
+HEALTH_DEGRADED = "degraded"
+HEALTH_BLOCKED = "blocked"
+HEALTH_UNAVAILABLE = "unavailable"
