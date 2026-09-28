@@ -58,6 +58,12 @@ from .decision_impact_invalidation_verification import (
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationError,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService,
 )
+from .decision_lifecycle_configuration_validation import (
+    CONFIGURATION_INVALID,
+    CONFIGURATION_VALID,
+    AgentTaskRecoveryExecutionDecisionLifecycleConfigurationValidationResult,
+    LLMAgentTaskRecoveryExecutionDecisionLifecycleConfigurationValidator,
+)
 from .decision_lifecycle_dependency_diagnostics import (
     DEPENDENCY_DECISION_STORE,
     DEPENDENCY_IMPACT_ANALYZER,
@@ -800,6 +806,10 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnostic",
     "LLMAgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnostics",
     "InvalidAgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnosticsError",
+    "CONFIGURATION_VALID",
+    "CONFIGURATION_INVALID",
+    "AgentTaskRecoveryExecutionDecisionLifecycleConfigurationValidationResult",
+    "LLMAgentTaskRecoveryExecutionDecisionLifecycleConfigurationValidator",
     "IMPACT_LIFECYCLE_BLOCKED",
     "IMPACT_LIFECYCLE_CLEAN",
     "IMPACT_LIFECYCLE_EXECUTION_FAILED",

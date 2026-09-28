@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
+from .decision_lifecycle_configuration_validation import (
+    LLMAgentTaskRecoveryExecutionDecisionLifecycleConfigurationValidator,
+)
 from .decision_lifecycle_dependency_diagnostics import (
     LLMAgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnostics,
 )
@@ -8,6 +11,7 @@ from .models import (
     HEALTH_BLOCKED,
     HEALTH_DEGRADED,
     HEALTH_HEALTHY,
+    HEALTH_RESULT_SCHEMA_VERSION,
     HEALTH_UNAVAILABLE,
     LIFECYCLE_VERIFICATION_VALID,
     RESOLUTION_RESOLVED,
@@ -22,8 +26,6 @@ CHECK_IMPACT_STALENESS_SUBSYSTEM_AVAILABILITY = "impact_staleness_subsystem_avai
 CHECK_LIFECYCLE_RESULT_ACCESSIBILITY = "lifecycle_result_accessibility"
 CHECK_UNRESOLVED_BLOCKERS = "unresolved_blockers"
 CHECK_LIFECYCLE_VERIFICATION = "lifecycle_verification"
-
-HEALTH_RESULT_SCHEMA_VERSION = 1
 
 
 class InvalidAgentTaskRecoveryExecutionDecisionLifecycleHealthError(ValueError):
@@ -53,6 +55,7 @@ class AgentTaskRecoveryExecutionDecisionLifecycleHealthResult:
     authoritative_decision_id: object
     latest_lifecycle_result_id: object
     dependency_diagnostics: tuple
+    configuration_validation: object = None
     checked_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     schema_version: int = HEALTH_RESULT_SCHEMA_VERSION
 
@@ -69,6 +72,9 @@ class AgentTaskRecoveryExecutionDecisionLifecycleHealthResult:
                      last_verified_state=d.last_verified_state, blocking=d.blocking)
                 for d in self.dependency_diagnostics
             ],
+            "configuration_validation": (
+                self.configuration_validation.to_dict() if self.configuration_validation is not None else None
+            ),
             "checked_at": self.checked_at.isoformat(),
             "schema_version": self.schema_version,
         }
@@ -117,6 +123,7 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService:
         lifecycle_result_service,
         lifecycle_verification_service,
         dependency_diagnostics_service: LLMAgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnostics = None,
+        configuration_validator: LLMAgentTaskRecoveryExecutionDecisionLifecycleConfigurationValidator = None,
     ):
         """All seven are the existing, read-only-safe services from this
         package (decision_store.py, decision_supersession_resolution.py,
@@ -127,7 +134,13 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService:
         LLMAgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnostics;
         when not given, one is built from the same seven collaborators
         above (the same "default when none given" convention this
-        package's other services already use)."""
+        package's other services already use). configuration_validator
+        is #12's LLMAgentTaskRecoveryExecutionDecisionLifecycleConfigurationValidator;
+        when not given, one is built from these same seven -- a caller
+        with the full nine-collaborator wiring (lifecycle_service and
+        reconciliation_service included, e.g. backend/cli.py's
+        build_recovery_decision_health_service()) should pass its own
+        for a complete validation."""
         self._decision_store = decision_store
         self._resolution = resolution_service
         self._supersession_validation = supersession_validation_service
@@ -136,6 +149,15 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService:
         self._results = lifecycle_result_service
         self._verification = lifecycle_verification_service
         self._dependency_diagnostics = dependency_diagnostics_service or LLMAgentTaskRecoveryExecutionDecisionLifecycleDependencyDiagnostics(
+            decision_store=decision_store,
+            resolution_service=resolution_service,
+            supersession_validation_service=supersession_validation_service,
+            impact_service=impact_service,
+            staleness_service=staleness_service,
+            lifecycle_result_service=lifecycle_result_service,
+            lifecycle_verification_service=lifecycle_verification_service,
+        )
+        self._configuration_validator = configuration_validator or LLMAgentTaskRecoveryExecutionDecisionLifecycleConfigurationValidator(
             decision_store=decision_store,
             resolution_service=resolution_service,
             supersession_validation_service=supersession_validation_service,
@@ -306,6 +328,7 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService:
             authoritative_decision_id=authoritative_decision_id,
             latest_lifecycle_result_id=latest_lifecycle_result_id,
             dependency_diagnostics=self._dependency_diagnostics.diagnose(task_id),
+            configuration_validation=self._configuration_validator.validate(),
         )
 
     @staticmethod

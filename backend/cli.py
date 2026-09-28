@@ -36,6 +36,7 @@ from backend.agent_task_recovery_execution_precondition_snapshots import (
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService,
     LLMAgentTaskRecoveryExecutionDecisionImpactStalenessService,
+    LLMAgentTaskRecoveryExecutionDecisionLifecycleConfigurationValidator,
     LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade,
     LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionService,
@@ -126,10 +127,25 @@ def build_recovery_decision_facade(decision_store=None):
 
 def build_recovery_decision_health_service(decision_store=None):
     """Wire LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService
-    (#6, which itself composes #7's dependency diagnostics) -- read-only,
-    never touches the lifecycle/reconciliation services' own run()/
-    reconcile()."""
+    (#6, which itself composes #7's dependency diagnostics and #12's
+    configuration validator) -- read-only, never touches the lifecycle/
+    reconciliation services' own run()/reconcile(). Passes an explicit
+    configuration_validator built from the full nine-collaborator wiring
+    (lifecycle_service and reconciliation_service included) rather than
+    #6's own seven-collaborator default, so diagnose() reports a complete
+    configuration verdict."""
     c = _build_collaborators(decision_store)
+    configuration_validator = LLMAgentTaskRecoveryExecutionDecisionLifecycleConfigurationValidator(
+        decision_store=c.decision_store,
+        resolution_service=c.resolution,
+        supersession_validation_service=c.supersession_validation,
+        impact_service=c.impact,
+        staleness_service=c.staleness,
+        lifecycle_result_service=c.lifecycle_results,
+        lifecycle_verification_service=c.lifecycle_verification,
+        lifecycle_service=c.lifecycle,
+        reconciliation_service=c.reconciliation,
+    )
     return LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService(
         decision_store=c.decision_store,
         resolution_service=c.resolution,
@@ -138,6 +154,7 @@ def build_recovery_decision_health_service(decision_store=None):
         staleness_service=c.staleness,
         lifecycle_result_service=c.lifecycle_results,
         lifecycle_verification_service=c.lifecycle_verification,
+        configuration_validator=configuration_validator,
     )
 
 
