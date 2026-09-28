@@ -17,8 +17,10 @@ Usage:
 import argparse
 import json
 import sys
+from types import SimpleNamespace
 
 from backend.agent_task_recovery_execution_precondition_snapshots import (
+    HEALTH_HEALTHY,
     IMPACT_LIFECYCLE_CLEAN,
     IMPACT_LIFECYCLE_REMEDIATED,
     IMPACT_LIFECYCLE_UP_TO_DATE,
@@ -35,10 +37,12 @@ from backend.agent_task_recovery_execution_precondition_snapshots import (
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService,
     LLMAgentTaskRecoveryExecutionDecisionImpactStalenessService,
     LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade,
+    LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionService,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionValidationService,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionStore,
     InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError,
+    InvalidAgentTaskRecoveryExecutionDecisionLifecycleHealthError,
 )
 
 _SUCCESS_STATUSES = (IMPACT_LIFECYCLE_REMEDIATED, IMPACT_LIFECYCLE_CLEAN, IMPACT_LIFECYCLE_UP_TO_DATE)
@@ -48,12 +52,14 @@ EXIT_FAILURE = 1
 EXIT_USAGE = 2
 
 
-def build_recovery_decision_facade(decision_store=None):
-    """Wire LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade from the
-    existing #1-#10 services in this package, all sharing one
-    decision_store as their own constructors require ("All collaborators
-    must share the same stores the plan was built from" --
-    decision_impact_invalidation.py).
+def _build_collaborators(decision_store=None):
+    """Wire the #1-#10 services this package's facade (#1) and health
+    service (#6) both compose, all sharing one decision_store as their
+    own constructors require ("All collaborators must share the same
+    stores the plan was built from" -- decision_impact_invalidation.py).
+    One shared helper so build_recovery_decision_facade() and
+    build_recovery_decision_health_service() never wire the same
+    services twice.
 
     Left at their existing, already-safe defaults (None): the precondition
     revalidation / preflight invalidation / retry scheduling / chain
@@ -99,12 +105,39 @@ def build_recovery_decision_facade(decision_store=None):
         decision_store=decision_store,
     )
 
+    return SimpleNamespace(
+        decision_store=decision_store, impact=impact, staleness=staleness, resolution=resolution,
+        lifecycle=lifecycle, lifecycle_results=lifecycle_results, lifecycle_verification=lifecycle_verification,
+        reconciliation=reconciliation, supersession_validation=supersession_validation,
+    )
+
+
+def build_recovery_decision_facade(decision_store=None):
+    """Wire LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade (#1)."""
+    c = _build_collaborators(decision_store)
     return LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade(
-        supersession_validation_service=supersession_validation,
-        lifecycle_service=lifecycle,
-        lifecycle_result_service=lifecycle_results,
-        lifecycle_verification_service=lifecycle_verification,
-        reconciliation_service=reconciliation,
+        supersession_validation_service=c.supersession_validation,
+        lifecycle_service=c.lifecycle,
+        lifecycle_result_service=c.lifecycle_results,
+        lifecycle_verification_service=c.lifecycle_verification,
+        reconciliation_service=c.reconciliation,
+    )
+
+
+def build_recovery_decision_health_service(decision_store=None):
+    """Wire LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService
+    (#6, which itself composes #7's dependency diagnostics) -- read-only,
+    never touches the lifecycle/reconciliation services' own run()/
+    reconcile()."""
+    c = _build_collaborators(decision_store)
+    return LLMAgentTaskRecoveryExecutionDecisionLifecycleHealthService(
+        decision_store=c.decision_store,
+        resolution_service=c.resolution,
+        supersession_validation_service=c.supersession_validation,
+        impact_service=c.impact,
+        staleness_service=c.staleness,
+        lifecycle_result_service=c.lifecycle_results,
+        lifecycle_verification_service=c.lifecycle_verification,
     )
 
 
@@ -135,6 +168,22 @@ def _format_human(result) -> str:
     return "\n".join(lines)
 
 
+def _format_health_human(result) -> str:
+    lines = [
+        f"overall status: {result.status}",
+        f"authoritative decision: {result.authoritative_decision_id}",
+        f"latest lifecycle result: {result.latest_lifecycle_result_id}",
+        "dependencies:",
+    ]
+    for dependency in result.dependency_diagnostics:
+        reason = dependency.failure_reason if dependency.failure_reason is not None else "none"
+        lines.append(
+            f"  - {dependency.dependency}: {dependency.status} "
+            f"(blocking={dependency.blocking}) reason={reason} last_verified={dependency.last_verified_state}"
+        )
+    return "\n".join(lines)
+
+
 def _add_recovery_decision_parser(subparsers):
     recovery_decision = subparsers.add_parser(
         "recovery-decision", help="Recovery execution decision lifecycle operations",
@@ -149,6 +198,19 @@ def _add_recovery_decision_parser(subparsers):
     evaluate.add_argument(
         "--json", action="store_true", dest="as_json",
         help="Print the machine-readable result contract (AgentTaskRecoveryExecutionDecisionLifecycleResult.to_dict()) as JSON",
+    )
+
+    diagnose = recovery_decision_subparsers.add_parser(
+        "diagnose",
+        help=(
+            "Diagnostic-only: report the health of a task's recovery execution decision "
+            "lifecycle and its dependencies, without evaluating or changing anything"
+        ),
+    )
+    diagnose.add_argument("task_id", help="The task id to diagnose")
+    diagnose.add_argument(
+        "--json", action="store_true", dest="as_json",
+        help="Print the machine-readable result contract (AgentTaskRecoveryExecutionDecisionLifecycleHealthResult.to_dict()) as JSON",
     )
 
 
@@ -178,17 +240,46 @@ def _run_recovery_decision_evaluate(args, facade) -> int:
     return EXIT_OK if _is_success(result) else EXIT_FAILURE
 
 
-def main(argv=None, facade=None) -> int:
-    """Entry point. `facade`, when given, replaces
-    build_recovery_decision_facade() -- used by tests to exercise CLI
-    parsing/formatting/exit-code behavior against a known result without
-    re-deriving the full service wiring, the same fixture-reuse approach
-    this package's own test suites already use."""
+def _run_recovery_decision_diagnose(args, health_service) -> int:
+    """Diagnostic-only: calls LLMAgentTaskRecoveryExecutionDecisionLifecycle
+    HealthService.check() (#6, which itself composes #7's per-dependency
+    diagnostics) -- never facade.evaluate(), so this command can never
+    execute remediation/recovery or change any persisted state."""
+    health_service = health_service if health_service is not None else build_recovery_decision_health_service()
+    try:
+        result = health_service.check(args.task_id)
+    except InvalidAgentTaskRecoveryExecutionDecisionLifecycleHealthError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return EXIT_FAILURE
+    except Exception as error:  # never leak a composed service's internals as a stack trace by default
+        print(f"error: {type(error).__name__}: {error}", file=sys.stderr)
+        return EXIT_FAILURE
+
+    if args.as_json:
+        print(json.dumps(result.to_dict(), indent=2, default=str, sort_keys=True))
+    else:
+        print(_format_health_human(result))
+
+    # Same non-success diagnostic convention as `evaluate`: only a clean
+    # HEALTH_HEALTHY verdict is EXIT_OK; degraded/blocked/unavailable are
+    # all EXIT_FAILURE -- there is no third exit code family to invent.
+    return EXIT_OK if result.status == HEALTH_HEALTHY else EXIT_FAILURE
+
+
+def main(argv=None, facade=None, health_service=None) -> int:
+    """Entry point. `facade`/`health_service`, when given, replace
+    build_recovery_decision_facade()/build_recovery_decision_health_service()
+    -- used by tests to exercise CLI parsing/formatting/exit-code behavior
+    against a known result without re-deriving the full service wiring,
+    the same fixture-reuse approach this package's own test suites
+    already use."""
     parser = _build_parser()
     args = parser.parse_args(argv)
 
     if args.command == "recovery-decision" and args.recovery_decision_command == "evaluate":
         return _run_recovery_decision_evaluate(args, facade)
+    if args.command == "recovery-decision" and args.recovery_decision_command == "diagnose":
+        return _run_recovery_decision_diagnose(args, health_service)
 
     parser.print_usage(sys.stderr)
     return EXIT_USAGE

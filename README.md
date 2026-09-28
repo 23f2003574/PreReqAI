@@ -1509,3 +1509,17 @@ Exits `0` when the lifecycle completed with nothing left blocking;
 non-zero (`1`) when it is blocked, failed, unresolved, or the
 verification result is invalid; `2` on a usage error (missing/malformed
 arguments).
+
+`recovery-decision diagnose` is diagnostic-only: it reports the health
+of a task's recovery execution decision lifecycle and each of its
+dependencies (decision store, supersession resolver, impact analyzer,
+staleness detector, remediation/reconciliation, lifecycle result
+persistence, verification) without evaluating or changing anything.
+
+```
+python -m backend.cli recovery-decision diagnose <task-id>
+python -m backend.cli recovery-decision diagnose <task-id> --json
+```
+
+Exits `0` only when overall status is `healthy`; non-zero (`1`) for
+`degraded`, `blocked`, or `unavailable`; `2` on a usage error.
