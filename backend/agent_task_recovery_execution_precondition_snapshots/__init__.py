@@ -58,6 +58,11 @@ from .decision_impact_invalidation_verification import (
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationError,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService,
 )
+from .decision_lifecycle_facade import (
+    AgentTaskRecoveryExecutionDecisionLifecycleFacadeResult,
+    InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError,
+    LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade,
+)
 from .decision_impact_invalidation_audit import (
     AgentTaskRecoveryExecutionDecisionImpactInvalidationAuditStore,
     InMemoryAgentTaskRecoveryExecutionDecisionImpactInvalidationAuditStore,
@@ -710,6 +715,9 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationResult",
     "LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService",
     "InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationError",
+    "AgentTaskRecoveryExecutionDecisionLifecycleFacadeResult",
+    "LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade",
+    "InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError",
     "IMPACT_LIFECYCLE_BLOCKED",
     "IMPACT_LIFECYCLE_CLEAN",
     "IMPACT_LIFECYCLE_EXECUTION_FAILED",
