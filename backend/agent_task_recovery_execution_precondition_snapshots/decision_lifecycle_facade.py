@@ -1,31 +1,11 @@
-from dataclasses import dataclass
-from datetime import datetime, timezone
-
-from .models import IMPACT_RECONCILIATION_REPLACED
+from .models import (
+    AgentTaskRecoveryExecutionDecisionLifecycleResult,
+    IMPACT_RECONCILIATION_REPLACED,
+)
 
 
 class InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError(ValueError):
     """Raised when evaluate() is given an invalid task_id."""
-
-
-@dataclass(frozen=True)
-class AgentTaskRecoveryExecutionDecisionLifecycleFacadeResult:
-    """LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade.evaluate()'s
-    consolidated outcome -- every field is copied verbatim from whichever
-    existing service actually computed it; this facade computes nothing
-    of its own."""
-
-    task_id: str
-    authoritative_decision_id: object
-    decision_lineage_status: str
-    affected_artifacts: tuple
-    lifecycle_result_id: str
-    remediation_operation_id: object
-    reconciliation_state: object
-    reconciliation_operation_id: object
-    blockers: tuple
-    final_verification_status: str
-    evaluated_at: datetime
 
 
 class LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade:
@@ -45,6 +25,8 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade:
     supersession validation -> decision-change impact analysis ->
     staleness detection -> the existing remediation/reconciliation
     lifecycle -> final verification -- behind one evaluate(task_id) call,
+    returning the stable AgentTaskRecoveryExecutionDecisionLifecycleResult
+    contract instead of the underlying services' own result shapes,
     without changing what any of them decide.
 
     Never executes recovery itself: it only ever calls run()/reconcile()
@@ -84,7 +66,7 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade:
         self._verification = lifecycle_verification_service
         self._reconciliation = reconciliation_service
 
-    def evaluate(self, task_id: str) -> AgentTaskRecoveryExecutionDecisionLifecycleFacadeResult:
+    def evaluate(self, task_id: str) -> AgentTaskRecoveryExecutionDecisionLifecycleResult:
         """Evaluate task_id's current recovery execution decision
         lifecycle end to end.
 
@@ -117,20 +99,25 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade:
 
         verification = self._verification.verify(task_id, record.result_id)
 
-        blockers = tuple(record.blocking_artifacts) + tuple(verification.remaining_blockers)
+        blocking_conditions = tuple(record.blocking_artifacts) + tuple(verification.remaining_blockers)
+        diagnostics = (
+            tuple(record.errors)
+            + tuple(verification.mismatches)
+            + tuple(verification.missing_evidence)
+            + (tuple(reconciliation.issues) if reconciliation is not None else ())
+        )
 
-        return AgentTaskRecoveryExecutionDecisionLifecycleFacadeResult(
+        return AgentTaskRecoveryExecutionDecisionLifecycleResult(
             task_id=task_id,
             authoritative_decision_id=record.authoritative_decision_id,
             decision_lineage_status=supersession.status,
             affected_artifacts=tuple(record.affected_artifacts),
-            lifecycle_result_id=record.result_id,
             remediation_operation_id=record.operation_id,
-            reconciliation_state=reconciliation.state if reconciliation is not None else None,
             reconciliation_operation_id=(
                 reconciliation.replacement_operation_id if reconciliation is not None else None
             ),
-            blockers=blockers,
-            final_verification_status=verification.status,
-            evaluated_at=datetime.now(timezone.utc),
+            blocking_conditions=blocking_conditions,
+            verification_status=verification.status,
+            overall_status=record.status,
+            diagnostics=diagnostics,
         )

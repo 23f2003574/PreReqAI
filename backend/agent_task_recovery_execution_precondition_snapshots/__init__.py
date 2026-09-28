@@ -59,7 +59,6 @@ from .decision_impact_invalidation_verification import (
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService,
 )
 from .decision_lifecycle_facade import (
-    AgentTaskRecoveryExecutionDecisionLifecycleFacadeResult,
     InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError,
     LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade,
 )
@@ -317,6 +316,8 @@ from .models import (
     AgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultRecord,
     IMPACT_RECONCILIATION_RESULT_SCHEMA_VERSION,
     AgentTaskRecoveryExecutionDecisionImpactInvalidationReconciliationVerificationResult,
+    LIFECYCLE_RESULT_SCHEMA_VERSION,
+    AgentTaskRecoveryExecutionDecisionLifecycleResult,
     IMPACT_INVALIDATION_VERIFICATION_INVALID,
     IMPACT_INVALIDATION_VERIFICATION_VALID,
     IMPACT_PLAN_VALIDATION_INVALID,
@@ -715,7 +716,8 @@ __all__ = [
     "AgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationResult",
     "LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService",
     "InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationError",
-    "AgentTaskRecoveryExecutionDecisionLifecycleFacadeResult",
+    "LIFECYCLE_RESULT_SCHEMA_VERSION",
+    "AgentTaskRecoveryExecutionDecisionLifecycleResult",
     "LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade",
     "InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError",
     "IMPACT_LIFECYCLE_BLOCKED",
