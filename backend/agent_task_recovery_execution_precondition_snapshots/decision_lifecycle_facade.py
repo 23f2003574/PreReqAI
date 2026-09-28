@@ -1,7 +1,35 @@
+from uuid import uuid4
+
+from backend.agent_task_events import LLMAgentTaskEventService
+
 from .models import (
     AgentTaskRecoveryExecutionDecisionLifecycleResult,
+    IMPACT_LIFECYCLE_CLEAN,
+    IMPACT_LIFECYCLE_REMEDIATED,
+    IMPACT_LIFECYCLE_UP_TO_DATE,
     IMPACT_RECONCILIATION_REPLACED,
+    LIFECYCLE_VERIFICATION_VALID,
 )
+
+# This facade's own event_type vocabulary (documented, not enforced --
+# the same "known key vocabulary, not a closed enum" discipline
+# backend.agent_task_events.models.KNOWN_EVENT_TYPES already uses). Not
+# added to that module's own KNOWN_EVENT_TYPES: these describe this
+# lifecycle's own stages, not a concept backend.agent_task_events'
+# existing families (lifecycle transitions, dependencies, readiness,
+# retries, context) already own.
+LIFECYCLE_STARTED = "lifecycle_started"
+DECISION_RESOLVED = "decision_resolved"
+IMPACT_ANALYZED = "impact_analyzed"
+STALE_ARTIFACTS_DETECTED = "stale_artifacts_detected"
+REMEDIATION_STARTED = "remediation_started"
+RECONCILIATION_STARTED = "reconciliation_started"
+LIFECYCLE_VERIFIED = "lifecycle_verified"
+LIFECYCLE_BLOCKED = "lifecycle_blocked"
+LIFECYCLE_FAILED = "lifecycle_failed"
+LIFECYCLE_COMPLETED = "lifecycle_completed"
+
+_SUCCESS_STATUSES = (IMPACT_LIFECYCLE_REMEDIATED, IMPACT_LIFECYCLE_CLEAN, IMPACT_LIFECYCLE_UP_TO_DATE)
 
 
 class InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError(ValueError):
@@ -45,6 +73,21 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade:
     state (via the existing reconciliation service) instead of blindly
     re-running remediation -- NO_OP when nothing has changed, exactly
     the reconciliation service's own contract.
+
+    Observability: every evaluate() call emits a structured event trail
+    through the repository's existing append-only event stream
+    (backend.agent_task_events.LLMAgentTaskEventService -- "Do not
+    invent a second event bus or generic audit framework"), never a new
+    logging/metrics/tracing framework of its own. All events from one
+    evaluate() call share one correlation_id so they can be pulled back
+    as a single trail; the terminal event's operation_id and payload
+    reference ids/labels only (no raw decision/snapshot content -- the
+    event service's own LLMSecretRedactionService screens payloads
+    regardless). This never changes what evaluate() returns: emit()
+    failures are not caught here deliberately, the same "a caller must
+    only ever call emit() for a change that actually occurred" contract
+    LLMAgentTaskEventService itself documents -- an event is only ever
+    emitted after the change it describes has already happened.
     """
 
     def __init__(
@@ -54,17 +97,23 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade:
         lifecycle_result_service,
         lifecycle_verification_service,
         reconciliation_service,
+        event_service: LLMAgentTaskEventService = None,
     ):
-        """All five are the existing services from this package -- see
-        LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycle
+        """The first five are the existing services from this package --
+        see LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycle
         ReconciliationService's own constructor (decision_impact_
         invalidation_lifecycle_reconciliation.py) for the reference
-        wiring every argument here must share stores with."""
+        wiring every argument here must share stores with. event_service
+        is the existing backend.agent_task_events.LLMAgentTaskEventService;
+        when not given, a dedicated one is constructed (the same default
+        backend.agent_task_recovery_preflight_dependency_snapshots.
+        impact_cache_metrics already uses for its own event stream)."""
         self._supersession_validation = supersession_validation_service
         self._lifecycle = lifecycle_service
         self._results = lifecycle_result_service
         self._verification = lifecycle_verification_service
         self._reconciliation = reconciliation_service
+        self._events = event_service if event_service is not None else LLMAgentTaskEventService()
 
     def evaluate(self, task_id: str) -> AgentTaskRecoveryExecutionDecisionLifecycleResult:
         """Evaluate task_id's current recovery execution decision
@@ -82,14 +131,22 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade:
                 "task_id is required and must be a non-empty string"
             )
 
+        correlation_id = str(uuid4())
+        self._emit(task_id, LIFECYCLE_STARTED, correlation_id)
+
         supersession = self._supersession_validation.validate(task_id)
 
         existing = self._results.latest(task_id)
         reconciliation = None
         if existing is None:
+            self._emit(task_id, REMEDIATION_STARTED, correlation_id)
             lifecycle_result = self._lifecycle.run(task_id)
             record = self._results.record(task_id, lifecycle_result)
         else:
+            self._emit(
+                task_id, RECONCILIATION_STARTED, correlation_id,
+                payload={"previous_lifecycle_result_id": existing.result_id},
+            )
             reconciliation = self._reconciliation.reconcile(task_id, existing.result_id)
             record = (
                 self._results.get(task_id, reconciliation.replacement_result_id)
@@ -97,7 +154,26 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade:
                 else existing
             )
 
+        if record.authoritative_decision_id is not None:
+            self._emit(
+                task_id, DECISION_RESOLVED, correlation_id,
+                payload={"authoritative_decision_id": record.authoritative_decision_id},
+            )
+            self._emit(
+                task_id, IMPACT_ANALYZED, correlation_id,
+                payload={"affected_artifact_count": len(record.affected_artifacts)},
+            )
+        if record.remaining_stale:
+            self._emit(
+                task_id, STALE_ARTIFACTS_DETECTED, correlation_id,
+                payload={"stale_artifact_count": len(record.remaining_stale)},
+            )
+
         verification = self._verification.verify(task_id, record.result_id)
+        self._emit(
+            task_id, LIFECYCLE_VERIFIED, correlation_id, operation_id=record.operation_id,
+            payload={"lifecycle_result_id": record.result_id, "verification_status": verification.status},
+        )
 
         blocking_conditions = tuple(record.blocking_artifacts) + tuple(verification.remaining_blockers)
         diagnostics = (
@@ -105,6 +181,22 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade:
             + tuple(verification.mismatches)
             + tuple(verification.missing_evidence)
             + (tuple(reconciliation.issues) if reconciliation is not None else ())
+        )
+
+        if blocking_conditions:
+            terminal_event = LIFECYCLE_BLOCKED
+        elif record.status in _SUCCESS_STATUSES and verification.status == LIFECYCLE_VERIFICATION_VALID:
+            terminal_event = LIFECYCLE_COMPLETED
+        else:
+            terminal_event = LIFECYCLE_FAILED
+        self._emit(
+            task_id, terminal_event, correlation_id, operation_id=record.operation_id,
+            payload={
+                "lifecycle_result_id": record.result_id,
+                "overall_status": record.status,
+                "verification_status": verification.status,
+                "blocking_condition_count": len(blocking_conditions),
+            },
         )
 
         return AgentTaskRecoveryExecutionDecisionLifecycleResult(
@@ -120,4 +212,9 @@ class LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade:
             verification_status=verification.status,
             overall_status=record.status,
             diagnostics=diagnostics,
+        )
+
+    def _emit(self, task_id, event_type, correlation_id, operation_id=None, payload=None):
+        self._events.emit(
+            task_id, event_type, payload=payload, correlation_id=correlation_id, operation_id=operation_id,
         )
