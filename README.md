@@ -1492,3 +1492,20 @@ Integration tests exercise complete research workspace lifecycles through the pu
 - Transactional import
 - Post-import integrity verification
 - Persistence across application restarts
+
+## Command Line
+
+`recovery-decision evaluate` runs the recovery execution decision
+lifecycle for a task end to end (authoritative decision, lineage
+validation, impact/staleness detection, remediation/reconciliation,
+final verification) and reports one consolidated result.
+
+```
+python -m backend.cli recovery-decision evaluate <task-id>
+python -m backend.cli recovery-decision evaluate <task-id> --json
+```
+
+Exits `0` when the lifecycle completed with nothing left blocking;
+non-zero (`1`) when it is blocked, failed, unresolved, or the
+verification result is invalid; `2` on a usage error (missing/malformed
+arguments).
