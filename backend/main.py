@@ -8,6 +8,10 @@ from backend.api.session_routes import (
     router as session_router,
 )
 
+from backend.api.recovery_decision_routes import (
+    router as recovery_decision_router,
+)
+
 from backend.platform import (
     PreReqAIPlatform,
 )
@@ -26,4 +30,8 @@ app.include_router(
 
 app.include_router(
     session_router,
+)
+
+app.include_router(
+    recovery_decision_router,
 )

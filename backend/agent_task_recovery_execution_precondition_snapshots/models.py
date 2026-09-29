@@ -2164,3 +2164,48 @@ class AgentTaskRecoveryExecutionDecisionLifecycleFinalizationResult:
     checks: tuple
     blocking_issues: tuple
     warnings: tuple
+
+LIFECYCLE_RESULT_SCHEMA_VERSION = 1
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionLifecycleResult:
+    """LLMAgentTaskRecoveryExecutionDecisionLifecycleFacade.evaluate()'s
+    stable, application-facing contract -- every field is copied verbatim
+    from whichever existing service (supersession validation, the impact-
+    invalidation lifecycle or reconciliation service, and lifecycle
+    verification) already computed it. overall_status is the authoritative
+    lifecycle result's own status (IMPACT_LIFECYCLE_* -- already an
+    explicit partial/blocked/failed/succeeded classification), never a
+    second one invented here. diagnostics concatenates the underlying
+    results' own error/issue/mismatch/missing-evidence lists, verbatim and
+    in that order, so nothing about why a lifecycle is blocked or failed
+    is lost behind this contract."""
+
+    task_id: str
+    authoritative_decision_id: object
+    decision_lineage_status: str
+    affected_artifacts: tuple
+    remediation_operation_id: object
+    reconciliation_operation_id: object
+    blocking_conditions: tuple
+    verification_status: str
+    overall_status: str
+    diagnostics: tuple
+    schema_version: int = LIFECYCLE_RESULT_SCHEMA_VERSION
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        for key in ("affected_artifacts", "blocking_conditions", "diagnostics"):
+            data[key] = list(data[key])
+        return data
+
+
+# Shared health-status vocabulary for decision_lifecycle_health.py (#6)
+# and decision_lifecycle_dependency_diagnostics.py (#7) -- defined once
+# here so neither module has to import the other for it.
+HEALTH_HEALTHY = "healthy"
+HEALTH_DEGRADED = "degraded"
+HEALTH_BLOCKED = "blocked"
+HEALTH_UNAVAILABLE = "unavailable"
+HEALTH_RESULT_SCHEMA_VERSION = 1
