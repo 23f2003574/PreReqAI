@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from .models import (
+    ARTIFACT_FRESH,
     ARTIFACT_STALE,
     IMPACT_LIFECYCLE_BLOCKED,
     IMPACT_LIFECYCLE_CLEAN,
@@ -88,7 +89,7 @@ class LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleService:
 
         impact = self._impact.analyze(task_id, previous, current)
         staleness = self._staleness.check(task_id, impact)
-        affected = tuple(f"{a.kind}:{a.reference}" for a in staleness.artifacts if a.status != "fresh")
+        affected = tuple(f"{a.kind}:{a.reference}" for a in staleness.artifacts if a.status != ARTIFACT_FRESH)
         plan = self._planner.plan(task_id, staleness)
         common = dict(current=current, previous=previous, affected=affected, plan=plan)
         if not plan.items:
