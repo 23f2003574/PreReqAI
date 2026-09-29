@@ -299,3 +299,34 @@ def test_invalid_arguments_are_rejected():
     ):
         with pytest.raises(InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultError):
             call()
+
+
+def test_store_failure_is_wrapped_with_original_cause_preserved():
+    class _BrokenStore:
+        def list_for_task(self, task_id):
+            return []
+
+        def save(self, record):
+            raise OSError("disk full")
+
+    f = _VerifyFixture(same_snapshot=True)
+    lifecycle = _lifecycle(f).run(TASK_ID)
+    results = LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultService(_BrokenStore())
+
+    with pytest.raises(InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultError) as info:
+        results.record(TASK_ID, lifecycle)
+
+    assert isinstance(info.value.__cause__, OSError)
+    assert "disk full" in str(info.value.__cause__)
+
+
+def test_malformed_input_is_an_expected_error_not_a_store_failure():
+    f = _VerifyFixture(same_snapshot=True)
+    lifecycle = _lifecycle(f).run(TASK_ID)
+    results = LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultService()
+
+    for bad_task_id in ("", None):
+        with pytest.raises(InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultError):
+            results.record(bad_task_id, lifecycle)
+    with pytest.raises(InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultError):
+        results.record("other-task", lifecycle)
