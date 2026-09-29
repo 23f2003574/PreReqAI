@@ -2135,3 +2135,32 @@ class AgentTaskRecoveryExecutionDecisionImpactInvalidationReconciliationVerifica
     @property
     def invalid(self) -> bool:
         return self.status != LIFECYCLE_VERIFICATION_VALID
+
+
+FINALIZATION_CHECK_PASSED = "passed"
+FINALIZATION_CHECK_FAILED = "failed"
+FINALIZATION_CHECK_WARNING = "warning"
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionLifecycleFinalizationCheck:
+    """One finalization check: name and detail are deterministic strings;
+    status is passed, failed (a blocker) or warning (never a blocker)."""
+
+    name: str
+    status: str
+    detail: str = ""
+
+
+@dataclass(frozen=True)
+class AgentTaskRecoveryExecutionDecisionLifecycleFinalizationResult:
+    """LLMAgentTaskRecoveryExecutionDecisionLifecycleFinalizationService.
+    finalize()'s read-only verdict. ready is True only when no check failed;
+    blocking_issues come from failed checks and warnings from warning checks,
+    both in fixed check order."""
+
+    task_id: Optional[str]
+    ready: bool
+    checks: tuple
+    blocking_issues: tuple
+    warnings: tuple

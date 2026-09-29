@@ -50,6 +50,10 @@ from .decision_impact_invalidation_lifecycle_result import (
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultError,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultService,
 )
+from .decision_lifecycle_finalization import (
+    InvalidAgentTaskRecoveryExecutionDecisionLifecycleFinalizationError,
+    LLMAgentTaskRecoveryExecutionDecisionLifecycleFinalizationService,
+)
 from .decision_impact_invalidation_lifecycle_wiring import build_impact_invalidation_lifecycle_service
 from .decision_impact_invalidation_lifecycle import (
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleError,
@@ -217,6 +221,11 @@ from .drift import (
     LLMAgentTaskRecoveryExecutionPreconditionDriftService,
 )
 from .models import (
+    FINALIZATION_CHECK_FAILED,
+    FINALIZATION_CHECK_PASSED,
+    FINALIZATION_CHECK_WARNING,
+    AgentTaskRecoveryExecutionDecisionLifecycleFinalizationCheck,
+    AgentTaskRecoveryExecutionDecisionLifecycleFinalizationResult,
     APPROVAL_RECONCILIATION_STATES,
     CHAIN_INVALID,
     CHAIN_STATUSES,
@@ -427,6 +436,13 @@ from .validation import (
 )
 
 __all__ = [
+    "InvalidAgentTaskRecoveryExecutionDecisionLifecycleFinalizationError",
+    "LLMAgentTaskRecoveryExecutionDecisionLifecycleFinalizationService",
+    "AgentTaskRecoveryExecutionDecisionLifecycleFinalizationCheck",
+    "AgentTaskRecoveryExecutionDecisionLifecycleFinalizationResult",
+    "FINALIZATION_CHECK_PASSED",
+    "FINALIZATION_CHECK_FAILED",
+    "FINALIZATION_CHECK_WARNING",
     "build_impact_invalidation_lifecycle_service",
     "AgentTaskRecoveryExecutionPreconditionSnapshot",
     "AgentTaskRecoveryExecutionPreconditionFieldChange",
