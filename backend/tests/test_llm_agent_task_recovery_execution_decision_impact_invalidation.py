@@ -7,24 +7,19 @@ import pytest
 from backend.agent_task_recovery_execution_precondition_snapshots import (
     EXECUTION_DECISION_ALLOW,
     EXECUTION_DECISION_BLOCK,
-    IMPACT_PLAN_VALIDATION_INVALID,
-    IMPACT_PLAN_VALIDATION_VALID,
-    INVALIDATION_INVALIDATE,
-    INVALIDATION_MANUAL_REVIEW,
-    RESOLUTION_RESOLVED,
     AgentTaskRecoveryExecutionPreconditionDecision,
     AgentTaskRecoveryExecutionPreconditionSnapshot,
     CONFLICT_ACTION_APPLIED,
     CONFLICT_ACTION_FAILED,
     CONFLICT_ACTION_SKIPPED,
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationError,
-    LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationService,
     LLMAgentTaskRecoveryExecutionDecisionChangeImpactService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationPlanService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationPlanValidationService,
     LLMAgentTaskRecoveryExecutionDecisionImpactStalenessService,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionStore,
 )
+from lifecycle_support import _Calls, _executor
 
 T0 = datetime(2026, 1, 1, tzinfo=timezone.utc)
 TASK_ID = "task-1"
@@ -81,43 +76,6 @@ class _Fixture:
     def make_plan(self):
         impact = self.impact.analyze(TASK_ID, "d1", "d2")
         return self.planner.plan(TASK_ID, self.staleness.check(TASK_ID, impact))
-
-
-class _Calls:
-    def __init__(self, fixture, fail=()):
-        self.log, self.fixture, self.fail = [], fixture, set(fail)
-
-    def _record(self, name):
-        self.log.append(name)
-        if name in self.fail:
-            raise RuntimeError(f"{name} unavailable")
-
-    def revalidate(self, task_id, snapshot_id):
-        self._record(f"revalidate:{snapshot_id}")
-        return SimpleNamespace(action="reused")
-
-    def invalidate(self, task_id, reason):
-        self._record("invalidate")
-
-    def cancel_retry(self, task_id):
-        self._record("cancel_retry")
-
-    def reconcile(self, task_id):
-        self._record("reconcile")
-        self.fixture.pointer.current_decision_id = "d2"
-        return SimpleNamespace(unresolved=())
-
-
-def _executor(f, calls, **overrides):
-    mechanisms = dict(
-        precondition_revalidation_service=calls, preflight_invalidation_service=calls, retry_scheduler=calls,
-        chain_reconciliation_service=calls,
-    )
-    mechanisms.update(overrides)
-    return LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationService(
-        decision_store=f.decision_store, impact_service=f.impact, staleness_service=f.staleness,
-        plan_service=f.planner, plan_validation_service=f.service, **mechanisms,
-    )
 
 
 def _outcomes(result):

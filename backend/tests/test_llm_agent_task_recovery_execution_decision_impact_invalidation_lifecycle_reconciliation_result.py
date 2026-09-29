@@ -1,4 +1,3 @@
-from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
@@ -7,29 +6,11 @@ import pytest
 from backend.agent_task_recovery_execution_precondition_snapshots import (
     EXECUTION_DECISION_ALLOW,
     EXECUTION_DECISION_BLOCK,
-    IMPACT_PLAN_VALIDATION_INVALID,
-    IMPACT_PLAN_VALIDATION_VALID,
-    INVALIDATION_INVALIDATE,
-    INVALIDATION_MANUAL_REVIEW,
-    RESOLUTION_RESOLVED,
     AgentTaskRecoveryExecutionPreconditionDecision,
     AgentTaskRecoveryExecutionPreconditionSnapshot,
-    CONFLICT_ACTION_APPLIED,
-    CONFLICT_ACTION_FAILED,
-    CONFLICT_ACTION_SKIPPED,
-    INTEGRITY_INVALID,
     INTEGRITY_VALID,
     RESOLUTION_RESOLVED,
-    IMPACT_LIFECYCLE_BLOCKED,
-    IMPACT_LIFECYCLE_CLEAN,
-    IMPACT_LIFECYCLE_EXECUTION_FAILED,
-    IMPACT_LIFECYCLE_REMEDIATED,
-    IMPACT_LIFECYCLE_UNRESOLVED,
-    IMPACT_LIFECYCLE_UNSAFE,
-    IMPACT_LIFECYCLE_UP_TO_DATE,
-    IMPACT_LIFECYCLE_VALIDATION_FAILED,
     IMPACT_RECONCILIATION_ALREADY_REPLACED,
-    IMPACT_RECONCILIATION_FAILED_CLOSED,
     IMPACT_RECONCILIATION_NO_OP,
     IMPACT_RECONCILIATION_REPLACED,
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationResultError,
@@ -37,16 +18,15 @@ from backend.agent_task_recovery_execution_precondition_snapshots import (
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleVerificationService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultService,
-    LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationVerificationService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationAuditService,
-    LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationService,
     LLMAgentTaskRecoveryExecutionDecisionChangeImpactService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationPlanService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationPlanValidationService,
     LLMAgentTaskRecoveryExecutionDecisionImpactStalenessService,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionStore,
 )
+from lifecycle_support import _Integrity, _StatefulCalls, _executor, _lifecycle
 
 T0 = datetime(2026, 1, 1, tzinfo=timezone.utc)
 TASK_ID = "task-1"
@@ -105,73 +85,6 @@ class _Fixture:
         return self.planner.plan(TASK_ID, self.staleness.check(TASK_ID, impact))
 
 
-class _Calls:
-    def __init__(self, fixture, fail=()):
-        self.log, self.fixture, self.fail = [], fixture, set(fail)
-
-    def _record(self, name):
-        self.log.append(name)
-        if name in self.fail:
-            raise RuntimeError(f"{name} unavailable")
-
-    def revalidate(self, task_id, snapshot_id):
-        self._record(f"revalidate:{snapshot_id}")
-        return SimpleNamespace(action="reused")
-
-    def invalidate(self, task_id, reason):
-        self._record("invalidate")
-
-    def cancel_retry(self, task_id):
-        self._record("cancel_retry")
-
-    def reconcile(self, task_id):
-        self._record("reconcile")
-        self.fixture.pointer.current_decision_id = "d2"
-        return SimpleNamespace(unresolved=())
-
-
-def _executor(f, calls, **overrides):
-    mechanisms = dict(
-        precondition_revalidation_service=calls, preflight_invalidation_service=calls, retry_scheduler=calls,
-        chain_reconciliation_service=calls,
-    )
-    mechanisms.update(overrides)
-    return LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationService(
-        decision_store=f.decision_store, impact_service=f.impact, staleness_service=f.staleness,
-        plan_service=f.planner, plan_validation_service=f.service, **mechanisms,
-    )
-
-
-class _StatefulCalls(_Calls):
-    """Mechanisms that also expose the state the verifier reads back."""
-
-    def __init__(self, fixture, fail=()):
-        super().__init__(fixture, fail)
-        self.invalidated, self.retry_scheduled = set(), True
-
-    def invalidate(self, task_id, reason):
-        super().invalidate(task_id, reason)
-        self.invalidated.add("pre-1")
-
-    def cancel_retry(self, task_id):
-        super().cancel_retry(task_id)
-        self.retry_scheduled = False
-
-    def get_invalidation(self, preflight_id):
-        return SimpleNamespace(preflight_id=preflight_id) if preflight_id in self.invalidated else None
-
-    def get_retry_schedule(self, task_id):
-        return SimpleNamespace() if self.retry_scheduled else None
-
-
-class _Integrity:
-    def __init__(self, status=INTEGRITY_VALID):
-        self.status = status
-
-    def check(self, task_id, decision_id):
-        return SimpleNamespace(status=self.status, issues=() if self.status == INTEGRITY_VALID else ("tampered",))
-
-
 class _VerifyFixture(_Fixture):
     def __init__(self, same_snapshot=False, fail=(), integrity=INTEGRITY_VALID):
         super().__init__()
@@ -191,24 +104,6 @@ class _VerifyFixture(_Fixture):
         result = self.executor.execute(TASK_ID, plan or self.make_plan())
         self.audit.record(TASK_ID, result)
         return result, self.verifier.verify(TASK_ID, result.operation_id)
-
-
-def _resolution(chain=("d1", "d2"), state=RESOLUTION_RESOLVED):
-    return SimpleNamespace(
-        resolve=lambda task_id: SimpleNamespace(
-            resolution_state=state, terminal_decision_id=chain[-1] if chain else None, chain=chain,
-        )
-    )
-
-
-def _lifecycle(f, resolution=None, **overrides):
-    services = dict(
-        resolution_service=resolution or _resolution(), impact_service=f.impact, staleness_service=f.staleness,
-        plan_service=f.planner, plan_validation_service=f.service, execution_service=f.executor,
-        audit_service=f.audit, verification_service=f.verifier,
-    )
-    services.update(overrides)
-    return LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleService(**services)
 
 
 class _Setup:
