@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import Optional
 
 from .decision_store import LLMAgentTaskRecoveryExecutionPreconditionDecisionStore
 from .decision_transition import LLMAgentTaskRecoveryExecutionPreconditionDecisionTransitionService
