@@ -17,6 +17,15 @@ from .models import (
 )
 
 
+class _DependencyFailure(Exception):
+    """A collaborator raised before any mutation ran; carries the stage and
+    the original exception (also chained as __cause__)."""
+
+    def __init__(self, stage: str, cause: Exception):
+        super().__init__(f"{stage} failed: {type(cause).__name__}: {cause}")
+        self.stage = stage
+
+
 class InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleError(ValueError):
     """Raised when run() is given an invalid task_id."""
 
@@ -75,7 +84,23 @@ class LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleService:
                 "task_id is required and must be a non-empty string"
             )
 
-        resolution = self._resolution.resolve(task_id)
+        context = {}
+        try:
+            return self._run(task_id, context)
+        except _DependencyFailure as failure:
+            # a prerequisite failed before any mutation: an infrastructure
+            # failure, never a blocked/expected outcome and never a success
+            return self._result(task_id, IMPACT_LIFECYCLE_EXECUTION_FAILED, errors=(str(failure),), **context)
+
+    @staticmethod
+    def _guard(stage, call, *args):
+        try:
+            return call(*args)
+        except Exception as error:
+            raise _DependencyFailure(stage, error) from error
+
+    def _run(self, task_id, context):
+        resolution = self._guard("decision resolution", self._resolution.resolve, task_id)
         if resolution.resolution_state != RESOLUTION_RESOLVED:
             return self._result(
                 task_id, IMPACT_LIFECYCLE_UNRESOLVED,
@@ -87,22 +112,27 @@ class LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleService:
         if previous is None:
             return self._result(task_id, IMPACT_LIFECYCLE_CLEAN, current=current)
 
-        impact = self._impact.analyze(task_id, previous, current)
-        staleness = self._staleness.check(task_id, impact)
+        context.update(current=current, previous=previous)
+        impact = self._guard("impact analysis", self._impact.analyze, task_id, previous, current)
+        staleness = self._guard("artifact staleness", self._staleness.check, task_id, impact)
         affected = tuple(f"{a.kind}:{a.reference}" for a in staleness.artifacts if a.status != ARTIFACT_FRESH)
-        plan = self._planner.plan(task_id, staleness)
+        context["affected"] = affected
+        plan = self._guard("remediation planning", self._planner.plan, task_id, staleness)
+        context["plan"] = plan
         common = dict(current=current, previous=previous, affected=affected, plan=plan)
         if not plan.items:
             return self._result(task_id, IMPACT_LIFECYCLE_CLEAN, **common)
 
         actionable = {i.artifact_id for i in plan.items if i.action != INVALIDATION_MANUAL_REVIEW}
-        if actionable and actionable <= self._already_applied(task_id, previous, current):
+        if actionable and actionable <= self._guard(
+            "audit history", self._already_applied, task_id, previous, current
+        ):
             return self._result(
                 task_id, IMPACT_LIFECYCLE_UP_TO_DATE, stale=self._stale(staleness),
                 blocking=tuple(i.artifact_id for i in plan.items if i.execution_blocked), **common,
             )
 
-        validation = self._validation.validate(task_id, plan)
+        validation = self._guard("plan validation", self._validation.validate, task_id, plan)
         if not validation.valid:
             return self._result(
                 task_id, IMPACT_LIFECYCLE_VALIDATION_FAILED, errors=tuple(validation.issues),
