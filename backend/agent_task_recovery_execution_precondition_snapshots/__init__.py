@@ -50,6 +50,7 @@ from .decision_impact_invalidation_lifecycle_result import (
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultError,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleResultService,
 )
+from .decision_impact_invalidation_lifecycle_wiring import build_impact_invalidation_lifecycle_service
 from .decision_impact_invalidation_lifecycle import (
     InvalidAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleError,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleService,
@@ -426,6 +427,7 @@ from .validation import (
 )
 
 __all__ = [
+    "build_impact_invalidation_lifecycle_service",
     "AgentTaskRecoveryExecutionPreconditionSnapshot",
     "AgentTaskRecoveryExecutionPreconditionFieldChange",
     "AgentTaskRecoveryExecutionPreconditionSnapshotDiff",
