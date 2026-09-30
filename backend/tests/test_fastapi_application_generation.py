@@ -48,12 +48,47 @@ def test_validated_draft_becomes_a_fastapi_app_whose_routes_match_the_draft():
     }
 
 
-def test_generated_route_validates_requests_and_is_honestly_unimplemented():
+def test_route_validates_requests_and_returns_the_documented_example_for_a_matching_input():
     _, validated, service = _generate()
     client = TestClient(_app(service.generate(validated).files))
 
     assert client.post("/add", json={"a": 1}).status_code == 422
-    assert client.post("/add", json={"a": 1, "b": 2}).status_code == 501
+    matched = client.post("/add", json={"a": 1, "b": 2})
+    assert (matched.status_code, matched.json()) == (200, {"sum": 3})
+    assert matched.headers["X-Execution"] == "documented-example"
+
+
+def test_input_outside_the_documented_examples_is_an_explicit_501_not_a_fake_result():
+    _, validated, service = _generate()
+    client = TestClient(_app(service.generate(validated).files))
+
+    response = client.post("/add", json={"a": 5, "b": 5})
+
+    assert response.status_code == 501 and "no documented example" in response.json()["detail"]
+    assert "X-Execution" not in response.headers
+
+
+def test_endpoint_without_request_input_returns_its_documented_output():
+    _, validated, _ = _generate()
+    draft = replace(validated, parameters={}, examples=[{"input": {}, "output": {"sum": 3}}])
+    client = TestClient(_app(FastAPIApplicationGenerator().generate(draft)))
+
+    response = client.post("/add", json={})
+
+    assert (response.status_code, response.json()) == (200, {"sum": 3})
+
+
+def test_get_endpoint_matches_documented_query_input():
+    _, validated, _ = _generate()
+    draft = replace(
+        validated, endpoint="GET /find", parameters={"q": {"type": "str", "required": True}},
+        responses={"hits": {"type": "list", "nullable": False}},
+        examples=[{"input": {"q": "x"}, "output": {"hits": ["x1"]}}],
+    )
+    client = TestClient(_app(FastAPIApplicationGenerator().generate(draft)))
+
+    assert client.get("/find", params={"q": "x"}).json() == {"hits": ["x1"]}
+    assert client.get("/find", params={"q": "y"}).status_code == 501
 
 
 def test_generation_is_deterministic():

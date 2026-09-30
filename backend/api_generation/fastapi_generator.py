@@ -36,8 +36,10 @@ class FastAPIApplicationGenerator(APIGenerator):
     (returned as {"main.py": source}). It uses only what the draft contains:
     endpoint method/path, summary, description, parameters and responses.
     The draft carries no implementation, tags or operation ids, so none are
-    invented: the route handler answers 501 until a real implementation is
-    attached. Output is deterministic (draft order, no timestamps)."""
+    invented. The handler never runs notebook code: it returns the draft's
+    documented example output (header X-Execution: documented-example) when
+    the request matches a documented example's input exactly, and otherwise
+    answers 501. Output is deterministic (draft order, no timestamps)."""
 
     def generate(self, draft: LLMAPIDocumentationDraft) -> dict:
         method, _, path = draft.endpoint.partition(" ")
@@ -45,12 +47,14 @@ class FastAPIApplicationGenerator(APIGenerator):
             raise InvalidDraftEndpointError(f"unsupported endpoint {draft.endpoint!r}")
 
         lines = [
+            "import json",
             "from typing import Any, Optional",
             "",
-            "from fastapi import FastAPI, HTTPException",
+            "from fastapi import FastAPI, HTTPException, Response",
             "from pydantic import BaseModel",
             "",
             f"app = FastAPI(title={json.dumps(draft.summary)}, description={json.dumps(draft.description)})",
+            f"EXAMPLES = json.loads({json.dumps(json.dumps(draft.examples))})",
             "",
         ]
         params = {_field_name(name): entry for name, entry in draft.parameters.items()}
@@ -74,17 +78,25 @@ class FastAPIApplicationGenerator(APIGenerator):
                 lines.append(f"    {name}: {py}" if entry.get("required") else f"    {name}: Optional[{py}] = None")
             if not params:
                 lines.append("    pass")
-            signature = "payload: RequestModel"
+            signature = "payload: RequestModel, response: Response"
+            given = "payload.model_dump(exclude_unset=True)"
         else:
             required = [f"{n}: {_py_type(e)}" for n, e in params.items() if e.get("required")]
             optional = [f"{n}: Optional[{_py_type(e)}] = None" for n, e in params.items() if not e.get("required")]
-            signature = ", ".join(required + optional)
+            signature = ", ".join(["response: Response"] + required + optional)
+            given = "{" + ", ".join(f"{json.dumps(n)}: {n}" for n in params) + "}"
+            given = "{k: v for k, v in " + given + ".items() if v is not None}"
 
         lines += [
             "", "",
             decorator,
             f"def handler({signature}):",
-            '    raise HTTPException(status_code=501, detail="Not implemented: the draft documents this endpoint but carries no implementation")',
+            f"    given = {given}",
+            "    for example in EXAMPLES:",
+            '        if example["input"] == given:',
+            '            response.headers["X-Execution"] = "documented-example"',
+            '            return example["output"]',
+            '    raise HTTPException(status_code=501, detail="Not implemented: no notebook logic is attached and no documented example matches this input")',
             "",
         ]
         return {"main.py": "\n".join(lines)}
