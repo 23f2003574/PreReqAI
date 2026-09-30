@@ -13,9 +13,10 @@ def test_manifest_lists_exactly_what_the_generated_app_imports():
 
     lines = _lines(result.files["requirements.txt"])
 
-    assert [line.split(">")[0] for line in lines] == ["fastapi", "pydantic"]
+    assert [line.split(">")[0] for line in lines] == ["fastapi", "pydantic", "uvicorn"]
     assert "fastapi>=0.115.0" in lines  # reused from the project's own requirements.txt
     assert "pydantic>=2.0" in lines  # project pins no pydantic; floor follows the model_dump() API used
+    assert "uvicorn>=0.32.0" in lines  # the ASGI server the Dockerfile starts the app with
 
 
 def test_manifest_excludes_unrelated_project_dependencies():
@@ -23,14 +24,14 @@ def test_manifest_excludes_unrelated_project_dependencies():
 
     text = result.files["requirements.txt"].lower()
 
-    for unrelated in ("pytest", "pymupdf", "pdfplumber", "requests", "httpx", "uvicorn", "python-multipart"):
+    for unrelated in ("pytest", "pymupdf", "pdfplumber", "requests", "httpx", "python-multipart"):
         assert unrelated not in text
 
 
 def test_manifest_is_deterministic_sorted_and_free_of_duplicates():
     result, _ = _result()
 
-    again = generate_requirements(result.files)
+    again = generate_requirements(result.files, also=("uvicorn",))
 
     assert again == result.files["requirements.txt"]
     lines = _lines(again)

@@ -34,11 +34,13 @@ def _project_specifiers(path) -> dict:
     return found
 
 
-def generate_requirements(files: dict, project_requirements=_PROJECT_REQUIREMENTS) -> str:
+def generate_requirements(files: dict, project_requirements=_PROJECT_REQUIREMENTS, also=()) -> str:
     """requirements.txt text for exactly the third-party packages the
     generated .py files import -- sorted, one line each, no development or
     test dependencies. Versions come from the project's requirements.txt when
-    it pins the package, else from a documented floor, else the bare name."""
+    it pins the package, else from a documented floor, else the bare name.
+    `also` names distributions the artifact needs without importing them
+    (the ASGI server its start command runs)."""
     modules = set()
     for path, source in files.items():
         if path.endswith(".py"):
@@ -54,8 +56,7 @@ def generate_requirements(files: dict, project_requirements=_PROJECT_REQUIREMENT
 
     project = _project_specifiers(project_requirements)
     lines = set()
-    for module in third_party:
-        name = _DISTRIBUTIONS[module]
+    for name in [_DISTRIBUTIONS[m] for m in third_party] + list(also):
         specifier = project.get(_normalise(name)) or _FALLBACK_SPECIFIERS.get(name, "")
         lines.add(f"{name}{specifier}")
     return "".join(line + "\n" for line in sorted(lines))

@@ -6,6 +6,7 @@ from backend.api_documentation_draft import LLMAPIDocumentationDraft
 from backend.input_schema import ALLOWED_TYPES
 
 from .generator import APIGenerator
+from .docker import ASGI_SERVER, generate_dockerfile
 from .manifest import generate_requirements
 
 _BODY_METHODS = frozenset({"POST", "PUT", "PATCH"})
@@ -112,7 +113,8 @@ class FastAPIApplicationGenerator(APIGenerator):
     """Turns one VALIDATED LLMAPIDocumentationDraft into a FastAPI module
     (returned as the package app/__init__.py + app/main.py, whose `app`
     object is the conventional entrypoint: `uvicorn app.main:app`) plus a requirements.txt
-    listing only the packages that code imports). It uses only what the draft contains:
+    listing only the packages that code imports plus the ASGI server, and a
+    Dockerfile that installs that manifest and serves the app). It uses only what the draft contains:
     endpoint method/path, summary, description, parameters and responses.
     The draft carries no implementation, tags or operation ids, so none are
     invented. The handler never runs notebook code: it returns the draft's
@@ -187,5 +189,6 @@ class FastAPIApplicationGenerator(APIGenerator):
             "",
         ]
         files = {"app/__init__.py": "", "app/main.py": "\n".join(lines)}
-        files["requirements.txt"] = generate_requirements(files)
+        files["requirements.txt"] = generate_requirements(files, also=(ASGI_SERVER,))
+        files["Dockerfile"] = generate_dockerfile(files)
         return files
