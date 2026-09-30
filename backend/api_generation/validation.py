@@ -1,0 +1,122 @@
+import ast
+import re
+import types
+from dataclasses import dataclass
+
+from backend.api_schema_review import APPROVED, REJECTED
+
+from .docker import ASGI_SERVER
+from .manifest import UnknownGeneratedImportError, generate_requirements
+
+REQUIRED_FILES = ("app/__init__.py", "app/main.py", "requirements.txt", "Dockerfile")
+_DOC_PATHS = frozenset({"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"})
+
+
+class GeneratedArtifactRejectedError(ValueError):
+    """Raised by require_valid() when the generated artifact has blocking findings."""
+
+    def __init__(self, validation):
+        super().__init__("; ".join(f"{f['category']}: {f['target']}: {f['message']}" for f in validation.findings))
+        self.validation = validation
+
+
+@dataclass(frozen=True)
+class LLMGeneratedArtifactValidation:
+    """Outcome of validating a generated project. It follows the existing
+    schema-review convention: findings is a list of {"category", "target",
+    "message", "blocking"} dicts, and status is APPROVED only when none is
+    blocking. Validation is read-only."""
+
+    findings: list
+    status: str
+
+    @property
+    def valid(self) -> bool:
+        return self.status == APPROVED
+
+
+def _finding(category, target, message):
+    return {"category": category, "target": target, "message": message, "blocking": True}
+
+
+def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
+    """Check that the generated files are complete and mutually consistent.
+    Every independent problem is reported; checks that need a prerequisite
+    (importing needs valid syntax, routes need an importable app) are skipped
+    when it failed. The generated module is imported in a throwaway module:
+    it contains only the generated models and routes, never notebook code."""
+    findings = []
+
+    for path in REQUIRED_FILES:
+        if path not in files:
+            findings.append(_finding("MISSING_FILE", path, "required generated file is absent"))
+        elif path != "app/__init__.py" and not files[path].strip():
+            findings.append(_finding("EMPTY_FILE", path, "generated file is empty"))
+
+    syntax_ok = True
+    for path in sorted(files):
+        if path.endswith(".py"):
+            try:
+                ast.parse(files[path], filename=path)
+            except SyntaxError as error:
+                syntax_ok = False
+                findings.append(_finding("SYNTAX_ERROR", path, f"line {error.lineno}: {error.msg}"))
+
+    main = files.get("app/main.py", "")
+    app = None
+    if syntax_ok and main.strip():
+        module = types.ModuleType("validated_generated_app")
+        try:
+            exec(compile(main, "app/main.py", "exec"), module.__dict__)
+        except Exception as error:
+            findings.append(_finding("IMPORT_ERROR", "app/main.py", f"{type(error).__name__}: {error}"))
+        else:
+            app = getattr(module, "app", None)
+            if not (hasattr(app, "routes") and hasattr(app, "openapi")):
+                findings.append(_finding("NO_ENTRYPOINT", "app/main.py", "module does not define a FastAPI `app`"))
+                app = None
+
+    if app is not None:
+        routes = [r for r in app.routes if getattr(r, "path", None) not in _DOC_PATHS]
+        if not routes:
+            findings.append(_finding("NO_ROUTES", "app/main.py", "the generated app registers no endpoints"))
+        try:
+            document = app.openapi()
+        except Exception as error:
+            findings.append(_finding("OPENAPI_ERROR", "app/main.py", f"{type(error).__name__}: {error}"))
+        else:
+            registered = {(r.path, m.lower()) for r in routes for m in getattr(r, "methods", ())}
+            documented = {(p, m) for p, item in document.get("paths", {}).items() for m in item}
+            if registered != documented:
+                findings.append(_finding("OPENAPI_MISMATCH", "openapi", "documented operations differ from registered routes"))
+
+    if "requirements.txt" in files and syntax_ok:
+        try:
+            expected = generate_requirements(files, also=(ASGI_SERVER,))
+        except UnknownGeneratedImportError as error:
+            findings.append(_finding("UNKNOWN_DEPENDENCY", "requirements.txt", str(error)))
+        else:
+            if files["requirements.txt"] != expected:
+                findings.append(_finding("MANIFEST_MISMATCH", "requirements.txt", "does not match the generated imports"))
+
+    dockerfile = files.get("Dockerfile", "")
+    if dockerfile.strip():
+        for source in re.findall(r"^COPY\s+(\S+)\s", dockerfile, flags=re.MULTILINE):
+            if not any(p == source or p.startswith(source.rstrip("/") + "/") for p in files):
+                findings.append(_finding("DOCKER_COPY_SOURCE", "Dockerfile", f"copies {source!r}, which was not generated"))
+        entrypoint = re.search(r"\b([\w.]+):app\b", dockerfile)
+        if not entrypoint or entrypoint.group(1).replace(".", "/") + ".py" not in files:
+            findings.append(_finding("DOCKER_ENTRYPOINT", "Dockerfile", "start command does not reference a generated module"))
+        if "pip install" not in dockerfile or "requirements.txt" not in dockerfile:
+            findings.append(_finding("DOCKER_INSTALL", "Dockerfile", "does not install the generated requirements.txt"))
+
+    return LLMGeneratedArtifactValidation(findings=findings, status=REJECTED if findings else APPROVED)
+
+
+def require_valid(files: dict) -> LLMGeneratedArtifactValidation:
+    """validate_generated_artifact(), raising GeneratedArtifactRejectedError
+    (carrying every finding) instead of returning a REJECTED result."""
+    validation = validate_generated_artifact(files)
+    if not validation.valid:
+        raise GeneratedArtifactRejectedError(validation)
+    return validation
