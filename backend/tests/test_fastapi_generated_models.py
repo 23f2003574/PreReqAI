@@ -98,6 +98,6 @@ def test_schemas_that_cannot_be_represented_safely_are_rejected_not_guessed(over
 
 
 def test_model_names_are_deterministic_and_derived_from_the_endpoint():
-    files = FastAPIApplicationGenerator().generate(replace(_base(), endpoint="PUT /v1/user-items"))["main.py"]
+    files = FastAPIApplicationGenerator().generate(replace(_base(), endpoint="PUT /v1/user-items"))["app/main.py"]
 
     assert "class PutV1UserItemsRequest(BaseModel)" in files and "class PutV1UserItemsResponse(BaseModel)" in files

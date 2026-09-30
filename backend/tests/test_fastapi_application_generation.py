@@ -14,7 +14,7 @@ from test_api_generation_boundary import _draft, _env
 
 
 def _app(files):
-    source = files["main.py"]
+    source = files["app/main.py"]
     compile(source, "main.py", "exec")
     module = types.ModuleType("generated_app")
     exec(source, module.__dict__)
