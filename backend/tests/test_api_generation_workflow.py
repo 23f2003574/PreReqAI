@@ -61,3 +61,52 @@ def test_draft_only_callers_are_unaffected():
     draft, validated = _draft(env)
 
     assert env["draft"].get(draft.draft_id) == validated  # generation was never required to obtain a draft
+
+
+def _failing_stage(tmp_path, **kwargs):
+    env = _env()
+    _, validated = _draft(env)
+    with pytest.raises(Exception) as raised:
+        generate_application(env["draft"], validated, tmp_path / "out", **kwargs)
+    return raised.value
+
+
+def test_each_failure_reports_the_stage_that_failed(tmp_path, monkeypatch):
+    from backend import api_generation
+    from backend.api_generation import workflow
+
+    class Bad(APIGenerator):
+        def generate(self, draft):
+            return {**FastAPIApplicationGenerator().generate(draft), "app/main.py": "def broken(:\n"}
+
+    assert _failing_stage(tmp_path, generator=Bad()).stage == "validation"
+
+    env = _env()
+    draft, _ = _draft(env)
+    with pytest.raises(DraftNotValidatedError) as raised:
+        generate_application(env["draft"], draft, tmp_path / "out")
+    assert raised.value.stage == "generation" and "stage: generation" in raised.value.__notes__[-1]
+
+    def boom(*args):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(workflow, "write_generated_application", boom)
+    error = _failing_stage(tmp_path)
+    assert isinstance(error, OSError) and error.stage == "write"
+    monkeypatch.undo()
+    monkeypatch.setattr(workflow, "write_openapi_contract", boom)
+    assert _failing_stage(tmp_path).stage == "openapi"
+    assert api_generation.STAGES == ("generation", "validation", "write", "openapi")
+
+
+def test_failed_run_never_returns_a_project_and_a_later_good_run_replaces_stale_files(tmp_path):
+    env = _env()
+    _, validated = _draft(env)
+    out = tmp_path / "out"
+    first = generate_application(env["draft"], validated, out)
+    (out / "app" / "leftover.py").write_text("stale")
+
+    second = generate_application(env["draft"], validated, out)
+
+    assert second.files == first.files and not (out / "app" / "leftover.py").exists()
+    assert sorted(p.name for p in out.iterdir() if p.is_file()) == ["Dockerfile", "openapi.json", "requirements.txt"]

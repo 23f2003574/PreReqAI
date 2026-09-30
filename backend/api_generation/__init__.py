@@ -8,13 +8,14 @@ from .validation import (
     require_valid,
     validate_generated_artifact,
 )
-from .workflow import LLMGeneratedApplication, generate_application
+from .workflow import STAGES, LLMGeneratedApplication, generate_application
 from .writer import UnsafeGeneratedPathError, write_generated_application
 from .manifest import UnknownGeneratedImportError, generate_requirements
 from .openapi import OPENAPI_FILENAME, generated_openapi, write_openapi_contract
 from .service import DraftNotValidatedError, InvalidGeneratorOutputError, LLMAPIGenerationService
 
 __all__ = [
+    "STAGES",
     "LLMGeneratedApplication",
     "generate_application",
     "GeneratedArtifactRejectedError",
