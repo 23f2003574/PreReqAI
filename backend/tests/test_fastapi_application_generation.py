@@ -40,10 +40,10 @@ def test_validated_draft_becomes_a_fastapi_app_whose_routes_match_the_draft():
     schema = app.openapi()
     operation = schema["paths"]["/add"]["post"]
     assert operation["summary"] == "Adds two numbers."
-    request_props = schema["components"]["schemas"]["RequestModel"]["properties"]
+    request_props = schema["components"]["schemas"]["PostAddRequest"]["properties"]
     assert {k: v["type"] for k, v in request_props.items()} == {"a": "integer", "b": "integer"}
-    assert schema["components"]["schemas"]["RequestModel"]["required"] == ["a", "b"]
-    assert {k: v["type"] for k, v in schema["components"]["schemas"]["ResponseModel"]["properties"].items()} == {
+    assert schema["components"]["schemas"]["PostAddRequest"]["required"] == ["a", "b"]
+    assert {k: v["type"] for k, v in schema["components"]["schemas"]["PostAddResponse"]["properties"].items()} == {
         "sum": "integer"
     }
 
