@@ -12,6 +12,10 @@ class InvalidProjectMetadataError(ValueError):
     not belong to this generator and contract version."""
 
 
+class IncompatibleProjectMetadataError(InvalidProjectMetadataError):
+    """The metadata is well formed but was produced by another generator or contract version."""
+
+
 @dataclass(frozen=True)
 class GeneratedProjectMetadata:
     """Identity of a generated project: which generator and contract produced
@@ -41,9 +45,9 @@ class GeneratedProjectMetadata:
         except (ValueError, TypeError) as error:
             raise InvalidProjectMetadataError(f"cannot parse {METADATA_FILENAME}: {error}") from error
         if metadata.generator != GENERATOR_ID or metadata.project_type != PROJECT_TYPE:
-            raise InvalidProjectMetadataError(f"{METADATA_FILENAME} was not produced by {GENERATOR_ID} ({PROJECT_TYPE})")
+            raise IncompatibleProjectMetadataError(f"{METADATA_FILENAME} was not produced by {GENERATOR_ID} ({PROJECT_TYPE})")
         if metadata.contract_version != CONTRACT_VERSION or isinstance(metadata.contract_version, bool):
-            raise InvalidProjectMetadataError(f"unsupported contract_version {metadata.contract_version!r}")
+            raise IncompatibleProjectMetadataError(f"unsupported contract_version {metadata.contract_version!r}")
         for name in ("draft_id", "endpoint"):
             if not isinstance(getattr(metadata, name), str) or not getattr(metadata, name):
                 raise InvalidProjectMetadataError(f"{name} must be a non-empty string")

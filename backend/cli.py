@@ -21,7 +21,12 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from backend.api_documentation_draft import LLMAPIDocumentationDraft
-from backend.api_generation import APIGenerationConfig, GeneratedArtifactRejectedError, generate_application
+from backend.api_generation import (
+    APIGenerationConfig,
+    GeneratedArtifactRejectedError,
+    check_generated_project,
+    generate_application,
+)
 from backend.agent_task_recovery_execution_precondition_snapshots import (
     HEALTH_HEALTHY,
     READY,
@@ -310,6 +315,13 @@ def _add_api_generation_parser(subparsers):
     )
 
 
+    check = api_generation_subparsers.add_parser(
+        "check", help="Check that a generated API project on disk is healthy (read-only; nothing is launched)",
+    )
+    check.add_argument("project_dir", help="The generated project directory")
+    check.add_argument("--json", action="store_true", dest="as_json", help="Print the health result as JSON")
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="prereqai", description="PreReqAI command-line interface")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -442,6 +454,21 @@ def _run_api_generation_generate(args) -> int:
     return EXIT_OK
 
 
+def _run_api_generation_check(args) -> int:
+    """check_generated_project() with the diagnostic-command conventions:
+    only a healthy project is EXIT_OK, anything else is EXIT_FAILURE."""
+    health = check_generated_project(args.project_dir)
+    if args.as_json:
+        print(json.dumps(health.to_dict(), indent=2, sort_keys=True))
+    else:
+        print(f"Project health: {health.status.upper()}")
+        for name, outcome in health.checks.items():
+            print(f"  {name}: {outcome}")
+        for finding in health.findings:
+            print(f"  - {finding['category']} {finding['target']}: {finding['message']}")
+    return EXIT_OK if health.healthy else EXIT_FAILURE
+
+
 def main(argv=None, facade=None, health_service=None, readiness_service=None) -> int:
     """Entry point. `facade`/`health_service`/`readiness_service`, when
     given, replace build_recovery_decision_facade()/
@@ -462,6 +489,9 @@ def main(argv=None, facade=None, health_service=None, readiness_service=None) ->
 
     if args.command == "api-generation" and args.api_generation_command == "generate":
         return _run_api_generation_generate(args)
+
+    if args.command == "api-generation" and args.api_generation_command == "check":
+        return _run_api_generation_check(args)
 
     parser.print_usage(sys.stderr)
     return EXIT_USAGE

@@ -7,11 +7,17 @@ from backend.api_schema_review import APPROVED, REJECTED
 
 from .docker import ASGI_SERVER
 from .manifest import UnknownGeneratedImportError, generate_requirements
-from .metadata import METADATA_FILENAME, InvalidProjectMetadataError, GeneratedProjectMetadata
+from .metadata import (
+    METADATA_FILENAME,
+    GeneratedProjectMetadata,
+    IncompatibleProjectMetadataError,
+    InvalidProjectMetadataError,
+)
 from .openapi import OPENAPI_FILENAME, openapi_text
 from .project_manifest import (
     PROJECT_MANIFEST_FILENAME,
     GeneratedProjectManifest,
+    IncompatibleProjectManifestError,
     InvalidProjectManifestError,
     artifact_type,
 )
@@ -68,6 +74,8 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
     if METADATA_FILENAME in files and files[METADATA_FILENAME].strip():
         try:
             metadata = GeneratedProjectMetadata.parse(files[METADATA_FILENAME])
+        except IncompatibleProjectMetadataError as error:
+            findings.append(_finding("INCOMPATIBLE_PROJECT", METADATA_FILENAME, str(error)))
         except InvalidProjectMetadataError as error:
             findings.append(_finding("INVALID_METADATA", METADATA_FILENAME, str(error)))
 
@@ -75,6 +83,8 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
     if PROJECT_MANIFEST_FILENAME in files and files[PROJECT_MANIFEST_FILENAME].strip():
         try:
             manifest = GeneratedProjectManifest.parse(files[PROJECT_MANIFEST_FILENAME])
+        except IncompatibleProjectManifestError as error:
+            findings.append(_finding("INCOMPATIBLE_PROJECT", PROJECT_MANIFEST_FILENAME, str(error)))
         except InvalidProjectManifestError as error:
             findings.append(_finding("INVALID_MANIFEST", PROJECT_MANIFEST_FILENAME, str(error)))
     if manifest is not None:

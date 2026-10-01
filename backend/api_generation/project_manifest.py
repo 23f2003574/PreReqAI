@@ -26,6 +26,10 @@ def artifact_type(path: str):
     }.get(path)
 
 
+class IncompatibleProjectManifestError(InvalidProjectManifestError):
+    """The manifest is well formed but belongs to another manifest or contract version."""
+
+
 @dataclass(frozen=True)
 class GeneratedProjectManifest:
     """Machine-readable inventory of a generated project: the application it
@@ -81,7 +85,7 @@ class GeneratedProjectManifest:
         for flag, value in (("manifest_version", MANIFEST_VERSION), ("contract_version", CONTRACT_VERSION)):
             actual = getattr(manifest, flag)
             if actual != value or isinstance(actual, bool):
-                raise InvalidProjectManifestError(f"unsupported {flag} {actual!r}")
+                raise IncompatibleProjectManifestError(f"unsupported {flag} {actual!r}")
         if manifest.metadata_file != METADATA_FILENAME or manifest.entrypoint != ENTRYPOINT:
             raise InvalidProjectManifestError("metadata_file/entrypoint do not match this generator's contract")
         if not isinstance(manifest.application_name, str) or not manifest.application_name:
