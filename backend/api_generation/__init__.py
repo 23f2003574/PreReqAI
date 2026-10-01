@@ -40,9 +40,12 @@ from .writer import (
 )
 from .manifest import UnknownGeneratedImportError, generate_requirements
 from .openapi import OPENAPI_FILENAME, generated_openapi, write_openapi_contract
+from .release_checklist import LLMGenerationReleaseChecklist, run_release_checklist
 from .service import DraftNotValidatedError, InvalidGeneratorOutputError, LLMAPIGenerationService
 
 __all__ = [
+    "LLMGenerationReleaseChecklist",
+    "run_release_checklist",
     "plan_write",
     "HEALTHY",
     "INCOMPATIBLE",
