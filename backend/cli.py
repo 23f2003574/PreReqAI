@@ -17,8 +17,11 @@ Usage:
 import argparse
 import json
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
+from backend.api_documentation_draft import LLMAPIDocumentationDraft
+from backend.api_generation import GeneratedArtifactRejectedError, generate_application
 from backend.agent_task_recovery_execution_precondition_snapshots import (
     HEALTH_HEALTHY,
     READY,
@@ -285,10 +288,31 @@ def _add_recovery_decision_parser(subparsers):
     )
 
 
+def _add_api_generation_parser(subparsers):
+    api_generation = subparsers.add_parser("api-generation", help="Generated API application operations")
+    api_generation_subparsers = api_generation.add_subparsers(dest="api_generation_command", required=True)
+    generate = api_generation_subparsers.add_parser(
+        "generate",
+        help="Generate, validate and write a FastAPI project from a validated API documentation draft",
+        description=(
+            "Reads a JSON file holding one API documentation draft (the fields of LLMAPIDocumentationDraft: "
+            "draft_id, endpoint, summary, description, parameters, responses, examples, status). The draft's "
+            "status must be VALIDATED; a DRAFT is rejected. The project is validated before anything is written."
+        ),
+    )
+    generate.add_argument("--draft", required=True, help="Path to the draft JSON file")
+    generate.add_argument("--output-dir", required=True, help="Directory to write the generated project into")
+    generate.add_argument(
+        "--json", action="store_true", dest="as_json",
+        help="Print the result (draft_id, endpoint, output_dir, files, openapi_path) as JSON",
+    )
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="prereqai", description="PreReqAI command-line interface")
     subparsers = parser.add_subparsers(dest="command", required=True)
     _add_recovery_decision_parser(subparsers)
+    _add_api_generation_parser(subparsers)
     return parser
 
 
@@ -364,6 +388,56 @@ def _run_recovery_decision_readiness(args, readiness_service) -> int:
     return EXIT_OK if result.status == READY else EXIT_FAILURE
 
 
+class _LoadedDraftSource:
+    """The one draft the CLI was given. It plays the draft service's get()
+    role for the generation boundary, which still rejects any draft whose
+    status is not VALIDATED."""
+
+    def __init__(self, draft):
+        self._draft = draft
+
+    def get(self, draft_id):
+        return self._draft
+
+
+def _load_draft(path) -> LLMAPIDocumentationDraft:
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        return LLMAPIDocumentationDraft(**data)
+    except (OSError, ValueError, TypeError) as error:
+        raise ValueError(f"cannot read a draft from {path}: {error}") from error
+
+
+def _run_api_generation_generate(args) -> int:
+    """generate_application() with the CLI's conventions: results on stdout
+    (--json for the machine-readable form), failures as `error: ...` on
+    stderr naming the failing stage and exit code 1, never a stack trace."""
+    try:
+        draft = _load_draft(args.draft)
+        application = generate_application(_LoadedDraftSource(draft), draft, args.output_dir)
+    except Exception as error:  # never leak a composed service's internals as a stack trace by default
+        stage = getattr(error, "stage", "input")
+        print(f"error: generation failed at stage '{stage}': {type(error).__name__}: {error}", file=sys.stderr)
+        if isinstance(error, GeneratedArtifactRejectedError):
+            for finding in error.validation.findings:
+                print(f"  - {finding['category']} {finding['target']}: {finding['message']}", file=sys.stderr)
+        return EXIT_FAILURE
+
+    if args.as_json:
+        print(json.dumps({
+            "draft_id": application.draft_id, "endpoint": application.endpoint,
+            "output_dir": str(application.output_dir), "files": application.files,
+            "openapi_path": str(application.openapi_path),
+        }, indent=2, sort_keys=True))
+    else:
+        print(f"Generated {application.endpoint} (draft {application.draft_id})")
+        print(f"  output:  {application.output_dir}")
+        print("  files:   " + ", ".join(application.files))
+        print(f"  openapi: {application.openapi_path}")
+        print(f"  run:     cd {application.output_dir} && uvicorn app.main:app")
+    return EXIT_OK
+
+
 def main(argv=None, facade=None, health_service=None, readiness_service=None) -> int:
     """Entry point. `facade`/`health_service`/`readiness_service`, when
     given, replace build_recovery_decision_facade()/
@@ -381,6 +455,9 @@ def main(argv=None, facade=None, health_service=None, readiness_service=None) ->
         return _run_recovery_decision_diagnose(args, health_service)
     if args.command == "recovery-decision" and args.recovery_decision_command == "readiness":
         return _run_recovery_decision_readiness(args, readiness_service)
+
+    if args.command == "api-generation" and args.api_generation_command == "generate":
+        return _run_api_generation_generate(args)
 
     parser.print_usage(sys.stderr)
     return EXIT_USAGE
