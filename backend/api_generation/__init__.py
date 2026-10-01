@@ -16,6 +16,7 @@ from .project_manifest import (
     GeneratedProjectManifest,
     InvalidProjectManifestError,
 )
+from .readme import README_FILENAME, generate_readme
 from .models import LLMAPIGenerationResult
 from .validation import (
     GeneratedArtifactRejectedError,
@@ -38,6 +39,8 @@ from .openapi import OPENAPI_FILENAME, generated_openapi, write_openapi_contract
 from .service import DraftNotValidatedError, InvalidGeneratorOutputError, LLMAPIGenerationService
 
 __all__ = [
+    "README_FILENAME",
+    "generate_readme",
     "ENTRYPOINT",
     "MANIFEST_VERSION",
     "PROJECT_MANIFEST_FILENAME",

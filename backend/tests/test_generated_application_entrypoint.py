@@ -28,7 +28,7 @@ def test_generated_package_imports_in_a_clean_process_and_registers_its_routes(t
     result, _ = _result()
     written = write_generated_application(result, tmp_path)
 
-    assert written == ["Dockerfile", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]
+    assert written == ["Dockerfile", "README.md", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]
     code = (
         "from app.main import app; "
         "print(sorted((r.path, sorted(r.methods)) for r in app.routes if r.path == '/add'))"
@@ -47,7 +47,7 @@ def test_generating_twice_yields_an_identical_tree_without_junk(tmp_path):
     write_generated_application(result, tmp_path)
 
     assert _tree(tmp_path) == first
-    assert sorted(first) == [".prereqai-generated.json", "Dockerfile", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]
+    assert sorted(first) == [".prereqai-generated.json", "Dockerfile", "README.md", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]
     assert not list(tmp_path.rglob("*.tmp"))
 
 

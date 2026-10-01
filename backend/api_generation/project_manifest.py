@@ -22,6 +22,7 @@ def artifact_type(path: str):
         "Dockerfile": "container-image",
         METADATA_FILENAME: "project-metadata",
         OPENAPI_FILENAME: "openapi-contract",
+        "README.md": "documentation",
     }.get(path)
 
 

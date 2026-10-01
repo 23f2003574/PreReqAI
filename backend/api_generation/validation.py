@@ -18,7 +18,7 @@ from .project_manifest import (
 
 REQUIRED_FILES = (
     "app/__init__.py", "app/main.py", "requirements.txt", "Dockerfile", METADATA_FILENAME, OPENAPI_FILENAME,
-    PROJECT_MANIFEST_FILENAME,
+    PROJECT_MANIFEST_FILENAME, "README.md",
 )
 _DOC_PATHS = frozenset({"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"})
 
@@ -87,6 +87,17 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
             findings.append(_finding("MANIFEST_CONFIGURATION", PROJECT_MANIFEST_FILENAME, "entrypoint/base image/port do not match the Dockerfile"))
         if metadata is not None and manifest.contract_version != metadata.contract_version:
             findings.append(_finding("MANIFEST_CONFIGURATION", PROJECT_MANIFEST_FILENAME, "contract_version differs from the project metadata"))
+
+    readme = files.get("README.md", "")
+    if readme.strip() and manifest is not None:
+        missing_mentions = [
+            token for token in (manifest.entrypoint, "requirements.txt", "openapi.json", "prereqai-project.json",
+                                f"--port {manifest.port}", f"`{manifest.base_image}`")
+            if token not in readme
+        ]
+        if missing_mentions or re.search(r"(^|[\s`(])/(home|tmp|Users|var|root)/", readme):
+            findings.append(_finding("README_INCOMPLETE", "README.md",
+                                     f"missing {missing_mentions} or contains a machine-specific path"))
 
     syntax_ok = True
     for path in sorted(files):
