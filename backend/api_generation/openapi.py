@@ -15,9 +15,14 @@ def openapi_document(files: dict) -> dict:
     return module.app.openapi()
 
 
+def format_openapi(document: dict) -> str:
+    """The deterministic text form of an OpenAPI document (sorted keys)."""
+    return json.dumps(document, indent=2, sort_keys=True) + "\n"
+
+
 def openapi_text(files: dict) -> str:
     """The deterministic text form of the generated app's OpenAPI document."""
-    return json.dumps(openapi_document(files), indent=2, sort_keys=True) + "\n"
+    return format_openapi(openapi_document(files))
 
 
 def generated_openapi(result: LLMAPIGenerationResult) -> dict:

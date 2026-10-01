@@ -13,7 +13,7 @@ from .metadata import (
     IncompatibleProjectMetadataError,
     InvalidProjectMetadataError,
 )
-from .openapi import OPENAPI_FILENAME, openapi_text
+from .openapi import OPENAPI_FILENAME, format_openapi
 from .project_manifest import (
     PROJECT_MANIFEST_FILENAME,
     GeneratedProjectManifest,
@@ -145,7 +145,7 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
             documented = {(p, m) for p, item in document.get("paths", {}).items() for m in item}
             if metadata is not None and (metadata.endpoint.split(" ", 1)[-1], metadata.endpoint.split(" ", 1)[0].lower()) not in registered:
                 findings.append(_finding("METADATA_MISMATCH", METADATA_FILENAME, "endpoint is not registered by the generated app"))
-            if files.get(OPENAPI_FILENAME, "").strip() and files[OPENAPI_FILENAME] != openapi_text(files):
+            if files.get(OPENAPI_FILENAME, "").strip() and files[OPENAPI_FILENAME] != format_openapi(document):
                 findings.append(_finding("OPENAPI_FILE_MISMATCH", OPENAPI_FILENAME, "differs from the generated app's own OpenAPI document"))
             if registered != documented:
                 findings.append(_finding("OPENAPI_MISMATCH", "openapi", "documented operations differ from registered routes"))
