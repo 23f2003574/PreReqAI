@@ -1,3 +1,4 @@
+from .config import APIGenerationConfig
 from .docker import ASGI_SERVER, InvalidDockerInputError, generate_dockerfile
 from .fastapi_generator import FastAPIApplicationGenerator, InvalidDraftEndpointError
 from .generator import APIGenerator
@@ -15,6 +16,7 @@ from .openapi import OPENAPI_FILENAME, generated_openapi, write_openapi_contract
 from .service import DraftNotValidatedError, InvalidGeneratorOutputError, LLMAPIGenerationService
 
 __all__ = [
+    "APIGenerationConfig",
     "STAGES",
     "LLMGeneratedApplication",
     "generate_application",

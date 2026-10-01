@@ -96,7 +96,7 @@ def test_each_failure_reports_the_stage_that_failed(tmp_path, monkeypatch):
     monkeypatch.undo()
     monkeypatch.setattr(workflow, "write_openapi_contract", boom)
     assert _failing_stage(tmp_path).stage == "openapi"
-    assert api_generation.STAGES == ("generation", "validation", "write", "openapi")
+    assert api_generation.STAGES == ("configuration", "generation", "validation", "write", "openapi")
 
 
 def test_failed_run_never_returns_a_project_and_a_later_good_run_replaces_stale_files(tmp_path):

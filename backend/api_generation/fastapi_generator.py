@@ -6,7 +6,7 @@ from backend.api_documentation_draft import LLMAPIDocumentationDraft
 from backend.input_schema import ALLOWED_TYPES
 
 from .generator import APIGenerator
-from .docker import ASGI_SERVER, generate_dockerfile
+from .docker import ASGI_SERVER, BASE_IMAGE, DEFAULT_PORT, generate_dockerfile
 from .manifest import generate_requirements
 
 _BODY_METHODS = frozenset({"POST", "PUT", "PATCH"})
@@ -122,6 +122,10 @@ class FastAPIApplicationGenerator(APIGenerator):
     the request matches a documented example's input exactly, and otherwise
     answers 501. Output is deterministic (draft order, no timestamps)."""
 
+    def __init__(self, base_image: str = BASE_IMAGE, port: int = DEFAULT_PORT):
+        self._base_image = base_image
+        self._port = port
+
     def generate(self, draft: LLMAPIDocumentationDraft) -> dict:
         method, _, path = draft.endpoint.partition(" ")
         if method not in _BODY_METHODS | _QUERY_METHODS or not path.startswith("/"):
@@ -190,5 +194,5 @@ class FastAPIApplicationGenerator(APIGenerator):
         ]
         files = {"app/__init__.py": "", "app/main.py": "\n".join(lines)}
         files["requirements.txt"] = generate_requirements(files, also=(ASGI_SERVER,))
-        files["Dockerfile"] = generate_dockerfile(files)
+        files["Dockerfile"] = generate_dockerfile(files, self._base_image, self._port)
         return files

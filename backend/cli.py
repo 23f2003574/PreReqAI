@@ -21,7 +21,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from backend.api_documentation_draft import LLMAPIDocumentationDraft
-from backend.api_generation import GeneratedArtifactRejectedError, generate_application
+from backend.api_generation import APIGenerationConfig, GeneratedArtifactRejectedError, generate_application
 from backend.agent_task_recovery_execution_precondition_snapshots import (
     HEALTH_HEALTHY,
     READY,
@@ -302,6 +302,8 @@ def _add_api_generation_parser(subparsers):
     )
     generate.add_argument("--draft", required=True, help="Path to the draft JSON file")
     generate.add_argument("--output-dir", required=True, help="Directory to write the generated project into")
+    generate.add_argument("--base-image", default=None, help="Dockerfile base image (default: python:3.11-slim)")
+    generate.add_argument("--port", type=int, default=None, help="Dockerfile default listen port (default: 8000)")
     generate.add_argument(
         "--json", action="store_true", dest="as_json",
         help="Print the result (draft_id, endpoint, output_dir, files, openapi_path) as JSON",
@@ -414,7 +416,9 @@ def _run_api_generation_generate(args) -> int:
     stderr naming the failing stage and exit code 1, never a stack trace."""
     try:
         draft = _load_draft(args.draft)
-        application = generate_application(_LoadedDraftSource(draft), draft, args.output_dir)
+        options = {k: v for k, v in (("base_image", args.base_image), ("port", args.port)) if v is not None}
+        config = APIGenerationConfig(output_dir=args.output_dir, **options)
+        application = generate_application(_LoadedDraftSource(draft), draft, config=config)
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
         stage = getattr(error, "stage", "input")
         print(f"error: generation failed at stage '{stage}': {type(error).__name__}: {error}", file=sys.stderr)

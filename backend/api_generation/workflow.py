@@ -4,6 +4,7 @@ from pathlib import Path
 from backend.api_documentation_draft import LLMAPIDocumentationDraft, LLMAPIDocumentationDraftService
 
 from .fastapi_generator import FastAPIApplicationGenerator
+from .config import APIGenerationConfig
 from .generator import APIGenerator
 from .openapi import write_openapi_contract
 from .service import LLMAPIGenerationService
@@ -24,7 +25,7 @@ class LLMGeneratedApplication:
     openapi_path: Path
 
 
-STAGES = ("generation", "validation", "write", "openapi")
+STAGES = ("configuration", "generation", "validation", "write", "openapi")
 
 
 def _stage(name, call, *args):
@@ -40,11 +41,17 @@ def _stage(name, call, *args):
         raise
 
 
+def _tag(error, name):
+    error.stage = name
+    return error
+
+
 def generate_application(
     draft_service: LLMAPIDocumentationDraftService,
     draft: LLMAPIDocumentationDraft,
-    output_dir,
+    output_dir=None,
     generator: APIGenerator = None,
+    config: APIGenerationConfig = None,
 ) -> LLMGeneratedApplication:
     """The step after a validated documentation draft: generate the
     application (#2 boundary), validate the generated files (#10) and only
@@ -57,6 +64,14 @@ def generate_application(
     Every failure carries `.stage` (one of STAGES); a write-stage failure may
     leave a partially written directory but is never returned as a success. Callers that only want
     the documentation draft are unaffected: the draft service is unchanged."""
+    if config is not None:
+        _stage("configuration", config.validate)
+        if output_dir is not None and Path(output_dir) != Path(config.output_dir):
+            raise _tag(ValueError("output_dir conflicts with config.output_dir; pass only one"), "configuration")
+        output_dir = config.output_dir
+        generator = generator or FastAPIApplicationGenerator(config.base_image, config.port)
+    elif output_dir is None:
+        raise _tag(ValueError("output_dir or config is required"), "configuration")
     result = _stage("generation", LLMAPIGenerationService(draft_service, generator or FastAPIApplicationGenerator()).generate, draft)
     _stage("validation", require_valid, result.files)
     written = _stage("write", write_generated_application, result, output_dir)
