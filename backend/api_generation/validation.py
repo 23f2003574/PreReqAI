@@ -8,8 +8,18 @@ from backend.api_schema_review import APPROVED, REJECTED
 from .docker import ASGI_SERVER
 from .manifest import UnknownGeneratedImportError, generate_requirements
 from .metadata import METADATA_FILENAME, InvalidProjectMetadataError, GeneratedProjectMetadata
+from .openapi import OPENAPI_FILENAME, openapi_text
+from .project_manifest import (
+    PROJECT_MANIFEST_FILENAME,
+    GeneratedProjectManifest,
+    InvalidProjectManifestError,
+    artifact_type,
+)
 
-REQUIRED_FILES = ("app/__init__.py", "app/main.py", "requirements.txt", "Dockerfile", METADATA_FILENAME)
+REQUIRED_FILES = (
+    "app/__init__.py", "app/main.py", "requirements.txt", "Dockerfile", METADATA_FILENAME, OPENAPI_FILENAME,
+    PROJECT_MANIFEST_FILENAME,
+)
 _DOC_PATHS = frozenset({"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"})
 
 
@@ -61,6 +71,23 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
         except InvalidProjectMetadataError as error:
             findings.append(_finding("INVALID_METADATA", METADATA_FILENAME, str(error)))
 
+    manifest = None
+    if PROJECT_MANIFEST_FILENAME in files and files[PROJECT_MANIFEST_FILENAME].strip():
+        try:
+            manifest = GeneratedProjectManifest.parse(files[PROJECT_MANIFEST_FILENAME])
+        except InvalidProjectManifestError as error:
+            findings.append(_finding("INVALID_MANIFEST", PROJECT_MANIFEST_FILENAME, str(error)))
+    if manifest is not None:
+        present = tuple(sorted((p, artifact_type(p)) for p in files if artifact_type(p)))
+        if manifest.artifacts != present:
+            findings.append(_finding("MANIFEST_ARTIFACTS", PROJECT_MANIFEST_FILENAME, "artifact list differs from the generated files"))
+        dockerfile_text = files.get("Dockerfile", "")
+        if manifest.entrypoint not in dockerfile_text or f"FROM {manifest.base_image}\n" not in dockerfile_text + "\n" \
+                or f"PORT={manifest.port}" not in dockerfile_text:
+            findings.append(_finding("MANIFEST_CONFIGURATION", PROJECT_MANIFEST_FILENAME, "entrypoint/base image/port do not match the Dockerfile"))
+        if metadata is not None and manifest.contract_version != metadata.contract_version:
+            findings.append(_finding("MANIFEST_CONFIGURATION", PROJECT_MANIFEST_FILENAME, "contract_version differs from the project metadata"))
+
     syntax_ok = True
     for path in sorted(files):
         if path.endswith(".py"):
@@ -97,6 +124,8 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
             documented = {(p, m) for p, item in document.get("paths", {}).items() for m in item}
             if metadata is not None and (metadata.endpoint.split(" ", 1)[-1], metadata.endpoint.split(" ", 1)[0].lower()) not in registered:
                 findings.append(_finding("METADATA_MISMATCH", METADATA_FILENAME, "endpoint is not registered by the generated app"))
+            if files.get(OPENAPI_FILENAME, "").strip() and files[OPENAPI_FILENAME] != openapi_text(files):
+                findings.append(_finding("OPENAPI_FILE_MISMATCH", OPENAPI_FILENAME, "differs from the generated app's own OpenAPI document"))
             if registered != documented:
                 findings.append(_finding("OPENAPI_MISMATCH", "openapi", "documented operations differ from registered routes"))
 

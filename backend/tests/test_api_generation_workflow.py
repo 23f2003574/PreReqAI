@@ -21,7 +21,7 @@ def test_validated_draft_flows_through_generation_validation_and_output(tmp_path
     app = generate_application(env["draft"], validated, tmp_path / "out")
 
     assert (app.draft_id, app.endpoint) == (validated.draft_id, "POST /add")
-    assert app.files == ["Dockerfile", "app/__init__.py", "app/main.py", "prereqai-project.json", "requirements.txt"]
+    assert app.files == ["Dockerfile", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]
     assert app.openapi_path == (tmp_path / "out" / "openapi.json").resolve() and app.openapi_path.is_file()
     written = {p: (app.output_dir / p).read_text() for p in app.files}
     assert require_valid(written).valid
@@ -93,10 +93,7 @@ def test_each_failure_reports_the_stage_that_failed(tmp_path, monkeypatch):
     monkeypatch.setattr(workflow, "write_generated_application", boom)
     error = _failing_stage(tmp_path)
     assert isinstance(error, OSError) and error.stage == "write"
-    monkeypatch.undo()
-    monkeypatch.setattr(workflow, "generated_openapi", boom)
-    assert _failing_stage(tmp_path).stage == "openapi"
-    assert api_generation.STAGES == ("configuration", "generation", "validation", "openapi", "write")
+    assert api_generation.STAGES == ("configuration", "generation", "validation", "write")
 
 
 def test_failed_run_never_returns_a_project_and_a_later_good_run_replaces_stale_files(tmp_path):

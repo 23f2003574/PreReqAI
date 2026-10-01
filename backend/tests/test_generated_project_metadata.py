@@ -71,7 +71,7 @@ def test_artifact_validation_requires_and_checks_the_metadata():
     wrong_endpoint = {**files, METADATA_FILENAME: GeneratedProjectMetadata("d", "POST /other").to_json()}
     foreign = {**files, METADATA_FILENAME: '{"generator": "x"}'}
 
-    assert {f["category"] for f in validate_generated_artifact(missing).findings} == {"MISSING_FILE"}
+    assert {f["category"] for f in validate_generated_artifact(missing).findings} == {"MISSING_FILE", "MANIFEST_ARTIFACTS"}
     assert {f["category"] for f in validate_generated_artifact(wrong_endpoint).findings} == {"METADATA_MISMATCH"}
     assert {f["category"] for f in validate_generated_artifact(foreign).findings} == {"INVALID_METADATA"}
 
