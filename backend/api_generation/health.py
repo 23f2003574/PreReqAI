@@ -4,7 +4,7 @@ from pathlib import Path
 from .metadata import METADATA_FILENAME
 from .project_manifest import PROJECT_MANIFEST_FILENAME, artifact_type
 from .validation import validate_generated_artifact
-from .writer import MARKER_FILENAME
+from .writer import INCOMPLETE, MARKER_FILENAME, generation_status
 
 HEALTHY = "healthy"
 INVALID = "invalid"
@@ -63,7 +63,10 @@ def check_generated_project(output_dir) -> LLMGeneratedProjectHealth:
         findings = [{"category": "NOT_A_PROJECT", "target": str(output_dir), "message": "not a directory", "blocking": True}]
         return LLMGeneratedProjectHealth(INVALID, {name: "failed" for name, _, _ in _CHECKS}, findings)
 
-    findings = validate_generated_artifact(_read_project(root)).findings
+    findings = list(validate_generated_artifact(_read_project(root)).findings)
+    if generation_status(root) == INCOMPLETE:
+        findings.append({"category": "INCOMPLETE_GENERATION", "target": MARKER_FILENAME, "blocking": True,
+                         "message": "the last generation run did not finish; regenerate this project"})
     checks = {}
     for name, categories, targets in _CHECKS:
         failed = any(f["category"] in categories or (f["category"] in {"MISSING_FILE", "EMPTY_FILE", "INCOMPATIBLE_PROJECT"}
