@@ -81,6 +81,36 @@ def _clean_up_failed_attempt(root, root_existed, marker_existed, created_files, 
                 pass
 
 
+def plan_write(result: LLMAPIGenerationResult, output_dir):
+    """The read-only half of write_generated_application: resolve the output
+    location and the target path of every file, and apply the overwrite rules.
+    Returns (root, {relative path: absolute target}, files of the earlier
+    generation run). Touches nothing; raises UnsafeGeneratedPathError or
+    UnsafeOutputDirectoryError exactly as a real write would."""
+    root = Path(output_dir).resolve()
+    targets = {}
+    for relative in sorted(result.files):
+        target = (root / relative).resolve()
+        if Path(relative).is_absolute() or root not in target.parents or relative == MARKER_FILENAME:
+            raise UnsafeGeneratedPathError(relative)
+        targets[relative] = target
+
+    if root.exists() and not root.is_dir():
+        raise UnsafeOutputDirectoryError(f"{root} exists and is not a directory")
+    previous = _read_marker(root) if root.is_dir() else None
+    if previous is None:
+        collisions = sorted(r for r, t in targets.items() if t.exists())
+        if collisions and not _is_generated_project(root):
+            raise UnsafeOutputDirectoryError(
+                f"{root} already contains {collisions} but is not marked as generated output; refusing to overwrite"
+            )
+        old_files = set()
+    else:
+        old_files = previous[0]
+
+    return root, targets, old_files
+
+
 def write_generated_application(result: LLMAPIGenerationResult, output_dir) -> list:
     """Write result.files under output_dir and return the written relative
     paths in sorted order.
@@ -103,25 +133,7 @@ def write_generated_application(result: LLMAPIGenerationResult, output_dir) -> l
     files and directories this attempt created are removed (a first generation
     leaves the directory as it found it); pre-existing files are untouched. Each file is written
     to a temporary sibling and moved into place."""
-    root = Path(output_dir).resolve()
-    targets = {}
-    for relative in sorted(result.files):
-        target = (root / relative).resolve()
-        if Path(relative).is_absolute() or root not in target.parents or relative == MARKER_FILENAME:
-            raise UnsafeGeneratedPathError(relative)
-        targets[relative] = target
-
-    previous = _read_marker(root) if root.is_dir() else None
-    if previous is None:
-        collisions = sorted(r for r, t in targets.items() if t.exists())
-        if collisions and not _is_generated_project(root):
-            raise UnsafeOutputDirectoryError(
-                f"{root} already contains {collisions} but is not marked as generated output; refusing to overwrite"
-            )
-        old_files = set()
-    else:
-        old_files = previous[0]
-
+    root, targets, old_files = plan_write(result, output_dir)
     root_existed, marker_path = root.exists(), root / MARKER_FILENAME
     marker_existed = marker_path.exists()
     created_files, created_dirs = [], []

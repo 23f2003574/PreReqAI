@@ -24,6 +24,7 @@ from backend.api_documentation_draft import LLMAPIDocumentationDraft
 from backend.api_generation import (
     APIGenerationConfig,
     GeneratedArtifactRejectedError,
+    UnsafeOutputDirectoryError,
     check_generated_project,
     generate_application,
 )
@@ -308,6 +309,10 @@ def _add_api_generation_parser(subparsers):
     generate.add_argument("--draft", required=True, help="Path to the draft JSON file")
     generate.add_argument("--output-dir", required=True, help="Directory to write the generated project into")
     generate.add_argument("--base-image", default=None, help="Dockerfile base image (default: python:3.11-slim)")
+    generate.add_argument(
+        "--dry-run", action="store_true", dest="dry_run",
+        help="Run every stage and report what would be generated, without writing anything",
+    )
     generate.add_argument("--port", type=int, default=None, help="Dockerfile default listen port (default: 8000)")
     generate.add_argument(
         "--json", action="store_true", dest="as_json",
@@ -430,10 +435,11 @@ def _run_api_generation_generate(args) -> int:
         draft = _load_draft(args.draft)
         options = {k: v for k, v in (("base_image", args.base_image), ("port", args.port)) if v is not None}
         config = APIGenerationConfig(output_dir=args.output_dir, **options)
-        application = generate_application(_LoadedDraftSource(draft), draft, config=config)
+        application = generate_application(_LoadedDraftSource(draft), draft, config=config, dry_run=args.dry_run)
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
         stage = getattr(error, "stage", "input")
-        print(f"error: generation failed at stage '{stage}': {type(error).__name__}: {error}", file=sys.stderr)
+        kind = "output conflict" if isinstance(error, UnsafeOutputDirectoryError) else "generation failed"
+        print(f"error: {kind} at stage '{stage}': {type(error).__name__}: {error}", file=sys.stderr)
         if isinstance(error, GeneratedArtifactRejectedError):
             for finding in error.validation.findings:
                 print(f"  - {finding['category']} {finding['target']}: {finding['message']}", file=sys.stderr)
@@ -443,8 +449,13 @@ def _run_api_generation_generate(args) -> int:
         print(json.dumps({
             "draft_id": application.draft_id, "endpoint": application.endpoint,
             "output_dir": str(application.output_dir), "files": application.files,
-            "openapi_path": str(application.openapi_path),
+            "openapi_path": str(application.openapi_path), "dry_run": application.dry_run,
         }, indent=2, sort_keys=True))
+    elif application.dry_run:
+        print(f"Dry run: would generate {application.endpoint} (draft {application.draft_id})")
+        print(f"  output:  {application.output_dir}")
+        print("  files:   " + ", ".join(application.files))
+        print("  no files were written")
     else:
         print(f"Generated {application.endpoint} (draft {application.draft_id})")
         print(f"  output:  {application.output_dir}")

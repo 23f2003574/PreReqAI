@@ -9,7 +9,7 @@ from .generator import APIGenerator
 from .openapi import OPENAPI_FILENAME
 from .service import LLMAPIGenerationService
 from .validation import require_valid
-from .writer import write_generated_application
+from .writer import plan_write, write_generated_application
 
 
 @dataclass(frozen=True)
@@ -23,6 +23,7 @@ class LLMGeneratedApplication:
     output_dir: Path
     files: list
     openapi_path: Path
+    dry_run: bool = False
 
 
 STAGES = ("configuration", "generation", "validation", "write")
@@ -52,6 +53,7 @@ def generate_application(
     output_dir=None,
     generator: APIGenerator = None,
     config: APIGenerationConfig = None,
+    dry_run: bool = False,
 ) -> LLMGeneratedApplication:
     """The step after a validated documentation draft: generate the
     application (#2 boundary), validate the generated files (#10) and only
@@ -74,9 +76,13 @@ def generate_application(
         raise _tag(ValueError("output_dir or config is required"), "configuration")
     result = _stage("generation", LLMAPIGenerationService(draft_service, generator or FastAPIApplicationGenerator()).generate, draft)
     _stage("validation", require_valid, result.files)
-    written = _stage("write", write_generated_application, result, output_dir)
+    if dry_run:
+        root, targets, _ = _stage("write", plan_write, result, output_dir)  # the real write's read-only checks
+        written = sorted(targets)
+    else:
+        written = _stage("write", write_generated_application, result, output_dir)
     openapi_path = Path(output_dir).resolve() / OPENAPI_FILENAME
     return LLMGeneratedApplication(
         draft_id=result.draft_id, endpoint=result.endpoint, output_dir=Path(output_dir).resolve(),
-        files=written, openapi_path=openapi_path,
+        files=written, openapi_path=openapi_path, dry_run=dry_run,
     )
