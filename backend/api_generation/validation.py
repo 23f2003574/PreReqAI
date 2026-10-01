@@ -7,8 +7,9 @@ from backend.api_schema_review import APPROVED, REJECTED
 
 from .docker import ASGI_SERVER
 from .manifest import UnknownGeneratedImportError, generate_requirements
+from .metadata import METADATA_FILENAME, InvalidProjectMetadataError, GeneratedProjectMetadata
 
-REQUIRED_FILES = ("app/__init__.py", "app/main.py", "requirements.txt", "Dockerfile")
+REQUIRED_FILES = ("app/__init__.py", "app/main.py", "requirements.txt", "Dockerfile", METADATA_FILENAME)
 _DOC_PATHS = frozenset({"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"})
 
 
@@ -53,6 +54,13 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
         elif path != "app/__init__.py" and not files[path].strip():
             findings.append(_finding("EMPTY_FILE", path, "generated file is empty"))
 
+    metadata = None
+    if METADATA_FILENAME in files and files[METADATA_FILENAME].strip():
+        try:
+            metadata = GeneratedProjectMetadata.parse(files[METADATA_FILENAME])
+        except InvalidProjectMetadataError as error:
+            findings.append(_finding("INVALID_METADATA", METADATA_FILENAME, str(error)))
+
     syntax_ok = True
     for path in sorted(files):
         if path.endswith(".py"):
@@ -87,6 +95,8 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
         else:
             registered = {(r.path, m.lower()) for r in routes for m in getattr(r, "methods", ())}
             documented = {(p, m) for p, item in document.get("paths", {}).items() for m in item}
+            if metadata is not None and (metadata.endpoint.split(" ", 1)[-1], metadata.endpoint.split(" ", 1)[0].lower()) not in registered:
+                findings.append(_finding("METADATA_MISMATCH", METADATA_FILENAME, "endpoint is not registered by the generated app"))
             if registered != documented:
                 findings.append(_finding("OPENAPI_MISMATCH", "openapi", "documented operations differ from registered routes"))
 

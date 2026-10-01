@@ -30,7 +30,7 @@ def test_notebook_workflow_produces_a_coherent_importable_api_project(tmp_path):
 
     on_disk = {p: (project.output_dir / p).read_text() for p in project.files}
     assert require_valid(on_disk).valid
-    assert sorted(on_disk) == ["Dockerfile", "app/__init__.py", "app/main.py", "requirements.txt"]
+    assert sorted(on_disk) == ["Dockerfile", "app/__init__.py", "app/main.py", "prereqai-project.json", "requirements.txt"]
     assert on_disk["requirements.txt"].splitlines() == ["fastapi>=0.115.0", "pydantic>=2.0", "uvicorn>=0.32.0"]
     assert "COPY app ./app" in on_disk["Dockerfile"] and "app.main:app" in on_disk["Dockerfile"]
 

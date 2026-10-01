@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 
+from .metadata import METADATA_FILENAME, InvalidProjectMetadataError, GeneratedProjectMetadata
 from .models import LLMAPIGenerationResult
 
 MARKER_FILENAME = ".prereqai-generated.json"
@@ -37,6 +38,16 @@ def _read_marker(root: Path):
         raise UnsafeOutputDirectoryError(f"{MARKER_FILENAME} in {root} is unreadable; refusing to overwrite")
 
 
+def _is_generated_project(root: Path) -> bool:
+    """True when root holds a valid prereqai-project.json -- the project's own
+    identity file proves it is generated output even if its marker is gone."""
+    try:
+        GeneratedProjectMetadata.parse((root / METADATA_FILENAME).read_text(encoding="utf-8"))
+    except (OSError, InvalidProjectMetadataError):
+        return False
+    return True
+
+
 def write_generated_application(result: LLMAPIGenerationResult, output_dir) -> list:
     """Write result.files under output_dir and return the written relative
     paths in sorted order.
@@ -47,7 +58,9 @@ def write_generated_application(result: LLMAPIGenerationResult, output_dir) -> l
       * a directory with a marker is earlier generated output: files the new
         result no longer contains are removed (stale), files are overwritten;
       * a directory without a marker is only written if none of the target
-        paths already exist; otherwise UnsafeOutputDirectoryError is raised
+        paths already exist, or if it holds a valid prereqai-project.json
+        (proof it is generated output; its files are overwritten but stale
+        ones cannot be known); otherwise UnsafeOutputDirectoryError is raised
         before anything is touched;
       * files that are not in the marker are never deleted, so unrelated user
         files survive every run.
@@ -66,7 +79,7 @@ def write_generated_application(result: LLMAPIGenerationResult, output_dir) -> l
     previous = _read_marker(root) if root.is_dir() else None
     if previous is None:
         collisions = sorted(r for r, t in targets.items() if t.exists())
-        if collisions:
+        if collisions and not _is_generated_project(root):
             raise UnsafeOutputDirectoryError(
                 f"{root} already contains {collisions} but is not marked as generated output; refusing to overwrite"
             )

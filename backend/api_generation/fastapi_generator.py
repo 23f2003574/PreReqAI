@@ -8,6 +8,7 @@ from backend.input_schema import ALLOWED_TYPES
 from .generator import APIGenerator
 from .docker import ASGI_SERVER, BASE_IMAGE, DEFAULT_PORT, generate_dockerfile
 from .manifest import generate_requirements
+from .metadata import METADATA_FILENAME, GeneratedProjectMetadata
 
 _BODY_METHODS = frozenset({"POST", "PUT", "PATCH"})
 _QUERY_METHODS = frozenset({"GET", "DELETE"})
@@ -195,4 +196,5 @@ class FastAPIApplicationGenerator(APIGenerator):
         files = {"app/__init__.py": "", "app/main.py": "\n".join(lines)}
         files["requirements.txt"] = generate_requirements(files, also=(ASGI_SERVER,))
         files["Dockerfile"] = generate_dockerfile(files, self._base_image, self._port)
+        files[METADATA_FILENAME] = GeneratedProjectMetadata(draft.draft_id, draft.endpoint).to_json()
         return files

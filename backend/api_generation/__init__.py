@@ -2,6 +2,13 @@ from .config import APIGenerationConfig
 from .docker import ASGI_SERVER, InvalidDockerInputError, generate_dockerfile
 from .fastapi_generator import FastAPIApplicationGenerator, InvalidDraftEndpointError
 from .generator import APIGenerator
+from .metadata import (
+    CONTRACT_VERSION,
+    GENERATOR_ID,
+    METADATA_FILENAME,
+    GeneratedProjectMetadata,
+    InvalidProjectMetadataError,
+)
 from .models import LLMAPIGenerationResult
 from .validation import (
     GeneratedArtifactRejectedError,
@@ -24,6 +31,11 @@ from .openapi import OPENAPI_FILENAME, generated_openapi, write_openapi_contract
 from .service import DraftNotValidatedError, InvalidGeneratorOutputError, LLMAPIGenerationService
 
 __all__ = [
+    "CONTRACT_VERSION",
+    "GENERATOR_ID",
+    "METADATA_FILENAME",
+    "GeneratedProjectMetadata",
+    "InvalidProjectMetadataError",
     "COMPLETE",
     "INCOMPLETE",
     "MARKER_FILENAME",
