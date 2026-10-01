@@ -1,12 +1,14 @@
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
 from backend.api_documentation_draft import LLMAPIDocumentationDraft, LLMAPIDocumentationDraftService
 
-from .fastapi_generator import FastAPIApplicationGenerator
 from .config import APIGenerationConfig
+from .fastapi_generator import FastAPIApplicationGenerator
 from .generator import APIGenerator
-from .openapi import write_openapi_contract
+from .models import LLMAPIGenerationResult
+from .openapi import OPENAPI_FILENAME, generated_openapi
 from .service import LLMAPIGenerationService
 from .validation import require_valid
 from .writer import write_generated_application
@@ -25,7 +27,7 @@ class LLMGeneratedApplication:
     openapi_path: Path
 
 
-STAGES = ("configuration", "generation", "validation", "write", "openapi")
+STAGES = ("configuration", "generation", "validation", "openapi", "write")
 
 
 def _stage(name, call, *args):
@@ -74,8 +76,14 @@ def generate_application(
         raise _tag(ValueError("output_dir or config is required"), "configuration")
     result = _stage("generation", LLMAPIGenerationService(draft_service, generator or FastAPIApplicationGenerator()).generate, draft)
     _stage("validation", require_valid, result.files)
-    written = _stage("write", write_generated_application, result, output_dir)
-    openapi_path = _stage("openapi", write_openapi_contract, result, output_dir)
+    document = _stage("openapi", generated_openapi, result)
+    to_write = LLMAPIGenerationResult(
+        result.draft_id, result.endpoint,
+        {**result.files, OPENAPI_FILENAME: json.dumps(document, indent=2, sort_keys=True) + "\n"},
+    )
+    written = _stage("write", write_generated_application, to_write, output_dir)
+    openapi_path = Path(output_dir).resolve() / OPENAPI_FILENAME
+    written = [path for path in written if path != OPENAPI_FILENAME]
     return LLMGeneratedApplication(
         draft_id=result.draft_id, endpoint=result.endpoint, output_dir=Path(output_dir).resolve(),
         files=written, openapi_path=openapi_path,

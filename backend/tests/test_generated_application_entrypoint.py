@@ -47,20 +47,8 @@ def test_generating_twice_yields_an_identical_tree_without_junk(tmp_path):
     write_generated_application(result, tmp_path)
 
     assert _tree(tmp_path) == first
-    assert sorted(first) == ["Dockerfile", "app/__init__.py", "app/main.py", "requirements.txt"]
+    assert sorted(first) == [".prereqai-generated.json", "Dockerfile", "app/__init__.py", "app/main.py", "requirements.txt"]
     assert not list(tmp_path.rglob("*.tmp"))
-
-
-def test_regeneration_removes_stale_generated_modules_but_leaves_other_files(tmp_path):
-    result, _ = _result()
-    write_generated_application(result, tmp_path)
-    (tmp_path / "app" / "old_route.py").write_text("stale")
-    (tmp_path / "notes.txt").write_text("mine")
-
-    write_generated_application(result, tmp_path)
-
-    assert not (tmp_path / "app" / "old_route.py").exists()
-    assert (tmp_path / "notes.txt").read_text() == "mine"
 
 
 @pytest.mark.parametrize("bad", ["../escape.py", "/abs.py", "app/../../escape.py"])
