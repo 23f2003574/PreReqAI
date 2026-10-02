@@ -65,7 +65,7 @@ def test_customized_configuration_drives_the_project_and_round_trips(tmp_path, c
     ("runtime", {"base_image": "Not An Image"}, "is not a valid image reference"),
     ("generation", {"project_name": "my api"}, "must start with a letter"),
     ("generation", {"project_name": 7}, "must be a string or null"),
-    (None, {"config_version": 2}, "unsupported config_version 2"),
+    (None, {"config_version": 2}, "has 2 config_version (supported: 1)"),
     ("runtime", {"prot": 8000}, "section 'runtime' must contain exactly"),
     (None, {"port": 8000}, "must contain exactly"),
     (None, {"runtime": {"port": 8000}}, "section 'runtime' must contain exactly"),
@@ -83,7 +83,7 @@ def test_invalid_configuration_fails_clearly_before_anything_is_written(tmp_path
 
     code, err = _generate(out, capsys, "--config", str(config_file))
 
-    assert code == EXIT_FAILURE and ("InvalidConfigurationError" in err or "InvalidProjectNameError" in err)
+    assert code == EXIT_FAILURE and ("ConfigurationError" in err or "InvalidProjectNameError" in err)
     assert message in err and not out.exists()
 
 

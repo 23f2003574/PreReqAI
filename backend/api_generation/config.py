@@ -8,6 +8,12 @@ from backend.llm.config import InvalidConfigurationError
 
 from .docker import BASE_IMAGE, DEFAULT_PORT
 from .identity import project_package
+from .metadata import require_version
+
+class IncompatibleConfigurationError(InvalidConfigurationError):
+    """prereqai-config.json is from another config_version (see
+    metadata.version_compatibility); `.compatibility` holds the details."""
+
 
 CONFIG_FILENAME = "prereqai-config.json"
 CONFIG_VERSION = 1
@@ -68,12 +74,12 @@ class APIGenerationConfig:
             data = json.loads(text)
         except ValueError as error:
             raise InvalidConfigurationError(f"{CONFIG_FILENAME} is not valid JSON: {error}") from error
+        if isinstance(data, dict) and set(_SECTIONS) & set(data):
+            require_version(data, "config_version", CONFIG_VERSION, CONFIG_FILENAME, IncompatibleConfigurationError)
         expected = {"config_version", *_SECTIONS}
         if not isinstance(data, dict) or set(data) != expected:
             keys = sorted(data) if isinstance(data, dict) else type(data).__name__
             raise InvalidConfigurationError(f"{CONFIG_FILENAME} must contain exactly {sorted(expected)}, got {keys}")
-        if data["config_version"] != CONFIG_VERSION or isinstance(data["config_version"], bool):
-            raise InvalidConfigurationError(f"unsupported config_version {data['config_version']!r} in {CONFIG_FILENAME}")
         values = {}
         for section, names in _SECTIONS.items():
             settings = data[section]

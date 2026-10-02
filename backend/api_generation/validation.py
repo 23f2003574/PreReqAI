@@ -7,7 +7,7 @@ from backend.api_schema_review import APPROVED, REJECTED
 
 from backend.llm.config import InvalidConfigurationError
 
-from .config import CONFIG_FILENAME, APIGenerationConfig
+from .config import CONFIG_FILENAME, APIGenerationConfig, IncompatibleConfigurationError
 from .docker import ASGI_SERVER
 from .identity import (
     DEFAULT_PACKAGE,
@@ -70,6 +70,16 @@ def _finding(category, target, message):
     return {"category": category, "target": target, "message": message, "blocking": True}
 
 
+def _incompatible(target, error):
+    """An INCOMPATIBLE_PROJECT finding; `details` carries the structured
+    version comparison (file, field, found, supported, relation) when the
+    cause is a contract/manifest/config version rather than another generator."""
+    finding = _finding("INCOMPATIBLE_PROJECT", target, str(error))
+    if getattr(error, "compatibility", None):
+        finding["details"] = error.compatibility
+    return finding
+
+
 def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
     """Check that the generated files are complete and mutually consistent.
     Every independent problem is reported; checks that need a prerequisite
@@ -91,7 +101,7 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
         try:
             metadata = GeneratedProjectMetadata.parse(files[METADATA_FILENAME])
         except IncompatibleProjectMetadataError as error:
-            findings.append(_finding("INCOMPATIBLE_PROJECT", METADATA_FILENAME, str(error)))
+            findings.append(_incompatible(METADATA_FILENAME, error))
         except InvalidProjectMetadataError as error:
             findings.append(_finding("INVALID_METADATA", METADATA_FILENAME, str(error)))
 
@@ -100,9 +110,22 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
         try:
             manifest = GeneratedProjectManifest.parse(files[PROJECT_MANIFEST_FILENAME])
         except IncompatibleProjectManifestError as error:
-            findings.append(_finding("INCOMPATIBLE_PROJECT", PROJECT_MANIFEST_FILENAME, str(error)))
+            findings.append(_incompatible(PROJECT_MANIFEST_FILENAME, error))
         except InvalidProjectManifestError as error:
             findings.append(_finding("INVALID_MANIFEST", PROJECT_MANIFEST_FILENAME, str(error)))
+    if CONFIG_FILENAME in files:
+        try:
+            APIGenerationConfig.from_file_text(files[CONFIG_FILENAME], ".")
+        except IncompatibleConfigurationError as error:
+            findings.append(_incompatible(CONFIG_FILENAME, error))
+        except InvalidConfigurationError:
+            pass  # reported with the manifest comparison below
+    if any(f["category"] == "INCOMPATIBLE_PROJECT" for f in findings):
+        # A project from another contract is never imported or executed: its
+        # code and layout belong to a contract this validator does not know,
+        # so later checks would only fail obscurely.
+        return LLMGeneratedArtifactValidation(findings=findings, status=REJECTED)
+
     if manifest is not None:
         present = tuple(sorted((p, artifact_type(p)) for p in files if artifact_type(p)))
         if manifest.artifacts != present:

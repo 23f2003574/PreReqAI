@@ -2,7 +2,7 @@ import json
 import re
 from dataclasses import dataclass
 
-from .metadata import CONTRACT_VERSION, METADATA_FILENAME
+from .metadata import CONTRACT_VERSION, METADATA_FILENAME, require_version
 
 PROJECT_MANIFEST_FILENAME = "prereqai-manifest.json"
 MANIFEST_VERSION = 1
@@ -75,6 +75,14 @@ class GeneratedProjectManifest:
     def parse(cls, text: str) -> "GeneratedProjectManifest":
         try:
             data = json.loads(text)
+        except ValueError as error:
+            raise InvalidProjectManifestError(f"cannot parse {PROJECT_MANIFEST_FILENAME}: {error}") from error
+        if isinstance(data, dict) and data.get("metadata_file") == METADATA_FILENAME:
+            # a manifest of this generator: its versions decide compatibility
+            # before its shape is checked against this version's layout
+            for field, supported in (("manifest_version", MANIFEST_VERSION), ("contract_version", CONTRACT_VERSION)):
+                require_version(data, field, supported, PROJECT_MANIFEST_FILENAME, IncompatibleProjectManifestError)
+        try:
             if set(data) != {"manifest_version", "contract_version", "metadata_file", "application", "artifacts", "configuration"}:
                 raise ValueError("unexpected top-level fields")
             if set(data["application"]) != {"name", "entrypoint"} or set(data["configuration"]) != {"base_image", "port"}:
@@ -87,10 +95,6 @@ class GeneratedProjectManifest:
             )
         except (ValueError, TypeError, KeyError) as error:
             raise InvalidProjectManifestError(f"cannot parse {PROJECT_MANIFEST_FILENAME}: {error}") from error
-        for flag, value in (("manifest_version", MANIFEST_VERSION), ("contract_version", CONTRACT_VERSION)):
-            actual = getattr(manifest, flag)
-            if actual != value or isinstance(actual, bool):
-                raise IncompatibleProjectManifestError(f"unsupported {flag} {actual!r}")
         from .identity import package_from_entrypoint
         if manifest.metadata_file != METADATA_FILENAME or package_from_entrypoint(manifest.entrypoint) is None:
             raise InvalidProjectManifestError("metadata_file/entrypoint do not match this generator's contract")
