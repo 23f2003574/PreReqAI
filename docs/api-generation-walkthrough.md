@@ -44,6 +44,7 @@ python -m backend.cli api-generation generate \
 Other options:
 - `--json` prints the result as JSON (`draft_id`, `endpoint`, `output_dir`, `files`, `openapi_path`, `dry_run`).
 - `--base-image` and `--port` set the Dockerfile's base image (default `python:3.11-slim`) and listen port (default `8000`).
+- `--project-name` names the project, for example `--project-name loan-quote`. The app is then generated in the package `loan_quote/` with entrypoint `loan_quote.main:app`, and the same name appears in the manifest, metadata, README and OpenAPI title. The default is the draft's summary as the name, with the package `app/`. A name that can't become a safe Python package is rejected before anything is generated.
 
 The project is validated before anything is written. On failure the command
 prints `error: ...` naming the failing stage and exits `1`. Generation is

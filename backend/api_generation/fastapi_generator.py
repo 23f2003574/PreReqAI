@@ -6,6 +6,7 @@ from backend.api_documentation_draft import LLMAPIDocumentationDraft
 from backend.input_schema import ALLOWED_TYPES
 
 from .generator import APIGenerator
+from .identity import project_package, resolve_project_identity
 from .docker import ASGI_SERVER, BASE_IMAGE, DEFAULT_PORT, generate_dockerfile
 from .manifest import generate_requirements
 from .metadata import METADATA_FILENAME, GeneratedProjectMetadata
@@ -126,15 +127,19 @@ class FastAPIApplicationGenerator(APIGenerator):
     the request matches a documented example's input exactly, and otherwise
     answers 501. Output is deterministic (draft order, no timestamps)."""
 
-    def __init__(self, base_image: str = BASE_IMAGE, port: int = DEFAULT_PORT):
+    def __init__(self, base_image: str = BASE_IMAGE, port: int = DEFAULT_PORT, project_name: str = None):
+        if project_name is not None:
+            project_package(project_name)  # fail before generating, not with broken output
         self._base_image = base_image
         self._port = port
+        self._project_name = project_name
 
     def generate(self, draft: LLMAPIDocumentationDraft) -> dict:
         method, _, path = draft.endpoint.partition(" ")
         if method not in _BODY_METHODS | _QUERY_METHODS or not path.startswith("/"):
             raise InvalidDraftEndpointError(f"unsupported endpoint {draft.endpoint!r}")
 
+        identity = resolve_project_identity(draft, self._project_name)
         prefix = _model_prefix(method, path)
         models = _Models()
         response_name = models.unique(prefix + "Response")
@@ -179,7 +184,7 @@ class FastAPIApplicationGenerator(APIGenerator):
             "from fastapi import FastAPI, HTTPException, Response",
             "from pydantic import BaseModel, Field",
             "",
-            f"app = FastAPI(title={json.dumps(draft.summary)}, description={json.dumps(draft.description)})",
+            f"app = FastAPI(title={json.dumps(identity.name)}, description={json.dumps(draft.description)})",
             f"EXAMPLES = json.loads({json.dumps(json.dumps(draft.examples))})",
             "",
         ]
@@ -196,13 +201,15 @@ class FastAPIApplicationGenerator(APIGenerator):
             '    raise HTTPException(status_code=501, detail="Not implemented: no notebook logic is attached and no documented example matches this input")',
             "",
         ]
-        files = {"app/__init__.py": "", "app/main.py": "\n".join(lines)}
+        files = {identity.init_path: "", identity.main_path: "\n".join(lines)}
         files["requirements.txt"] = generate_requirements(files, also=(ASGI_SERVER,))
-        files["Dockerfile"] = generate_dockerfile(files, self._base_image, self._port)
-        files[METADATA_FILENAME] = GeneratedProjectMetadata(draft.draft_id, draft.endpoint).to_json()
+        files["Dockerfile"] = generate_dockerfile(files, self._base_image, self._port, identity.package)
+        files[METADATA_FILENAME] = GeneratedProjectMetadata(
+            draft.draft_id, draft.endpoint, project_name=identity.name if identity.explicit else None
+        ).to_json()
         files[OPENAPI_FILENAME] = openapi_text(files)
-        files[README_FILENAME] = generate_readme(draft, files, self._base_image, self._port)
+        files[README_FILENAME] = generate_readme(draft, files, self._base_image, self._port, identity)
         files[PROJECT_MANIFEST_FILENAME] = GeneratedProjectManifest.for_files(
-            files, draft.summary, self._base_image, self._port
+            files, identity.name, self._base_image, self._port, identity.entrypoint
         ).to_json()
         return files

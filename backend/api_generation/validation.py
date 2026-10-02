@@ -6,6 +6,13 @@ from dataclasses import dataclass
 from backend.api_schema_review import APPROVED, REJECTED
 
 from .docker import ASGI_SERVER
+from .identity import (
+    DEFAULT_PACKAGE,
+    InvalidProjectNameError,
+    main_module_path,
+    package_from_entrypoint,
+    project_package,
+)
 from .manifest import UnknownGeneratedImportError, generate_requirements
 from .metadata import (
     METADATA_FILENAME,
@@ -22,7 +29,7 @@ from .project_manifest import (
     artifact_type,
 )
 
-REQUIRED_FILES = (
+REQUIRED_FILES = (  # for the default `app` package; see _required_files
     "app/__init__.py", "app/main.py", "requirements.txt", "Dockerfile", METADATA_FILENAME, OPENAPI_FILENAME,
     PROJECT_MANIFEST_FILENAME, "README.md",
 )
@@ -52,6 +59,10 @@ class LLMGeneratedArtifactValidation:
         return self.status == APPROVED
 
 
+def _required_files(package: str) -> tuple:
+    return (f"{package}/__init__.py", f"{package}/main.py") + REQUIRED_FILES[2:]
+
+
 def _finding(category, target, message):
     return {"category": category, "target": target, "message": message, "blocking": True}
 
@@ -63,11 +74,13 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
     when it failed. The generated module is imported in a throwaway module:
     it contains only the generated models and routes, never notebook code."""
     findings = []
+    main_path = main_module_path(files)
+    package = main_path.split("/")[0]
 
-    for path in REQUIRED_FILES:
+    for path in _required_files(package):
         if path not in files:
             findings.append(_finding("MISSING_FILE", path, "required generated file is absent"))
-        elif path != "app/__init__.py" and not files[path].strip():
+        elif path != f"{package}/__init__.py" and not files[path].strip():
             findings.append(_finding("EMPTY_FILE", path, "generated file is empty"))
 
     metadata = None
@@ -97,6 +110,21 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
             findings.append(_finding("MANIFEST_CONFIGURATION", PROJECT_MANIFEST_FILENAME, "entrypoint/base image/port do not match the Dockerfile"))
         if metadata is not None and manifest.contract_version != metadata.contract_version:
             findings.append(_finding("MANIFEST_CONFIGURATION", PROJECT_MANIFEST_FILENAME, "contract_version differs from the project metadata"))
+        # One identity everywhere: the manifest's entrypoint names the
+        # package that holds the app, and an explicitly named project carries
+        # the same name (and the package derived from it) in both files.
+        manifest_package = package_from_entrypoint(manifest.entrypoint)
+        expected_package = DEFAULT_PACKAGE
+        if metadata is not None and metadata.project_name is not None:
+            try:
+                expected_package = project_package(metadata.project_name)
+            except InvalidProjectNameError:
+                expected_package = None
+        if manifest_package != package or (metadata is not None and (
+                manifest_package != expected_package
+                or (metadata.project_name is not None and manifest.application_name != metadata.project_name))):
+            findings.append(_finding("IDENTITY_MISMATCH", PROJECT_MANIFEST_FILENAME,
+                                     "project name, package and entrypoint disagree across the generated files"))
 
     readme = files.get("README.md", "")
     if readme.strip() and manifest is not None:
@@ -118,28 +146,28 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
                 syntax_ok = False
                 findings.append(_finding("SYNTAX_ERROR", path, f"line {error.lineno}: {error.msg}"))
 
-    main = files.get("app/main.py", "")
+    main = files.get(main_path, "")
     app = None
     if syntax_ok and main.strip():
         module = types.ModuleType("validated_generated_app")
         try:
-            exec(compile(main, "app/main.py", "exec"), module.__dict__)
+            exec(compile(main, main_path, "exec"), module.__dict__)
         except Exception as error:
-            findings.append(_finding("IMPORT_ERROR", "app/main.py", f"{type(error).__name__}: {error}"))
+            findings.append(_finding("IMPORT_ERROR", main_path, f"{type(error).__name__}: {error}"))
         else:
             app = getattr(module, "app", None)
             if not (hasattr(app, "routes") and hasattr(app, "openapi")):
-                findings.append(_finding("NO_ENTRYPOINT", "app/main.py", "module does not define a FastAPI `app`"))
+                findings.append(_finding("NO_ENTRYPOINT", main_path, "module does not define a FastAPI `app`"))
                 app = None
 
     if app is not None:
         routes = [r for r in app.routes if getattr(r, "path", None) not in _DOC_PATHS]
         if not routes:
-            findings.append(_finding("NO_ROUTES", "app/main.py", "the generated app registers no endpoints"))
+            findings.append(_finding("NO_ROUTES", main_path, "the generated app registers no endpoints"))
         try:
             document = app.openapi()
         except Exception as error:
-            findings.append(_finding("OPENAPI_ERROR", "app/main.py", f"{type(error).__name__}: {error}"))
+            findings.append(_finding("OPENAPI_ERROR", main_path, f"{type(error).__name__}: {error}"))
         else:
             registered = {(r.path, m.lower()) for r in routes for m in getattr(r, "methods", ())}
             documented = {(p, m) for p, item in document.get("paths", {}).items() for m in item}

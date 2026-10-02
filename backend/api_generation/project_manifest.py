@@ -1,4 +1,5 @@
 import json
+import re
 from dataclasses import dataclass
 
 from .metadata import CONTRACT_VERSION, METADATA_FILENAME
@@ -9,13 +10,16 @@ ENTRYPOINT = "app.main:app"
 OPENAPI_FILENAME = "openapi.json"
 
 
+_PACKAGE_SOURCE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*/[^/]+\.py$")  # a file of the generated package
+
+
 class InvalidProjectManifestError(ValueError):
     """Raised when a generated project's manifest is malformed or not for this generator contract."""
 
 
 def artifact_type(path: str):
     """The artifact type of a generated file, or None if it has no type."""
-    if path.startswith("app/") and path.endswith(".py"):
+    if _PACKAGE_SOURCE.match(path):
         return "application-source"
     return {
         "requirements.txt": "dependency-manifest",
@@ -50,9 +54,9 @@ class GeneratedProjectManifest:
     manifest_version: int = MANIFEST_VERSION
 
     @classmethod
-    def for_files(cls, files: dict, application_name: str, base_image: str, port: int):
+    def for_files(cls, files: dict, application_name: str, base_image: str, port: int, entrypoint: str = ENTRYPOINT):
         artifacts = tuple(sorted((p, artifact_type(p)) for p in files if artifact_type(p)))
-        return cls(application_name, artifacts, base_image, port)
+        return cls(application_name, artifacts, base_image, port, entrypoint)
 
     def to_dict(self) -> dict:
         return {
@@ -86,7 +90,8 @@ class GeneratedProjectManifest:
             actual = getattr(manifest, flag)
             if actual != value or isinstance(actual, bool):
                 raise IncompatibleProjectManifestError(f"unsupported {flag} {actual!r}")
-        if manifest.metadata_file != METADATA_FILENAME or manifest.entrypoint != ENTRYPOINT:
+        from .identity import package_from_entrypoint
+        if manifest.metadata_file != METADATA_FILENAME or package_from_entrypoint(manifest.entrypoint) is None:
             raise InvalidProjectManifestError("metadata_file/entrypoint do not match this generator's contract")
         if not isinstance(manifest.application_name, str) or not manifest.application_name:
             raise InvalidProjectManifestError("application.name must be a non-empty string")

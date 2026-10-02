@@ -71,7 +71,7 @@ def generate_application(
         if output_dir is not None and Path(output_dir) != Path(config.output_dir):
             raise _tag(ValueError("output_dir conflicts with config.output_dir; pass only one"), "configuration")
         output_dir = config.output_dir
-        generator = generator or FastAPIApplicationGenerator(config.base_image, config.port)
+        generator = generator or FastAPIApplicationGenerator(config.base_image, config.port, config.project_name)
     elif output_dir is None:
         raise _tag(ValueError("output_dir or config is required"), "configuration")
     result = _stage("generation", LLMAPIGenerationService(draft_service, generator or FastAPIApplicationGenerator()).generate, draft)

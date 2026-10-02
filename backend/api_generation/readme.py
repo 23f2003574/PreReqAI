@@ -1,6 +1,7 @@
 from backend.api_documentation_draft import LLMAPIDocumentationDraft
 
-from .project_manifest import ENTRYPOINT, OPENAPI_FILENAME, artifact_type
+from .identity import ProjectIdentity
+from .project_manifest import OPENAPI_FILENAME, artifact_type
 
 README_FILENAME = "README.md"
 _DESCRIPTIONS = {
@@ -22,17 +23,21 @@ def _table(header, rows) -> list:
     return lines + ["| " + " | ".join(_cell(c) for c in row) + " |" for row in rows]
 
 
-def generate_readme(draft: LLMAPIDocumentationDraft, file_paths, base_image: str, port: int) -> str:
+def generate_readme(draft: LLMAPIDocumentationDraft, file_paths, base_image: str, port: int,
+                    identity: ProjectIdentity = None) -> str:
     """README.md for a generated project, written only from what the
     generator produced: the draft's text and schemas, the real file list, the
     entrypoint and the configured port. It documents installing and running
     the project the way its requirements.txt and Dockerfile support, and
-    states plainly what the handlers do. Deterministic, no paths or secrets."""
+    states plainly what the handlers do. Deterministic, no paths or secrets.
+    `identity` names the project and its package (default: the draft's
+    summary and `app`, the previous output)."""
+    identity = identity or ProjectIdentity(draft.summary)
     paths = sorted(set(file_paths) | {README_FILENAME})
     artifacts = [(p, artifact_type(p) if p != README_FILENAME else "documentation") for p in paths]
     artifacts = [(p, t) for p, t in artifacts if t]
     lines = [
-        f"# {draft.summary}",
+        f"# {identity.name}",
         "",
         draft.description,
         "",
@@ -57,17 +62,17 @@ def generate_readme(draft: LLMAPIDocumentationDraft, file_paths, base_image: str
         "",
         "```",
         "pip install -r requirements.txt",
-        f"uvicorn {ENTRYPOINT} --host 0.0.0.0 --port {port}",
+        f"uvicorn {identity.entrypoint} --host 0.0.0.0 --port {port}",
         "```",
         "",
-        f"The entrypoint is `{ENTRYPOINT}` (the `app` object in `app/main.py`). "
+        f"The entrypoint is `{identity.entrypoint}` (the `app` object in `{identity.main_path}`). "
         f"Interactive API docs are served by FastAPI at `/docs`, and the OpenAPI document is in `{OPENAPI_FILENAME}`.",
         "",
         "## Run with Docker",
         "",
         "```",
-        "docker build -t generated-api .",
-        f"docker run -p {port}:{port} generated-api",
+        f"docker build -t {identity.image_name} .",
+        f"docker run -p {port}:{port} {identity.image_name}",
         "```",
         "",
         f"The image is based on `{base_image}`. The listen address comes from the `HOST` and `PORT` "

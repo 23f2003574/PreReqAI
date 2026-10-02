@@ -14,7 +14,7 @@ from .workflow import generate_application
 _CATEGORY_GROUPS = {
     "generated artifacts pass validation": None,  # any finding
     "metadata and manifest are present and consistent": {
-        "INVALID_METADATA", "METADATA_MISMATCH", "INVALID_MANIFEST", "MANIFEST_ARTIFACTS", "MANIFEST_CONFIGURATION",
+        "INVALID_METADATA", "METADATA_MISMATCH", "INVALID_MANIFEST", "MANIFEST_ARTIFACTS", "MANIFEST_CONFIGURATION", "IDENTITY_MISMATCH",
         "INCOMPATIBLE_PROJECT",
     },
     "generated application can be imported": {"SYNTAX_ERROR", "IMPORT_ERROR", "NO_ENTRYPOINT", "NO_ROUTES"},

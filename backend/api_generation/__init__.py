@@ -2,6 +2,13 @@ from .config import APIGenerationConfig
 from .docker import ASGI_SERVER, InvalidDockerInputError, generate_dockerfile
 from .fastapi_generator import FastAPIApplicationGenerator, InvalidDraftEndpointError
 from .generator import APIGenerator
+from .identity import (
+    DEFAULT_PACKAGE,
+    InvalidProjectNameError,
+    ProjectIdentity,
+    project_package,
+    resolve_project_identity,
+)
 from .health import HEALTHY, INCOMPATIBLE, INVALID, LLMGeneratedProjectHealth, check_generated_project
 from .metadata import (
     IncompatibleProjectMetadataError,
@@ -44,6 +51,11 @@ from .release_checklist import LLMGenerationReleaseChecklist, run_release_checkl
 from .service import DraftNotValidatedError, InvalidGeneratorOutputError, LLMAPIGenerationService
 
 __all__ = [
+    "DEFAULT_PACKAGE",
+    "InvalidProjectNameError",
+    "ProjectIdentity",
+    "project_package",
+    "resolve_project_identity",
     "LLMGenerationReleaseChecklist",
     "run_release_checklist",
     "plan_write",

@@ -318,6 +318,11 @@ def _add_api_generation_parser(subparsers):
     )
     generate.add_argument("--port", type=int, default=None, help="Dockerfile default listen port (default: 8000)")
     generate.add_argument(
+        "--project-name", default=None, dest="project_name",
+        help="Project name (letters, digits, '-', '_'); the app is generated in the package it normalizes to, "
+             "e.g. loan-quote -> loan_quote/main.py (default: the draft's summary, package app)",
+    )
+    generate.add_argument(
         "--json", action="store_true", dest="as_json",
         help="Print the result (draft_id, endpoint, output_dir, files, openapi_path) as JSON",
     )
@@ -436,7 +441,8 @@ def _run_api_generation_generate(args) -> int:
     stderr naming the failing stage and exit code 1, never a stack trace."""
     try:
         draft = _load_draft(args.draft)
-        options = {k: v for k, v in (("base_image", args.base_image), ("port", args.port)) if v is not None}
+        options = {k: v for k, v in (("base_image", args.base_image), ("port", args.port),
+                                    ("project_name", args.project_name)) if v is not None}
         config = APIGenerationConfig(output_dir=args.output_dir, **options)
         application = generate_application(_LoadedDraftSource(draft), draft, config=config, dry_run=args.dry_run)
     except Exception as error:  # never leak a composed service's internals as a stack trace by default

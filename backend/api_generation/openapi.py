@@ -2,16 +2,18 @@ import json
 import types
 from pathlib import Path
 
+from .identity import main_module_path
 from .models import LLMAPIGenerationResult
 
 OPENAPI_FILENAME = "openapi.json"
 
 
 def openapi_document(files: dict) -> dict:
-    """FastAPI's app.openapi() for the generated `app/main.py` in `files`,
-    taken from a throwaway module (see generated_openapi)."""
+    """FastAPI's app.openapi() for the generated `<package>/main.py` in
+    `files`, taken from a throwaway module (see generated_openapi)."""
     module = types.ModuleType("generated_api_app")
-    exec(compile(files["app/main.py"], "app/main.py", "exec"), module.__dict__)
+    path = main_module_path(files)
+    exec(compile(files[path], path, "exec"), module.__dict__)
     return module.app.openapi()
 
 
