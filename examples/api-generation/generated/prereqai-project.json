@@ -1,0 +1,7 @@
+{
+  "contract_version": 1,
+  "draft_id": "example-loan-quote",
+  "endpoint": "POST /loan-quote",
+  "generator": "prereqai.api_generation",
+  "project_type": "fastapi-app"
+}

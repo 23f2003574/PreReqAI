@@ -1,0 +1,43 @@
+{
+  "application": {
+    "entrypoint": "app.main:app",
+    "name": "Quotes a fixed-rate loan for an applicant."
+  },
+  "artifacts": [
+    {
+      "path": "Dockerfile",
+      "type": "container-image"
+    },
+    {
+      "path": "README.md",
+      "type": "documentation"
+    },
+    {
+      "path": "app/__init__.py",
+      "type": "application-source"
+    },
+    {
+      "path": "app/main.py",
+      "type": "application-source"
+    },
+    {
+      "path": "openapi.json",
+      "type": "openapi-contract"
+    },
+    {
+      "path": "prereqai-project.json",
+      "type": "project-metadata"
+    },
+    {
+      "path": "requirements.txt",
+      "type": "dependency-manifest"
+    }
+  ],
+  "configuration": {
+    "base_image": "python:3.11-slim",
+    "port": 8000
+  },
+  "contract_version": 1,
+  "manifest_version": 1,
+  "metadata_file": "prereqai-project.json"
+}
