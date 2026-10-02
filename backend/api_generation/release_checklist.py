@@ -8,7 +8,7 @@ from backend.api_documentation_draft import LLMAPIDocumentationDraft, LLMAPIDocu
 from .fastapi_generator import FastAPIApplicationGenerator
 from .generator import APIGenerator
 from .service import DraftNotValidatedError, LLMAPIGenerationService
-from .validation import GeneratedArtifactRejectedError, validate_generated_artifact
+from .validation import GeneratedArtifactRejectedError, diagnose_compatibility, validate_generated_artifact
 from .workflow import generate_application
 
 _CATEGORY_GROUPS = {
@@ -41,6 +41,7 @@ class LLMGenerationReleaseChecklist:
     checks: list
     failures: list
     warnings: list
+    compatibility: dict = None  # validation.diagnose_compatibility() of the generated files
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -124,4 +125,8 @@ def run_release_checklist(
         attempt("dry run does not mutate output", dry_run_is_faithful)
     attempt("failure paths leave no misleading artifacts", failure_leaves_nothing)
 
-    return LLMGenerationReleaseChecklist(ready=not failures, checks=checks, failures=failures, warnings=warnings)
+    compatibility = diagnose_compatibility(files)
+    if files and compatibility["remediation"]:
+        failures.append(f"compatibility: {compatibility['remediation']}")
+    return LLMGenerationReleaseChecklist(ready=not failures, checks=checks, failures=failures, warnings=warnings,
+                                         compatibility=compatibility)

@@ -494,6 +494,14 @@ def _run_api_generation_check(args) -> int:
             print(f"  {name}: {outcome}")
         for finding in health.findings:
             print(f"  - {finding['category']} {finding['target']}: {finding['message']}")
+        compatibility = health.compatibility
+        print(f"Compatibility: {compatibility['status'].upper()}")
+        for file, fields in compatibility["detected"].items():
+            supported = compatibility["supported"][file]
+            print("  " + file + ": " + ", ".join(
+                f"{field} {'-' if found is None else found} (supported {supported[field]})" for field, found in fields.items()))
+        if compatibility["remediation"]:
+            print(f"  fix: {compatibility['remediation']}")
     return EXIT_OK if health.healthy else EXIT_FAILURE
 
 

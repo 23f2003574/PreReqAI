@@ -3,7 +3,7 @@ from pathlib import Path
 
 from .metadata import METADATA_FILENAME
 from .project_manifest import PROJECT_MANIFEST_FILENAME, artifact_type
-from .validation import validate_generated_artifact
+from .validation import UNKNOWN, diagnose_compatibility, validate_generated_artifact
 from .writer import INCOMPLETE, MARKER_FILENAME, generation_status
 
 HEALTHY = "healthy"
@@ -32,6 +32,7 @@ class LLMGeneratedProjectHealth:
     status: str
     checks: dict
     findings: list
+    compatibility: dict = None  # validation.diagnose_compatibility() of the project
 
     @property
     def healthy(self) -> bool:
@@ -61,9 +62,12 @@ def check_generated_project(output_dir) -> LLMGeneratedProjectHealth:
     root = Path(output_dir)
     if not root.is_dir():
         findings = [{"category": "NOT_A_PROJECT", "target": str(output_dir), "message": "not a directory", "blocking": True}]
-        return LLMGeneratedProjectHealth(INVALID, {name: "failed" for name, _, _ in _CHECKS}, findings)
+        compatibility = {**diagnose_compatibility({}), "status": UNKNOWN,
+                         "remediation": f"{output_dir} is not a directory; pass the generated project directory."}
+        return LLMGeneratedProjectHealth(INVALID, {name: "failed" for name, _, _ in _CHECKS}, findings, compatibility)
 
-    findings = list(validate_generated_artifact(_read_project(root)).findings)
+    files = _read_project(root)
+    findings = list(validate_generated_artifact(files).findings)
     if generation_status(root) == INCOMPLETE:
         findings.append({"category": "INCOMPLETE_GENERATION", "target": MARKER_FILENAME, "blocking": True,
                          "message": "the last generation run did not finish; regenerate this project"})
@@ -76,4 +80,4 @@ def check_generated_project(output_dir) -> LLMGeneratedProjectHealth:
         status = INCOMPATIBLE
     else:
         status = INVALID if findings else HEALTHY
-    return LLMGeneratedProjectHealth(status, checks, findings)
+    return LLMGeneratedProjectHealth(status, checks, findings, diagnose_compatibility(files))
