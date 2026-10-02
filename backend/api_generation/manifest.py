@@ -6,10 +6,14 @@ from pathlib import Path
 # import name -> distribution name. A third-party import that is not listed
 # here is an error rather than a guess.
 _DISTRIBUTIONS = {"fastapi": "fastapi", "pydantic": "pydantic"}
-# Floors for distributions the project's own requirements.txt does not pin.
-# pydantic>=2: the generated models use model_dump(), a Pydantic v2 API.
-_FALLBACK_SPECIFIERS = {"pydantic": ">=2.0"}
-_PROJECT_REQUIREMENTS = Path(__file__).resolve().parents[2] / "requirements.txt"
+# The generated project's own minimum versions. They are fixed here, as part
+# of the generated-project contract, rather than read from PreReqAI's own
+# development requirements.txt: a generated project must not change (or stop
+# validating) because the generator's development environment did.
+# fastapi>=0.115 / uvicorn>=0.32: the versions the generated app and its start
+# command are developed and tested against; pydantic>=2: the generated models
+# use model_dump(), a Pydantic v2 API.
+GENERATED_SPECIFIERS = {"fastapi": ">=0.115.0", "pydantic": ">=2.0", "uvicorn": ">=0.32.0"}
 
 
 class UnknownGeneratedImportError(ValueError):
@@ -34,11 +38,12 @@ def _project_specifiers(path) -> dict:
     return found
 
 
-def generate_requirements(files: dict, project_requirements=_PROJECT_REQUIREMENTS, also=()) -> str:
+def generate_requirements(files: dict, project_requirements=None, also=()) -> str:
     """requirements.txt text for exactly the third-party packages the
     generated .py files import -- sorted, one line each, no development or
-    test dependencies. Versions come from the project's requirements.txt when
-    it pins the package, else from a documented floor, else the bare name.
+    test dependencies. Versions come from GENERATED_SPECIFIERS (self-contained;
+    nothing from the host environment is read), or -- only when a caller
+    passes one explicitly -- from the given `project_requirements` file.
     `also` names distributions the artifact needs without importing them
     (the ASGI server its start command runs)."""
     modules = set()
@@ -49,14 +54,15 @@ def generate_requirements(files: dict, project_requirements=_PROJECT_REQUIREMENT
                     modules |= {alias.name.split(".")[0] for alias in node.names}
                 elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
                     modules.add(node.module.split(".")[0])
-    third_party = sorted(m for m in modules if m not in sys.stdlib_module_names and m != "app")
+    own_packages = {path.split("/")[0] for path in files if "/" in path}  # the generated package itself
+    third_party = sorted(m for m in modules if m not in sys.stdlib_module_names and m not in own_packages)
     unknown = [m for m in third_party if m not in _DISTRIBUTIONS]
     if unknown:
         raise UnknownGeneratedImportError(f"no known distribution for imports: {unknown}")
 
-    project = _project_specifiers(project_requirements)
+    project = _project_specifiers(project_requirements) if project_requirements is not None else {}
     lines = set()
     for name in [_DISTRIBUTIONS[m] for m in third_party] + list(also):
-        specifier = project.get(_normalise(name)) or _FALLBACK_SPECIFIERS.get(name, "")
+        specifier = project.get(_normalise(name)) or GENERATED_SPECIFIERS.get(name, "")
         lines.add(f"{name}{specifier}")
     return "".join(line + "\n" for line in sorted(lines))

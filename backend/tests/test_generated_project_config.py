@@ -31,7 +31,7 @@ def test_default_configuration_is_explicit_and_deterministic(tmp_path, capsys):
     assert _generate(tmp_path / "b", capsys)[0] == EXIT_OK
 
     text = (tmp_path / "a" / CONFIG_FILENAME).read_text()
-    assert json.loads(text) == {"config_version": 1, "base_image": "python:3.11-slim", "port": 8000, "project_name": None}
+    assert json.loads(text) == {"config_version": 1, "generation": {"project_name": None}, "runtime": {"base_image": "python:3.11-slim", "port": 8000}}
     assert text == (tmp_path / "b" / CONFIG_FILENAME).read_text()
     assert "/tmp" not in text and str(tmp_path) not in text  # no output_dir or other machine paths
     manifest = json.loads((tmp_path / "a" / "prereqai-manifest.json").read_text())
@@ -43,35 +43,40 @@ def test_customized_configuration_drives_the_project_and_round_trips(tmp_path, c
     first = tmp_path / "first"
     assert _generate(first, capsys, "--port", "9100", "--base-image", "python:3.12-slim",
                      "--project-name", "loan-quote")[0] == EXIT_OK
-    assert _config(first) == {"config_version": 1, "base_image": "python:3.12-slim", "port": 9100,
-                              "project_name": "loan-quote"}
+    assert _config(first) == {"config_version": 1, "generation": {"project_name": "loan-quote"}, "runtime": {"base_image": "python:3.12-slim", "port": 9100}}
 
     # a hand-edited copy regenerates the project; explicit flags still win
     edited = tmp_path / "edited.json"
-    edited.write_text(json.dumps({**_config(first), "port": 9200}))
+    edited.write_text(json.dumps({**_config(first), "runtime": {**_config(first)["runtime"], "port": 9200}}))
     second = tmp_path / "second"
     assert _generate(second, capsys, "--config", str(edited), "--base-image", "python:3.13-slim")[0] == EXIT_OK
 
-    assert _config(second) == {"config_version": 1, "base_image": "python:3.13-slim", "port": 9200,
-                               "project_name": "loan-quote"}
+    assert _config(second) == {"config_version": 1, "generation": {"project_name": "loan-quote"}, "runtime": {"base_image": "python:3.13-slim", "port": 9200}}
     dockerfile = (second / "Dockerfile").read_text()
     assert dockerfile.startswith("FROM python:3.13-slim\n") and "PORT=9200" in dockerfile
     assert (second / "loan_quote" / "main.py").is_file()
     assert check_generated_project(second).healthy
 
 
-@pytest.mark.parametrize("change, message", [
-    ({"port": 0}, "port 0 must be an integer from 1 to 65535"),
-    ({"port": "8000"}, "port '8000' must be an integer"),
-    ({"port": True}, "port True must be an integer"),
-    ({"base_image": "Not An Image"}, "is not a valid image reference"),
-    ({"project_name": "my api"}, "must start with a letter"),
-    ({"project_name": 7}, "must be a string or null"),
-    ({"config_version": 2}, "unsupported config_version 2"),
-    ({"prot": 8000}, "must contain exactly"),
+@pytest.mark.parametrize("section, change, message", [
+    ("runtime", {"port": 0}, "port 0 must be an integer from 1 to 65535"),
+    ("runtime", {"port": "8000"}, "port '8000' must be an integer"),
+    ("runtime", {"port": True}, "port True must be an integer"),
+    ("runtime", {"base_image": "Not An Image"}, "is not a valid image reference"),
+    ("generation", {"project_name": "my api"}, "must start with a letter"),
+    ("generation", {"project_name": 7}, "must be a string or null"),
+    (None, {"config_version": 2}, "unsupported config_version 2"),
+    ("runtime", {"prot": 8000}, "section 'runtime' must contain exactly"),
+    (None, {"port": 8000}, "must contain exactly"),
+    (None, {"runtime": {"port": 8000}}, "section 'runtime' must contain exactly"),
 ])
-def test_invalid_configuration_fails_clearly_before_anything_is_written(tmp_path, capsys, change, message):
-    data = {"config_version": 1, "base_image": "python:3.11-slim", "port": 8000, "project_name": None, **change}
+def test_invalid_configuration_fails_clearly_before_anything_is_written(tmp_path, capsys, section, change, message):
+    data = {"config_version": 1, "generation": {"project_name": None},
+            "runtime": {"base_image": "python:3.11-slim", "port": 8000}}
+    if section is None:
+        data.update(change)
+    else:
+        data[section] = {**data[section], **change}
     config_file = tmp_path / "config.json"
     config_file.write_text(json.dumps(data))
     out = tmp_path / "project"
@@ -83,7 +88,9 @@ def test_invalid_configuration_fails_clearly_before_anything_is_written(tmp_path
 
 
 def test_missing_settings_and_bad_files_never_fall_back_to_defaults(tmp_path):
-    for text in ('{"config_version": 1, "base_image": "python:3.11-slim", "port": 8000}', "not json", "[]"):
+    for text in ('{"config_version": 1, "runtime": {"base_image": "python:3.11-slim", "port": 8000}}',
+                 '{"config_version": 1, "generation": {}, "runtime": {"base_image": "python:3.11-slim", "port": 8000}}',
+                 "not json", "[]"):
         with pytest.raises(InvalidConfigurationError):
             APIGenerationConfig.from_file_text(text, str(tmp_path))
     with pytest.raises(InvalidConfigurationError, match="cannot read"):
@@ -93,7 +100,7 @@ def test_missing_settings_and_bad_files_never_fall_back_to_defaults(tmp_path):
 def test_a_configuration_that_disagrees_with_the_project_is_reported(tmp_path, capsys):
     project = tmp_path / "project"
     assert _generate(project, capsys)[0] == EXIT_OK
-    (project / CONFIG_FILENAME).write_text(json.dumps({**_config(project), "port": 9999}))
+    (project / CONFIG_FILENAME).write_text(json.dumps({**_config(project), "runtime": {"base_image": "python:3.11-slim", "port": 9999}}))
 
     health = check_generated_project(project)
     assert not health.healthy and health.checks["manifest"] == "failed"
@@ -113,7 +120,7 @@ def test_clean_output_loads_its_configuration_without_host_internals(tmp_path, c
     seen = _probe(clean, "loan_quote")
     assert seen["blocked"] == [] and seen["host_modules"] == []
     # plain JSON, read with the standard library alone, and usable as --config input
-    assert json.loads((clean / CONFIG_FILENAME).read_text())["port"] == 9100
+    assert json.loads((clean / CONFIG_FILENAME).read_text())["runtime"]["port"] == 9100
     again = tmp_path / "again"
     assert _generate(again, capsys, "--config", str(clean / CONFIG_FILENAME))[0] == EXIT_OK
     assert (again / CONFIG_FILENAME).read_bytes() == (clean / CONFIG_FILENAME).read_bytes()

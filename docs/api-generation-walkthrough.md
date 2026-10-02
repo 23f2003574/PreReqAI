@@ -44,7 +44,7 @@ python -m backend.cli api-generation generate \
 Other options:
 - `--json` prints the result as JSON (`draft_id`, `endpoint`, `output_dir`, `files`, `openapi_path`, `dry_run`).
 - `--base-image` and `--port` set the Dockerfile's base image (default `python:3.11-slim`) and listen port (default `8000`).
-- `--config FILE` reads `base_image`, `port` and `project_name` from a `prereqai-config.json`, such as the one in a generated project. Edit that file and regenerate with `--config` to change those settings. Explicit flags override the file's values. A file with a missing, unknown or invalid setting is rejected; there is no silent fallback to defaults.
+- `--config FILE` reads the generator's `generation` settings (`project_name`) and the project's `runtime` settings (`base_image`, `port`) from a `prereqai-config.json`, such as the one in a generated project. Edit that file and regenerate with `--config` to change those settings. Explicit flags override the file's values. A file with a missing, unknown or invalid setting is rejected; there is no silent fallback to defaults.
 - `--project-name` names the project, for example `--project-name loan-quote`. The app is then generated in the package `loan_quote/` with entrypoint `loan_quote.main:app`, and the same name appears in the manifest, metadata, README and OpenAPI title. The default is the draft's summary as the name, with the package `app/`. A name that can't become a safe Python package is rejected before anything is generated.
 
 The project is validated before anything is written. On failure the command
@@ -63,7 +63,7 @@ identical files.
 ├── requirements.txt         # fastapi, pydantic, uvicorn
 ├── Dockerfile
 ├── README.md                # endpoint, parameters and run instructions
-├── prereqai-config.json     # editable generation settings: base_image, port, project_name
+├── prereqai-config.json     # editable settings: generation.project_name, runtime.base_image/port
 ├── prereqai-project.json    # generator, contract version and source draft
 └── prereqai-manifest.json   # full file inventory
 ```

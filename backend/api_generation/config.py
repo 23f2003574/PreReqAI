@@ -11,7 +11,15 @@ from .identity import project_package
 
 CONFIG_FILENAME = "prereqai-config.json"
 CONFIG_VERSION = 1
-_FILE_FIELDS = ("base_image", "port", "project_name")  # output_dir is machine-specific, so never stored
+# prereqai-config.json keeps the two kinds of setting apart: "generation" is
+# read only by the generator (how it names the project), "runtime" describes
+# how the generated project is built and served (its Docker base image and
+# default port, which the HOST/PORT environment variables of the generated
+# Dockerfile override at run time). output_dir is machine-specific and the
+# generator's own development settings never belong to a generated project,
+# so neither is stored.
+_SECTIONS = {"generation": ("project_name",), "runtime": ("base_image", "port")}
+_FILE_FIELDS = tuple(name for names in _SECTIONS.values() for name in names)
 _IMAGE = re.compile(r"^[a-z0-9][a-z0-9._/-]*(:[A-Za-z0-9._-]+)?(@sha256:[0-9a-f]{64})?$")
 
 
@@ -45,9 +53,10 @@ class APIGenerationConfig:
         return self
 
     def to_file_dict(self) -> dict:
-        """The settings a generated project's prereqai-config.json records:
-        every generation setting except output_dir, with defaults written out."""
-        return {"config_version": CONFIG_VERSION, **{name: getattr(self, name) for name in _FILE_FIELDS}}
+        """The settings a generated project's prereqai-config.json records,
+        split into "generation" and "runtime" sections, defaults written out."""
+        return {"config_version": CONFIG_VERSION,
+                **{section: {name: getattr(self, name) for name in names} for section, names in _SECTIONS.items()}}
 
     @classmethod
     def from_file_text(cls, text: str, output_dir, overrides: dict = None) -> "APIGenerationConfig":
@@ -59,15 +68,21 @@ class APIGenerationConfig:
             data = json.loads(text)
         except ValueError as error:
             raise InvalidConfigurationError(f"{CONFIG_FILENAME} is not valid JSON: {error}") from error
-        expected = {"config_version", *_FILE_FIELDS}
+        expected = {"config_version", *_SECTIONS}
         if not isinstance(data, dict) or set(data) != expected:
             keys = sorted(data) if isinstance(data, dict) else type(data).__name__
             raise InvalidConfigurationError(f"{CONFIG_FILENAME} must contain exactly {sorted(expected)}, got {keys}")
         if data["config_version"] != CONFIG_VERSION or isinstance(data["config_version"], bool):
             raise InvalidConfigurationError(f"unsupported config_version {data['config_version']!r} in {CONFIG_FILENAME}")
-        if data["project_name"] is not None and not isinstance(data["project_name"], str):
-            raise InvalidConfigurationError(f"project_name {data['project_name']!r} must be a string or null")
-        values = {name: data[name] for name in _FILE_FIELDS}
+        values = {}
+        for section, names in _SECTIONS.items():
+            settings = data[section]
+            if not isinstance(settings, dict) or set(settings) != set(names):
+                keys = sorted(settings) if isinstance(settings, dict) else type(settings).__name__
+                raise InvalidConfigurationError(f"{CONFIG_FILENAME} section {section!r} must contain exactly {sorted(names)}, got {keys}")
+            values.update(settings)
+        if values["project_name"] is not None and not isinstance(values["project_name"], str):
+            raise InvalidConfigurationError(f"project_name {values['project_name']!r} must be a string or null")
         values.update(overrides or {})
         return cls(output_dir=output_dir, **values).validate()
 
