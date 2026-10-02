@@ -126,7 +126,9 @@ def run_release_checklist(
     attempt("failure paths leave no misleading artifacts", failure_leaves_nothing)
 
     compatibility = diagnose_compatibility(files)
-    if files and compatibility["remediation"]:
+    if files and compatibility["status"] == "upgradable":
+        warnings.append(f"compatibility: {compatibility['remediation']}")  # compatible: never blocks a release
+    elif files and compatibility["remediation"]:
         failures.append(f"compatibility: {compatibility['remediation']}")
     return LLMGenerationReleaseChecklist(ready=not failures, checks=checks, failures=failures, warnings=warnings,
                                          compatibility=compatibility)

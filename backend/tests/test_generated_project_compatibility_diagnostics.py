@@ -44,7 +44,7 @@ def _edit(project, file, **changes):
 def test_compatible_project(project):
     diagnosis = check_generated_project(project).compatibility
     assert diagnosis == {"status": "compatible", "detected": SUPPORTED, "supported": SUPPORTED,
-                         "issues": [], "remediation": None}
+                         "oldest_compatible": SUPPORTED, "issues": [], "remediation": None}
 
 
 def test_older_contract_names_the_field_and_says_to_regenerate(project):
@@ -125,7 +125,7 @@ def test_cli_check_prints_the_diagnosis(project, capsys):
     assert main(["api-generation", "check", str(project), "--json"]) == EXIT_FAILURE
     report = json.loads(capsys.readouterr().out)
     assert report["compatibility"]["status"] == "incompatible"
-    assert sorted(report["compatibility"]) == ["detected", "issues", "remediation", "status", "supported"]
+    assert sorted(report["compatibility"]) == ["detected", "issues", "oldest_compatible", "remediation", "status", "supported"]
 
 
 def test_not_a_directory_is_unknown(tmp_path):
