@@ -5,6 +5,7 @@ import re
 from backend.api_documentation_draft import LLMAPIDocumentationDraft
 from backend.input_schema import ALLOWED_TYPES
 
+from .config import CONFIG_FILENAME, config_file_text
 from .generator import APIGenerator
 from .identity import project_package, resolve_project_identity
 from .docker import ASGI_SERVER, BASE_IMAGE, DEFAULT_PORT, generate_dockerfile
@@ -207,6 +208,7 @@ class FastAPIApplicationGenerator(APIGenerator):
         files[METADATA_FILENAME] = GeneratedProjectMetadata(
             draft.draft_id, draft.endpoint, project_name=identity.name if identity.explicit else None
         ).to_json()
+        files[CONFIG_FILENAME] = config_file_text(self._base_image, self._port, self._project_name)
         files[OPENAPI_FILENAME] = openapi_text(files)
         files[README_FILENAME] = generate_readme(draft, files, self._base_image, self._port, identity)
         files[PROJECT_MANIFEST_FILENAME] = GeneratedProjectManifest.for_files(

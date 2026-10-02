@@ -27,6 +27,7 @@ def artifact_type(path: str):
         METADATA_FILENAME: "project-metadata",
         OPENAPI_FILENAME: "openapi-contract",
         "README.md": "documentation",
+        "prereqai-config.json": "project-configuration",  # config.CONFIG_FILENAME
     }.get(path)
 
 

@@ -37,7 +37,7 @@ def test_manifest_inventories_exactly_the_generated_artifacts_without_duplicatin
     assert data["configuration"] == {"base_image": "python:3.11-slim", "port": 8000}
     assert [(a["path"], a["type"]) for a in data["artifacts"]] == [
         ("Dockerfile", "container-image"), ("README.md", "documentation"), ("app/__init__.py", "application-source"),
-        ("app/main.py", "application-source"), ("openapi.json", "openapi-contract"),
+        ("app/main.py", "application-source"), ("openapi.json", "openapi-contract"), ("prereqai-config.json", "project-configuration"),
         ("prereqai-project.json", "project-metadata"), ("requirements.txt", "dependency-manifest"),
     ]
     assert "draft_id" not in data and "endpoint" not in data  # identity stays in the metadata file
@@ -100,7 +100,7 @@ def test_artifact_validation_checks_the_manifest_against_the_files_and_dockerfil
     missing = {k: v for k, v in files.items() if k != PROJECT_MANIFEST_FILENAME}
 
     assert _categories(stale) == {"MANIFEST_ARTIFACTS"}
-    assert _categories(wrong_port) == {"MANIFEST_CONFIGURATION", "README_INCOMPLETE"}
+    assert _categories(wrong_port) == {"MANIFEST_CONFIGURATION", "README_INCOMPLETE", "CONFIG_MISMATCH"}
     assert _categories(extra_file) == {"MANIFEST_ARTIFACTS"}
     assert _categories({**files, PROJECT_MANIFEST_FILENAME: "{}"}) == {"INVALID_MANIFEST"}
     assert "MISSING_FILE" in _categories(missing)

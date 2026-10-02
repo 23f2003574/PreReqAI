@@ -57,5 +57,6 @@ The generated handler does not run any notebook code. For a request whose input 
 | `app/__init__.py` | FastAPI application code |
 | `app/main.py` | FastAPI application code |
 | `openapi.json` | OpenAPI document of the generated API |
+| `prereqai-config.json` | generation settings (base image, port, project name); edit and regenerate with `--config` |
 | `prereqai-project.json` | which generator, contract and draft produced this project |
 | `requirements.txt` | Python dependencies to install |

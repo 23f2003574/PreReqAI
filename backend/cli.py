@@ -318,6 +318,11 @@ def _add_api_generation_parser(subparsers):
     )
     generate.add_argument("--port", type=int, default=None, help="Dockerfile default listen port (default: 8000)")
     generate.add_argument(
+        "--config", default=None,
+        help="A prereqai-config.json (e.g. from an earlier generated project) holding base_image, port and "
+             "project_name; explicit flags override its values",
+    )
+    generate.add_argument(
         "--project-name", default=None, dest="project_name",
         help="Project name (letters, digits, '-', '_'); the app is generated in the package it normalizes to, "
              "e.g. loan-quote -> loan_quote/main.py (default: the draft's summary, package app)",
@@ -443,7 +448,10 @@ def _run_api_generation_generate(args) -> int:
         draft = _load_draft(args.draft)
         options = {k: v for k, v in (("base_image", args.base_image), ("port", args.port),
                                     ("project_name", args.project_name)) if v is not None}
-        config = APIGenerationConfig(output_dir=args.output_dir, **options)
+        if args.config is not None:
+            config = APIGenerationConfig.from_file(args.config, args.output_dir, overrides=options)
+        else:
+            config = APIGenerationConfig(output_dir=args.output_dir, **options)
         application = generate_application(_LoadedDraftSource(draft), draft, config=config, dry_run=args.dry_run)
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
         stage = getattr(error, "stage", "input")

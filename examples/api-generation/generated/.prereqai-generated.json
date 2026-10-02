@@ -1,1 +1,1 @@
-{"status": "complete", "files": ["Dockerfile", "README.md", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]}
+{"status": "complete", "files": ["Dockerfile", "README.md", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-config.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]}

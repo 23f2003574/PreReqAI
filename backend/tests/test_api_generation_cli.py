@@ -37,7 +37,7 @@ def test_json_output_is_the_machine_readable_result(tmp_path, drafts, capsys):
 
     payload = json.loads(capsys.readouterr().out)
     assert code == EXIT_OK and payload["endpoint"] == "POST /add"
-    assert payload["files"] == ["Dockerfile", "README.md", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]
+    assert payload["files"] == ["Dockerfile", "README.md", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-config.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]
 
 
 def test_unvalidated_draft_fails_naming_the_stage_and_writes_nothing(tmp_path, drafts, capsys):

@@ -11,6 +11,7 @@ _DESCRIPTIONS = {
     "project-metadata": "which generator, contract and draft produced this project",
     "openapi-contract": "OpenAPI document of the generated API",
     "documentation": "this file",
+    "project-configuration": "generation settings (base image, port, project name); edit and regenerate with `--config`",
 }
 
 

@@ -21,7 +21,7 @@ def test_validated_draft_flows_through_generation_validation_and_output(tmp_path
     app = generate_application(env["draft"], validated, tmp_path / "out")
 
     assert (app.draft_id, app.endpoint) == (validated.draft_id, "POST /add")
-    assert app.files == ["Dockerfile", "README.md", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]
+    assert app.files == ["Dockerfile", "README.md", "app/__init__.py", "app/main.py", "openapi.json", "prereqai-config.json", "prereqai-manifest.json", "prereqai-project.json", "requirements.txt"]
     assert app.openapi_path == (tmp_path / "out" / "openapi.json").resolve() and app.openapi_path.is_file()
     written = {p: (app.output_dir / p).read_text() for p in app.files}
     assert require_valid(written).valid

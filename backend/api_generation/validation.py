@@ -5,6 +5,9 @@ from dataclasses import dataclass
 
 from backend.api_schema_review import APPROVED, REJECTED
 
+from backend.llm.config import InvalidConfigurationError
+
+from .config import CONFIG_FILENAME, APIGenerationConfig
 from .docker import ASGI_SERVER
 from .identity import (
     DEFAULT_PACKAGE,
@@ -120,6 +123,19 @@ def validate_generated_artifact(files: dict) -> LLMGeneratedArtifactValidation:
                 expected_package = project_package(metadata.project_name)
             except InvalidProjectNameError:
                 expected_package = None
+        if CONFIG_FILENAME in files:
+            # The editable prereqai-config.json must describe this project:
+            # the same base image and port as the manifest/Dockerfile and the
+            # same explicit project name (or none) as the metadata.
+            try:
+                config = APIGenerationConfig.from_file_text(files[CONFIG_FILENAME], ".")
+            except InvalidConfigurationError as error:
+                findings.append(_finding("INVALID_CONFIG", CONFIG_FILENAME, str(error)))
+            else:
+                project_name = metadata.project_name if metadata is not None else config.project_name
+                if (config.base_image, config.port, config.project_name) != (manifest.base_image, manifest.port, project_name):
+                    findings.append(_finding("CONFIG_MISMATCH", CONFIG_FILENAME,
+                                             "base_image/port/project_name differ from the generated project"))
         if manifest_package != package or (metadata is not None and (
                 manifest_package != expected_package
                 or (metadata.project_name is not None and manifest.application_name != metadata.project_name))):

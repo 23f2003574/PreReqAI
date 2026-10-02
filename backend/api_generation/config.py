@@ -1,3 +1,4 @@
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -8,6 +9,9 @@ from backend.llm.config import InvalidConfigurationError
 from .docker import BASE_IMAGE, DEFAULT_PORT
 from .identity import project_package
 
+CONFIG_FILENAME = "prereqai-config.json"
+CONFIG_VERSION = 1
+_FILE_FIELDS = ("base_image", "port", "project_name")  # output_dir is machine-specific, so never stored
 _IMAGE = re.compile(r"^[a-z0-9][a-z0-9._/-]*(:[A-Za-z0-9._-]+)?(@sha256:[0-9a-f]{64})?$")
 
 
@@ -39,3 +43,44 @@ class APIGenerationConfig:
         if self.project_name is not None:
             project_package(self.project_name)  # raises InvalidProjectNameError
         return self
+
+    def to_file_dict(self) -> dict:
+        """The settings a generated project's prereqai-config.json records:
+        every generation setting except output_dir, with defaults written out."""
+        return {"config_version": CONFIG_VERSION, **{name: getattr(self, name) for name in _FILE_FIELDS}}
+
+    @classmethod
+    def from_file_text(cls, text: str, output_dir, overrides: dict = None) -> "APIGenerationConfig":
+        """Parse a prereqai-config.json and validate it with validate().
+        Every setting must be present and nothing else may be: a typo or a
+        missing key is an error, never a silent fallback to a default.
+        `overrides` (explicit values, e.g. CLI flags) take precedence."""
+        try:
+            data = json.loads(text)
+        except ValueError as error:
+            raise InvalidConfigurationError(f"{CONFIG_FILENAME} is not valid JSON: {error}") from error
+        expected = {"config_version", *_FILE_FIELDS}
+        if not isinstance(data, dict) or set(data) != expected:
+            keys = sorted(data) if isinstance(data, dict) else type(data).__name__
+            raise InvalidConfigurationError(f"{CONFIG_FILENAME} must contain exactly {sorted(expected)}, got {keys}")
+        if data["config_version"] != CONFIG_VERSION or isinstance(data["config_version"], bool):
+            raise InvalidConfigurationError(f"unsupported config_version {data['config_version']!r} in {CONFIG_FILENAME}")
+        if data["project_name"] is not None and not isinstance(data["project_name"], str):
+            raise InvalidConfigurationError(f"project_name {data['project_name']!r} must be a string or null")
+        values = {name: data[name] for name in _FILE_FIELDS}
+        values.update(overrides or {})
+        return cls(output_dir=output_dir, **values).validate()
+
+    @classmethod
+    def from_file(cls, path, output_dir, overrides: dict = None) -> "APIGenerationConfig":
+        try:
+            text = Path(path).read_text(encoding="utf-8")
+        except OSError as error:
+            raise InvalidConfigurationError(f"cannot read {path}: {error.strerror}") from error
+        return cls.from_file_text(text, output_dir, overrides)
+
+
+def config_file_text(base_image: str, port: int, project_name=None) -> str:
+    """Deterministic text of a generated project's prereqai-config.json."""
+    config = APIGenerationConfig(output_dir=".", base_image=base_image, port=port, project_name=project_name)
+    return json.dumps(config.to_file_dict(), indent=2, sort_keys=True) + "\n"

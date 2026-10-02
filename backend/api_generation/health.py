@@ -12,7 +12,7 @@ INCOMPATIBLE = "incompatible"
 
 # check name -> (finding categories, or targets) that make it fail
 _CHECKS = (
-    ("manifest", {"INVALID_MANIFEST", "MANIFEST_ARTIFACTS", "MANIFEST_CONFIGURATION", "IDENTITY_MISMATCH"}, {PROJECT_MANIFEST_FILENAME}),
+    ("manifest", {"INVALID_MANIFEST", "MANIFEST_ARTIFACTS", "MANIFEST_CONFIGURATION", "IDENTITY_MISMATCH", "INVALID_CONFIG", "CONFIG_MISMATCH"}, {PROJECT_MANIFEST_FILENAME}),
     ("metadata", {"INVALID_METADATA", "METADATA_MISMATCH"}, {METADATA_FILENAME}),
     ("entrypoint", {"NO_ENTRYPOINT", "NO_ROUTES"}, {"app/main.py", "app/__init__.py"}),
     ("python", {"SYNTAX_ERROR", "IMPORT_ERROR"}, set()),

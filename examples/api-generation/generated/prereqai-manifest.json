@@ -25,6 +25,10 @@
       "type": "openapi-contract"
     },
     {
+      "path": "prereqai-config.json",
+      "type": "project-configuration"
+    },
+    {
       "path": "prereqai-project.json",
       "type": "project-metadata"
     },
