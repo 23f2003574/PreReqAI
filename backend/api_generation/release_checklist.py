@@ -125,7 +125,7 @@ def run_release_checklist(
         attempt("dry run does not mutate output", dry_run_is_faithful)
     attempt("failure paths leave no misleading artifacts", failure_leaves_nothing)
 
-    compatibility = diagnose_compatibility(files)
+    compatibility = {**diagnose_compatibility(files), "regeneration": None}  # nothing on disk to regenerate
     if files and compatibility["status"] == "upgradable":
         warnings.append(f"compatibility: {compatibility['remediation']}")  # compatible: never blocks a release
     elif files and compatibility["remediation"]:

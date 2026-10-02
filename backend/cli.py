@@ -500,7 +500,15 @@ def _run_api_generation_check(args) -> int:
             supported = compatibility["supported"][file]
             print("  " + file + ": " + ", ".join(
                 f"{field} {'-' if found is None else found} (supported {supported[field]})" for field, found in fields.items()))
-        if compatibility["remediation"]:
+        regeneration = compatibility.get("regeneration")
+        if regeneration:
+            print("Regeneration recommended (informational; nothing was changed):")
+            for version in regeneration["versions"]:
+                print(f"  {version['file']} {version['field']}: project {version['project']}, "
+                      f"generator {version['generator']}")
+            print(f"  run: {regeneration['command']}")
+            print(f"  note: {regeneration['note']}")
+        elif compatibility["remediation"]:
             print(f"  fix: {compatibility['remediation']}")
     return EXIT_OK if health.healthy else EXIT_FAILURE
 

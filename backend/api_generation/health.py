@@ -1,8 +1,11 @@
+import json
+import shlex
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from .metadata import METADATA_FILENAME
 from .project_manifest import PROJECT_MANIFEST_FILENAME, artifact_type
+from .config import CONFIG_FILENAME
 from .validation import UNKNOWN, diagnose_compatibility, validate_generated_artifact
 from .writer import INCOMPLETE, MARKER_FILENAME, generation_status
 
@@ -52,6 +55,35 @@ def _read_project(root: Path) -> dict:
     return files
 
 
+def regeneration_guidance(compatibility: dict, project_dir, files: dict):
+    """Informational guidance for an *upgradable* project (older but still
+    compatible): which versions it records against the generator's current
+    ones, and the real `api-generation generate` command that regenerates it
+    in place with its own prereqai-config.json (so its project name, base
+    image and port are kept). None for every other state: current projects
+    need nothing, and incompatible ones get the stronger compatibility
+    remediation instead. Nothing is run or changed here."""
+    if compatibility["status"] != "upgradable":
+        return None
+    try:
+        draft_id = json.loads(files[METADATA_FILENAME])["draft_id"]
+    except (KeyError, TypeError, ValueError):
+        draft_id = None
+    root = str(Path(project_dir).resolve())
+    command = ["python", "-m", "backend.cli", "api-generation", "generate",
+               "--draft", "<validated-draft.json>", "--output-dir", root]
+    if CONFIG_FILENAME in files:
+        command += ["--config", str(Path(root) / CONFIG_FILENAME)]
+    return {
+        "versions": [{"file": i["file"], "field": i["field"], "project": i["found"], "generator": i["supported"]}
+                     for i in compatibility["issues"]],
+        "draft_id": draft_id,
+        "command": " ".join(part if part.startswith("<") else shlex.quote(part) for part in command),
+        "note": (f"<validated-draft.json> is the validated draft '{draft_id}' this project was generated from. "
+                 "Regeneration is optional and only happens when you run the command."),
+    }
+
+
 def check_generated_project(output_dir) -> LLMGeneratedProjectHealth:
     """Read-only health check of a generated project on disk. It reads the
     project's files and runs the existing generated-artifact validation on
@@ -62,7 +94,7 @@ def check_generated_project(output_dir) -> LLMGeneratedProjectHealth:
     root = Path(output_dir)
     if not root.is_dir():
         findings = [{"category": "NOT_A_PROJECT", "target": str(output_dir), "message": "not a directory", "blocking": True}]
-        compatibility = {**diagnose_compatibility({}), "status": UNKNOWN,
+        compatibility = {**diagnose_compatibility({}), "status": UNKNOWN, "regeneration": None,
                          "remediation": f"{output_dir} is not a directory; pass the generated project directory."}
         return LLMGeneratedProjectHealth(INVALID, {name: "failed" for name, _, _ in _CHECKS}, findings, compatibility)
 
@@ -80,4 +112,6 @@ def check_generated_project(output_dir) -> LLMGeneratedProjectHealth:
         status = INCOMPATIBLE
     else:
         status = INVALID if findings else HEALTHY
-    return LLMGeneratedProjectHealth(status, checks, findings, diagnose_compatibility(files))
+    compatibility = diagnose_compatibility(files)
+    compatibility["regeneration"] = regeneration_guidance(compatibility, root, files)
+    return LLMGeneratedProjectHealth(status, checks, findings, compatibility)

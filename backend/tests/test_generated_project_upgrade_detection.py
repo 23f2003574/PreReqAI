@@ -90,7 +90,7 @@ def test_older_compatible_project_is_healthy_flagged_and_untouched(project, caps
 
     assert main(["api-generation", "check", str(project)]) == EXIT_OK  # a signal, not a failure
     out = capsys.readouterr().out
-    assert "Compatibility: UPGRADABLE" in out and "regeneration may be required" in out
+    assert "Compatibility: UPGRADABLE" in out and "Regeneration recommended (informational" in out
     assert _fingerprint(project) == before  # detection never modifies the project
 
 
