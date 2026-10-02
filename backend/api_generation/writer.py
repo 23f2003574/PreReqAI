@@ -111,6 +111,24 @@ def plan_write(result: LLMAPIGenerationResult, output_dir):
     return root, targets, old_files
 
 
+def _remove_bytecode_cache(source: Path):
+    """Remove the bytecode Python cached for a stale generated module
+    (`__pycache__/<name>.*.pyc` beside it), and that `__pycache__` if it is
+    then empty. Without this, importing a project once and regenerating it
+    under another package left the old package directory behind, holding
+    only caches of modules that no longer exist. Only caches of the removed
+    file itself are touched, never other files."""
+    if source.suffix != ".py":
+        return
+    cache = source.parent / "__pycache__"
+    for compiled in cache.glob(f"{source.stem}.*.pyc"):
+        compiled.unlink()
+    try:
+        cache.rmdir()  # only if now empty
+    except OSError:
+        pass
+
+
 def write_generated_application(result: LLMAPIGenerationResult, output_dir) -> list:
     """Write result.files under output_dir and return the written relative
     paths in sorted order.
@@ -152,6 +170,7 @@ def write_generated_application(result: LLMAPIGenerationResult, output_dir) -> l
             path = (root / stale).resolve()
             if root in path.parents and path.is_file():
                 path.unlink()
+                _remove_bytecode_cache(path)
                 try:
                     path.parent.rmdir()  # only if now empty
                 except OSError:
