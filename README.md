@@ -1537,3 +1537,12 @@ python -m backend.cli recovery-decision readiness --json
 
 Exits `0` only when `ready`; non-zero (`1`) when `blocked`; `2` on a
 usage error.
+
+## API Generation
+
+`python -m backend.cli api-generation` turns a validated API documentation
+draft into a runnable FastAPI project. It has two commands: `generate`
+(supports `--dry-run` and `--json`) and `check`.
+
+See the walkthrough in `docs/api-generation-walkthrough.md` and the complete
+example in `examples/api-generation/`.

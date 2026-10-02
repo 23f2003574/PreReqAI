@@ -1,7 +1,8 @@
 # API generation example: loan quote
 
 A small, complete reference for PreReqAI's API generation path, from a
-validated API documentation draft to a generated FastAPI project.
+validated API documentation draft to a generated FastAPI project. For a
+step-by-step guide, see [the walkthrough](../../docs/api-generation-walkthrough.md).
 
 | File | What it is |
 | --- | --- |

@@ -295,7 +295,10 @@ def _add_recovery_decision_parser(subparsers):
 
 
 def _add_api_generation_parser(subparsers):
-    api_generation = subparsers.add_parser("api-generation", help="Generated API application operations")
+    api_generation = subparsers.add_parser(
+        "api-generation", help="Generated API application operations",
+        epilog="Worked example: examples/api-generation/ (walkthrough: docs/api-generation-walkthrough.md)",
+    )
     api_generation_subparsers = api_generation.add_subparsers(dest="api_generation_command", required=True)
     generate = api_generation_subparsers.add_parser(
         "generate",
