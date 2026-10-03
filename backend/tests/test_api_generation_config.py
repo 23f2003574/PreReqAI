@@ -1,7 +1,7 @@
 import pytest
 
 from backend.api_generation import APIGenerationConfig, FastAPIApplicationGenerator, generate_application
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from backend.llm.config import InvalidConfigurationError
 from test_api_generation_boundary import _draft, _env
 from test_api_generation_cli import drafts  # noqa: F401  (fixture)
@@ -82,5 +82,5 @@ def test_cli_flags_override_defaults_and_bad_values_fail_cleanly(tmp_path, draft
 
     bad = main(["api-generation", "generate", "--draft", str(drafts[0]), "--output-dir", str(tmp_path / "q"), "--port", "0"])
     err = capsys.readouterr().err
-    assert bad == EXIT_FAILURE and "stage 'configuration'" in err and "InvalidConfigurationError" in err
+    assert bad == EXIT_INVALID_INPUT and "stage 'configuration'" in err and "InvalidConfigurationError" in err
     assert not (tmp_path / "q").exists()

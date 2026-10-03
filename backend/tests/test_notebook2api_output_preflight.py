@@ -12,7 +12,7 @@ from backend.api_generation import (
     generate_application,
     preflight_output_dir,
 )
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from test_api_generation_boundary import _draft, _env
 from test_api_generation_cli import drafts  # noqa: F401  (fixture)
 
@@ -104,5 +104,5 @@ def test_cli_checks_the_output_directory_before_reading_the_draft(tmp_path, caps
                  "--output-dir", str(a_file / "project"), "--dry-run"])
 
     err = capsys.readouterr().err
-    assert code == EXIT_FAILURE and err.startswith("error: output conflict at stage 'preflight': UnsafeOutputDirectoryError")
+    assert code == EXIT_INVALID_INPUT and err.startswith("error: output conflict at stage 'preflight': UnsafeOutputDirectoryError")
     assert "is not a directory" in err and "hint: choose an output directory" in err and "cannot read a draft" not in err

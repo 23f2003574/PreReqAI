@@ -9,7 +9,7 @@ from dataclasses import asdict
 import pytest
 
 from backend.api_generation import InvalidDraftInputError, load_draft_file
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from backend.notebook_analysis import InvalidNotebookError
 from test_api_generation_boundary import _draft, _env
 from test_llm_api_documentation_draft import ANALYSIS_RESPONSE, NOTEBOOK, build_env, make_response
@@ -70,7 +70,7 @@ def test_cli_rejects_bad_input_at_the_input_stage_before_any_generation(tmp_path
     code = main(["api-generation", "generate", "--draft", str(bad), "--output-dir", str(tmp_path / "o")])
 
     err = capsys.readouterr().err
-    assert code == EXIT_FAILURE and "stage 'input': InvalidDraftInputError" in err and "parameters must be a dict" in err
+    assert code == EXIT_INVALID_INPUT and "stage 'input': InvalidDraftInputError" in err and "parameters must be a dict" in err
     assert "Traceback" not in err and "AttributeError" not in err and not (tmp_path / "o").exists()
 
 

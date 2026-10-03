@@ -48,10 +48,16 @@ from backend.agent_task_recovery_execution_precondition_snapshots import (
     LLMAgentTaskRecoveryExecutionDecisionSupersessionValidationService,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionStore,
 )
-from backend.api_documentation_draft import LLMAPIDocumentationDraft
+from backend.api_documentation_draft import LLMAPIDocumentationDraft, UnknownDraftError
 from backend.api_generation import (
     APIGenerationConfig,
+    DraftNotValidatedError,
     GeneratedArtifactRejectedError,
+    InvalidDraftEndpointError,
+    InvalidDraftInputError,
+    InvalidGeneratorOutputError,
+    UnknownGeneratedImportError,
+    UnsafeGeneratedPathError,
     UnsafeOutputDirectoryError,
     check_generated_project,
     generate_application,
@@ -66,6 +72,10 @@ _SUCCESS_STATUSES = (IMPACT_LIFECYCLE_REMEDIATED, IMPACT_LIFECYCLE_CLEAN, IMPACT
 EXIT_OK = 0
 EXIT_FAILURE = 1
 EXIT_USAGE = 2
+# `api-generation generate` failure categories (see _generation_exit_code):
+EXIT_INVALID_INPUT = 3  # the user can fix it: bad draft, configuration, output target
+EXIT_GENERATION_FAILED = 4  # generation or generated-artifact validation (or writing) failed
+EXIT_INTERNAL_ERROR = 5  # anything unexpected: a bug, not the user's input
 
 
 def _build_collaborators(decision_store=None):
@@ -305,6 +315,10 @@ def _add_api_generation_parser(subparsers):
     api_generation_subparsers = api_generation.add_subparsers(dest="api_generation_command", required=True)
     generate = api_generation_subparsers.add_parser(
         "generate",
+        epilog=(
+            "Exit codes: 0 success; 2 usage error; 3 invalid input, configuration or output target; "
+            "4 generation, validation or write failed; 5 unexpected internal error."
+        ),
         help="Generate, validate and write a FastAPI project from a validated API documentation draft",
         description=(
             "Reads a JSON file holding one API documentation draft (the fields of LLMAPIDocumentationDraft: "
@@ -482,6 +496,22 @@ _GENERATION_HINTS = {
 }
 
 
+_INVALID_INPUT_ERRORS = (
+    InvalidConfigurationError, InvalidDraftInputError, UnsafeOutputDirectoryError, UnsafeGeneratedPathError,
+    DraftNotValidatedError, UnknownDraftError, InvalidDraftEndpointError,
+)
+_GENERATION_ERRORS = (GeneratedArtifactRejectedError, InvalidGeneratorOutputError, UnknownGeneratedImportError)
+
+
+def _generation_exit_code(error) -> int:
+    """The one place a generate failure becomes a process exit code."""
+    if isinstance(error, _INVALID_INPUT_ERRORS):
+        return EXIT_INVALID_INPUT
+    if isinstance(error, _GENERATION_ERRORS) or (isinstance(error, OSError) and _failure_stage(error) == "write"):
+        return EXIT_GENERATION_FAILED
+    return EXIT_INTERNAL_ERROR
+
+
 def _failure_stage(error) -> str:
     stage = getattr(error, "stage", None)
     if stage is None:  # raised before generate_application(): the config file/flags or the draft file
@@ -556,7 +586,7 @@ def _run_api_generation_generate(args) -> int:
             print(json.dumps(_generation_summary(args, completed, error=error), indent=2, sort_keys=True))
         else:
             print(f"Result: failed at stage '{_failure_stage(error)}' (completed: {', '.join(completed) or 'none'})")
-        return EXIT_FAILURE
+        return _generation_exit_code(error)
 
     summary = _generation_summary(args, completed, application=application)
     if args.as_json:

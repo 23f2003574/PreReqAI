@@ -16,7 +16,7 @@ from backend.api_generation import (
     resolve_project_identity,
     validate_generated_artifact,
 )
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from backend.llm.config import InvalidConfigurationError
 
 EXAMPLE_DRAFT = Path(__file__).resolve().parents[2] / "examples" / "api-generation" / "draft.json"
@@ -63,7 +63,7 @@ def test_invalid_names_are_rejected_before_generation(tmp_path, capsys):
 
     out = tmp_path / "project"
     assert main(["api-generation", "generate", "--draft", str(EXAMPLE_DRAFT), "--output-dir", str(out),
-                 "--project-name", "class"]) == EXIT_FAILURE
+                 "--project-name", "class"]) == EXIT_INVALID_INPUT
     assert "InvalidProjectNameError" in capsys.readouterr().err and not out.exists()
 
 

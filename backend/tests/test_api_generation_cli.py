@@ -5,7 +5,7 @@ from dataclasses import asdict
 
 import pytest
 
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from test_api_generation_boundary import _draft, _env
 
 
@@ -44,7 +44,7 @@ def test_unvalidated_draft_fails_naming_the_stage_and_writes_nothing(tmp_path, d
     code = main(["api-generation", "generate", "--draft", str(drafts[1]), "--output-dir", str(tmp_path / "p")])
 
     err = capsys.readouterr().err
-    assert code == EXIT_FAILURE and "stage 'generation'" in err and "DraftNotValidatedError" in err
+    assert code == EXIT_INVALID_INPUT and "stage 'generation'" in err and "DraftNotValidatedError" in err
     assert "Traceback" not in err and not (tmp_path / "p").exists()
 
 
@@ -55,7 +55,7 @@ def test_unsupported_endpoint_is_reported_without_a_stack_trace(tmp_path, drafts
     code = main(["api-generation", "generate", "--draft", str(bad), "--output-dir", str(tmp_path / "p")])
 
     err = capsys.readouterr().err
-    assert code == EXIT_FAILURE and "InvalidDraftEndpointError" in err and "Traceback" not in err
+    assert code == EXIT_INVALID_INPUT and "InvalidDraftEndpointError" in err and "Traceback" not in err
 
 
 @pytest.mark.parametrize("content", [None, "not json", '{"draft_id": "x"}'])
@@ -67,7 +67,7 @@ def test_missing_or_malformed_draft_file_is_a_clean_error(tmp_path, capsys, cont
     code = main(["api-generation", "generate", "--draft", str(path), "--output-dir", str(tmp_path / "p")])
 
     err = capsys.readouterr().err
-    assert code == EXIT_FAILURE and "stage 'input'" in err and "cannot read a draft" in err
+    assert code == EXIT_INVALID_INPUT and "stage 'input'" in err and "cannot read a draft" in err
 
 
 def test_runs_as_a_module_and_the_generated_project_imports(tmp_path, drafts):

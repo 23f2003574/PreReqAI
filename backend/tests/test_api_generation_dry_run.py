@@ -8,7 +8,7 @@ from backend.api_generation import (
     generate_application,
     generation_status,
 )
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from backend.llm.config import InvalidConfigurationError
 from test_api_generation_boundary import _draft, _env
 from test_api_generation_cli import drafts  # noqa: F401  (fixture)
@@ -99,7 +99,7 @@ def test_cli_distinguishes_invalid_input_from_an_existing_output_conflict_and_re
     invalid = main(["api-generation", "generate", "--draft", str(drafts[1]), "--output-dir", str(tmp_path / "x"), "--dry-run"])
     invalid_err = capsys.readouterr().err
 
-    assert conflict == invalid == EXIT_FAILURE
+    assert conflict == invalid == EXIT_INVALID_INPUT
     assert "output conflict at stage 'write'" in conflict_err and "generation failed at stage 'generation'" in invalid_err
 
     real = main(["api-generation", "generate", "--draft", str(drafts[0]), "--output-dir", str(tmp_path / "ok")])

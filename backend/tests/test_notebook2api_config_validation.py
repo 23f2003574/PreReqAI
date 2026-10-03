@@ -7,7 +7,7 @@ import pytest
 
 from backend.api_generation import APIGenerationConfig, InvalidProjectNameError
 from backend.api_generation.config import config_file_text
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from backend.llm.config import InvalidConfigurationError
 from test_api_generation_cli import drafts  # noqa: F401  (fixture)
 
@@ -62,7 +62,7 @@ def test_cli_validates_configuration_before_reading_the_draft(tmp_path, capsys):
                  "--output-dir", str(tmp_path / "o"), "--port", "0", "--base-image", "Bad Image"])
 
     err = capsys.readouterr().err
-    assert code == EXIT_FAILURE and "stage 'configuration'" in err and "port" in err and "base_image" in err
+    assert code == EXIT_INVALID_INPUT and "stage 'configuration'" in err and "port" in err and "base_image" in err
     assert "cannot read a draft" not in err  # the draft was never touched
 
 
@@ -85,4 +85,4 @@ def test_an_invalid_value_inside_a_config_file_is_caught_before_generation(tmp_p
 
     code = main(["api-generation", "generate", "--draft", str(drafts[0]), "--output-dir", str(tmp_path / "o"), "--config", str(config)])
 
-    assert code == EXIT_FAILURE and "stage 'configuration'" in capsys.readouterr().err and not (tmp_path / "o").exists()
+    assert code == EXIT_INVALID_INPUT and "stage 'configuration'" in capsys.readouterr().err and not (tmp_path / "o").exists()

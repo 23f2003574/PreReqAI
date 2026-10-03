@@ -14,7 +14,7 @@ from dataclasses import asdict
 
 from backend.api_generation import check_generated_project, run_release_checklist
 from backend.api_generation import metadata as metadata_module
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main, EXIT_FAILURE
 from test_api_generation_boundary import _draft, _env
 from test_generated_project_clean_build import _clean_copy
 from test_generated_project_importability import _PROBE, REPO_ROOT

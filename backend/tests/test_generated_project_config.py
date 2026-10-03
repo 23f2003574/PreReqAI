@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from backend.api_generation import CONFIG_FILENAME, APIGenerationConfig, check_generated_project, validate_generated_artifact
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from backend.llm.config import InvalidConfigurationError
 from test_generated_project_clean_build import _clean_copy
 from test_generated_project_importability import EXAMPLE, _probe
@@ -83,7 +83,7 @@ def test_invalid_configuration_fails_clearly_before_anything_is_written(tmp_path
 
     code, err = _generate(out, capsys, "--config", str(config_file))
 
-    assert code == EXIT_FAILURE and ("ConfigurationError" in err or "InvalidProjectNameError" in err)
+    assert code == EXIT_INVALID_INPUT and ("ConfigurationError" in err or "InvalidProjectNameError" in err)
     assert message in err and not out.exists()
 
 

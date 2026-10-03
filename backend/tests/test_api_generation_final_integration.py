@@ -8,7 +8,7 @@ import sys
 from dataclasses import asdict
 
 from backend.api_generation import APIGenerator, FastAPIApplicationGenerator, run_release_checklist
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from test_api_generation_boundary import _draft, _env
 
 
@@ -69,7 +69,7 @@ def test_representative_failures_are_not_ready_and_leave_no_misleading_output(tm
     bad_endpoint.write_text(json.dumps({**asdict(validated), "endpoint": "FETCH /add"}))
     out = tmp_path / "project"
 
-    assert main(["api-generation", "generate", "--draft", str(bad_endpoint), "--output-dir", str(out)]) == EXIT_FAILURE
+    assert main(["api-generation", "generate", "--draft", str(bad_endpoint), "--output-dir", str(out)]) == EXIT_INVALID_INPUT
     assert "InvalidDraftEndpointError" in capsys.readouterr().err and not out.exists()
 
     class Corrupt(APIGenerator):

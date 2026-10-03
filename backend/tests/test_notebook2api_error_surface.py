@@ -7,12 +7,12 @@ from dataclasses import asdict
 import pytest
 
 from backend.api_generation import FastAPIApplicationGenerator
-from backend.cli import EXIT_FAILURE, main
+from backend.cli import EXIT_GENERATION_FAILED, EXIT_INVALID_INPUT, main
 from test_api_generation_boundary import _draft, _env
 
 
-def _fail(capsys, *args):
-    assert main(["api-generation", "generate", *args]) == EXIT_FAILURE
+def _fail(capsys, *args, code=EXIT_INVALID_INPUT):
+    assert main(["api-generation", "generate", *args]) == code
     err = capsys.readouterr().err
     assert "Traceback" not in err and err.startswith("error: ")
     return err.splitlines()
@@ -65,7 +65,7 @@ def test_generated_artifact_validation_failure_lists_findings_and_writes_nothing
         lambda self, draft: {**real(self, draft), "app/main.py": "def broken(:\n"},
     )
 
-    lines = _fail(capsys, "--draft", str(validated_draft[0]), "--output-dir", str(tmp_path / "o"))
+    lines = _fail(capsys, "--draft", str(validated_draft[0]), "--output-dir", str(tmp_path / "o"), code=EXIT_GENERATION_FAILED)
 
     assert lines[0].startswith("error: generation failed at stage 'validation': GeneratedArtifactRejectedError")
     assert any(line.startswith("  - SYNTAX_ERROR app/main.py") for line in lines)

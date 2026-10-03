@@ -132,3 +132,17 @@ python -m backend.cli api-generation generate \
   --draft examples/api-generation/draft.json \
   --output-dir examples/api-generation/generated
 ```
+
+## Exit codes
+
+`api-generation generate` exits with:
+
+| code | meaning |
+|---|---|
+| 0 | success (including `--dry-run`) |
+| 2 | command-line usage error |
+| 3 | invalid input, configuration or output target (fix it and run again) |
+| 4 | generation, generated-artifact validation or writing failed |
+| 5 | unexpected internal error |
+
+With `--json`, a failed run still prints one JSON summary on stdout and uses the same exit code.

@@ -3,7 +3,7 @@ carries it (plus the earlier result keys) for success AND failure, and the
 human output ends with a single Result line."""
 import json
 
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from test_api_generation_cli import drafts  # noqa: F401  (fixture)
 
 STAGES = ["configuration", "preflight", "input", "generation", "validation", "write"]
@@ -49,7 +49,7 @@ def test_failed_json_summary_names_the_stage_and_reason_and_never_reports_succes
     code, out = _run(capsys, "--draft", str(drafts[1]), "--output-dir", str(tmp_path / "o"), "--json")
 
     summary = json.loads(out.out)
-    assert code == EXIT_FAILURE and summary["status"] == "failed" and summary["failed_stage"] == "generation"
+    assert code == EXIT_INVALID_INPUT and summary["status"] == "failed" and summary["failed_stage"] == "generation"
     assert summary["stages_completed"] == ["configuration", "preflight", "input"]
     assert summary["error"]["type"] == "DraftNotValidatedError" and summary["validation"] == "not run"
     assert "files" not in summary and "output_dir" not in summary and not (tmp_path / "o").exists()
@@ -60,7 +60,7 @@ def test_an_early_failure_summary_reports_what_completed(tmp_path, capsys):
     code, out = _run(capsys, "--draft", str(tmp_path / "x.json"), "--output-dir", str(tmp_path / "o"), "--port", "0", "--json")
 
     summary = json.loads(out.out)
-    assert code == EXIT_FAILURE and summary["status"] == "failed" and summary["failed_stage"] == "configuration"
+    assert code == EXIT_INVALID_INPUT and summary["status"] == "failed" and summary["failed_stage"] == "configuration"
     assert summary["stages_completed"] == [] and summary["source"] == str(tmp_path / "x.json")
 
 

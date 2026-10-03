@@ -20,7 +20,7 @@ from backend.api_generation import (
     IncompatibleProjectMetadataError,
     check_generated_project,
 )
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_FAILURE, EXIT_INVALID_INPUT, EXIT_OK, main
 from test_generated_project_importability import EXAMPLE
 
 VERSIONS = [  # (file, field)
@@ -114,6 +114,6 @@ def test_an_incompatible_project_is_not_regenerated_over_as_generated_output(pro
     before = (project / "app" / "main.py").read_bytes()
 
     assert main(["api-generation", "generate", "--draft", str(EXAMPLE / "draft.json"),
-                 "--output-dir", str(project)]) == EXIT_FAILURE
+                 "--output-dir", str(project)]) == EXIT_INVALID_INPUT
     assert "refusing to overwrite" in capsys.readouterr().err
     assert (project / "app" / "main.py").read_bytes() == before

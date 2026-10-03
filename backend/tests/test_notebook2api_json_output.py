@@ -6,7 +6,7 @@ import json
 import pytest
 
 from backend.api_generation import generate_application
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from test_api_generation_boundary import _draft, _env
 from test_api_generation_cli import drafts  # noqa: F401  (fixture)
 
@@ -38,7 +38,7 @@ def test_failed_output_has_the_stable_failure_fields_and_a_nonzero_exit(tmp_path
 
     code, data, captured = _json_run(capsys, "--draft", str(draft), "--output-dir", str(tmp_path / "o"), *extra)
 
-    assert code == EXIT_FAILURE and set(data) == FAILURE_KEYS and data["status"] == "failed"
+    assert code == EXIT_INVALID_INPUT and set(data) == FAILURE_KEYS and data["status"] == "failed"
     assert data["failed_stage"] == stage and set(data["error"]) == {"type", "message"}
     assert "Traceback" not in captured.out and "Traceback" not in captured.err
     assert captured.err.startswith("error: ")  # the human error report still goes to stderr

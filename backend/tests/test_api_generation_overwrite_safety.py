@@ -11,7 +11,7 @@ from backend.api_generation import (
     generation_status,
     write_generated_application,
 )
-from backend.cli import EXIT_FAILURE, main
+from backend.cli import EXIT_INVALID_INPUT, main
 from test_api_generation_boundary import _draft, _env
 from test_api_generation_cli import drafts  # noqa: F401  (fixture)
 
@@ -122,5 +122,5 @@ def test_cli_reports_the_refusal_and_leaves_the_directory_alone(tmp_path, drafts
     code = main(["api-generation", "generate", "--draft", str(drafts[0]), "--output-dir", str(tmp_path)])
 
     err = capsys.readouterr().err
-    assert code == EXIT_FAILURE and "stage 'write'" in err and "UnsafeOutputDirectoryError" in err
+    assert code == EXIT_INVALID_INPUT and "stage 'write'" in err and "UnsafeOutputDirectoryError" in err
     assert (tmp_path / "requirements.txt").read_text() == "mine"

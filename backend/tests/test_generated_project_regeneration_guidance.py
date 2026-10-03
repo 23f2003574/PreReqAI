@@ -12,7 +12,7 @@ import pytest
 
 from backend.api_generation import CONFIG_FILENAME, METADATA_FILENAME, PROJECT_MANIFEST_FILENAME, check_generated_project
 from backend.api_generation import metadata as metadata_module
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main, EXIT_FAILURE
 from test_generated_project_importability import EXAMPLE
 
 

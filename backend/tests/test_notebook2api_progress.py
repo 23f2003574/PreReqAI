@@ -5,7 +5,7 @@ import json
 from dataclasses import asdict
 
 from backend.api_generation import generate_application
-from backend.cli import EXIT_FAILURE, EXIT_OK, main
+from backend.cli import EXIT_INVALID_INPUT, EXIT_OK, main
 from test_api_generation_boundary import _draft, _env
 from test_api_generation_cli import drafts  # noqa: F401  (fixture)
 
@@ -43,7 +43,7 @@ def test_a_failure_marks_the_failed_stage_and_stops_there(tmp_path, drafts, caps
     code = main(["api-generation", "generate", "--draft", str(drafts[1]), "--output-dir", str(tmp_path / "o")])
 
     captured = capsys.readouterr()
-    assert code == EXIT_FAILURE
+    assert code == EXIT_INVALID_INPUT
     assert _stages(captured.out) == ["[ok] configuration", "[ok] preflight", "[ok] input", "[failed] generation"]
     assert captured.err.startswith("error: generation failed at stage 'generation'")  # error report unchanged
 
@@ -51,7 +51,7 @@ def test_a_failure_marks_the_failed_stage_and_stops_there(tmp_path, drafts, caps
 def test_an_early_failure_stops_before_later_stages(tmp_path, capsys):
     code = main(["api-generation", "generate", "--draft", str(tmp_path / "x.json"), "--output-dir", str(tmp_path / "o"), "--port", "0"])
 
-    assert code == EXIT_FAILURE and _stages(capsys.readouterr().out) == ["[failed] configuration"]
+    assert code == EXIT_INVALID_INPUT and _stages(capsys.readouterr().out) == ["[failed] configuration"]
 
 
 def test_progress_callback_observes_only_and_cannot_change_the_result(tmp_path):
