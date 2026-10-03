@@ -21,6 +21,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from backend.api_documentation_draft import LLMAPIDocumentationDraft
+from backend.llm.config import InvalidConfigurationError
 from backend.api_generation import (
     APIGenerationConfig,
     GeneratedArtifactRejectedError,
@@ -440,6 +441,35 @@ def _load_draft(path) -> LLMAPIDocumentationDraft:
         raise ValueError(f"cannot read a draft from {path}: {error}") from error
 
 
+_GENERATION_HINTS = {
+    "input": "pass a JSON file with the fields of an API documentation draft (see examples/api-generation/draft.json)",
+    "configuration": "fix the option or the --config file and run again; nothing was written",
+    "generation": "the draft must be VALIDATED and describe a supported endpoint; nothing was written",
+    "validation": "the generated project was rejected before writing; nothing was written",
+    "write": "use an empty output directory, or one this tool generated earlier",
+}
+
+
+def _report_generation_failure(error):
+    """One error format for every generation failure: the failing stage, the
+    exception type and reason, the underlying cause when there is one, and an
+    actionable hint. The original exception is not altered or replaced."""
+    stage = getattr(error, "stage", None)
+    if stage is None:  # raised before generate_application(): the config file/flags or the draft file
+        stage = "configuration" if isinstance(error, InvalidConfigurationError) else "input"
+    kind = "output conflict" if isinstance(error, UnsafeOutputDirectoryError) else "generation failed"
+    print(f"error: {kind} at stage '{stage}': {type(error).__name__}: {error}", file=sys.stderr)
+    if isinstance(error, GeneratedArtifactRejectedError):
+        for finding in error.validation.findings:
+            print(f"  - {finding['category']} {finding['target']}: {finding['message']}", file=sys.stderr)
+    cause = error.__cause__
+    if cause is not None:
+        print(f"  caused by: {type(cause).__name__}: {cause}", file=sys.stderr)
+    hint = _GENERATION_HINTS.get(stage)
+    if hint:
+        print(f"  hint: {hint}", file=sys.stderr)
+
+
 def _run_api_generation_generate(args) -> int:
     """generate_application() with the CLI's conventions: results on stdout
     (--json for the machine-readable form), failures as `error: ...` on
@@ -454,12 +484,7 @@ def _run_api_generation_generate(args) -> int:
             config = APIGenerationConfig(output_dir=args.output_dir, **options)
         application = generate_application(_LoadedDraftSource(draft), draft, config=config, dry_run=args.dry_run)
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
-        stage = getattr(error, "stage", "input")
-        kind = "output conflict" if isinstance(error, UnsafeOutputDirectoryError) else "generation failed"
-        print(f"error: {kind} at stage '{stage}': {type(error).__name__}: {error}", file=sys.stderr)
-        if isinstance(error, GeneratedArtifactRejectedError):
-            for finding in error.validation.findings:
-                print(f"  - {finding['category']} {finding['target']}: {finding['message']}", file=sys.stderr)
+        _report_generation_failure(error)
         return EXIT_FAILURE
 
     if args.as_json:
