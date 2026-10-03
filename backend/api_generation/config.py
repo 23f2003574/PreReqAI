@@ -46,16 +46,27 @@ class APIGenerationConfig:
     project_name: Optional[str] = None
 
     def validate(self):
+        """Check every setting and report all the invalid ones together. A
+        single problem raises its own error (e.g. InvalidProjectNameError);
+        several raise one InvalidConfigurationError listing each."""
+        problems = []
         if not self.output_dir or not isinstance(self.output_dir, (str, Path)) or not str(self.output_dir).strip():
-            raise InvalidConfigurationError("output_dir is required")
-        if Path(self.output_dir).is_file():
-            raise InvalidConfigurationError(f"output_dir {str(self.output_dir)!r} is an existing file")
+            problems.append(InvalidConfigurationError("output_dir is required"))
+        elif Path(self.output_dir).is_file():
+            problems.append(InvalidConfigurationError(f"output_dir {str(self.output_dir)!r} is an existing file"))
         if not isinstance(self.base_image, str) or not _IMAGE.match(self.base_image):
-            raise InvalidConfigurationError(f"base_image {self.base_image!r} is not a valid image reference")
+            problems.append(InvalidConfigurationError(f"base_image {self.base_image!r} is not a valid image reference"))
         if isinstance(self.port, bool) or not isinstance(self.port, int) or not 1 <= self.port <= 65535:
-            raise InvalidConfigurationError(f"port {self.port!r} must be an integer from 1 to 65535")
+            problems.append(InvalidConfigurationError(f"port {self.port!r} must be an integer from 1 to 65535"))
         if self.project_name is not None:
-            project_package(self.project_name)  # raises InvalidProjectNameError
+            try:
+                project_package(self.project_name)
+            except InvalidConfigurationError as error:
+                problems.append(error)
+        if len(problems) == 1:
+            raise problems[0]
+        if problems:
+            raise InvalidConfigurationError("; ".join(str(problem) for problem in problems))
         return self
 
     def to_file_dict(self) -> dict:

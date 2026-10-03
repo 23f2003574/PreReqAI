@@ -475,13 +475,14 @@ def _run_api_generation_generate(args) -> int:
     (--json for the machine-readable form), failures as `error: ...` on
     stderr naming the failing stage and exit code 1, never a stack trace."""
     try:
-        draft = _load_draft(args.draft)
         options = {k: v for k, v in (("base_image", args.base_image), ("port", args.port),
                                     ("project_name", args.project_name)) if v is not None}
         if args.config is not None:
             config = APIGenerationConfig.from_file(args.config, args.output_dir, overrides=options)
         else:
             config = APIGenerationConfig(output_dir=args.output_dir, **options)
+        config.validate()  # earliest point: before the draft is read or any generation work starts
+        draft = _load_draft(args.draft)
         application = generate_application(_LoadedDraftSource(draft), draft, config=config, dry_run=args.dry_run)
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
         _report_generation_failure(error)
