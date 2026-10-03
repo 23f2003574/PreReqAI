@@ -28,6 +28,7 @@ from backend.api_generation import (
     check_generated_project,
     generate_application,
     load_draft_file,
+    preflight_output_dir,
 )
 from backend.agent_task_recovery_execution_precondition_snapshots import (
     HEALTH_HEALTHY,
@@ -437,9 +438,18 @@ def _load_draft(path) -> LLMAPIDocumentationDraft:
     return load_draft_file(path)
 
 
+def _preflight(config):
+    try:
+        preflight_output_dir(config.output_dir)
+    except Exception as error:
+        error.stage = "preflight"
+        raise
+
+
 _GENERATION_HINTS = {
     "input": "pass a JSON file with the fields of an API documentation draft (see examples/api-generation/draft.json)",
     "configuration": "fix the option or the --config file and run again; nothing was written",
+    "preflight": "choose an output directory that can be created and written; nothing was written",
     "generation": "the draft must be VALIDATED and describe a supported endpoint; nothing was written",
     "validation": "the generated project was rejected before writing; nothing was written",
     "write": "use an empty output directory, or one this tool generated earlier",
@@ -478,6 +488,7 @@ def _run_api_generation_generate(args) -> int:
         else:
             config = APIGenerationConfig(output_dir=args.output_dir, **options)
         config.validate()  # earliest point: before the draft is read or any generation work starts
+        _preflight(config)
         draft = _load_draft(args.draft)
         application = generate_application(_LoadedDraftSource(draft), draft, config=config, dry_run=args.dry_run)
     except Exception as error:  # never leak a composed service's internals as a stack trace by default

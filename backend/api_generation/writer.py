@@ -81,6 +81,28 @@ def _clean_up_failed_attempt(root, root_existed, marker_existed, created_files, 
                 pass
 
 
+def preflight_output_dir(output_dir) -> Path:
+    """Cheap, read-only checks of the generation target that need no
+    generated files: it can be created or written (its nearest existing
+    ancestor is a writable directory), it is not a file, and an existing
+    generation marker is readable. Returns the resolved path. The overwrite
+    rules that depend on which files would be written (collisions in an
+    unmarked directory) are applied later by plan_write(). Touches nothing."""
+    root = Path(output_dir).resolve()
+    if root.exists() and not root.is_dir():
+        raise UnsafeOutputDirectoryError(f"{root} exists and is not a directory")
+    if root.is_dir():
+        _read_marker(root)  # raises UnsafeOutputDirectoryError if the marker is unreadable
+    anchor = root
+    while not anchor.exists():
+        anchor = anchor.parent
+    if not anchor.is_dir():
+        raise UnsafeOutputDirectoryError(f"cannot create {root}: {anchor} is not a directory")
+    if not os.access(anchor, os.W_OK | os.X_OK):
+        raise UnsafeOutputDirectoryError(f"cannot write to {root}: {anchor} is not writable")
+    return root
+
+
 def plan_write(result: LLMAPIGenerationResult, output_dir):
     """The read-only half of write_generated_application: resolve the output
     location and the target path of every file, and apply the overwrite rules.

@@ -93,7 +93,7 @@ def test_each_failure_reports_the_stage_that_failed(tmp_path, monkeypatch):
     monkeypatch.setattr(workflow, "write_generated_application", boom)
     error = _failing_stage(tmp_path)
     assert isinstance(error, OSError) and error.stage == "write"
-    assert api_generation.STAGES == ("configuration", "generation", "validation", "write")
+    assert api_generation.STAGES == ("configuration", "preflight", "generation", "validation", "write")
 
 
 def test_failed_run_never_returns_a_project_and_a_later_good_run_replaces_stale_files(tmp_path):

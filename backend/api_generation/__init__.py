@@ -63,6 +63,7 @@ from .writer import (
     UnsafeOutputDirectoryError,
     generation_status,
     plan_write,
+    preflight_output_dir,
     write_generated_application,
 )
 from .manifest import UnknownGeneratedImportError, generate_requirements
@@ -71,6 +72,7 @@ from .release_checklist import LLMGenerationReleaseChecklist, run_release_checkl
 from .service import DraftNotValidatedError, InvalidGeneratorOutputError, LLMAPIGenerationService
 
 __all__ = [
+    "preflight_output_dir",
     "InvalidDraftInputError",
     "load_draft_file",
     "IncompatibleConfigurationError",

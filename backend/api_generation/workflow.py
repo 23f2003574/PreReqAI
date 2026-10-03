@@ -9,7 +9,7 @@ from .generator import APIGenerator
 from .openapi import OPENAPI_FILENAME
 from .service import LLMAPIGenerationService
 from .validation import require_valid
-from .writer import plan_write, write_generated_application
+from .writer import plan_write, preflight_output_dir, write_generated_application
 
 
 @dataclass(frozen=True)
@@ -26,7 +26,7 @@ class LLMGeneratedApplication:
     dry_run: bool = False
 
 
-STAGES = ("configuration", "generation", "validation", "write")
+STAGES = ("configuration", "preflight", "generation", "validation", "write")
 
 
 def _stage(name, call, *args):
@@ -74,6 +74,7 @@ def generate_application(
         generator = generator or FastAPIApplicationGenerator(config.base_image, config.port, config.project_name)
     elif output_dir is None:
         raise _tag(ValueError("output_dir or config is required"), "configuration")
+    _stage("preflight", preflight_output_dir, output_dir)  # before any generation work
     result = _stage("generation", LLMAPIGenerationService(draft_service, generator or FastAPIApplicationGenerator()).generate, draft)
     _stage("validation", require_valid, result.files)
     if dry_run:
