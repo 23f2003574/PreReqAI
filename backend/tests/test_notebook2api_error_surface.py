@@ -31,9 +31,11 @@ def validated_draft(tmp_path):
 
 
 def test_unreadable_draft_is_an_input_failure_with_cause_and_hint(tmp_path, capsys):
-    lines = _fail(capsys, "--draft", str(tmp_path / "missing.json"), "--output-dir", str(tmp_path / "o"))
+    bad = tmp_path / "bad.json"
+    bad.write_text("{not json")
+    lines = _fail(capsys, "--draft", str(bad), "--output-dir", str(tmp_path / "o"))
 
-    assert lines[0].startswith("error: generation failed at stage 'input': ValueError: cannot read a draft from")
+    assert lines[0].startswith("error: generation failed at stage 'input': InvalidDraftInputError: cannot read a draft from")
     assert any(line.startswith("  caused by: ") for line in lines)  # the underlying OSError is surfaced, not swallowed
     assert any("hint: pass a JSON file" in line and "examples/api-generation/draft.json" in line for line in lines)
 

@@ -20,6 +20,7 @@ run_release_checklist.
 from .config import CONFIG_FILENAME, APIGenerationConfig, IncompatibleConfigurationError
 from .docker import ASGI_SERVER, InvalidDockerInputError, generate_dockerfile
 from .fastapi_generator import FastAPIApplicationGenerator, InvalidDraftEndpointError
+from .draft_input import InvalidDraftInputError, load_draft_file
 from .generator import APIGenerator
 from .identity import (
     DEFAULT_PACKAGE,
@@ -70,6 +71,8 @@ from .release_checklist import LLMGenerationReleaseChecklist, run_release_checkl
 from .service import DraftNotValidatedError, InvalidGeneratorOutputError, LLMAPIGenerationService
 
 __all__ = [
+    "InvalidDraftInputError",
+    "load_draft_file",
     "IncompatibleConfigurationError",
     "CONFIG_FILENAME",
     "DEFAULT_PACKAGE",

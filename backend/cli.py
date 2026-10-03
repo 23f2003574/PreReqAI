@@ -17,7 +17,6 @@ Usage:
 import argparse
 import json
 import sys
-from pathlib import Path
 from types import SimpleNamespace
 
 from backend.api_documentation_draft import LLMAPIDocumentationDraft
@@ -28,6 +27,7 @@ from backend.api_generation import (
     UnsafeOutputDirectoryError,
     check_generated_project,
     generate_application,
+    load_draft_file,
 )
 from backend.agent_task_recovery_execution_precondition_snapshots import (
     HEALTH_HEALTHY,
@@ -434,11 +434,7 @@ class _LoadedDraftSource:
 
 
 def _load_draft(path) -> LLMAPIDocumentationDraft:
-    try:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-        return LLMAPIDocumentationDraft(**data)
-    except (OSError, ValueError, TypeError) as error:
-        raise ValueError(f"cannot read a draft from {path}: {error}") from error
+    return load_draft_file(path)
 
 
 _GENERATION_HINTS = {
