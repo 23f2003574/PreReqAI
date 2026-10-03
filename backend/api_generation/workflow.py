@@ -42,6 +42,14 @@ def _stage(name, call, *args):
         raise
 
 
+def _notify(progress, stage, status):
+    if progress is not None:
+        try:
+            progress(stage, status)
+        except Exception:  # reporting must never change the pipeline's outcome
+            pass
+
+
 def _tag(error, name):
     error.stage = name
     return error
@@ -54,6 +62,7 @@ def generate_application(
     generator: APIGenerator = None,
     config: APIGenerationConfig = None,
     dry_run: bool = False,
+    progress=None,
 ) -> LLMGeneratedApplication:
     """The step after a validated documentation draft: generate the
     application (#2 boundary), validate the generated files (#10) and only
@@ -66,22 +75,31 @@ def generate_application(
     Every failure carries `.stage` (one of STAGES); a write-stage failure may
     leave a partially written directory but is never returned as a success. Callers that only want
     the documentation draft are unaffected: the draft service is unchanged."""
+    def run(name, call, *args):
+        try:
+            value = _stage(name, call, *args)
+        except Exception:
+            _notify(progress, name, "failed")
+            raise
+        _notify(progress, name, "ok")
+        return value
+
     if config is not None:
-        _stage("configuration", config.validate)
+        run("configuration", config.validate)
         if output_dir is not None and Path(output_dir) != Path(config.output_dir):
             raise _tag(ValueError("output_dir conflicts with config.output_dir; pass only one"), "configuration")
         output_dir = config.output_dir
         generator = generator or FastAPIApplicationGenerator(config.base_image, config.port, config.project_name)
     elif output_dir is None:
         raise _tag(ValueError("output_dir or config is required"), "configuration")
-    _stage("preflight", preflight_output_dir, output_dir)  # before any generation work
-    result = _stage("generation", LLMAPIGenerationService(draft_service, generator or FastAPIApplicationGenerator()).generate, draft)
-    _stage("validation", require_valid, result.files)
+    run("preflight", preflight_output_dir, output_dir)  # before any generation work
+    result = run("generation", LLMAPIGenerationService(draft_service, generator or FastAPIApplicationGenerator()).generate, draft)
+    run("validation", require_valid, result.files)
     if dry_run:
-        root, targets, _ = _stage("write", plan_write, result, output_dir)  # the real write's read-only checks
+        root, targets, _ = run("write", plan_write, result, output_dir)  # the real write's read-only checks
         written = sorted(targets)
     else:
-        written = _stage("write", write_generated_application, result, output_dir)
+        written = run("write", write_generated_application, result, output_dir)
     openapi_path = Path(output_dir).resolve() / OPENAPI_FILENAME
     return LLMGeneratedApplication(
         draft_id=result.draft_id, endpoint=result.endpoint, output_dir=Path(output_dir).resolve(),

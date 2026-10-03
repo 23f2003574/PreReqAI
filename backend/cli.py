@@ -333,6 +333,10 @@ def _add_api_generation_parser(subparsers):
         "--json", action="store_true", dest="as_json",
         help="Print the result (draft_id, endpoint, output_dir, files, openapi_path) as JSON",
     )
+    generate.add_argument(
+        "-q", "--quiet", action="store_true", dest="quiet",
+        help="Do not print stage progress lines (progress is also off with --json)",
+    )
 
 
     check = api_generation_subparsers.add_parser(
@@ -438,6 +442,27 @@ def _load_draft(path) -> LLMAPIDocumentationDraft:
     return load_draft_file(path)
 
 
+def _build_config(args) -> APIGenerationConfig:
+    options = {k: v for k, v in (("base_image", args.base_image), ("port", args.port),
+                                ("project_name", args.project_name)) if v is not None}
+    if args.config is not None:
+        config = APIGenerationConfig.from_file(args.config, args.output_dir, overrides=options)
+    else:
+        config = APIGenerationConfig(output_dir=args.output_dir, **options)
+    return config.validate()
+
+
+def _cli_stage(name, progress, call, *args):
+    """Run one pre-generation CLI stage, reporting it like the workflow's own."""
+    try:
+        value = call(*args)
+    except Exception:
+        progress(name, "failed")
+        raise
+    progress(name, "ok")
+    return value
+
+
 def _preflight(config):
     try:
         preflight_output_dir(config.output_dir)
@@ -480,17 +505,21 @@ def _run_api_generation_generate(args) -> int:
     """generate_application() with the CLI's conventions: results on stdout
     (--json for the machine-readable form), failures as `error: ...` on
     stderr naming the failing stage and exit code 1, never a stack trace."""
+    show = not (args.quiet or args.as_json)
+
+    def progress(stage, status):
+        if show:
+            note = " (dry run: nothing written)" if stage == "write" and args.dry_run and status == "ok" else ""
+            print(f"[{status}] {stage}{note}")
+
     try:
-        options = {k: v for k, v in (("base_image", args.base_image), ("port", args.port),
-                                    ("project_name", args.project_name)) if v is not None}
-        if args.config is not None:
-            config = APIGenerationConfig.from_file(args.config, args.output_dir, overrides=options)
-        else:
-            config = APIGenerationConfig(output_dir=args.output_dir, **options)
-        config.validate()  # earliest point: before the draft is read or any generation work starts
-        _preflight(config)
-        draft = _load_draft(args.draft)
-        application = generate_application(_LoadedDraftSource(draft), draft, config=config, dry_run=args.dry_run)
+        config = _cli_stage("configuration", progress, _build_config, args)  # before the draft is read
+        _cli_stage("preflight", progress, _preflight, config)
+        draft = _cli_stage("input", progress, _load_draft, args.draft)
+        application = generate_application(
+            _LoadedDraftSource(draft), draft, config=config, dry_run=args.dry_run,
+            progress=lambda stage, status: progress(stage, status) if stage not in ("configuration", "preflight") else None,
+        )
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
         _report_generation_failure(error)
         return EXIT_FAILURE
