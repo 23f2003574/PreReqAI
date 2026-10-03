@@ -502,12 +502,8 @@ def _generation_summary(args, completed, application=None, error=None) -> dict:
         "warnings": [],
     }
     if application is not None:
-        summary.update({
-            "draft_id": application.draft_id, "endpoint": application.endpoint,
-            "output_dir": str(application.output_dir), "files": application.files,
-            "openapi_path": str(application.openapi_path),
-            "artifact_types": sorted({artifact_type(path) for path in application.files if artifact_type(path)}),
-        })
+        summary.update(application.to_dict())
+        summary["artifact_types"] = sorted({artifact_type(path) for path in application.files if artifact_type(path)})
     else:
         summary.update({"failed_stage": failed_stage, "error": {"type": type(error).__name__, "message": str(error)}})
     return summary

@@ -25,6 +25,13 @@ class LLMGeneratedApplication:
     openapi_path: Path
     dry_run: bool = False
 
+    def to_dict(self) -> dict:
+        """The JSON-ready form of this result (paths as strings), used by the CLI's --json output."""
+        return {
+            "draft_id": self.draft_id, "endpoint": self.endpoint, "output_dir": str(self.output_dir),
+            "files": list(self.files), "openapi_path": str(self.openapi_path), "dry_run": self.dry_run,
+        }
+
 
 STAGES = ("configuration", "preflight", "generation", "validation", "write")
 
