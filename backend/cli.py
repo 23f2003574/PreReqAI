@@ -19,24 +19,16 @@ import json
 import sys
 from types import SimpleNamespace
 
-from backend.api_documentation_draft import LLMAPIDocumentationDraft
-from backend.llm.config import InvalidConfigurationError
-from backend.api_generation import (
-    APIGenerationConfig,
-    GeneratedArtifactRejectedError,
-    UnsafeOutputDirectoryError,
-    check_generated_project,
-    generate_application,
-    load_draft_file,
-    preflight_output_dir,
-)
 from backend.agent_task_recovery_execution_precondition_snapshots import (
     HEALTH_HEALTHY,
-    READY,
     IMPACT_LIFECYCLE_CLEAN,
     IMPACT_LIFECYCLE_REMEDIATED,
     IMPACT_LIFECYCLE_UP_TO_DATE,
     LIFECYCLE_VERIFICATION_VALID,
+    READY,
+    InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError,
+    InvalidAgentTaskRecoveryExecutionDecisionLifecycleHealthError,
+    InvalidAgentTaskRecoveryExecutionDecisionLifecycleReadinessError,
     LLMAgentTaskRecoveryExecutionDecisionChangeImpactService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationAuditService,
     LLMAgentTaskRecoveryExecutionDecisionImpactInvalidationLifecycleReconciliationService,
@@ -55,10 +47,19 @@ from backend.agent_task_recovery_execution_precondition_snapshots import (
     LLMAgentTaskRecoveryExecutionDecisionSupersessionResolutionService,
     LLMAgentTaskRecoveryExecutionDecisionSupersessionValidationService,
     LLMAgentTaskRecoveryExecutionPreconditionDecisionStore,
-    InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError,
-    InvalidAgentTaskRecoveryExecutionDecisionLifecycleHealthError,
-    InvalidAgentTaskRecoveryExecutionDecisionLifecycleReadinessError,
 )
+from backend.api_documentation_draft import LLMAPIDocumentationDraft
+from backend.api_generation import (
+    APIGenerationConfig,
+    GeneratedArtifactRejectedError,
+    UnsafeOutputDirectoryError,
+    check_generated_project,
+    generate_application,
+    load_draft_file,
+    preflight_output_dir,
+)
+from backend.api_generation.project_manifest import artifact_type
+from backend.llm.config import InvalidConfigurationError
 
 _SUCCESS_STATUSES = (IMPACT_LIFECYCLE_REMEDIATED, IMPACT_LIFECYCLE_CLEAN, IMPACT_LIFECYCLE_UP_TO_DATE)
 
@@ -481,13 +482,42 @@ _GENERATION_HINTS = {
 }
 
 
+def _failure_stage(error) -> str:
+    stage = getattr(error, "stage", None)
+    if stage is None:  # raised before generate_application(): the config file/flags or the draft file
+        stage = "configuration" if isinstance(error, InvalidConfigurationError) else "input"
+    return stage
+
+
+def _generation_summary(args, completed, application=None, error=None) -> dict:
+    """The one final summary of a generate run, from what the pipeline already
+    knows: the source draft file, the stages that completed, the output
+    location and artifact types, validation status, warnings (the pipeline
+    produces none) and, on failure, the failing stage and reason."""
+    failed_stage = _failure_stage(error) if error is not None else None
+    summary = {
+        "status": "failed" if error is not None else "success",
+        "source": args.draft, "stages_completed": list(completed), "dry_run": bool(args.dry_run),
+        "validation": "failed" if failed_stage == "validation" else ("passed" if "validation" in completed else "not run"),
+        "warnings": [],
+    }
+    if application is not None:
+        summary.update({
+            "draft_id": application.draft_id, "endpoint": application.endpoint,
+            "output_dir": str(application.output_dir), "files": application.files,
+            "openapi_path": str(application.openapi_path),
+            "artifact_types": sorted({artifact_type(path) for path in application.files if artifact_type(path)}),
+        })
+    else:
+        summary.update({"failed_stage": failed_stage, "error": {"type": type(error).__name__, "message": str(error)}})
+    return summary
+
+
 def _report_generation_failure(error):
     """One error format for every generation failure: the failing stage, the
     exception type and reason, the underlying cause when there is one, and an
     actionable hint. The original exception is not altered or replaced."""
-    stage = getattr(error, "stage", None)
-    if stage is None:  # raised before generate_application(): the config file/flags or the draft file
-        stage = "configuration" if isinstance(error, InvalidConfigurationError) else "input"
+    stage = _failure_stage(error)
     kind = "output conflict" if isinstance(error, UnsafeOutputDirectoryError) else "generation failed"
     print(f"error: {kind} at stage '{stage}': {type(error).__name__}: {error}", file=sys.stderr)
     if isinstance(error, GeneratedArtifactRejectedError):
@@ -507,7 +537,11 @@ def _run_api_generation_generate(args) -> int:
     stderr naming the failing stage and exit code 1, never a stack trace."""
     show = not (args.quiet or args.as_json)
 
+    completed = []
+
     def progress(stage, status):
+        if status == "ok":
+            completed.append(stage)
         if show:
             note = " (dry run: nothing written)" if stage == "write" and args.dry_run and status == "ok" else ""
             print(f"[{status}] {stage}{note}")
@@ -522,14 +556,15 @@ def _run_api_generation_generate(args) -> int:
         )
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
         _report_generation_failure(error)
+        if args.as_json:
+            print(json.dumps(_generation_summary(args, completed, error=error), indent=2, sort_keys=True))
+        else:
+            print(f"Result: failed at stage '{_failure_stage(error)}' (completed: {', '.join(completed) or 'none'})")
         return EXIT_FAILURE
 
+    summary = _generation_summary(args, completed, application=application)
     if args.as_json:
-        print(json.dumps({
-            "draft_id": application.draft_id, "endpoint": application.endpoint,
-            "output_dir": str(application.output_dir), "files": application.files,
-            "openapi_path": str(application.openapi_path), "dry_run": application.dry_run,
-        }, indent=2, sort_keys=True))
+        print(json.dumps(summary, indent=2, sort_keys=True))
     elif application.dry_run:
         print(f"Dry run: would generate {application.endpoint} (draft {application.draft_id})")
         print(f"  output:  {application.output_dir}")
@@ -541,6 +576,9 @@ def _run_api_generation_generate(args) -> int:
         print("  files:   " + ", ".join(application.files))
         print(f"  openapi: {application.openapi_path}")
         print(f"  run:     cd {application.output_dir} && uvicorn app.main:app")
+    if not args.as_json:
+        print(f"Result: success ({len(summary['stages_completed'])} stages completed, validation {summary['validation']}; "
+              f"artifacts: {', '.join(summary['artifact_types'])})")
     return EXIT_OK
 
 
