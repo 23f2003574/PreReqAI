@@ -36,3 +36,8 @@ class PreReqAIPlatform:
         self.learning = (
             InteractiveLearningPipeline()
         )
+
+
+# The one platform instance the HTTP application (backend.main) and its routers
+# share, so the user-facing endpoints run the platform's own pipelines.
+platform = PreReqAIPlatform()

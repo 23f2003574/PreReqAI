@@ -12,16 +12,12 @@ from backend.api.recovery_decision_routes import (
     router as recovery_decision_router,
 )
 
-from backend.platform import (
-    PreReqAIPlatform,
+from backend.platform import (  # noqa: F401  (kept as backend.main.platform)
+    platform,
 )
 
 app = FastAPI(
     title="PreReqAI",
-)
-
-platform = (
-    PreReqAIPlatform()
 )
 
 app.include_router(

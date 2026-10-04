@@ -9,8 +9,8 @@ from backend.session import (
     TutorMode,
 )
 
-from backend.pipeline import (
-    InteractiveLearningPipeline,
+from backend.platform import (
+    platform,
 )
 
 router = APIRouter(
@@ -20,9 +20,7 @@ router = APIRouter(
     tags=["Learning Session"],
 )
 
-pipeline = (
-    InteractiveLearningPipeline()
-)
+pipeline = platform.learning
 
 
 class QuestionRequest(BaseModel):

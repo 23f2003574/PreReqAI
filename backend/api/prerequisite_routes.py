@@ -9,8 +9,8 @@ from fastapi import (
     HTTPException,
 )
 
-from backend.pipeline import (
-    ResearchPaperPipeline,
+from backend.platform import (
+    platform,
 )
 
 from backend.session import (
@@ -22,7 +22,7 @@ router = APIRouter(
     tags=["Prerequisite Explorer"],
 )
 
-pipeline = ResearchPaperPipeline()
+pipeline = platform.analysis
 
 
 @router.post("/analyze")
