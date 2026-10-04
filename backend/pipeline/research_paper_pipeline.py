@@ -268,6 +268,23 @@ class ResearchPaperPipeline:
 
         timer = _StageTimer()
 
+        try:
+
+            return self._run(file_path, timer)
+
+        except Exception as exc:
+
+            # What finished before the failure, for diagnostics; the exception itself is unchanged.
+            exc.stage_timings = dict(timer.stages)
+
+            raise
+
+    def _run(
+        self,
+        file_path: str,
+        timer: "_StageTimer",
+    ) -> PipelineResult:
+
         source = self.source_detector.detect(
             file_path,
         )

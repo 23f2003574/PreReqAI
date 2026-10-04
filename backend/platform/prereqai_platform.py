@@ -14,6 +14,20 @@ from backend.pipeline import (
 )
 
 
+def _diagnostics(outcome: dict, stage_timings: dict, report) -> dict:
+    """What the run already knows, for development: final status, completed
+    stages with their durations, where a failed run stopped, warnings and the
+    report's own statistics. Counts and timings only -- no inputs or paths."""
+    completed = list(stage_timings)
+    return {
+        "status": outcome["status"], "stage": outcome["stage"], "completed_stages": completed,
+        "failed_after": completed[-1] if outcome["status"] == "failure" and completed else None,
+        "stage_seconds": dict(stage_timings), "total_seconds": round(sum(stage_timings.values()), 6),
+        "slowest_stage": max(stage_timings, key=stage_timings.get) if stage_timings else None,
+        "warnings": list(outcome["warnings"]), "statistics": dict(report["statistics"]) if report else None,
+    }
+
+
 class PreReqAIPlatform:
     """
     High-level platform entry point
@@ -42,29 +56,37 @@ class PreReqAIPlatform:
             InteractiveLearningPipeline()
         )
 
-    def analyze(self, file_path: str) -> dict:
+    def analyze(self, file_path: str, diagnostics: bool = False) -> dict:
         """Run the analysis pipeline on a paper PDF and open a learning
         session for it. Returns the public workflow result envelope
         (backend.api.workflow_result): a success body carrying session_id and
         report, or a failure body for the analysis stage. This is the one
         place the analysis workflow is turned into a public result; the HTTP
-        endpoint and the CLI both call it."""
+        endpoint and the CLI both call it. With diagnostics=True the result
+        also carries a "diagnostics" summary (see _diagnostics); otherwise the
+        result is exactly as before."""
         from backend.session import session_manager
 
         try:
             result = self.analysis.run(file_path)
         except Exception as exc:
-            return failure_body(
+            outcome = failure_body(
                 "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
                 hint="Upload a text-based PDF research paper.",
             )
+            if diagnostics:
+                outcome["diagnostics"] = _diagnostics(outcome, getattr(exc, "stage_timings", {}), None)
+            return outcome
         session = session_manager.create(
             paper_title=result.report["paper"]["title"], report=result.report, paper=result.paper,
         )
-        return success_body(
+        outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
         )
+        if diagnostics:
+            outcome["diagnostics"] = _diagnostics(outcome, result.timings, result.report)
+        return outcome
 
 
 # The one platform instance the HTTP application (backend.main) and its routers
