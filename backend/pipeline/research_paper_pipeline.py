@@ -160,6 +160,19 @@ class PipelineResult:
     timings: dict = field(default_factory=dict)
 
 
+# Every stage run() executes, in order. A result is complete only if all of
+# these were timed (a test pins this tuple to what run() really records).
+PIPELINE_STAGES = (
+    "source_detector", "source_resolver", "ingestion", "section_parser", "equation_extractor", "figure_extractor",
+    "table_extractor", "reference_extractor", "related_paper_extractor", "algorithm_extractor", "experiment_extractor",
+    "paragraph_segmenter", "citation_extractor", "concept_detector", "prerequisite_detector", "justification_engine",
+    "missing_prerequisite_analyzer", "learning_planner", "difficulty_engine", "difficulty_explanation_engine",
+    "study_time_estimator", "study_action_generator", "resource_recommender", "study_roadmap_generator",
+    "progress_tracker", "readiness_engine", "explanation_engine", "graph_builder", "relationship_builder",
+    "paragraph_relationship_builder", "report_generator",
+)
+
+
 class ResearchPaperPipeline:
     """
     Executes the complete Phase 1 processing

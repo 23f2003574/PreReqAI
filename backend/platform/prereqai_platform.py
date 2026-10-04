@@ -4,10 +4,12 @@ from time import perf_counter
 import requests
 
 from backend.api.workflow_result import (
+    REQUIRED_REPORT_KEYS,
     cancelled_body,
     failure_body,
     limit_exceeded_body,
     success_body,
+    terminal_violations,
     timeout_body,
 )
 from backend.engine import (
@@ -22,6 +24,7 @@ from backend.pipeline import (
     ResearchPaperPipeline,
 )
 from backend.pipeline.research_paper_pipeline import (
+    PIPELINE_STAGES,
     PipelineCancelled,
 )
 
@@ -70,6 +73,19 @@ class PreReqAIPlatform:
         )
 
     def analyze(self, file_path: str, diagnostics: bool = False, should_cancel=None, limits=None) -> dict:
+        """The workflow's public entry point: _analyze() plus the final-state guard. A result that is
+        not a valid terminal state (see workflow_result.terminal_violations) is never returned as it
+        is -- it becomes a failure at stage "finalization"."""
+        outcome = self._analyze(file_path, diagnostics, should_cancel, limits)
+        problems = terminal_violations(outcome)
+        if problems:
+            outcome = failure_body(
+                "finalization", "The analysis did not reach a valid final state: " + "; ".join(problems),
+                error=RuntimeError("; ".join(problems)), hint="This is a bug in the workflow; report it.",
+            )
+        return outcome
+
+    def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits) -> dict:
         """Run the analysis pipeline on a paper PDF and open a learning
         session for it. Returns the public workflow result envelope
         (backend.api.workflow_result): a success body carrying session_id and
@@ -152,6 +168,13 @@ class PreReqAIPlatform:
             if diagnostics:
                 outcome["diagnostics"] = _diagnostics(outcome, getattr(exc, "stage_timings", {}), None)
             return outcome
+        incomplete = [stage for stage in PIPELINE_STAGES if stage not in result.timings]
+        incomplete += [f"report.{key}" for key in REQUIRED_REPORT_KEYS if key not in result.report]
+        if incomplete:  # a partial result must never open a session or be reported as a success
+            return failure_body(
+                "finalization", f"The analysis did not complete: {', '.join(incomplete)}",
+                error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
+            )
         session = session_manager.create(
             paper_title=result.report["paper"]["title"], report=result.report, paper=result.paper,
         )

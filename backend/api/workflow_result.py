@@ -18,6 +18,37 @@ TIMEOUT = "timeout"  # an operation exceeded its own time limit (e.g. a download
 CANCELLED = "cancelled"  # a stopped run: distinct from a failure, same envelope keys
 
 
+TERMINAL_STATUSES = (SUCCESS, FAILURE, CANCELLED, LIMIT_EXCEEDED, TIMEOUT)
+REQUIRED_REPORT_KEYS = ("paper", "concepts", "prerequisites", "missing_prerequisites", "learning_plan", "readiness", "statistics")
+
+
+def terminal_violations(outcome) -> list:
+    """What makes `outcome` an invalid terminal workflow result (empty when it
+    is valid). Success must carry a complete output of its own and no error;
+    every other terminal status must carry no output, only the error envelope.
+    Warnings never change the status."""
+    if not isinstance(outcome, dict) or outcome.get("status") not in TERMINAL_STATUSES:
+        return [f"status {outcome.get('status')!r} is not a terminal status" if isinstance(outcome, dict) else "result is not a dict"]
+    problems = []
+    if not isinstance(outcome.get("warnings"), list):
+        problems.append("warnings must be a list")
+    output_keys = [key for key in ("session_id", "report", "timings") if key in outcome]
+    if outcome["status"] == SUCCESS:
+        if sorted(output_keys) != ["report", "session_id", "timings"]:
+            problems.append("a success must carry session_id, report and timings")
+        if "error" in outcome:
+            problems.append("a success must not carry an error")
+        report = outcome.get("report")
+        if not isinstance(report, dict) or any(key not in report for key in REQUIRED_REPORT_KEYS):
+            problems.append("a success must carry a complete report")
+    else:
+        if output_keys:
+            problems.append(f"a {outcome['status']} result must not carry {output_keys}")
+        if "error" not in outcome or "stage" not in outcome:
+            problems.append("a non-success result must carry stage and error")
+    return problems
+
+
 def success_body(feature: str, stage: str, warnings=(), **output) -> dict:
     return {"status": SUCCESS, "feature": feature, "stage": stage, "warnings": list(warnings), **output}
 
