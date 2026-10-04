@@ -6,7 +6,11 @@ from fastapi import (
     APIRouter,
     UploadFile,
     File,
-    HTTPException,
+)
+
+from backend.api.workflow_result import (
+    failure_response,
+    success_body,
 )
 
 from backend.platform import (
@@ -51,13 +55,13 @@ async def analyze_prerequisites(
 
     except Exception as exc:
 
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Failed to process the uploaded paper: "
-                f"{exc}"
-            ),
-        ) from exc
+        return failure_response(
+            400,
+            "analysis",
+            f"Failed to process the uploaded paper: {exc}",
+            error=exc,
+            hint="Upload a text-based PDF research paper.",
+        )
 
     finally:
 
@@ -71,13 +75,13 @@ async def analyze_prerequisites(
         paper=result.paper,
     )
 
-    return {
+    return success_body(
 
-        "status": "success",
+        "Prerequisite Explorer",
 
-        "feature": "Prerequisite Explorer",
+        "session_created",
 
-        "session_id": session.session_id,
+        session_id=session.session_id,
 
-        "report": result.report,
-    }
+        report=result.report,
+    )

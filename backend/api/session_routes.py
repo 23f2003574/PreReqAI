@@ -1,8 +1,11 @@
 from fastapi import (
     APIRouter,
-    HTTPException,
 )
 from pydantic import BaseModel
+
+from backend.api.workflow_result import (
+    failure_response,
+)
 
 from backend.session import (
     session_manager,
@@ -39,9 +42,11 @@ def get_session(session_id: str):
 
     if session is None:
 
-        raise HTTPException(
-            status_code=404,
-            detail="Session not found",
+        return failure_response(
+            404,
+            "session_lookup",
+            "Session not found",
+            hint="Run an analysis first and use the session_id it returns.",
         )
 
     return {
@@ -82,9 +87,11 @@ def ask_question(
 
     if session is None:
 
-        raise HTTPException(
-            status_code=404,
-            detail="Session not found",
+        return failure_response(
+            404,
+            "session_lookup",
+            "Session not found",
+            hint="Run an analysis first and use the session_id it returns.",
         )
 
     result = pipeline.answer(
