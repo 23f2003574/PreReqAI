@@ -8,7 +8,7 @@ import signal
 import sys
 import threading
 
-from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_OK
+from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK
 
 
 def add_prerequisites_parser(subparsers):
@@ -19,12 +19,16 @@ def add_prerequisites_parser(subparsers):
         help="Analyse a paper PDF into concepts, prerequisites and a learning plan",
         description="Runs the paper analysis pipeline on a PDF file and opens a learning session in this process "
                     "(sessions are in memory and end with the command). Same workflow as POST /api/prerequisites/analyze.",
-        epilog="Exit codes: 0 success; 1 analysis failed; 2 usage error; 130 cancelled (Ctrl-C).",
+        epilog="Exit codes: 0 success; 1 analysis failed; 2 usage error; 124 a resource limit was reached; 130 cancelled (Ctrl-C).",
     )
     analyze.add_argument("paper", help="Path to the paper PDF")
     analyze.add_argument("--diagnose", action="store_true", dest="diagnose",
                          help="Also report per-stage durations, completed stages, warnings and run statistics "
                               "(in the --json result as `diagnostics`)")
+    analyze.add_argument("--max-seconds", type=float, default=None, dest="max_seconds",
+                         help="Stop the analysis once it has run this long (checked between stages; default: no limit)")
+    analyze.add_argument("--max-file-mb", type=float, default=None, dest="max_file_mb",
+                         help="Refuse a paper file larger than this many megabytes (default: no limit)")
     analyze.add_argument("--json", action="store_true", dest="as_json",
                          help="Print the workflow result envelope (status, stage, warnings, session_id, report, timings) as JSON")
 
@@ -32,20 +36,32 @@ def add_prerequisites_parser(subparsers):
 def run_prerequisites_analyze(args, platform=None) -> int:
     if platform is None:
         from backend.platform import platform
+    limits = None
+    if args.max_seconds is not None or args.max_file_mb is not None:
+        from backend.platform import AnalysisLimits
+
+        limits = AnalysisLimits(
+            max_seconds=args.max_seconds,
+            max_file_bytes=None if args.max_file_mb is None else int(args.max_file_mb * 1024 * 1024),
+        )
     cancelled = threading.Event()
     try:  # Ctrl-C asks the analysis to stop before its next stage; a second Ctrl-C interrupts immediately
         previous = signal.signal(signal.SIGINT, lambda *_: (cancelled.set(), signal.signal(signal.SIGINT, signal.default_int_handler)))
     except ValueError:  # not the main thread: no handler, cancellation is only available to library callers
         previous = None
     try:
-        outcome = platform.analyze(args.paper, diagnostics=args.diagnose, should_cancel=cancelled.is_set)
+        outcome = platform.analyze(args.paper, diagnostics=args.diagnose, should_cancel=cancelled.is_set, limits=limits)
     finally:
         if previous is not None:
             signal.signal(signal.SIGINT, previous)
     was_cancelled = outcome["status"] == "cancelled"
+    limit_hit = outcome["status"] == "limit_exceeded"
     failed = outcome["status"] != "success"
     if args.as_json:
         print(json.dumps(outcome, indent=2, sort_keys=True, default=str))
+    elif limit_hit:
+        print(f"error: limit exceeded: {outcome['detail']}", file=sys.stderr)
+        print(f"  hint: {outcome['hint']}", file=sys.stderr)
     elif was_cancelled:
         print("cancelled: analysis stopped before it finished; nothing was kept", file=sys.stderr)
     elif failed:
@@ -74,4 +90,6 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             for name, seconds in sorted(info["stage_seconds"].items(), key=lambda item: -item[1])[:5]:
                 print(f"  {name}: {seconds:.3f}s")
             print("  statistics: " + ", ".join(f"{key}={value}" for key, value in info["statistics"].items()))
+    if limit_hit:
+        return EXIT_LIMIT_EXCEEDED
     return EXIT_CANCELLED if was_cancelled else (EXIT_FAILURE if failed else EXIT_OK)

@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 
 SUCCESS = "success"
 FAILURE = "failure"
+LIMIT_EXCEEDED = "limit_exceeded"  # a resource limit stopped the run: not an ordinary failure
 CANCELLED = "cancelled"  # a stopped run: distinct from a failure, same envelope keys
 
 
@@ -34,6 +35,14 @@ def failure_body(stage: str, message: str, error=None, hint: str = None) -> dict
 def cancelled_body(stage: str, message: str, hint: str = None) -> dict:
     """The envelope of a run that was cancelled before it finished."""
     return {"status": CANCELLED, "stage": stage, "detail": message, "error": None, "hint": hint, "warnings": []}
+
+
+def limit_exceeded_body(stage: str, message: str, hint: str = None) -> dict:
+    """The envelope of a run stopped because it hit a configured resource limit."""
+    return {
+        "status": LIMIT_EXCEEDED, "stage": stage, "detail": message,
+        "error": {"type": "AnalysisLimitExceeded", "message": message}, "hint": hint, "warnings": [],
+    }
 
 
 def failure_response(status_code: int, stage: str, message: str, error=None, hint: str = None) -> JSONResponse:
