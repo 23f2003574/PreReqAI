@@ -8,17 +8,16 @@ from fastapi import (
     File,
 )
 
+from fastapi.responses import (
+    JSONResponse,
+)
+
 from backend.api.workflow_result import (
-    failure_response,
-    success_body,
+    FAILURE,
 )
 
 from backend.platform import (
     platform,
-)
-
-from backend.session import (
-    session_manager,
 )
 
 router = APIRouter(
@@ -49,18 +48,8 @@ async def analyze_prerequisites(
 
     try:
 
-        result = pipeline.run(
+        outcome = platform.analyze(
             temp_path,
-        )
-
-    except Exception as exc:
-
-        return failure_response(
-            400,
-            "analysis",
-            f"Failed to process the uploaded paper: {exc}",
-            error=exc,
-            hint="Upload a text-based PDF research paper.",
         )
 
     finally:
@@ -69,19 +58,11 @@ async def analyze_prerequisites(
             missing_ok=True,
         )
 
-    session = session_manager.create(
-        paper_title=result.report["paper"]["title"],
-        report=result.report,
-        paper=result.paper,
-    )
+    if outcome["status"] == FAILURE:
 
-    return success_body(
+        return JSONResponse(
+            status_code=400,
+            content=outcome,
+        )
 
-        "Prerequisite Explorer",
-
-        "session_created",
-
-        session_id=session.session_id,
-
-        report=result.report,
-    )
+    return outcome
