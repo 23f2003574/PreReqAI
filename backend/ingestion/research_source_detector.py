@@ -44,6 +44,19 @@ class ResearchSourceDetector:
 
         source = source.strip()
 
+        local_path = Path(source)
+
+        if local_path.suffix.lower() == ".pdf" and local_path.is_file():
+
+            # An existing local PDF is always a local PDF, even when its
+            # path happens to contain an arXiv- or DOI-looking segment
+            # (e.g. papers/10.1145/3292500.pdf).
+            return ResearchSource(
+                source_type="pdf",
+                identifier=str(local_path),
+                original_input=source,
+            )
+
         arxiv_match = ARXIV_PATTERN.search(source)
 
         if arxiv_match:
