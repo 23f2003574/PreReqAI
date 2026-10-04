@@ -8,7 +8,7 @@ import signal
 import sys
 import threading
 
-from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK
+from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT
 
 
 def add_prerequisites_parser(subparsers):
@@ -19,7 +19,7 @@ def add_prerequisites_parser(subparsers):
         help="Analyse a paper PDF into concepts, prerequisites and a learning plan",
         description="Runs the paper analysis pipeline on a PDF file and opens a learning session in this process "
                     "(sessions are in memory and end with the command). Same workflow as POST /api/prerequisites/analyze.",
-        epilog="Exit codes: 0 success; 1 analysis failed; 2 usage error; 124 a resource limit was reached; 130 cancelled (Ctrl-C).",
+        epilog="Exit codes: 0 success; 1 analysis failed; 2 usage error; 123 a resource limit was reached; 124 an operation timed out; 130 cancelled (Ctrl-C).",
     )
     analyze.add_argument("paper", help="Path to the paper PDF")
     analyze.add_argument("--diagnose", action="store_true", dest="diagnose",
@@ -56,9 +56,13 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             signal.signal(signal.SIGINT, previous)
     was_cancelled = outcome["status"] == "cancelled"
     limit_hit = outcome["status"] == "limit_exceeded"
+    timed_out = outcome["status"] == "timeout"
     failed = outcome["status"] != "success"
     if args.as_json:
         print(json.dumps(outcome, indent=2, sort_keys=True, default=str))
+    elif timed_out:
+        print(f"error: timed out at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
+        print(f"  hint: {outcome['hint']}", file=sys.stderr)
     elif limit_hit:
         print(f"error: limit exceeded: {outcome['detail']}", file=sys.stderr)
         print(f"  hint: {outcome['hint']}", file=sys.stderr)
@@ -90,6 +94,8 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             for name, seconds in sorted(info["stage_seconds"].items(), key=lambda item: -item[1])[:5]:
                 print(f"  {name}: {seconds:.3f}s")
             print("  statistics: " + ", ".join(f"{key}={value}" for key, value in info["statistics"].items()))
+    if timed_out:
+        return EXIT_TIMEOUT
     if limit_hit:
         return EXIT_LIMIT_EXCEEDED
     return EXIT_CANCELLED if was_cancelled else (EXIT_FAILURE if failed else EXIT_OK)

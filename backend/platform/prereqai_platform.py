@@ -1,11 +1,14 @@
 import os
 from time import perf_counter
 
+import requests
+
 from backend.api.workflow_result import (
     cancelled_body,
     failure_body,
     limit_exceeded_body,
     success_body,
+    timeout_body,
 )
 from backend.engine import (
     InteractiveResearchEngine,
@@ -31,7 +34,7 @@ def _diagnostics(outcome: dict, stage_timings: dict, report) -> dict:
     return {
         "status": outcome["status"], "stage": outcome["stage"], "completed_stages": completed,
         "failed_after": completed[-1] if outcome["status"] == "failure" and completed else None,
-        "stopped_after": completed[-1] if outcome["status"] in ("cancelled", "limit_exceeded") and completed else None,
+        "stopped_after": completed[-1] if outcome["status"] in ("cancelled", "limit_exceeded", "timeout") and completed else None,
         "stage_seconds": dict(stage_timings), "total_seconds": round(sum(stage_timings.values()), 6),
         "slowest_stage": max(stage_timings, key=stage_timings.get) if stage_timings else None,
         "warnings": list(outcome["warnings"]), "statistics": dict(report["statistics"]) if report else None,
@@ -128,6 +131,15 @@ class PreReqAIPlatform:
             outcome = cancelled_body(
                 "analysis", "Analysis was cancelled before it finished.",
                 hint="Run the analysis again to start over; nothing was kept.",
+            )
+            if diagnostics:
+                outcome["diagnostics"] = _diagnostics(outcome, getattr(exc, "stage_timings", {}), None)
+            return outcome
+        except (requests.exceptions.Timeout, TimeoutError) as exc:
+            # An operation (in practice the arXiv/Crossref download, which has its own timeout) ran out of time.
+            outcome = timeout_body(
+                "analysis", f"The analysis timed out: {exc}", error=exc,
+                hint="Check the network connection and try again; nothing was kept.",
             )
             if diagnostics:
                 outcome["diagnostics"] = _diagnostics(outcome, getattr(exc, "stage_timings", {}), None)

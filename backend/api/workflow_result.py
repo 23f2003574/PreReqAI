@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse
 SUCCESS = "success"
 FAILURE = "failure"
 LIMIT_EXCEEDED = "limit_exceeded"  # a resource limit stopped the run: not an ordinary failure
+TIMEOUT = "timeout"  # an operation exceeded its own time limit (e.g. a download): not an ordinary failure
 CANCELLED = "cancelled"  # a stopped run: distinct from a failure, same envelope keys
 
 
@@ -42,6 +43,16 @@ def limit_exceeded_body(stage: str, message: str, hint: str = None) -> dict:
     return {
         "status": LIMIT_EXCEEDED, "stage": stage, "detail": message,
         "error": {"type": "AnalysisLimitExceeded", "message": message}, "hint": hint, "warnings": [],
+    }
+
+
+def timeout_body(stage: str, message: str, error=None, hint: str = None) -> dict:
+    """The envelope of a run stopped because an operation timed out."""
+    return {
+        "status": TIMEOUT, "stage": stage, "detail": message,
+        "error": {"type": type(error).__name__ if error is not None else "TimeoutError",
+                  "message": str(error) if error is not None else message},
+        "hint": hint, "warnings": [],
     }
 
 
