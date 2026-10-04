@@ -4,9 +4,11 @@ method (PreReqAIPlatform.analyze), so the CLI and the API cannot diverge.
 The platform is imported when the command runs, keeping other commands fast."""
 
 import json
+import signal
 import sys
+import threading
 
-from backend.cli_common import EXIT_FAILURE, EXIT_OK
+from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_OK
 
 
 def add_prerequisites_parser(subparsers):
@@ -17,7 +19,7 @@ def add_prerequisites_parser(subparsers):
         help="Analyse a paper PDF into concepts, prerequisites and a learning plan",
         description="Runs the paper analysis pipeline on a PDF file and opens a learning session in this process "
                     "(sessions are in memory and end with the command). Same workflow as POST /api/prerequisites/analyze.",
-        epilog="Exit codes: 0 success; 1 analysis failed; 2 usage error.",
+        epilog="Exit codes: 0 success; 1 analysis failed; 2 usage error; 130 cancelled (Ctrl-C).",
     )
     analyze.add_argument("paper", help="Path to the paper PDF")
     analyze.add_argument("--diagnose", action="store_true", dest="diagnose",
@@ -30,10 +32,22 @@ def add_prerequisites_parser(subparsers):
 def run_prerequisites_analyze(args, platform=None) -> int:
     if platform is None:
         from backend.platform import platform
-    outcome = platform.analyze(args.paper, diagnostics=args.diagnose)
+    cancelled = threading.Event()
+    try:  # Ctrl-C asks the analysis to stop before its next stage; a second Ctrl-C interrupts immediately
+        previous = signal.signal(signal.SIGINT, lambda *_: (cancelled.set(), signal.signal(signal.SIGINT, signal.default_int_handler)))
+    except ValueError:  # not the main thread: no handler, cancellation is only available to library callers
+        previous = None
+    try:
+        outcome = platform.analyze(args.paper, diagnostics=args.diagnose, should_cancel=cancelled.is_set)
+    finally:
+        if previous is not None:
+            signal.signal(signal.SIGINT, previous)
+    was_cancelled = outcome["status"] == "cancelled"
     failed = outcome["status"] != "success"
     if args.as_json:
         print(json.dumps(outcome, indent=2, sort_keys=True, default=str))
+    elif was_cancelled:
+        print("cancelled: analysis stopped before it finished; nothing was kept", file=sys.stderr)
     elif failed:
         print(f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
         if outcome.get("hint"):
@@ -60,4 +74,4 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             for name, seconds in sorted(info["stage_seconds"].items(), key=lambda item: -item[1])[:5]:
                 print(f"  {name}: {seconds:.3f}s")
             print("  statistics: " + ", ".join(f"{key}={value}" for key, value in info["statistics"].items()))
-    return EXIT_FAILURE if failed else EXIT_OK
+    return EXIT_CANCELLED if was_cancelled else (EXIT_FAILURE if failed else EXIT_OK)

@@ -11,7 +11,7 @@ from backend.cli import EXIT_FAILURE, EXIT_OK, main
 from backend.main import app
 from backend.platform import platform
 
-DIAGNOSTIC_KEYS = {"status", "stage", "completed_stages", "failed_after", "stage_seconds", "total_seconds",
+DIAGNOSTIC_KEYS = {"status", "stage", "completed_stages", "failed_after", "stopped_after", "stage_seconds", "total_seconds",
                    "slowest_stage", "warnings", "statistics"}
 
 

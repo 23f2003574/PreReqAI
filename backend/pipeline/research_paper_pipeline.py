@@ -112,23 +112,42 @@ from backend.reporting import (
 from backend.models import Paper
 
 
+class PipelineCancelled(Exception):
+    """Raised by ResearchPaperPipeline.run() when its should_cancel callback
+    reported True. Cancellation is checked between stages (a running stage is
+    not interrupted), so nothing is left half-built: no result is returned."""
+
+
 class _StageTimer:
     """Wall-clock seconds per pipeline stage: mark(name) records the time since
-    the previous mark (or the start) under that stage name. In-memory only."""
+    the previous mark (or the start) under that stage name, then checks for
+    cancellation before the next stage starts. In-memory only."""
 
-    def __init__(self):
+    def __init__(self, should_cancel=None):
 
         self.stages = {}
 
+        self._should_cancel = should_cancel
+
         self._last = perf_counter()
 
-    def mark(self, name: str):
+    def check_cancelled(self):
+
+        if self._should_cancel is not None and self._should_cancel():
+
+            raise PipelineCancelled("analysis cancelled")
+
+    def mark(self, name: str, final: bool = False):
 
         now = perf_counter()
 
         self.stages[name] = round(self.stages.get(name, 0.0) + (now - self._last), 6)
 
         self._last = now
+
+        if not final:
+
+            self.check_cancelled()
 
 
 @dataclass
@@ -264,11 +283,14 @@ class ResearchPaperPipeline:
     def run(
         self,
         file_path: str,
+        should_cancel=None,
     ) -> PipelineResult:
 
-        timer = _StageTimer()
+        timer = _StageTimer(should_cancel)
 
         try:
+
+            timer.check_cancelled()
 
             return self._run(file_path, timer)
 
@@ -488,7 +510,7 @@ class ResearchPaperPipeline:
             paper,
         )
 
-        timer.mark("report_generator")
+        timer.mark("report_generator", final=True)
 
         return PipelineResult(
             paper=paper,

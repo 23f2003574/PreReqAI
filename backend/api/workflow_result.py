@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 
 SUCCESS = "success"
 FAILURE = "failure"
+CANCELLED = "cancelled"  # a stopped run: distinct from a failure, same envelope keys
 
 
 def success_body(feature: str, stage: str, warnings=(), **output) -> dict:
@@ -28,6 +29,11 @@ def failure_body(stage: str, message: str, error=None, hint: str = None) -> dict
                   "message": str(error) if error is not None else message},
         "hint": hint, "warnings": [],
     }
+
+
+def cancelled_body(stage: str, message: str, hint: str = None) -> dict:
+    """The envelope of a run that was cancelled before it finished."""
+    return {"status": CANCELLED, "stage": stage, "detail": message, "error": None, "hint": hint, "warnings": []}
 
 
 def failure_response(status_code: int, stage: str, message: str, error=None, hint: str = None) -> JSONResponse:
