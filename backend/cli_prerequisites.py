@@ -21,7 +21,7 @@ def add_prerequisites_parser(subparsers):
     )
     analyze.add_argument("paper", help="Path to the paper PDF")
     analyze.add_argument("--json", action="store_true", dest="as_json",
-                         help="Print the workflow result envelope (status, stage, warnings, session_id, report) as JSON")
+                         help="Print the workflow result envelope (status, stage, warnings, session_id, report, timings) as JSON")
 
 
 def run_prerequisites_analyze(args, platform=None) -> int:
@@ -40,6 +40,10 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         print(f"Analysed '{report['paper']['title']}' (session {outcome['session_id']})")
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "
               f"missing: {len(report['missing_prerequisites'])}")
+        timings = outcome.get("timings") or {}
+        if timings:
+            slowest, seconds = max(timings.items(), key=lambda item: item[1])
+            print(f"  time: {sum(timings.values()):.2f}s (slowest stage: {slowest} {seconds:.2f}s)")
         for warning in outcome["warnings"]:
             print(f"  warning: {warning}")
     return EXIT_FAILURE if failed else EXIT_OK

@@ -1,3 +1,6 @@
+from dataclasses import dataclass, field
+from time import perf_counter
+
 from backend.ingestion import PDFIngestionEngine
 
 from backend.ingestion import (
@@ -105,9 +108,27 @@ from backend.reporting import (
     LearningReportGenerator,
 )
 
-from dataclasses import dataclass
 
 from backend.models import Paper
+
+
+class _StageTimer:
+    """Wall-clock seconds per pipeline stage: mark(name) records the time since
+    the previous mark (or the start) under that stage name. In-memory only."""
+
+    def __init__(self):
+
+        self.stages = {}
+
+        self._last = perf_counter()
+
+    def mark(self, name: str):
+
+        now = perf_counter()
+
+        self.stages[name] = round(self.stages.get(name, 0.0) + (now - self._last), 6)
+
+        self._last = now
 
 
 @dataclass
@@ -116,6 +137,8 @@ class PipelineResult:
     paper: Paper
 
     report: dict
+
+    timings: dict = field(default_factory=dict)
 
 
 class ResearchPaperPipeline:
@@ -243,63 +266,95 @@ class ResearchPaperPipeline:
         file_path: str,
     ) -> PipelineResult:
 
+        timer = _StageTimer()
+
         source = self.source_detector.detect(
             file_path,
         )
+
+        timer.mark("source_detector")
 
         pdf_path = self.source_resolver.resolve(
             source,
         )
 
+        timer.mark("source_resolver")
+
         document = self.ingestion.ingest(
             pdf_path,
         )
 
+        timer.mark("ingestion")
+
         paper = self.section_parser.parse(document)
 
+        timer.mark("section_parser")
+
         paper = self.equation_extractor.extract(paper)
+
+        timer.mark("equation_extractor")
 
         paper = self.figure_extractor.extract(
             pdf_path,
             paper,
         )
 
+        timer.mark("figure_extractor")
+
         paper = self.table_extractor.extract(
             pdf_path,
             paper,
         )
 
+        timer.mark("table_extractor")
+
         paper = self.reference_extractor.extract(
             paper,
         )
+
+        timer.mark("reference_extractor")
 
         paper = self.related_paper_extractor.extract(
             paper,
         )
 
+        timer.mark("related_paper_extractor")
+
         paper = self.algorithm_extractor.extract(
             paper,
         )
+
+        timer.mark("algorithm_extractor")
 
         paper = self.experiment_extractor.extract(
             paper,
         )
 
+        timer.mark("experiment_extractor")
+
         paper = self.paragraph_segmenter.segment(
             paper,
         )
+
+        timer.mark("paragraph_segmenter")
 
         paper = self.citation_extractor.extract(
             paper,
         )
 
+        timer.mark("citation_extractor")
+
         paper = self.concept_detector.detect(
             paper,
         )
 
+        timer.mark("concept_detector")
+
         paper = self.prerequisite_detector.detect(
             paper,
         )
+
+        timer.mark("prerequisite_detector")
 
         paper = (
             self.justification_engine.justify(
@@ -307,10 +362,14 @@ class ResearchPaperPipeline:
             )
         )
 
+        timer.mark("justification_engine")
+
         paper = (
             self.missing_prerequisite_analyzer
             .analyze(paper)
         )
+
+        timer.mark("missing_prerequisite_analyzer")
 
         paper = (
             self.learning_planner.generate(
@@ -318,16 +377,22 @@ class ResearchPaperPipeline:
             )
         )
 
+        timer.mark("learning_planner")
+
         paper = (
             self.difficulty_engine.assess(
                 paper,
             )
         )
 
+        timer.mark("difficulty_engine")
+
         paper = (
             self.difficulty_explanation_engine
             .explain(paper)
         )
+
+        timer.mark("difficulty_explanation_engine")
 
         paper = (
             self.study_time_estimator.estimate(
@@ -335,11 +400,15 @@ class ResearchPaperPipeline:
             )
         )
 
+        timer.mark("study_time_estimator")
+
         paper = (
             self.study_action_generator.generate(
                 paper,
             )
         )
+
+        timer.mark("study_action_generator")
 
         paper = (
             self.resource_recommender.recommend(
@@ -347,11 +416,15 @@ class ResearchPaperPipeline:
             )
         )
 
+        timer.mark("resource_recommender")
+
         paper = (
             self.study_roadmap_generator.generate(
                 paper,
             )
         )
+
+        timer.mark("study_roadmap_generator")
 
         paper = (
             self.progress_tracker.initialize(
@@ -359,32 +432,49 @@ class ResearchPaperPipeline:
             )
         )
 
+        timer.mark("progress_tracker")
+
         paper = (
             self.readiness_engine.evaluate(
                 paper,
             )
         )
 
+        timer.mark("readiness_engine")
+
         paper = self.explanation_engine.explain(
             paper,
         )
+
+        timer.mark("explanation_engine")
 
         paper = self.graph_builder.build(
             paper,
         )
 
+        timer.mark("graph_builder")
+
         paper = self.relationship_builder.build(
             paper,
         )
+
+        timer.mark("relationship_builder")
 
         paper = (
             self.paragraph_relationship_builder
             .build(paper)
         )
 
+        timer.mark("paragraph_relationship_builder")
+
+        report = self.report_generator.generate(
+            paper,
+        )
+
+        timer.mark("report_generator")
+
         return PipelineResult(
             paper=paper,
-            report=self.report_generator.generate(
-                paper,
-            ),
+            report=report,
+            timings=timer.stages,
         )

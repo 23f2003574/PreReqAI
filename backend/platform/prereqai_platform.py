@@ -63,6 +63,7 @@ class PreReqAIPlatform:
         )
         return success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
+            timings=result.timings,
         )
 
 
