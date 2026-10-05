@@ -1,3 +1,5 @@
+import os
+import threading
 from pathlib import Path
 
 import requests
@@ -53,8 +55,29 @@ class ArxivResolver(BaseSourceResolver):
 
         response.raise_for_status()
 
-        pdf_path.write_bytes(
-            response.content
+        content = response.content
+
+        # Only a whole PDF is cached, and atomically: a non-PDF reply (e.g. an
+        # HTML error page) or an interrupted write must never leave a file that
+        # every later attempt would reuse and fail on.
+        if not content.startswith(b"%PDF"):
+
+            raise ValueError(
+                f"arXiv returned no PDF for {source.identifier}"
+            )
+
+        partial_path = pdf_path.with_name(
+            f"{pdf_path.name}.{os.getpid()}.{threading.get_ident()}.part"
         )
+
+        try:
+
+            partial_path.write_bytes(content)
+
+            os.replace(partial_path, pdf_path)
+
+        finally:
+
+            partial_path.unlink(missing_ok=True)
 
         return str(pdf_path)
