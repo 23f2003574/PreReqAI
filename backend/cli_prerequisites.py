@@ -59,7 +59,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
     timed_out = outcome["status"] == "timeout"
     failed = outcome["status"] != "success"
     if args.as_json:
-        print(json.dumps(outcome, indent=2, sort_keys=True, default=str))
+        print(json.dumps(outcome, indent=2))  # already plain JSON, in the order the API returns it (timings in stage order)
     elif timed_out:
         print(f"error: timed out at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
         print(f"  hint: {outcome['hint']}", file=sys.stderr)
@@ -70,7 +70,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         print("cancelled: analysis stopped before it finished; nothing was kept", file=sys.stderr)
     elif failed:
         print(f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
-        if outcome.get("hint"):
+        if outcome["hint"]:
             print(f"  hint: {outcome['hint']}", file=sys.stderr)
         if args.diagnose:
             info = outcome["diagnostics"]
@@ -81,7 +81,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         print(f"Analysed '{report['paper']['title']}' (session {outcome['session_id']})")
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "
               f"missing: {len(report['missing_prerequisites'])}")
-        timings = outcome.get("timings") or {}
+        timings = outcome["timings"]
         if timings:
             slowest, seconds = max(timings.items(), key=lambda item: item[1])
             print(f"  time: {sum(timings.values()):.2f}s (slowest stage: {slowest} {seconds:.2f}s)")

@@ -26,14 +26,34 @@ REQUIRED_REPORT_KEYS = ("paper", "concepts", "prerequisites", "missing_prerequis
 HTTP_STATUS = {SUCCESS: 200, FAILURE: 400, CANCELLED: 409, LIMIT_EXCEEDED: 413, TIMEOUT: 504}
 
 
+def json_violations(value, path: str = "result") -> list:
+    """Where `value` is not plain JSON (dicts with string keys, lists, strings,
+    finite numbers, booleans, None). The public result must be plain JSON so the
+    API and the CLI print the very same thing, with no adapter of their own
+    converting (or stringifying) values on the way out."""
+    if isinstance(value, dict):
+        problems = [f"{path} has a non-string key {key!r}" for key in value if not isinstance(key, str)]
+        for key, item in value.items():
+            problems += json_violations(item, f"{path}.{key}")
+        return problems
+    if isinstance(value, list):
+        return [problem for index, item in enumerate(value) for problem in json_violations(item, f"{path}[{index}]")]
+    if isinstance(value, float) and value != value or value in (float("inf"), float("-inf")):
+        return [f"{path} is not a finite number"]
+    if value is None or isinstance(value, (str, bool, int, float)):
+        return []
+    return [f"{path} is a {type(value).__name__}, not plain JSON"]
+
+
 def terminal_violations(outcome) -> list:
     """What makes `outcome` an invalid terminal workflow result (empty when it
     is valid). Success must carry a complete output of its own and no error;
     every other terminal status must carry no output, only the error envelope.
-    Warnings never change the status."""
+    Warnings never change the status. The whole result must be plain JSON
+    (see json_violations)."""
     if not isinstance(outcome, dict) or outcome.get("status") not in TERMINAL_STATUSES:
         return [f"status {outcome.get('status')!r} is not a terminal status" if isinstance(outcome, dict) else "result is not a dict"]
-    problems = []
+    problems = json_violations(outcome)[:5]
     if not isinstance(outcome.get("warnings"), list):
         problems.append("warnings must be a list")
     output_keys = [key for key in ("session_id", "report", "timings") if key in outcome]
