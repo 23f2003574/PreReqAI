@@ -8,7 +8,6 @@ import subprocess
 import sys
 
 import fitz
-import pytest
 from fastapi.testclient import TestClient
 
 from backend.api.workflow_result import json_violations

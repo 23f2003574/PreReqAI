@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 
 from backend.api.workflow_result import terminal_violations
 from backend.cli import main
-from backend.cli_common import EXIT_CANCELLED, EXIT_TIMEOUT
+from backend.cli_common import EXIT_TIMEOUT
 from backend.main import app
 from backend.pipeline.research_paper_pipeline import PIPELINE_STAGES
 from backend.platform import PreReqAIPlatform, platform as shared_platform
