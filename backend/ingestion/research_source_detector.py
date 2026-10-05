@@ -4,13 +4,16 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+# Each pattern must match the whole (stripped) input: a reference inside other
+# text is ambiguous and rejected rather than guessed. The arXiv identifier keeps
+# its version (v5), since a versioned link asks for that exact version.
 ARXIV_PATTERN = re.compile(
-    r"(?:https?://)?(?:www\.)?arxiv\.org/(?:abs|pdf)/([0-9]+\.[0-9]+)",
+    r"(?:https?://)?(?:www\.)?arxiv\.org/(?:abs|pdf)/([0-9]+\.[0-9]+(?:v[0-9]+)?)(?:\.pdf)?/?",
     re.IGNORECASE,
 )
 
 DOI_PATTERN = re.compile(
-    r"(?:https?://(?:dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
+    r"(?:doi:\s*|https?://(?:dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
     re.IGNORECASE,
 )
 
@@ -57,7 +60,7 @@ class ResearchSourceDetector:
                 original_input=source,
             )
 
-        arxiv_match = ARXIV_PATTERN.search(source)
+        arxiv_match = ARXIV_PATTERN.fullmatch(source)
 
         if arxiv_match:
 
@@ -67,7 +70,7 @@ class ResearchSourceDetector:
                 original_input=source,
             )
 
-        doi_match = DOI_PATTERN.search(source)
+        doi_match = DOI_PATTERN.fullmatch(source)
 
         if doi_match:
 
