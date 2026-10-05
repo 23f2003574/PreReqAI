@@ -76,7 +76,11 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             info = outcome["diagnostics"]
             print(f"  diagnostics: {len(info['completed_stages'])} stages completed; failed after "
                   f"{info['failed_after'] or 'the start'}", file=sys.stderr)
-    else:
+    if not args.as_json and args.diagnose and (timed_out or limit_hit or was_cancelled):
+        info = outcome["diagnostics"]
+        print(f"  diagnostics: {len(info['completed_stages'])} stages completed; stopped after "
+              f"{info['stopped_after'] or 'the start'}", file=sys.stderr)
+    if not args.as_json and not failed:
         report = outcome["report"]
         print(f"Analysed '{report['paper']['title']}' (session {outcome['session_id']})")
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "

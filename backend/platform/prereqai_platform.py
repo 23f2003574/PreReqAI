@@ -3,6 +3,7 @@ from copy import deepcopy
 from time import perf_counter
 
 import requests
+import urllib3
 
 from backend.api.workflow_result import (
     REQUIRED_REPORT_KEYS,
@@ -48,6 +49,21 @@ def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None) 
     }
 
 
+def _is_timeout(exc: BaseException) -> bool:
+    """Whether `exc` is, or was caused by, an operation running out of time.
+    requests reports a read timeout while downloading the body as a plain
+    ConnectionError wrapping urllib3's ReadTimeoutError, and a stage may wrap a
+    timeout in its own error ("raise ... from"); both are still timeouts."""
+    seen = set()
+    while exc is not None and id(exc) not in seen:
+        seen.add(id(exc))
+        if isinstance(exc, (requests.exceptions.Timeout, TimeoutError, urllib3.exceptions.TimeoutError)):
+            return True
+        wrapped = exc.args[0] if exc.args and isinstance(exc.args[0], BaseException) else None
+        exc = exc.__cause__ or wrapped
+    return False
+
+
 def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
     """The terminal outcome of an analysis run that raised `exc`: a cancellation
     caused by an exceeded time limit (exceeded_limits) is limit_exceeded, any
@@ -63,7 +79,7 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
             "analysis", "Analysis was cancelled before it finished.",
             hint="Run the analysis again to start over; nothing was kept.",
         )
-    if isinstance(exc, (requests.exceptions.Timeout, TimeoutError)):
+    if _is_timeout(exc):
         return timeout_body(
             "analysis", f"The analysis timed out: {exc}", error=exc,
             hint="Check the network connection and try again; nothing was kept.",
