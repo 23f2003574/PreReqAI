@@ -199,6 +199,11 @@ _STAGES = (
     ("report_generator", "report_generator", "generate", ("paper",), "report"),
 )
 
+# What the stages writing these context keys must return: a stage that returns
+# anything else (e.g. None from a missing return) fails at that stage instead of
+# handing a broken value to the stages after it.
+_STAGE_OUTPUT_TYPES = {"paper": Paper, "report": dict}
+
 # A result is complete only if all of these were timed (a test pins this tuple
 # to what run() really records).
 PIPELINE_STAGES = tuple(stage for stage, *_ in _STAGES)
@@ -362,7 +367,15 @@ class ResearchPaperPipeline:
 
             step = getattr(getattr(self, component), method)
 
-            context[output] = step(*(context[name] for name in inputs))
+            value = step(*(context[name] for name in inputs))
+
+            expected = _STAGE_OUTPUT_TYPES.get(output, object)
+
+            if value is None or not isinstance(value, expected):
+
+                raise TypeError(f"stage {stage} returned {type(value).__name__}, expected {expected.__name__}")
+
+            context[output] = value
 
             timer.current = None  # done: a cancellation from here on is not this stage's failure
 

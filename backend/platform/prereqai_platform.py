@@ -47,6 +47,32 @@ def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None) 
     }
 
 
+def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
+    """The terminal outcome of an analysis run that raised `exc`: a cancellation
+    caused by an exceeded time limit (exceeded_limits) is limit_exceeded, any
+    other cancellation is cancelled, a timed-out operation (in practice the
+    arXiv/Crossref download) is timeout, and anything else is a failure."""
+    if isinstance(exc, PipelineCancelled):
+        if exceeded_limits is not None:
+            return limit_exceeded_body(
+                "analysis", f"The analysis exceeded its time limit of {exceeded_limits.max_seconds} seconds.",
+                hint="Raise the time limit or analyse a smaller paper; nothing was kept.",
+            )
+        return cancelled_body(
+            "analysis", "Analysis was cancelled before it finished.",
+            hint="Run the analysis again to start over; nothing was kept.",
+        )
+    if isinstance(exc, (requests.exceptions.Timeout, TimeoutError)):
+        return timeout_body(
+            "analysis", f"The analysis timed out: {exc}", error=exc,
+            hint="Check the network connection and try again; nothing was kept.",
+        )
+    return failure_body(
+        "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
+        hint="Upload a text-based PDF research paper.",
+    )
+
+
 class PreReqAIPlatform:
     """
     High-level platform entry point
@@ -140,31 +166,11 @@ class PreReqAIPlatform:
 
         try:
             result = self.analysis.run(file_path, should_cancel=should_cancel)
-        except PipelineCancelled as exc:
-            if exceeded:
-                outcome = limit_exceeded_body(
-                    "analysis", f"The analysis exceeded its time limit of {limits.max_seconds} seconds.",
-                    hint="Raise the time limit or analyse a smaller paper; nothing was kept.",
-                )
-                return with_diagnostics(outcome, getattr(exc, "stage_timings", {}))
-            outcome = cancelled_body(
-                "analysis", "Analysis was cancelled before it finished.",
-                hint="Run the analysis again to start over; nothing was kept.",
-            )
-            return with_diagnostics(outcome, getattr(exc, "stage_timings", {}))
-        except (requests.exceptions.Timeout, TimeoutError) as exc:
-            # An operation (in practice the arXiv/Crossref download, which has its own timeout) ran out of time.
-            outcome = timeout_body(
-                "analysis", f"The analysis timed out: {exc}", error=exc,
-                hint="Check the network connection and try again; nothing was kept.",
-            )
-            return with_diagnostics(outcome, getattr(exc, "stage_timings", {}))
         except Exception as exc:
-            outcome = failure_body(
-                "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
-                hint="Upload a text-based PDF research paper.",
-            )
-            return with_diagnostics(outcome, getattr(exc, "stage_timings", {}), failed_stage=getattr(exc, "failed_stage", None))
+            # Every way a run can stop becomes one terminal outcome here, with what finished before it.
+            outcome = _stopped_outcome(exc, limits if exceeded else None)
+            failed_stage = getattr(exc, "failed_stage", None) if outcome["status"] == "failure" else None
+            return with_diagnostics(outcome, getattr(exc, "stage_timings", {}), failed_stage=failed_stage)
         incomplete = [stage for stage in PIPELINE_STAGES if stage not in result.timings]
         incomplete += [f"report.{key}" for key in REQUIRED_REPORT_KEYS if key not in result.report]
         if incomplete:  # a partial result must never open a session or be reported as a success
