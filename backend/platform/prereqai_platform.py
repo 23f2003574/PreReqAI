@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from time import perf_counter
 
 import requests
@@ -178,8 +179,10 @@ class PreReqAIPlatform:
                 "finalization", f"The analysis did not complete: {', '.join(incomplete)}",
                 error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
             ), result.timings)
+        # The session keeps its own copy of the report: the caller owns the one returned below, and
+        # changing it must not change what later session requests (tutoring, lookups) read.
         session = session_manager.create(
-            paper_title=result.report["paper"]["title"], report=result.report, paper=result.paper,
+            paper_title=result.report["paper"]["title"], report=deepcopy(result.report), paper=result.paper,
         )
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,

@@ -104,7 +104,8 @@ def test_the_result_references_only_state_belonging_to_this_invocation(platform,
 
     first, second = platform.analyze(paper), platform.analyze(paper)
 
-    assert session_manager.get(first["session_id"]).report is first["report"]
-    assert session_manager.get(second["session_id"]).report is second["report"]
+    for outcome in (first, second):  # the session holds an equal report of its own, not the caller's object
+        stored = session_manager.get(outcome["session_id"]).report
+        assert stored == outcome["report"] and stored is not outcome["report"]
     assert first["session_id"] != second["session_id"] and first["report"] is not second["report"]
     assert first["timings"] is not second["timings"]
