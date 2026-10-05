@@ -20,11 +20,18 @@ class DocumentMetadataExtractor:
     """
 
     def extract(self, file_path: str) -> DocumentMetadata:
-        pdf = fitz.open(file_path)
+
+        with fitz.open(file_path) as pdf:
+
+            return self.extract_from(pdf)
+
+    def extract_from(self, pdf) -> DocumentMetadata:
+        """The metadata of an already-open PDF, so a caller that has the
+        document open does not parse the file a second time."""
 
         metadata = pdf.metadata or {}
 
-        document_metadata = DocumentMetadata(
+        return DocumentMetadata(
             title=metadata.get("title", "") or "Unknown Title",
             author=metadata.get("author", "") or "Unknown Author",
             subject=metadata.get("subject", ""),
@@ -33,7 +40,3 @@ class DocumentMetadataExtractor:
             producer=metadata.get("producer", ""),
             page_count=len(pdf),
         )
-
-        pdf.close()
-
-        return document_metadata

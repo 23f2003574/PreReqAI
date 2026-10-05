@@ -33,23 +33,20 @@ class PDFIngestionEngine:
     """
 
     def ingest(self, file_path: str) -> RawDocument:
-        pdf = fitz.open(file_path)
-
         from .document_metadata_extractor import DocumentMetadataExtractor
 
-        metadata = DocumentMetadataExtractor().extract(file_path)
+        # One open of the file serves both the metadata and the page text.
+        with fitz.open(file_path) as pdf:
 
-        pages = []
+            metadata = DocumentMetadataExtractor().extract_from(pdf)
 
-        for page_number, page in enumerate(pdf, start=1):
-            pages.append(
+            pages = [
                 RawPage(
                     page_number=page_number,
                     text=page.get_text("text"),
                 )
-            )
-
-        pdf.close()
+                for page_number, page in enumerate(pdf, start=1)
+            ]
 
         return RawDocument(
             source_path=file_path,
