@@ -1,4 +1,4 @@
-import fitz
+import pymupdf as fitz  # PyMuPDF; "import fitz" prints a deprecation notice to stdout
 
 from dataclasses import dataclass
 
