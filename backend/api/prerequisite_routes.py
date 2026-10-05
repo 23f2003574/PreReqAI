@@ -13,7 +13,8 @@ from fastapi.responses import (
 )
 
 from backend.api.workflow_result import (
-    FAILURE,
+    HTTP_STATUS,
+    SUCCESS,
 )
 
 from backend.platform import (
@@ -58,10 +59,10 @@ async def analyze_prerequisites(
             missing_ok=True,
         )
 
-    if outcome["status"] == FAILURE:
+    if outcome["status"] != SUCCESS:
 
         return JSONResponse(
-            status_code=400,
+            status_code=HTTP_STATUS[outcome["status"]],
             content=outcome,
         )
 

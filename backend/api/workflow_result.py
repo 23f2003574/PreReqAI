@@ -22,6 +22,10 @@ TERMINAL_STATUSES = (SUCCESS, FAILURE, CANCELLED, LIMIT_EXCEEDED, TIMEOUT)
 REQUIRED_REPORT_KEYS = ("paper", "concepts", "prerequisites", "missing_prerequisites", "learning_plan", "readiness", "statistics")
 
 
+# The HTTP status of each terminal status, so every non-success result is an HTTP error.
+HTTP_STATUS = {SUCCESS: 200, FAILURE: 400, CANCELLED: 409, LIMIT_EXCEEDED: 413, TIMEOUT: 504}
+
+
 def terminal_violations(outcome) -> list:
     """What makes `outcome` an invalid terminal workflow result (empty when it
     is valid). Success must carry a complete output of its own and no error;

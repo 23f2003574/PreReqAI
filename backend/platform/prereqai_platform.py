@@ -83,6 +83,8 @@ class PreReqAIPlatform:
                 "finalization", "The analysis did not reach a valid final state: " + "; ".join(problems),
                 error=RuntimeError("; ".join(problems)), hint="This is a bug in the workflow; report it.",
             )
+            if diagnostics:
+                outcome["diagnostics"] = _diagnostics(outcome, {}, None)
         return outcome
 
     def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits) -> dict:
@@ -102,9 +104,9 @@ class PreReqAIPlatform:
         session). The default is no limits."""
         from backend.session import session_manager
 
-        def with_diagnostics(outcome, timings=None):
+        def with_diagnostics(outcome, timings=None, report=None):
             if diagnostics:
-                outcome["diagnostics"] = _diagnostics(outcome, timings or {}, None)
+                outcome["diagnostics"] = _diagnostics(outcome, timings or {}, report)
             return outcome
 
         exceeded = []
@@ -141,40 +143,32 @@ class PreReqAIPlatform:
                     "analysis", f"The analysis exceeded its time limit of {limits.max_seconds} seconds.",
                     hint="Raise the time limit or analyse a smaller paper; nothing was kept.",
                 )
-                if diagnostics:
-                    outcome["diagnostics"] = _diagnostics(outcome, getattr(exc, "stage_timings", {}), None)
-                return outcome
+                return with_diagnostics(outcome, getattr(exc, "stage_timings", {}))
             outcome = cancelled_body(
                 "analysis", "Analysis was cancelled before it finished.",
                 hint="Run the analysis again to start over; nothing was kept.",
             )
-            if diagnostics:
-                outcome["diagnostics"] = _diagnostics(outcome, getattr(exc, "stage_timings", {}), None)
-            return outcome
+            return with_diagnostics(outcome, getattr(exc, "stage_timings", {}))
         except (requests.exceptions.Timeout, TimeoutError) as exc:
             # An operation (in practice the arXiv/Crossref download, which has its own timeout) ran out of time.
             outcome = timeout_body(
                 "analysis", f"The analysis timed out: {exc}", error=exc,
                 hint="Check the network connection and try again; nothing was kept.",
             )
-            if diagnostics:
-                outcome["diagnostics"] = _diagnostics(outcome, getattr(exc, "stage_timings", {}), None)
-            return outcome
+            return with_diagnostics(outcome, getattr(exc, "stage_timings", {}))
         except Exception as exc:
             outcome = failure_body(
                 "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
                 hint="Upload a text-based PDF research paper.",
             )
-            if diagnostics:
-                outcome["diagnostics"] = _diagnostics(outcome, getattr(exc, "stage_timings", {}), None)
-            return outcome
+            return with_diagnostics(outcome, getattr(exc, "stage_timings", {}))
         incomplete = [stage for stage in PIPELINE_STAGES if stage not in result.timings]
         incomplete += [f"report.{key}" for key in REQUIRED_REPORT_KEYS if key not in result.report]
         if incomplete:  # a partial result must never open a session or be reported as a success
-            return failure_body(
+            return with_diagnostics(failure_body(
                 "finalization", f"The analysis did not complete: {', '.join(incomplete)}",
                 error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
-            )
+            ), result.timings)
         session = session_manager.create(
             paper_title=result.report["paper"]["title"], report=result.report, paper=result.paper,
         )
@@ -182,9 +176,7 @@ class PreReqAIPlatform:
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
         )
-        if diagnostics:
-            outcome["diagnostics"] = _diagnostics(outcome, result.timings, result.report)
-        return outcome
+        return with_diagnostics(outcome, result.timings, result.report)
 
 
 # The one platform instance the HTTP application (backend.main) and its routers
