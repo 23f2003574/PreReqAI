@@ -29,14 +29,17 @@ from backend.pipeline.research_paper_pipeline import (
 )
 
 
-def _diagnostics(outcome: dict, stage_timings: dict, report) -> dict:
+def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None) -> dict:
     """What the run already knows, for development: final status, completed
     stages with their durations, where a failed run stopped, warnings and the
-    report's own statistics. Counts and timings only -- no inputs or paths."""
+    report's own statistics. Counts and timings only -- no inputs or paths.
+    completed_stages holds only stages that finished: the stage that failed
+    (failed_stage) and every stage after it are never listed."""
     completed = list(stage_timings)
     return {
         "status": outcome["status"], "stage": outcome["stage"], "completed_stages": completed,
         "failed_after": completed[-1] if outcome["status"] == "failure" and completed else None,
+        "failed_stage": failed_stage if outcome["status"] == "failure" else None,
         "stopped_after": completed[-1] if outcome["status"] in ("cancelled", "limit_exceeded", "timeout") and completed else None,
         "stage_seconds": dict(stage_timings), "total_seconds": round(sum(stage_timings.values()), 6),
         "slowest_stage": max(stage_timings, key=stage_timings.get) if stage_timings else None,
@@ -104,9 +107,9 @@ class PreReqAIPlatform:
         session). The default is no limits."""
         from backend.session import session_manager
 
-        def with_diagnostics(outcome, timings=None, report=None):
+        def with_diagnostics(outcome, timings=None, report=None, failed_stage=None):
             if diagnostics:
-                outcome["diagnostics"] = _diagnostics(outcome, timings or {}, report)
+                outcome["diagnostics"] = _diagnostics(outcome, timings or {}, report, failed_stage)
             return outcome
 
         exceeded = []
@@ -161,7 +164,7 @@ class PreReqAIPlatform:
                 "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
                 hint="Upload a text-based PDF research paper.",
             )
-            return with_diagnostics(outcome, getattr(exc, "stage_timings", {}))
+            return with_diagnostics(outcome, getattr(exc, "stage_timings", {}), failed_stage=getattr(exc, "failed_stage", None))
         incomplete = [stage for stage in PIPELINE_STAGES if stage not in result.timings]
         incomplete += [f"report.{key}" for key in REQUIRED_REPORT_KEYS if key not in result.report]
         if incomplete:  # a partial result must never open a session or be reported as a success

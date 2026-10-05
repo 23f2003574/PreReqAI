@@ -127,6 +127,8 @@ class _StageTimer:
 
         self.stages = {}
 
+        self.current = None
+
         self._should_cancel = should_cancel
 
         self._last = perf_counter()
@@ -160,17 +162,46 @@ class PipelineResult:
     timings: dict = field(default_factory=dict)
 
 
-# Every stage run() executes, in order. A result is complete only if all of
-# these were timed (a test pins this tuple to what run() really records).
-PIPELINE_STAGES = (
-    "source_detector", "source_resolver", "ingestion", "section_parser", "equation_extractor", "figure_extractor",
-    "table_extractor", "reference_extractor", "related_paper_extractor", "algorithm_extractor", "experiment_extractor",
-    "paragraph_segmenter", "citation_extractor", "concept_detector", "prerequisite_detector", "justification_engine",
-    "missing_prerequisite_analyzer", "learning_planner", "difficulty_engine", "difficulty_explanation_engine",
-    "study_time_estimator", "study_action_generator", "resource_recommender", "study_roadmap_generator",
-    "progress_tracker", "readiness_engine", "explanation_engine", "graph_builder", "relationship_builder",
-    "paragraph_relationship_builder", "report_generator",
+# Every stage run() executes, in order: (stage, component attribute, method,
+# inputs read from the run's context, output written back to it). A stage gets
+# only what an earlier stage (or the caller: "file_path") produced.
+_STAGES = (
+    ("source_detector", "source_detector", "detect", ("file_path",), "source"),
+    ("source_resolver", "source_resolver", "resolve", ("source",), "pdf_path"),
+    ("ingestion", "ingestion", "ingest", ("pdf_path",), "document"),
+    ("section_parser", "section_parser", "parse", ("document",), "paper"),
+    ("equation_extractor", "equation_extractor", "extract", ("paper",), "paper"),
+    ("figure_extractor", "figure_extractor", "extract", ("pdf_path", "paper"), "paper"),
+    ("table_extractor", "table_extractor", "extract", ("pdf_path", "paper"), "paper"),
+    ("reference_extractor", "reference_extractor", "extract", ("paper",), "paper"),
+    ("related_paper_extractor", "related_paper_extractor", "extract", ("paper",), "paper"),
+    ("algorithm_extractor", "algorithm_extractor", "extract", ("paper",), "paper"),
+    ("experiment_extractor", "experiment_extractor", "extract", ("paper",), "paper"),
+    ("paragraph_segmenter", "paragraph_segmenter", "segment", ("paper",), "paper"),
+    ("citation_extractor", "citation_extractor", "extract", ("paper",), "paper"),
+    ("concept_detector", "concept_detector", "detect", ("paper",), "paper"),
+    ("prerequisite_detector", "prerequisite_detector", "detect", ("paper",), "paper"),
+    ("justification_engine", "justification_engine", "justify", ("paper",), "paper"),
+    ("missing_prerequisite_analyzer", "missing_prerequisite_analyzer", "analyze", ("paper",), "paper"),
+    ("learning_planner", "learning_planner", "generate", ("paper",), "paper"),
+    ("difficulty_engine", "difficulty_engine", "assess", ("paper",), "paper"),
+    ("difficulty_explanation_engine", "difficulty_explanation_engine", "explain", ("paper",), "paper"),
+    ("study_time_estimator", "study_time_estimator", "estimate", ("paper",), "paper"),
+    ("study_action_generator", "study_action_generator", "generate", ("paper",), "paper"),
+    ("resource_recommender", "resource_recommender", "recommend", ("paper",), "paper"),
+    ("study_roadmap_generator", "study_roadmap_generator", "generate", ("paper",), "paper"),
+    ("progress_tracker", "progress_tracker", "initialize", ("paper",), "paper"),
+    ("readiness_engine", "readiness_engine", "evaluate", ("paper",), "paper"),
+    ("explanation_engine", "explanation_engine", "explain", ("paper",), "paper"),
+    ("graph_builder", "graph_builder", "build", ("paper",), "paper"),
+    ("relationship_builder", "relationship_builder", "build", ("paper",), "paper"),
+    ("paragraph_relationship_builder", "paragraph_relationship_builder", "build", ("paper",), "paper"),
+    ("report_generator", "report_generator", "generate", ("paper",), "report"),
 )
+
+# A result is complete only if all of these were timed (a test pins this tuple
+# to what run() really records).
+PIPELINE_STAGES = tuple(stage for stage, *_ in _STAGES)
 
 
 class ResearchPaperPipeline:
@@ -312,6 +343,9 @@ class ResearchPaperPipeline:
             # What finished before the failure, for diagnostics; the exception itself is unchanged.
             exc.stage_timings = dict(timer.stages)
 
+            # The stage that was running when it failed (None: between stages, e.g. cancelled).
+            exc.failed_stage = timer.current
+
             raise
 
     def _run(
@@ -320,213 +354,22 @@ class ResearchPaperPipeline:
         timer: "_StageTimer",
     ) -> PipelineResult:
 
-        source = self.source_detector.detect(
-            file_path,
-        )
+        context = {"file_path": file_path}
 
-        timer.mark("source_detector")
+        for stage, component, method, inputs, output in _STAGES:
 
-        pdf_path = self.source_resolver.resolve(
-            source,
-        )
+            timer.current = stage
 
-        timer.mark("source_resolver")
+            step = getattr(getattr(self, component), method)
 
-        document = self.ingestion.ingest(
-            pdf_path,
-        )
+            context[output] = step(*(context[name] for name in inputs))
 
-        timer.mark("ingestion")
+            timer.current = None  # done: a cancellation from here on is not this stage's failure
 
-        paper = self.section_parser.parse(document)
-
-        timer.mark("section_parser")
-
-        paper = self.equation_extractor.extract(paper)
-
-        timer.mark("equation_extractor")
-
-        paper = self.figure_extractor.extract(
-            pdf_path,
-            paper,
-        )
-
-        timer.mark("figure_extractor")
-
-        paper = self.table_extractor.extract(
-            pdf_path,
-            paper,
-        )
-
-        timer.mark("table_extractor")
-
-        paper = self.reference_extractor.extract(
-            paper,
-        )
-
-        timer.mark("reference_extractor")
-
-        paper = self.related_paper_extractor.extract(
-            paper,
-        )
-
-        timer.mark("related_paper_extractor")
-
-        paper = self.algorithm_extractor.extract(
-            paper,
-        )
-
-        timer.mark("algorithm_extractor")
-
-        paper = self.experiment_extractor.extract(
-            paper,
-        )
-
-        timer.mark("experiment_extractor")
-
-        paper = self.paragraph_segmenter.segment(
-            paper,
-        )
-
-        timer.mark("paragraph_segmenter")
-
-        paper = self.citation_extractor.extract(
-            paper,
-        )
-
-        timer.mark("citation_extractor")
-
-        paper = self.concept_detector.detect(
-            paper,
-        )
-
-        timer.mark("concept_detector")
-
-        paper = self.prerequisite_detector.detect(
-            paper,
-        )
-
-        timer.mark("prerequisite_detector")
-
-        paper = (
-            self.justification_engine.justify(
-                paper,
-            )
-        )
-
-        timer.mark("justification_engine")
-
-        paper = (
-            self.missing_prerequisite_analyzer
-            .analyze(paper)
-        )
-
-        timer.mark("missing_prerequisite_analyzer")
-
-        paper = (
-            self.learning_planner.generate(
-                paper,
-            )
-        )
-
-        timer.mark("learning_planner")
-
-        paper = (
-            self.difficulty_engine.assess(
-                paper,
-            )
-        )
-
-        timer.mark("difficulty_engine")
-
-        paper = (
-            self.difficulty_explanation_engine
-            .explain(paper)
-        )
-
-        timer.mark("difficulty_explanation_engine")
-
-        paper = (
-            self.study_time_estimator.estimate(
-                paper,
-            )
-        )
-
-        timer.mark("study_time_estimator")
-
-        paper = (
-            self.study_action_generator.generate(
-                paper,
-            )
-        )
-
-        timer.mark("study_action_generator")
-
-        paper = (
-            self.resource_recommender.recommend(
-                paper,
-            )
-        )
-
-        timer.mark("resource_recommender")
-
-        paper = (
-            self.study_roadmap_generator.generate(
-                paper,
-            )
-        )
-
-        timer.mark("study_roadmap_generator")
-
-        paper = (
-            self.progress_tracker.initialize(
-                paper,
-            )
-        )
-
-        timer.mark("progress_tracker")
-
-        paper = (
-            self.readiness_engine.evaluate(
-                paper,
-            )
-        )
-
-        timer.mark("readiness_engine")
-
-        paper = self.explanation_engine.explain(
-            paper,
-        )
-
-        timer.mark("explanation_engine")
-
-        paper = self.graph_builder.build(
-            paper,
-        )
-
-        timer.mark("graph_builder")
-
-        paper = self.relationship_builder.build(
-            paper,
-        )
-
-        timer.mark("relationship_builder")
-
-        paper = (
-            self.paragraph_relationship_builder
-            .build(paper)
-        )
-
-        timer.mark("paragraph_relationship_builder")
-
-        report = self.report_generator.generate(
-            paper,
-        )
-
-        timer.mark("report_generator", final=True)
+            timer.mark(stage, final=stage == PIPELINE_STAGES[-1])
 
         return PipelineResult(
-            paper=paper,
-            report=report,
+            paper=context["paper"],
+            report=context["report"],
             timings=timer.stages,
         )
