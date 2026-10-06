@@ -27,14 +27,15 @@ def _finite_number(value):
 
 
 def add_prerequisites_parser(subparsers):
-    prerequisites = subparsers.add_parser("prerequisites", help="Prerequisite Explorer: analyse a research paper")
-    commands = prerequisites.add_subparsers(dest="prerequisites_command", required=True)
+    prerequisites = subparsers.add_parser("prerequisites", help="Prerequisite Explorer: analyse a research paper PDF (start here)")
+    commands = prerequisites.add_subparsers(dest="prerequisites_command", required=True, metavar="<subcommand>")
     analyze = commands.add_parser(
         "analyze",
         help="Analyse a paper PDF into concepts, prerequisites and a learning plan",
         description="Runs the paper analysis pipeline on a PDF file and opens a learning session in this process "
                     "(sessions are in memory and end with the command). Same workflow as POST /api/prerequisites/analyze.",
-        epilog="Exit codes: 0 success; 1 analysis failed; 2 usage error; 123 a resource limit was reached; 124 an operation timed out; 130 cancelled (Ctrl-C).",
+        epilog="Example: python -m backend.cli prerequisites analyze paper.pdf --json. "
+               "Exit codes: 0 success; 1 analysis failed; 2 usage error; 123 a resource limit was reached; 124 an operation timed out; 130 cancelled (Ctrl-C).",
     )
     analyze.add_argument("paper", help="Path to the paper PDF")
     analyze.add_argument("--diagnose", action="store_true", dest="diagnose",

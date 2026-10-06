@@ -84,3 +84,25 @@ def test_check_help_describes_what_it_checks_and_its_exit_codes(capsys):
 
     assert "project_dir" in text and "--json" in text and "Exit codes: 0 healthy; 1 invalid or incompatible; 2 usage error." in text
     assert "compatibility" in text
+
+
+def test_top_level_help_says_how_to_run_lists_the_main_command_first_and_its_examples_parse(capsys):
+    from backend.cli import _build_parser
+
+    text = _help(capsys)
+    assert "python -m backend.cli <command>" in text
+    commands = text.split("<command>\n", 1)[1]
+    assert commands.index("prerequisites") < commands.index("api-generation") < commands.index("recovery-decision")
+
+    examples = [line.strip().replace("\\", "") for line in text.split("Examples:", 1)[1].split("\n\n", 1)[0].splitlines()]
+    joined = " ".join(examples).split("python -m backend.cli ")[1:]
+    assert len(joined) == 3
+    for example in joined:
+        _build_parser().parse_args(example.split())  # every example is a valid invocation
+
+
+def test_every_subcommand_documents_its_exit_codes(capsys):
+    for args in (("prerequisites", "analyze"), ("api-generation", "generate"), ("api-generation", "check"),
+                 ("recovery-decision", "evaluate"), ("recovery-decision", "diagnose"), ("recovery-decision", "readiness")):
+        text = " ".join(_help(capsys, *args).split())
+        assert "Exit codes: 0 " in text and "2 usage error" in text, args

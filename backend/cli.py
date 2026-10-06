@@ -267,13 +267,14 @@ def _format_readiness_human(result) -> str:
 
 def _add_recovery_decision_parser(subparsers):
     recovery_decision = subparsers.add_parser(
-        "recovery-decision", help="Recovery execution decision lifecycle operations",
+        "recovery-decision", help="Recovery execution decision lifecycle operations: evaluate, diagnose, readiness",
     )
     recovery_decision_subparsers = recovery_decision.add_subparsers(dest="recovery_decision_command", required=True)
 
     evaluate = recovery_decision_subparsers.add_parser(
         "evaluate",
         help="Evaluate a task's recovery execution decision lifecycle end to end",
+        epilog="Exit codes: 0 lifecycle remediated, clean or up to date and verified; 1 blocked, unverified or failed; 2 usage error.",
     )
     evaluate.add_argument("task_id", help="The task id to evaluate")
     evaluate.add_argument(
@@ -287,6 +288,7 @@ def _add_recovery_decision_parser(subparsers):
             "Diagnostic-only: report the health of a task's recovery execution decision "
             "lifecycle and its dependencies, without evaluating or changing anything"
         ),
+        epilog="Exit codes: 0 healthy; 1 degraded, blocked, unavailable or failed; 2 usage error.",
     )
     diagnose.add_argument("task_id", help="The task id to diagnose")
     diagnose.add_argument(
@@ -301,6 +303,7 @@ def _add_recovery_decision_parser(subparsers):
             "diagnostics, and (if a task id is given) that task's lifecycle health into "
             "one ready/blocked verdict. Diagnostic-only -- never evaluates or changes anything"
         ),
+        epilog="Exit codes: 0 ready; 1 blocked or failed; 2 usage error.",
     )
     readiness.add_argument("task_id", nargs="?", default=None, help="Optional task id to include in the readiness check")
     readiness.add_argument(
@@ -310,11 +313,25 @@ def _add_recovery_decision_parser(subparsers):
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="prereqai", description="PreReqAI command-line interface")
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    _add_recovery_decision_parser(subparsers)
-    add_api_generation_parser(subparsers)
+    parser = argparse.ArgumentParser(
+        prog="prereqai",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="PreReqAI command-line interface. Run it from the repository root as: python -m backend.cli <command> ...",
+        epilog=(
+            "Examples:\n"
+            "  python -m backend.cli prerequisites analyze paper.pdf\n"
+            "  python -m backend.cli api-generation generate --draft examples/api-generation/draft.json \\\n"
+            "      --output-dir ./out --dry-run\n"
+            "  python -m backend.cli recovery-decision readiness --json\n"
+            "\n"
+            "Run `python -m backend.cli <command> --help` for a command's subcommands, and\n"
+            "`python -m backend.cli <command> <subcommand> --help` for its arguments and exit codes."
+        ),
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True, metavar="<command>")
     add_prerequisites_parser(subparsers)
+    add_api_generation_parser(subparsers)
+    _add_recovery_decision_parser(subparsers)
     return parser
 
 
