@@ -32,3 +32,13 @@ def test_quickstart_http_first_run_succeeds():
         "/api/prerequisites/analyze", files={"paper": ("sample-paper.pdf", SAMPLE.read_bytes(), "application/pdf")},
     )
     assert response.status_code == 200 and response.json()["status"] == "success"
+
+
+def test_committed_sample_paper_matches_its_generator():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("make_sample_paper", SAMPLE.with_name("make_sample_paper.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert module.build() == SAMPLE.read_bytes(), "run: python examples/prerequisites/make_sample_paper.py"
