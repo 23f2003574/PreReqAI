@@ -6,7 +6,32 @@ implementation roadmap — instead of just a summary.
 
 Focused initially on transformers, diffusion, RL, and graph ML papers.
 
-**Status:** early development, not yet usable.
+**Status:** early development. The quickstart below runs end to end.
+
+## Quickstart
+
+Requires Python 3.10 or newer. From the repository root:
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# First run: analyse the bundled sample paper (no API keys or network needed)
+python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf
+```
+
+You should see `Analysed 'Attention Is All You Need (PreReqAI sample paper)'` with concept and
+prerequisite counts, and exit code 0. Add `--json` for the full report, or pass your own paper PDF.
+
+The same workflow over HTTP:
+
+```bash
+uvicorn backend.main:app --port 8000
+curl -F "paper=@examples/prerequisites/sample-paper.pdf;type=application/pdf" \
+    http://127.0.0.1:8000/api/prerequisites/analyze
+```
+
+Run `python -m backend.cli --help` for every command, and `pytest backend/tests` for the test suite.
 
 ## Prerequisite Explorer
 
