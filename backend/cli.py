@@ -212,6 +212,16 @@ def _is_success(result) -> bool:
     )
 
 
+def _report_unexpected_failure(verb, error) -> int:
+    """One message for an unexpected recovery-decision failure, matching the
+    HTTP API's wording ("Failed to <verb> the recovery execution decision
+    lifecycle") with the underlying reason and a next step."""
+    print(f"error: failed to {verb} the recovery execution decision lifecycle: {type(error).__name__}: {error}",
+          file=sys.stderr)
+    print("  hint: run `recovery-decision readiness` to check configuration and dependencies", file=sys.stderr)
+    return EXIT_FAILURE
+
+
 def _format_human(result) -> str:
     lines = [
         f"authoritative decision: {result.authoritative_decision_id}",
@@ -316,8 +326,7 @@ def _run_recovery_decision_evaluate(args, facade) -> int:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_FAILURE
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
-        print(f"error: {type(error).__name__}: {error}", file=sys.stderr)
-        return EXIT_FAILURE
+        return _report_unexpected_failure("evaluate", error)
 
     if args.as_json:
         print(json.dumps(result.to_dict(), indent=2, default=str, sort_keys=True))
@@ -339,8 +348,7 @@ def _run_recovery_decision_diagnose(args, health_service) -> int:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_FAILURE
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
-        print(f"error: {type(error).__name__}: {error}", file=sys.stderr)
-        return EXIT_FAILURE
+        return _report_unexpected_failure("diagnose", error)
 
     if args.as_json:
         print(json.dumps(result.to_dict(), indent=2, default=str, sort_keys=True))
@@ -367,8 +375,7 @@ def _run_recovery_decision_readiness(args, readiness_service) -> int:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_FAILURE
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
-        print(f"error: {type(error).__name__}: {error}", file=sys.stderr)
-        return EXIT_FAILURE
+        return _report_unexpected_failure("compute readiness for", error)
 
     if args.as_json:
         print(json.dumps(result.to_dict(), indent=2, default=str, sort_keys=True))
