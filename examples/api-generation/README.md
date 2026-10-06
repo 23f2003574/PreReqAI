@@ -8,7 +8,7 @@ step-by-step guide, see [the walkthrough](../../docs/api-generation-walkthrough.
 | --- | --- |
 | `loan_quote.ipynb` | The source notebook: one typed function, `loan_quote`. |
 | `draft.json` | The `VALIDATED` API documentation draft describing that function. It is what the notebook analysis → API documentation pipeline produces; it is committed here directly, because that pipeline needs an LLM. |
-| `generated/` | The project `prereqai api-generation generate` writes for this draft, unedited. |
+| `generated/` | The project `python -m backend.cli api-generation generate` writes for this draft, unedited. |
 
 The draft exercises the currently supported draft features: a typed
 `POST` endpoint with a summary and description, required and defaulted

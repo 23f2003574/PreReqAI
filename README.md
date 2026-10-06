@@ -6,7 +6,32 @@ implementation roadmap — instead of just a summary.
 
 Focused initially on transformers, diffusion, RL, and graph ML papers.
 
-**Status:** early development, not yet usable.
+**Status:** early development. The quickstart below runs end to end.
+
+## Quickstart
+
+Requires Python 3.10 or newer. From the repository root:
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# First run: analyse the bundled sample paper (no API keys or network needed)
+python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf
+```
+
+You should see `Analysed 'Attention Is All You Need (PreReqAI sample paper)'` with concept and
+prerequisite counts, and exit code 0. Add `--json` for the full report, or pass your own paper PDF.
+
+The same workflow over HTTP:
+
+```bash
+uvicorn backend.main:app --port 8000
+curl -F "paper=@examples/prerequisites/sample-paper.pdf;type=application/pdf" \
+    http://127.0.0.1:8000/api/prerequisites/analyze
+```
+
+Run `python -m backend.cli --help` for every command, and `pytest backend/tests` for the test suite.
 
 ## Prerequisite Explorer
 
@@ -1494,6 +1519,20 @@ Integration tests exercise complete research workspace lifecycles through the pu
 - Persistence across application restarts
 
 ## Command Line
+
+`prerequisites analyze` runs the Prerequisite Explorer on a paper PDF -- the
+same workflow as `POST /api/prerequisites/analyze` -- and prints a summary
+(`--json` for the full result envelope).
+
+```
+python -m backend.cli prerequisites analyze <paper.pdf>
+python -m backend.cli prerequisites analyze <paper.pdf> --json --diagnose
+python -m backend.cli prerequisites analyze <paper.pdf> --max-seconds 60 --max-file-mb 20
+```
+
+Exits `0` on success; `1` when the analysis failed (including invalid
+limits); `2` on a usage error; `123` when a resource limit was reached;
+`124` when an operation timed out; `130` when cancelled (Ctrl-C).
 
 `recovery-decision evaluate` runs the recovery execution decision
 lifecycle for a task end to end (authoritative decision, lineage

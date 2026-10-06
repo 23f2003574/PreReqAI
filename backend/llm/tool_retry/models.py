@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from ..retry import InvalidRetryPolicyError, LLMRetryPolicy, TransientLLMError
 from ..tool_execution import TIMED_OUT

@@ -57,6 +57,8 @@ from backend.cli_api_generation import (  # noqa: F401  (re-exported: the CLI's 
     _run_api_generation_check,
     _run_api_generation_generate,
     add_api_generation_parser,
+    run_api_generation_check,
+    run_api_generation_generate,
 )
 from backend.cli_common import EXIT_FAILURE, EXIT_OK, EXIT_USAGE  # noqa: F401
 from backend.cli_prerequisites import (
@@ -210,6 +212,16 @@ def _is_success(result) -> bool:
     )
 
 
+def _report_unexpected_failure(verb, error) -> int:
+    """One message for an unexpected recovery-decision failure, matching the
+    HTTP API's wording ("Failed to <verb> the recovery execution decision
+    lifecycle") with the underlying reason and a next step."""
+    print(f"error: failed to {verb} the recovery execution decision lifecycle: {type(error).__name__}: {error}",
+          file=sys.stderr)
+    print("  hint: run `recovery-decision readiness` to check configuration and dependencies", file=sys.stderr)
+    return EXIT_FAILURE
+
+
 def _format_human(result) -> str:
     lines = [
         f"authoritative decision: {result.authoritative_decision_id}",
@@ -255,13 +267,14 @@ def _format_readiness_human(result) -> str:
 
 def _add_recovery_decision_parser(subparsers):
     recovery_decision = subparsers.add_parser(
-        "recovery-decision", help="Recovery execution decision lifecycle operations",
+        "recovery-decision", help="Recovery execution decision lifecycle operations: evaluate, diagnose, readiness",
     )
     recovery_decision_subparsers = recovery_decision.add_subparsers(dest="recovery_decision_command", required=True)
 
     evaluate = recovery_decision_subparsers.add_parser(
         "evaluate",
         help="Evaluate a task's recovery execution decision lifecycle end to end",
+        epilog="Exit codes: 0 lifecycle remediated, clean or up to date and verified; 1 blocked, unverified or failed; 2 usage error.",
     )
     evaluate.add_argument("task_id", help="The task id to evaluate")
     evaluate.add_argument(
@@ -275,6 +288,7 @@ def _add_recovery_decision_parser(subparsers):
             "Diagnostic-only: report the health of a task's recovery execution decision "
             "lifecycle and its dependencies, without evaluating or changing anything"
         ),
+        epilog="Exit codes: 0 healthy; 1 degraded, blocked, unavailable or failed; 2 usage error.",
     )
     diagnose.add_argument("task_id", help="The task id to diagnose")
     diagnose.add_argument(
@@ -289,6 +303,7 @@ def _add_recovery_decision_parser(subparsers):
             "diagnostics, and (if a task id is given) that task's lifecycle health into "
             "one ready/blocked verdict. Diagnostic-only -- never evaluates or changes anything"
         ),
+        epilog="Exit codes: 0 ready; 1 blocked or failed; 2 usage error.",
     )
     readiness.add_argument("task_id", nargs="?", default=None, help="Optional task id to include in the readiness check")
     readiness.add_argument(
@@ -298,11 +313,25 @@ def _add_recovery_decision_parser(subparsers):
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="prereqai", description="PreReqAI command-line interface")
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    _add_recovery_decision_parser(subparsers)
-    add_api_generation_parser(subparsers)
+    parser = argparse.ArgumentParser(
+        prog="prereqai",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="PreReqAI command-line interface. Run it from the repository root as: python -m backend.cli <command> ...",
+        epilog=(
+            "Examples:\n"
+            "  python -m backend.cli prerequisites analyze paper.pdf\n"
+            "  python -m backend.cli api-generation generate --draft examples/api-generation/draft.json \\\n"
+            "      --output-dir ./out --dry-run\n"
+            "  python -m backend.cli recovery-decision readiness --json\n"
+            "\n"
+            "Run `python -m backend.cli <command> --help` for a command's subcommands, and\n"
+            "`python -m backend.cli <command> <subcommand> --help` for its arguments and exit codes."
+        ),
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True, metavar="<command>")
     add_prerequisites_parser(subparsers)
+    add_api_generation_parser(subparsers)
+    _add_recovery_decision_parser(subparsers)
     return parser
 
 
@@ -314,8 +343,7 @@ def _run_recovery_decision_evaluate(args, facade) -> int:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_FAILURE
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
-        print(f"error: {type(error).__name__}: {error}", file=sys.stderr)
-        return EXIT_FAILURE
+        return _report_unexpected_failure("evaluate", error)
 
     if args.as_json:
         print(json.dumps(result.to_dict(), indent=2, default=str, sort_keys=True))
@@ -337,8 +365,7 @@ def _run_recovery_decision_diagnose(args, health_service) -> int:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_FAILURE
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
-        print(f"error: {type(error).__name__}: {error}", file=sys.stderr)
-        return EXIT_FAILURE
+        return _report_unexpected_failure("diagnose", error)
 
     if args.as_json:
         print(json.dumps(result.to_dict(), indent=2, default=str, sort_keys=True))
@@ -365,8 +392,7 @@ def _run_recovery_decision_readiness(args, readiness_service) -> int:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_FAILURE
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
-        print(f"error: {type(error).__name__}: {error}", file=sys.stderr)
-        return EXIT_FAILURE
+        return _report_unexpected_failure("compute readiness for", error)
 
     if args.as_json:
         print(json.dumps(result.to_dict(), indent=2, default=str, sort_keys=True))
@@ -397,12 +423,12 @@ def main(argv=None, facade=None, health_service=None, readiness_service=None) ->
         return _run_recovery_decision_readiness(args, readiness_service)
 
     if args.command == "api-generation" and args.api_generation_command == "generate":
-        return _run_api_generation_generate(args)
+        return run_api_generation_generate(args)
+    if args.command == "api-generation" and args.api_generation_command == "check":
+        return run_api_generation_check(args)
 
     if args.command == "prerequisites" and args.prerequisites_command == "analyze":
         return run_prerequisites_analyze(args)
-    if args.command == "api-generation" and args.api_generation_command == "check":
-        return _run_api_generation_check(args)
 
     parser.print_usage(sys.stderr)
     return EXIT_USAGE

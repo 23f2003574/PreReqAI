@@ -1,6 +1,11 @@
 from typing import (
-    Optional,
+    TYPE_CHECKING,
 )
+
+if TYPE_CHECKING:
+    from .research_workspace_consumer_projection_execution_receipt import (
+        ResearchWorkspaceConsumerProjectionExecutionReceipt,
+    )
 
 
 class ResearchWorkspaceConsumerProjectionExecutionReceiptFormatter:

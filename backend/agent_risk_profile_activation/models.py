@@ -1,6 +1,5 @@
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import Optional
 from uuid import uuid4
 
 # Two closed outcomes for one activate() call -- the same plain-string

@@ -42,7 +42,7 @@ python -m backend.cli api-generation generate \
 ```
 
 Other options:
-- `--json` prints the result as JSON (`draft_id`, `endpoint`, `output_dir`, `files`, `openapi_path`, `dry_run`).
+- `--json` prints one JSON summary instead of progress lines: `status`, `source`, `stages_completed`, `validation`, `warnings` and `dry_run`, plus the result (`draft_id`, `endpoint`, `output_dir`, `files`, `openapi_path`, `artifact_types`) on success or `failed_stage` and `error` on failure.
 - `--base-image` and `--port` set the Dockerfile's base image (default `python:3.11-slim`) and listen port (default `8000`).
 - `--config FILE` reads the generator's `generation` settings (`project_name`) and the project's `runtime` settings (`base_image`, `port`) from a `prereqai-config.json`, such as the one in a generated project. Edit that file and regenerate with `--config` to change those settings. Explicit flags override the file's values. A file with a missing, unknown or invalid setting is rejected; there is no silent fallback to defaults.
 - `--project-name` names the project, for example `--project-name loan-quote`. The app is then generated in the package `loan_quote/` with entrypoint `loan_quote.main:app`, and the same name appears in the manifest, metadata, README and OpenAPI title. The default is the draft's summary as the name, with the package `app/`. A name that can't become a safe Python package is rejected before anything is generated.

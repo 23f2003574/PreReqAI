@@ -101,7 +101,6 @@ from .context_refresh_execution import (
     LLMContextRefreshExecution,
     LLMContextRefreshExecutionService,
     NoApprovedActionsError,
-    UnknownExecutionError,
 )
 from .context_refresh_validation import (
     BLOCKING_FINDING_CODES,
@@ -336,7 +335,6 @@ __all__ = [
     "ROLLED_BACK",
     "EXECUTION_STATUSES",
     "LLMContextRefreshExecutionService",
-    "UnknownExecutionError",
     "NoApprovedActionsError",
     "InvalidRollbackError",
     "LLMContextRefreshValidation",

@@ -58,8 +58,6 @@ class ResearchWorkspaceConsumerProjectionReadinessEvaluator:
         block_reason = None
 
         def add_issue(code, message):
-            nonlocal blocked, degraded
-
             key = (code, message)
 
             if key not in seen_issues:

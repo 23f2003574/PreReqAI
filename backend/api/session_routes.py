@@ -94,17 +94,38 @@ def ask_question(
             hint="Run an analysis first and use the session_id it returns.",
         )
 
-    result = pipeline.answer(
+    if not body.question or not body.question.strip():
 
-        session=session,
+        return failure_response(
+            422,
+            "question",
+            "Question must be a non-empty string",
+            hint="Send a question about the paper in the request body's `question` field.",
+        )
 
-        paper=session.paper,
+    try:
 
-        question=body.question,
+        result = pipeline.answer(
 
-        mode=body.mode,
+            session=session,
 
-        topic=body.topic,
-    )
+            paper=session.paper,
+
+            question=body.question,
+
+            mode=body.mode,
+
+            topic=body.topic,
+        )
+
+    except Exception as exc:  # same envelope as every other failure, never a bare 500
+
+        return failure_response(
+            500,
+            "question",
+            "Failed to answer the question",
+            error=exc,
+            hint="Try rephrasing the question; if it keeps failing, re-run the analysis to start a new session.",
+        )
 
     return result
