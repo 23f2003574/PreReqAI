@@ -1520,6 +1520,20 @@ Integration tests exercise complete research workspace lifecycles through the pu
 
 ## Command Line
 
+`prerequisites analyze` runs the Prerequisite Explorer on a paper PDF -- the
+same workflow as `POST /api/prerequisites/analyze` -- and prints a summary
+(`--json` for the full result envelope).
+
+```
+python -m backend.cli prerequisites analyze <paper.pdf>
+python -m backend.cli prerequisites analyze <paper.pdf> --json --diagnose
+python -m backend.cli prerequisites analyze <paper.pdf> --max-seconds 60 --max-file-mb 20
+```
+
+Exits `0` on success; `1` when the analysis failed (including invalid
+limits); `2` on a usage error; `123` when a resource limit was reached;
+`124` when an operation timed out; `130` when cancelled (Ctrl-C).
+
 `recovery-decision evaluate` runs the recovery execution decision
 lifecycle for a task end to end (authoritative decision, lineage
 validation, impact/staleness detection, remediation/reconciliation,
