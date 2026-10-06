@@ -1,12 +1,10 @@
 """The README quickstart works from a fresh checkout: the bundled sample paper
-analyses successfully through the documented CLI command and HTTP endpoint."""
+analyses successfully through the documented CLI command (the HTTP endpoint is
+covered end to end by test_prereqai_entrypoint_smoke.py)."""
 import json
 from pathlib import Path
 
-from fastapi.testclient import TestClient
-
 from backend.cli import EXIT_OK, main
-from backend.main import app
 
 ROOT = Path(__file__).resolve().parents[2]
 SAMPLE = ROOT / "examples" / "prerequisites" / "sample-paper.pdf"
@@ -25,13 +23,6 @@ def test_quickstart_cli_first_run_succeeds_with_the_documented_output(capsys):
     assert main(["prerequisites", "analyze", str(SAMPLE), "--json"]) == EXIT_OK
     outcome = json.loads(capsys.readouterr().out)
     assert outcome["status"] == "success" and outcome["report"]["concepts"]
-
-
-def test_quickstart_http_first_run_succeeds():
-    response = TestClient(app).post(
-        "/api/prerequisites/analyze", files={"paper": ("sample-paper.pdf", SAMPLE.read_bytes(), "application/pdf")},
-    )
-    assert response.status_code == 200 and response.json()["status"] == "success"
 
 
 def test_committed_sample_paper_matches_its_generator():
