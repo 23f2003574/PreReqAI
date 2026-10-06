@@ -26,7 +26,17 @@ CONFIG_VERSION = 1
 # so neither is stored.
 _SECTIONS = {"generation": ("project_name",), "runtime": ("base_image", "port")}
 _FILE_FIELDS = tuple(name for names in _SECTIONS.values() for name in names)
-_IMAGE = re.compile(r"^[a-z0-9][a-z0-9._/-]*(:[A-Za-z0-9._-]+)?(@sha256:[0-9a-f]{64})?$")
+# Docker's image reference grammar: optional registry host[:port]/, then lower-case
+# path components separated by single "/" (each component's separators are ".",
+# "_", "__" or dashes, never leading, trailing or doubled dots), an optional tag
+# and an optional sha256 digest -- so a reference `docker build` would reject
+# (e.g. "python/", "python//slim", "a..b") is caught here, not after generation.
+_IMAGE_COMPONENT = r"[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*"
+_IMAGE_REGISTRY = r"[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*(?::[0-9]+)?/"
+_IMAGE = re.compile(
+    rf"^(?:{_IMAGE_REGISTRY})?{_IMAGE_COMPONENT}(?:/{_IMAGE_COMPONENT})*"
+    r"(?::[A-Za-z0-9_][A-Za-z0-9._-]{0,127})?(?:@sha256:[0-9a-f]{64})?$"
+)
 
 
 @dataclass
