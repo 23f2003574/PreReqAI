@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from backend.agent_task_events import LLMAgentTaskEventQueryService, LLMAgentTaskEventService
 

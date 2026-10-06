@@ -1,6 +1,5 @@
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import Optional
 from uuid import uuid4
 
 from backend.llm.context_provenance import LLMContextProvenance

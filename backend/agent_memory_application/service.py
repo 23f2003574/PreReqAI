@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from backend.agent_execution_memory import LLMAgentMemoryService
 from backend.agent_memory_promotion import CANDIDATE, DEPRECATED, TRUSTED, LLMAgentMemoryPromoter

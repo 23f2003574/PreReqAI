@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 from backend.agent_learning_signals import FAILED_STRATEGY, SUCCESSFUL_STRATEGY, LLMAgentLearningSignal
@@ -215,10 +215,6 @@ class LLMAgentTaskRecoveryPreflightScheduleLearningService:
         existing = self._find_matching(task_id, schedule_id, outcomes)
         if existing is not None:
             return existing
-
-        signals = tuple(outcome.signal for outcome in outcomes if outcome.signal is not None)
-        learned_count = len(signals)
-        skipped_count = len(outcomes) - learned_count
 
         payload = {
             "schedule_id": schedule_id,

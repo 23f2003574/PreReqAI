@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 # Same secret-redaction convention already used by backend.llm.tool_results,
 # backend.llm.tool_execution, backend.transformation_audit, and
