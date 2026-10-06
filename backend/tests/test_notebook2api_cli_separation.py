@@ -61,3 +61,26 @@ def test_public_names_remain_importable_from_backend_cli_and_share_one_definitio
         assert hasattr(cli, name), name
     assert cli._generation_exit_code is generation_cli._generation_exit_code
     assert (cli.EXIT_OK, cli.EXIT_FAILURE, cli.EXIT_USAGE) == (cli_common.EXIT_OK, cli_common.EXIT_FAILURE, cli_common.EXIT_USAGE) == (0, 1, 2)
+
+
+def test_every_cli_command_runner_is_public_and_old_private_names_still_resolve():
+    from backend import cli_prerequisites
+
+    for name in ("run_api_generation_generate", "run_api_generation_check", "run_prerequisites_analyze",
+                 "add_api_generation_parser", "add_prerequisites_parser"):
+        assert callable(getattr(cli, name)), name
+    assert cli.run_prerequisites_analyze is cli_prerequisites.run_prerequisites_analyze
+    assert cli.run_api_generation_generate is generation_cli.run_api_generation_generate
+    assert cli.run_api_generation_check is generation_cli.run_api_generation_check
+    # backward compatibility: the former private names are the same functions
+    assert cli._run_api_generation_generate is cli.run_api_generation_generate
+    assert cli._run_api_generation_check is cli.run_api_generation_check
+
+
+def test_main_dispatches_api_generation_check_through_the_public_runner(tmp_path, monkeypatch, capsys):
+    calls = []
+    monkeypatch.setattr(cli, "run_api_generation_check", lambda args: calls.append(args.project_dir) or EXIT_OK)
+
+    assert main(["api-generation", "check", str(tmp_path)]) == EXIT_OK
+    assert calls == [str(tmp_path)]
+    capsys.readouterr()

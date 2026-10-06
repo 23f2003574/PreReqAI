@@ -57,6 +57,8 @@ from backend.cli_api_generation import (  # noqa: F401  (re-exported: the CLI's 
     _run_api_generation_check,
     _run_api_generation_generate,
     add_api_generation_parser,
+    run_api_generation_check,
+    run_api_generation_generate,
 )
 from backend.cli_common import EXIT_FAILURE, EXIT_OK, EXIT_USAGE  # noqa: F401
 from backend.cli_prerequisites import (
@@ -397,12 +399,12 @@ def main(argv=None, facade=None, health_service=None, readiness_service=None) ->
         return _run_recovery_decision_readiness(args, readiness_service)
 
     if args.command == "api-generation" and args.api_generation_command == "generate":
-        return _run_api_generation_generate(args)
+        return run_api_generation_generate(args)
+    if args.command == "api-generation" and args.api_generation_command == "check":
+        return run_api_generation_check(args)
 
     if args.command == "prerequisites" and args.prerequisites_command == "analyze":
         return run_prerequisites_analyze(args)
-    if args.command == "api-generation" and args.api_generation_command == "check":
-        return _run_api_generation_check(args)
 
     parser.print_usage(sys.stderr)
     return EXIT_USAGE

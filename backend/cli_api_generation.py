@@ -216,7 +216,7 @@ def _report_generation_failure(error):
         print(f"  hint: {hint}", file=sys.stderr)
 
 
-def _run_api_generation_generate(args) -> int:
+def run_api_generation_generate(args) -> int:
     """generate_application() with the CLI's conventions: results on stdout
     (--json for the machine-readable form), failures as `error: ...` on
     stderr naming the failing stage and exit code 1, never a stack trace."""
@@ -267,7 +267,7 @@ def _run_api_generation_generate(args) -> int:
     return EXIT_OK
 
 
-def _run_api_generation_check(args) -> int:
+def run_api_generation_check(args) -> int:
     """check_generated_project() with the diagnostic-command conventions:
     only a healthy project is EXIT_OK, anything else is EXIT_FAILURE."""
     health = check_generated_project(args.project_dir)
@@ -296,3 +296,8 @@ def _run_api_generation_check(args) -> int:
         elif compatibility["remediation"]:
             print(f"  fix: {compatibility['remediation']}")
     return EXIT_OK if health.healthy else EXIT_FAILURE
+
+
+# Former private names, kept so existing imports (`from backend.cli import _run_api_generation_*`) keep working.
+_run_api_generation_generate = run_api_generation_generate
+_run_api_generation_check = run_api_generation_check
