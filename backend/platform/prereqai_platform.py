@@ -2,6 +2,7 @@ import os
 from copy import deepcopy
 from time import perf_counter
 
+import pymupdf
 import requests
 import urllib3
 
@@ -49,19 +50,29 @@ def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None) 
     }
 
 
+# PyMuPDF reports a missing file with its own FileNotFoundError (a RuntimeError).
+_MISSING_FILE_ERRORS = (FileNotFoundError, getattr(pymupdf, "FileNotFoundError", FileNotFoundError))
+
+
+def _caused_by(exc: BaseException, types) -> bool:
+    """Whether `exc` is, or was caused by, an exception of `types`. A stage may
+    wrap an error in its own ("raise ... from", or as its first argument)."""
+    seen = set()
+    while exc is not None and id(exc) not in seen:
+        seen.add(id(exc))
+        if isinstance(exc, types):
+            return True
+        wrapped = exc.args[0] if exc.args and isinstance(exc.args[0], BaseException) else None
+        exc = exc.__cause__ or wrapped
+    return False
+
+
 def _is_timeout(exc: BaseException) -> bool:
     """Whether `exc` is, or was caused by, an operation running out of time.
     requests reports a read timeout while downloading the body as a plain
     ConnectionError wrapping urllib3's ReadTimeoutError, and a stage may wrap a
     timeout in its own error ("raise ... from"); both are still timeouts."""
-    seen = set()
-    while exc is not None and id(exc) not in seen:
-        seen.add(id(exc))
-        if isinstance(exc, (requests.exceptions.Timeout, TimeoutError, urllib3.exceptions.TimeoutError)):
-            return True
-        wrapped = exc.args[0] if exc.args and isinstance(exc.args[0], BaseException) else None
-        exc = exc.__cause__ or wrapped
-    return False
+    return _caused_by(exc, (requests.exceptions.Timeout, TimeoutError, urllib3.exceptions.TimeoutError))
 
 
 def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
@@ -83,6 +94,11 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
         return timeout_body(
             "analysis", f"The analysis timed out: {exc}", error=exc,
             hint="Check the network connection and try again; nothing was kept.",
+        )
+    if _caused_by(exc, _MISSING_FILE_ERRORS):  # a mistyped path is not a bad paper
+        return failure_body(
+            "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
+            hint="Check the paper path: it must name an existing PDF file (relative paths start from the current directory).",
         )
     return failure_body(
         "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,

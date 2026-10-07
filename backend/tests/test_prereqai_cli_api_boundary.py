@@ -36,7 +36,10 @@ def test_cli_failure_prints_the_error_and_hint_to_stderr_and_exits_nonzero(tmp_p
     captured = capsys.readouterr()
     assert code == EXIT_FAILURE and captured.out == ""
     assert captured.err.startswith("error: analysis failed at stage 'analysis': Failed to process the uploaded paper")
-    assert "hint: Upload a text-based PDF research paper." in captured.err and "Traceback" not in captured.err
+    assert "Traceback" not in captured.err
+    # a mistyped path is reported as a path problem, not as a bad paper
+    assert "hint: Check the paper path: it must name an existing PDF file" in captured.err
+    assert "Upload a text-based PDF" not in captured.err
 
 
 def test_api_success_and_failure_use_the_same_envelope_as_the_cli_json(tmp_path, capsys):
