@@ -13,7 +13,7 @@ from backend.agent_task_recovery_execution_precondition_snapshots import (
     InvalidAgentTaskRecoveryExecutionDecisionLifecycleReadinessError,
 )
 
-from backend.cli import (
+from backend.recovery_decision_services import (
     build_recovery_decision_facade,
     build_recovery_decision_health_and_readiness_services,
 )

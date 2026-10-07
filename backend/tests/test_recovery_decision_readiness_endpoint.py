@@ -140,7 +140,7 @@ def test_diagnostics_and_readiness_share_one_health_stack_built_once_at_startup(
     import importlib
 
     import backend.api.recovery_decision_routes as routes
-    import backend.cli as cli
+    import backend.recovery_decision_services as cli
 
     builds = []
     real = cli._build_health_stack
