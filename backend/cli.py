@@ -199,6 +199,21 @@ def build_recovery_decision_readiness_service(decision_store=None):
     )
 
 
+def build_recovery_decision_health_and_readiness_services(decision_store=None):
+    """Wire the health service (#6) and the readiness service (#13) from ONE
+    health stack: the readiness gate composes the very health service the
+    diagnostics endpoint uses, instead of a second, identical wiring on its
+    own store. Equivalent to calling build_recovery_decision_health_service()
+    and build_recovery_decision_readiness_service() with a shared store."""
+    c, configuration_validator, health_service = _build_health_stack(decision_store)
+    readiness_service = LLMAgentTaskRecoveryExecutionDecisionLifecycleReadinessService(
+        configuration_validator=configuration_validator,
+        health_service=health_service,
+        lifecycle_result_service=c.lifecycle_results,
+    )
+    return health_service, readiness_service
+
+
 def _is_success(result) -> bool:
     """A lifecycle counts as successful only when its own status is one
     of the non-blocking outcomes, verification agrees, and nothing is

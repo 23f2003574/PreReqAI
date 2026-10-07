@@ -15,8 +15,7 @@ from backend.agent_task_recovery_execution_precondition_snapshots import (
 
 from backend.cli import (
     build_recovery_decision_facade,
-    build_recovery_decision_health_service,
-    build_recovery_decision_readiness_service,
+    build_recovery_decision_health_and_readiness_services,
 )
 
 router = APIRouter(
@@ -30,12 +29,9 @@ facade = (
     build_recovery_decision_facade()
 )
 
-health_service = (
-    build_recovery_decision_health_service()
-)
-
-readiness_service = (
-    build_recovery_decision_readiness_service()
+# One health stack serves both diagnostics and the readiness gate.
+health_service, readiness_service = (
+    build_recovery_decision_health_and_readiness_services()
 )
 
 

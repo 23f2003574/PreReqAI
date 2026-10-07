@@ -134,3 +134,21 @@ def test_endpoint_is_registered_in_the_generated_openapi_schema():
 
     assert "/api/tasks/recovery-decision/readiness" in schema["paths"]
     assert "get" in schema["paths"]["/api/tasks/recovery-decision/readiness"]
+
+
+def test_diagnostics_and_readiness_share_one_health_stack_built_once_at_startup(monkeypatch):
+    import importlib
+
+    import backend.api.recovery_decision_routes as routes
+    import backend.cli as cli
+
+    builds = []
+    real = cli._build_health_stack
+    monkeypatch.setattr(cli, "_build_health_stack", lambda *a, **k: builds.append(1) or real(*a, **k))
+    fresh = importlib.reload(routes)
+    try:
+        assert len(builds) == 1  # previously built twice: once for diagnostics, once for readiness
+        assert fresh.readiness_service._health is fresh.health_service
+    finally:
+        monkeypatch.undo()
+        importlib.reload(routes)
