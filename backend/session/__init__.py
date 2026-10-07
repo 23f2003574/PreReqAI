@@ -741,6 +741,10 @@ from .research_workspace_consumer_projection_diagnostic_status import (
     ResearchWorkspaceConsumerProjectionDiagnosticStatus,
 )
 
+# The plural spelling matches the sibling Diagnostics* names (collector,
+# summary, summarizer) that consumers import alongside it; same class.
+ResearchWorkspaceConsumerProjectionDiagnosticsStatus = ResearchWorkspaceConsumerProjectionDiagnosticStatus
+
 from .research_workspace_consumer_projection_diagnostic_stage_kind import (
     ResearchWorkspaceConsumerProjectionDiagnosticStageKind,
 )
