@@ -174,9 +174,11 @@ def _add_recovery_decision_parser(subparsers):
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="prereqai",
+        # The real invocation: there is no installed `prereqai` console script (no package metadata
+        # declares one), so usage and error lines name the command a user can actually run.
+        prog="python -m backend.cli",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="PreReqAI command-line interface. Run it from the repository root as: python -m backend.cli <command> ...",
+        description="PreReqAI command-line interface. Run it from the repository root.",
         epilog=(
             "Examples:\n"
             "  python -m backend.cli prerequisites analyze paper.pdf\n"

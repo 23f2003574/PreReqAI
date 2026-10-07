@@ -47,7 +47,8 @@ def test_generate_help_lists_every_option_the_parser_defines(capsys):
 
 def test_the_documented_example_uses_real_files_and_actually_runs(tmp_path, capsys):
     text = _help(capsys, "api-generation", "generate")
-    example = re.search(r"python -m backend\.cli (api-generation generate .*?)\s+#", text, flags=re.DOTALL).group(1)
+    example_section = text.split("Example:", 1)[1]  # the usage line also starts with `python -m backend.cli`
+    example = re.search(r"python -m backend\.cli (api-generation generate .*?)\s+#", example_section, flags=re.DOTALL).group(1)
     args = shlex.split(example.replace("\\\n", " "))
     assert (ROOT / args[args.index("--draft") + 1]).is_file()
     args[args.index("--output-dir") + 1] = str(tmp_path / "out")
@@ -106,3 +107,13 @@ def test_every_subcommand_documents_its_exit_codes(capsys):
                  ("recovery-decision", "evaluate"), ("recovery-decision", "diagnose"), ("recovery-decision", "readiness")):
         text = " ".join(_help(capsys, *args).split())
         assert "Exit codes: 0 " in text and "2 usage error" in text, args
+
+
+def test_usage_and_error_lines_name_the_real_invocation_not_an_uninstalled_script(capsys):
+    assert _help(capsys).startswith("usage: python -m backend.cli [-h] <command>")
+    assert _help(capsys, "prerequisites", "analyze").startswith("usage: python -m backend.cli prerequisites analyze")
+    with pytest.raises(SystemExit) as raised:
+        main(["prerequisites"])
+    err = capsys.readouterr().err
+    assert raised.value.code == EXIT_USAGE and "python -m backend.cli prerequisites: error:" in err
+    assert "prereqai " not in err  # no `prereqai` console script is installed anywhere
