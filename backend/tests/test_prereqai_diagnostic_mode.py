@@ -58,7 +58,11 @@ def test_diagnostic_mode_adds_a_concise_summary_to_the_human_output(tmp_path, ca
 
     out = capsys.readouterr().out.splitlines()
     summary = [line for line in out if line.startswith("Diagnostics: success at stage session_created")]
-    assert len(summary) == 1 and sum(1 for line in out if line.endswith("s") and line.startswith("  ") and ":" in line) >= 5
+    stage_lines = [line for line in out if line.startswith("  ") and line.endswith("s") and ": " in line]
+    assert len(summary) == 1 and 1 <= len(stage_lines) <= 5
+    assert all(not line.endswith(": 0.000s") for line in stage_lines)  # no zero-time noise
+    omitted = [line for line in out if line.endswith("faster stages not shown; --json has every stage's timing)")]
+    assert len(omitted) == 1
     assert any(line.startswith("  statistics: ") for line in out) and len(out) <= 14
 
 

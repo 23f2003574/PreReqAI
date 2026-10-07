@@ -125,8 +125,13 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             info = outcome["diagnostics"]
             print(f"Diagnostics: {info['status']} at stage {info['stage']}; {len(info['completed_stages'])} stages, "
                   f"{info['total_seconds']:.3f}s total")
-            for name, seconds in sorted(info["stage_seconds"].items(), key=lambda item: -item[1])[:5]:
+            # the slowest stages that took measurable time; 0.000s entries are noise (--json keeps every stage)
+            slowest = sorted(info["stage_seconds"].items(), key=lambda item: -item[1])
+            shown = [(name, seconds) for name, seconds in slowest[:5] if round(seconds, 3) > 0]
+            for name, seconds in shown:
                 print(f"  {name}: {seconds:.3f}s")
+            if len(slowest) > len(shown):
+                print(f"  ({len(slowest) - len(shown)} faster stages not shown; --json has every stage's timing)")
             print("  statistics: " + ", ".join(f"{key}={value}" for key, value in info["statistics"].items()))
     if timed_out:
         return EXIT_TIMEOUT
