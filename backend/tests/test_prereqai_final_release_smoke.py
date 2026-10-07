@@ -22,6 +22,8 @@ def test_quickstart_succeeds_with_the_documented_human_and_json_output():
     assert human.returncode == 0 and human.stderr == ""
     assert human.stdout.startswith("Analysed 'Attention Is All You Need (PreReqAI sample paper)' (session ")
     assert "concepts: " in human.stdout and "prerequisites: " in human.stdout
+    assert "  missing: 3 (1 covered in the paper)" in human.stdout  # only unsatisfied prerequisites count
+    assert "\n  study plan: 1. " in human.stdout and len(human.stdout.splitlines()) <= 4
 
     machine = _cli("prerequisites", "analyze", SAMPLE, "--json")
     outcome = json.loads(machine.stdout)
@@ -38,3 +40,10 @@ def test_corrupt_paper_fails_with_one_actionable_error_and_exit_code_1(tmp_path)
     assert result.returncode == 1 and result.stdout == ""
     assert result.stderr.startswith("error: analysis failed at stage 'analysis': Failed to process the uploaded paper")
     assert "  hint: Upload a text-based PDF research paper." in result.stderr and "Traceback" not in result.stderr
+
+
+def test_a_mistyped_paper_path_is_reported_as_a_path_problem(tmp_path):
+    result = _cli("prerequisites", "analyze", str(tmp_path / "nope.pdf"))
+
+    assert result.returncode == 1 and result.stdout == "" and "Traceback" not in result.stderr
+    assert "  hint: Check the paper path: it must name an existing PDF file" in result.stderr
