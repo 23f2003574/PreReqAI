@@ -12,5 +12,5 @@ python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.
 python examples/prerequisites/make_sample_paper.py   # rebuild the PDF after editing its text
 ```
 
-`backend/tests/test_prereqai_quickstart.py` fails if the committed PDF drifts from what
-`make_sample_paper.py` builds, or if the quickstart command stops succeeding on it.
+`backend/tests/test_prereqai_quickstart.py` fails if the committed PDF's content (pages, text,
+title) drifts from what `make_sample_paper.py` builds, or if the quickstart command stops succeeding on it.

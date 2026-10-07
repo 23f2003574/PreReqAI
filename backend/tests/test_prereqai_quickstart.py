@@ -32,7 +32,16 @@ def test_committed_sample_paper_matches_its_generator():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
-    assert module.build() == SAMPLE.read_bytes(), "run: python examples/prerequisites/make_sample_paper.py"
+    # Compare content, not bytes: PDF bytes vary across the PyMuPDF versions
+    # requirements.txt allows, so a byte check would fail in a fresh environment.
+    import pymupdf
+
+    def content(data):
+        with pymupdf.open(stream=data, filetype="pdf") as document:
+            return document.page_count, [page.get_text() for page in document], document.metadata["title"]
+
+    assert content(module.build()) == content(SAMPLE.read_bytes()), \
+        "run: python examples/prerequisites/make_sample_paper.py"
 
 
 def test_human_summary_shows_the_study_plan_and_counts_only_unsatisfied_prerequisites(capsys):

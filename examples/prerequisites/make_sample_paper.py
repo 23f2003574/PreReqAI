@@ -4,8 +4,8 @@ repository root:
 
     python examples/prerequisites/make_sample_paper.py
 
-The output is deterministic (fixed metadata, no timestamps), so rebuilding
-leaves the committed PDF byte-for-byte unchanged."""
+The output is deterministic for a given PyMuPDF version (fixed metadata, no
+timestamps); across versions the bytes may differ but the content does not."""
 from pathlib import Path
 
 import pymupdf
