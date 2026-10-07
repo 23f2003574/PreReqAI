@@ -35,19 +35,23 @@ async def analyze_prerequisites(
     paper: UploadFile = File(...),
 ):
 
-    with tempfile.NamedTemporaryFile(
+    temp_file = tempfile.NamedTemporaryFile(
         suffix=".pdf",
         delete=False,
-    ) as temp_file:
+    )
 
-        shutil.copyfileobj(
-            paper.file,
-            temp_file,
-        )
+    temp_path = temp_file.name
 
-        temp_path = temp_file.name
-
+    # The copy is inside the try, so a failed or interrupted upload never
+    # leaves its partial temp file behind.
     try:
+
+        with temp_file:
+
+            shutil.copyfileobj(
+                paper.file,
+                temp_file,
+            )
 
         outcome = platform.analyze(
             temp_path,
