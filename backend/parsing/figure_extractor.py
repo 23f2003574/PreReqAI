@@ -18,33 +18,32 @@ class FigureExtractor:
         paper: Paper,
     ) -> Paper:
 
-        document = fitz.open(pdf_path)
+        # closed even when an image fails to decode, like the other PDF readers
+        with fitz.open(pdf_path) as document:
 
-        figures = []
+            figures = []
 
-        figure_counter = 1
+            figure_counter = 1
 
-        for page_number, page in enumerate(document, start=1):
+            for page_number, page in enumerate(document, start=1):
 
-            for image_index, image in enumerate(page.get_images(full=True), start=1):
+                for image_index, image in enumerate(page.get_images(full=True), start=1):
 
-                xref = image[0]
+                    xref = image[0]
 
-                pixmap = fitz.Pixmap(document, xref)
+                    pixmap = fitz.Pixmap(document, xref)
 
-                figures.append(
-                    PaperFigure(
-                        figure_id=figure_counter,
-                        page_number=page_number,
-                        image_index=image_index,
-                        width=pixmap.width,
-                        height=pixmap.height,
+                    figures.append(
+                        PaperFigure(
+                            figure_id=figure_counter,
+                            page_number=page_number,
+                            image_index=image_index,
+                            width=pixmap.width,
+                            height=pixmap.height,
+                        )
                     )
-                )
 
-                figure_counter += 1
-
-        document.close()
+                    figure_counter += 1
 
         paper.figures = figures
 
