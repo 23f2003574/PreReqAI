@@ -51,3 +51,16 @@ def test_answer_crash_returns_the_failure_envelope_not_a_bare_500(monkeypatch):
     assert response.status_code == 500 and body["status"] == "failure" and body["stage"] == "question"
     assert body["detail"] == "Failed to answer the question" and body["hint"]
     assert body["error"] == {"type": "RuntimeError", "message": "tutor offline"}
+
+
+def test_malformed_requests_get_the_failure_envelope_naming_the_bad_field():
+    cases = (
+        (client.post("/api/prerequisites/analyze"), "Invalid request: paper: Field required"),
+        (client.post("/api/session/s-1/question", json={}), "Invalid request: question: Field required"),
+        (client.post("/api/session/s-1/question", json={"question": "q", "mode": "eli5"}),
+         "Invalid request: mode: Input should be 'intuition'"),
+    )
+    for response, detail in cases:
+        body = response.json()
+        assert response.status_code == 422 and body["status"] == "failure" and body["stage"] == "input"
+        assert body["detail"].startswith(detail) and body["hint"] and body["warnings"] == []
