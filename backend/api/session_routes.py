@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from backend.api.workflow_result import (
     failure_response,
+    success_body,
 )
 
 from backend.session import (
@@ -128,4 +129,7 @@ def ask_question(
             hint="Try rephrasing the question; if it keeps failing, re-run the analysis to start a new session.",
         )
 
-    return result
+    # Same success envelope as analysis (status/feature/stage/warnings), so a
+    # client checks `status` the same way for every PreReqAI response; the
+    # answer's own keys (question, responses, ...) stay at the top level.
+    return success_body("Interactive Learning", "answered", **result)

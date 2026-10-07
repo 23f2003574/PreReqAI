@@ -5,7 +5,7 @@ import json
 import fitz
 from fastapi.testclient import TestClient
 
-from backend.api.workflow_result import failure_response, success_body
+from backend.api.workflow_result import json_violations, failure_response, success_body
 from backend.main import app
 
 client = TestClient(app)
@@ -58,11 +58,14 @@ def test_envelope_helpers_always_carry_the_same_keys():
     assert json.loads(failed.body)["error"] == {"type": "ValueError", "message": "bad"}
 
 
-def test_the_session_and_tutoring_responses_that_are_not_workflow_results_are_unchanged():
+def test_the_session_resource_is_unchanged_and_the_answer_uses_the_success_envelope():
     body = client.post("/api/prerequisites/analyze", files={"paper": ("p.pdf", _pdf(), "application/pdf")}).json()
 
     session = client.get(f"/api/session/{body['session_id']}").json()
     answer = client.post(f"/api/session/{body['session_id']}/question", json={"question": "What is softmax?"}).json()
 
     assert session["status"] == "active" and "stage" not in session  # a session resource, not a workflow result
-    assert {"question", "responses", "recommendations"} <= set(answer)
+    assert {"question", "responses", "recommendations"} <= set(answer)  # backward compatible: keys stay top level
+    assert (answer["status"], answer["feature"], answer["stage"], answer["warnings"]) == (
+        "success", "Interactive Learning", "answered", [])
+    assert json_violations(answer) == []
