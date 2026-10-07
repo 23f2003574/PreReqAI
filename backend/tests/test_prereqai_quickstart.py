@@ -33,3 +33,20 @@ def test_committed_sample_paper_matches_its_generator():
     spec.loader.exec_module(module)
 
     assert module.build() == SAMPLE.read_bytes(), "run: python examples/prerequisites/make_sample_paper.py"
+
+
+def test_human_summary_shows_the_study_plan_and_counts_only_unsatisfied_prerequisites(capsys):
+    assert main(["prerequisites", "analyze", str(SAMPLE), "--json"]) == EXIT_OK
+    report = json.loads(capsys.readouterr().out)["report"]
+    assert main(["prerequisites", "analyze", str(SAMPLE)]) == EXIT_OK
+    lines = capsys.readouterr().out.splitlines()
+
+    missing = [item["concept"] for item in report["missing_prerequisites"] if not item["satisfied"]]
+    covered = len(report["missing_prerequisites"]) - len(missing)
+    assert covered > 0  # the sample paper covers one prerequisite itself
+    assert f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  " \
+           f"missing: {len(missing)} ({covered} covered in the paper)" in lines
+    plan = [line for line in lines if line.startswith("  study plan: ")]
+    assert len(plan) == 1 and all(f"{step['concept']} ({step['estimated_hours']}h)" in plan[0]
+                                  for step in report["learning_plan"])
+    assert {step["concept"] for step in report["learning_plan"]} <= set(missing)  # the plan covers what is missing

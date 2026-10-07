@@ -105,8 +105,16 @@ def run_prerequisites_analyze(args, platform=None) -> int:
     if not args.as_json and not failed:
         report = outcome["report"]
         print(f"Analysed '{report['paper']['title']}' (session {outcome['session_id']})")
+        # missing_prerequisites lists every prerequisite checked; only unsatisfied ones are missing
+        missing = [item["concept"] for item in report["missing_prerequisites"] if not item.get("satisfied")]
+        covered = len(report["missing_prerequisites"]) - len(missing)
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "
-              f"missing: {len(report['missing_prerequisites'])}")
+              f"missing: {len(missing)}" + (f" ({covered} covered in the paper)" if covered else ""))
+        if report["learning_plan"]:  # one line: what to study, in order (the summary stays at most 4 lines)
+            print("  study plan: " + " -> ".join(
+                f"{step['step']}. {step['concept']} ({step['estimated_hours']}h)" for step in report["learning_plan"]))
+        elif missing:
+            print("  study first: " + ", ".join(missing))
         timings = outcome["timings"]
         if timings:
             slowest, seconds = max(timings.items(), key=lambda item: item[1])
