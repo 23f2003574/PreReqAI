@@ -100,6 +100,11 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
             "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
             hint="Check the paper path: it must name an existing PDF file (relative paths start from the current directory).",
         )
+    if isinstance(exc, ValueError) and str(exc).startswith("Unsupported research source"):  # e.g. a .txt file or a directory
+        return failure_body(
+            "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
+            hint="The paper must be a PDF file (a path ending in .pdf), not another file type or a directory.",
+        )
     return failure_body(
         "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
         hint="Upload a text-based PDF research paper.",

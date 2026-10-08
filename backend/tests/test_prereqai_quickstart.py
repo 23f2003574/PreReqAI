@@ -126,3 +126,14 @@ def test_example_workflow_analyse_then_ask_a_question():
     assert reply["status"] == "success" and reply["responses"]
     assert reply["responses"][0]["supporting_concepts"] == ["Attention"]
     assert "tutoring model has not yet been configured" in reply["responses"][0]["answer"]  # documented placeholder
+
+
+def test_unsupported_paper_type_gets_an_actionable_hint_and_keeps_its_cause(tmp_path, capsys):
+    text_file = tmp_path / "notes.txt"
+    text_file.write_text("not a paper")
+
+    assert main(["prerequisites", "analyze", str(text_file), "--json"]) == 1
+    outcome = json.loads(capsys.readouterr().out)
+    assert outcome["status"] == "failure" and outcome["stage"] == "analysis"
+    assert outcome["error"]["type"] == "ValueError" and "Unsupported research source" in outcome["error"]["message"]  # cause kept
+    assert "must be a PDF file" in outcome["hint"] and "Upload a text-based" not in outcome["hint"]
