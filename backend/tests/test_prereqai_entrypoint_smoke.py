@@ -59,3 +59,21 @@ def test_invalid_input_and_unknown_sessions_fail_cleanly():
     missing = client.get("/api/session/does-not-exist")
     assert missing.status_code == 404 and missing.json()["stage"] == "session_lookup" and missing.json()["hint"]
     assert client.post("/api/session/does-not-exist/question", json={"question": "x"}).status_code == 404
+
+
+def test_sample_paper_analysis_result_through_the_http_entrypoint():
+    """The documented first run must keep producing the same learner-facing answer."""
+    response = client.post("/api/prerequisites/analyze", files={"paper": ("paper.pdf", _paper_pdf(), "application/pdf")})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "success" and body["warnings"] == []
+    report = body["report"]
+
+    assert report["paper"]["title"] == "Attention Is All You Need (PreReqAI sample paper)"
+    assert report["concepts"] == ["Transformer", "Attention", "Softmax"]
+    status = {item["concept"]: item["satisfied"] for item in report["missing_prerequisites"]}
+    assert status == {"Attention": True, "Neural Networks": False, "Linear Algebra": False, "Probability": False}
+    assert [(step["concept"], step["estimated_hours"]) for step in report["learning_plan"]] == [
+        ("Linear Algebra", 12), ("Probability", 10), ("Neural Networks", 15)]
+    assert report["study_time"]["total_hours"] == 37
+    assert report["readiness"]["ready_to_read"] is False and report["readiness"]["total_concepts"] == 3
