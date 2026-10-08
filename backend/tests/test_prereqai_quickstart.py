@@ -137,3 +137,27 @@ def test_unsupported_paper_type_gets_an_actionable_hint_and_keeps_its_cause(tmp_
     assert outcome["status"] == "failure" and outcome["stage"] == "analysis"
     assert outcome["error"]["type"] == "ValueError" and "Unsupported research source" in outcome["error"]["message"]  # cause kept
     assert "must be a PDF file" in outcome["hint"] and "Upload a text-based" not in outcome["hint"]
+
+
+def test_public_entry_points_import_and_work_from_a_clean_process(tmp_path):
+    """A fresh interpreter in another directory (only the repo root on PYTHONPATH) can import the
+    documented entry points and run the library call the CLI and API are both built on."""
+    import os
+    import subprocess
+    import sys
+
+    probe = (
+        "from backend.main import app\n"
+        "from backend.cli import main\n"
+        "from backend.version import __version__\n"
+        "from backend.platform import AnalysisLimits, PreReqAIPlatform, platform\n"
+        "assert callable(main) and callable(platform.analyze) and isinstance(platform, PreReqAIPlatform)\n"
+        "assert app.version == __version__ and app.title == 'PreReqAI'\n"
+        f"outcome = platform.analyze({str(SAMPLE)!r}, limits=AnalysisLimits(max_seconds=60))\n"
+        "assert outcome['status'] == 'success' and outcome['session_id'] and outcome['report']['concepts']\n"
+        "print('ok')\n"
+    )
+    result = subprocess.run([sys.executable, "-c", probe], cwd=tmp_path, capture_output=True, text=True, timeout=120,
+                            env={**os.environ, "PYTHONPATH": str(ROOT)})
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "ok"
