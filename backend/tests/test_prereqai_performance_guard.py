@@ -9,7 +9,7 @@ result, so it cannot change it."""
 import os
 from statistics import median
 
-import fitz
+import pymupdf as fitz
 import pytest
 
 import backend.ingestion.document_metadata_extractor as metadata_module

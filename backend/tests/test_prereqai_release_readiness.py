@@ -7,7 +7,7 @@ test, including the end-to-end CLI smoke test:
 """
 import json
 
-import fitz
+import pymupdf as fitz
 import pytest
 from fastapi.testclient import TestClient
 

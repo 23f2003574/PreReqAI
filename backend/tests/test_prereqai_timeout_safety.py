@@ -3,7 +3,7 @@ has its own timeout) ends the PreReqAI run with status "timeout": distinct from
 failure, cancellation and a configured limit, with no session or partial file."""
 import json
 
-import fitz
+import pymupdf as fitz
 import pytest
 import requests
 

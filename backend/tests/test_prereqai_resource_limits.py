@@ -4,7 +4,7 @@ limit ends the run with status "limit_exceeded" (not failure, not cancelled)."""
 import json
 import time
 
-import fitz
+import pymupdf as fitz
 import pytest
 
 from backend.cli import EXIT_FAILURE, EXIT_OK, main

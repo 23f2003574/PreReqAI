@@ -5,7 +5,7 @@ their own input's data, warnings and status."""
 import json
 from concurrent.futures import ThreadPoolExecutor
 
-import fitz
+import pymupdf as fitz
 import pytest
 
 from backend.platform import AnalysisLimits, PreReqAIPlatform

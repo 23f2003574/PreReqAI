@@ -2,7 +2,7 @@
 both go through PreReqAIPlatform.analyze(), so they share one result contract."""
 import json
 
-import fitz
+import pymupdf as fitz
 from fastapi.testclient import TestClient
 
 from backend.cli import EXIT_FAILURE, EXIT_OK, main

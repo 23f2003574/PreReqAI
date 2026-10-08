@@ -4,7 +4,7 @@ API and CLI once each, in order, without changing the status; and a non-success
 result never carries warnings (the workflow has no warning-with-failure state)."""
 import json
 
-import fitz
+import pymupdf as fitz
 import pytest
 from fastapi.testclient import TestClient
 

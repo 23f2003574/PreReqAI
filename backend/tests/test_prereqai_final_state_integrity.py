@@ -1,7 +1,7 @@
 """Final-state integrity of the PreReqAI analysis workflow: every result is one of
 five terminal states, success is only possible after every stage completed and
 with a complete output of its own, and anything else is never reported as one."""
-import fitz
+import pymupdf as fitz
 import pytest
 import requests
 

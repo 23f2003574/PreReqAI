@@ -7,7 +7,7 @@ import os
 import subprocess
 import sys
 
-import fitz
+import pymupdf as fitz
 
 from backend.platform import AnalysisLimits, PreReqAIPlatform
 

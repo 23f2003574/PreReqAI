@@ -2,7 +2,7 @@
 status, stage, output, warnings and failure information the same way."""
 import json
 
-import fitz
+import pymupdf as fitz
 from fastapi.testclient import TestClient
 
 from backend.api.workflow_result import json_violations, failure_response, success_body

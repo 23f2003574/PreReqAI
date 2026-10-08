@@ -3,7 +3,7 @@ each major stage, reported in the workflow result and (concisely) by the CLI,
 and without changing what the workflow returns."""
 import json
 
-import fitz
+import pymupdf as fitz
 from fastapi.testclient import TestClient
 
 from backend.cli import EXIT_OK, main
