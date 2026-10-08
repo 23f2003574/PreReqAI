@@ -5,7 +5,7 @@ import json
 import os
 import signal
 
-import fitz
+import pymupdf as fitz
 import pytest
 
 from backend.cli import EXIT_FAILURE, EXIT_OK, main

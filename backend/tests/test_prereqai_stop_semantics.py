@@ -4,7 +4,7 @@ them kept, the same state through the API and the CLI, and no effect on the
 next run."""
 import json
 
-import fitz
+import pymupdf as fitz
 import pytest
 import requests
 import urllib3

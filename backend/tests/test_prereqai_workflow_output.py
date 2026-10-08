@@ -7,7 +7,7 @@ import json
 import subprocess
 import sys
 
-import fitz
+import pymupdf as fitz
 from fastapi.testclient import TestClient
 
 from backend.api.workflow_result import json_violations

@@ -9,7 +9,7 @@ import json
 import os
 import signal
 
-import fitz
+import pymupdf as fitz
 import requests
 from fastapi.testclient import TestClient
 

@@ -4,7 +4,7 @@ exactly what a brand-new platform would, and no pipeline component keeps
 per-run state."""
 import json
 
-import fitz
+import pymupdf as fitz
 import pytest
 
 from backend.platform import PreReqAIPlatform

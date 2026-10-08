@@ -1,7 +1,7 @@
 """Stage boundaries of the analysis workflow: stages run in their declared
 order, each gets the output of the stages before it, and a stage that fails
 stops the run with neither it nor any later stage reported as completed."""
-import fitz
+import pymupdf as fitz
 import pytest
 
 from backend.pipeline.research_paper_pipeline import _STAGES, PIPELINE_STAGES

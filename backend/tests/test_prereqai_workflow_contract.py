@@ -3,7 +3,7 @@ return the same envelope for the same outcome, and every non-success outcome
 is an HTTP error and a complete envelope (diagnostics included when asked)."""
 import json
 
-import fitz
+import pymupdf as fitz
 from fastapi.testclient import TestClient
 
 from backend.cli import main

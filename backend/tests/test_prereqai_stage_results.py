@@ -1,7 +1,7 @@
 """Stage results at the orchestration boundary: a stage's own payload is kept,
 a stage returning the wrong shape fails at that stage (never feeding later
 stages), and every way a run stops maps to one distinct terminal status."""
-import fitz
+import pymupdf as fitz
 import pytest
 import requests
 

@@ -5,7 +5,7 @@ result is wholly the latest attempt's, and invalid input fails the same way
 every time, before any work is done."""
 from pathlib import Path
 
-import fitz
+import pymupdf as fitz
 import pytest
 import requests
 

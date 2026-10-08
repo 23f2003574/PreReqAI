@@ -3,7 +3,7 @@ are recognised, that an existing local PDF is never mistaken for a DOI or arXiv
 source because of its path, and what a successful result carries."""
 import json
 
-import fitz
+import pymupdf as fitz
 import pytest
 
 from backend.cli import EXIT_OK, main
