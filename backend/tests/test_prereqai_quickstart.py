@@ -66,3 +66,15 @@ def test_readme_documented_limit_flags_work_and_exceeding_them_exits_123(capsys)
     assert main(["prerequisites", "analyze", str(SAMPLE), "--max-file-mb", "20", "--max-seconds", "60"]) == EXIT_OK
     capsys.readouterr()
     assert main(["prerequisites", "analyze", str(SAMPLE), "--max-file-mb", "0.0001"]) == 123
+
+
+def test_cli_and_api_report_the_same_single_version(capsys):
+    import pytest
+    from backend.main import app
+    from backend.version import __version__
+
+    with pytest.raises(SystemExit) as exit_info:
+        main(["--version"])
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out.strip() == f"PreReqAI {__version__}"
+    assert app.version == __version__

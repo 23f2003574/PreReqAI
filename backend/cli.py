@@ -49,6 +49,7 @@ from backend.recovery_decision_services import (  # noqa: F401  (re-exported: th
     build_recovery_decision_health_service,
     build_recovery_decision_readiness_service,
 )
+from backend.version import __version__
 from backend.cli_common import EXIT_FAILURE, EXIT_OK, EXIT_USAGE  # noqa: F401
 from backend.cli_prerequisites import (
     add_prerequisites_parser,
@@ -190,6 +191,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "`python -m backend.cli <command> <subcommand> --help` for its arguments and exit codes."
         ),
     )
+    parser.add_argument("--version", action="version", version=f"PreReqAI {__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True, metavar="<command>")
     add_prerequisites_parser(subparsers)
     add_api_generation_parser(subparsers)
