@@ -57,7 +57,12 @@ def _megabytes_to_bytes(megabytes):
 
 def run_prerequisites_analyze(args, platform=None) -> int:
     if platform is None:
-        from backend.platform import platform
+        try:
+            from backend.platform import platform
+        except ModuleNotFoundError as exc:  # a dependency from requirements.txt is not installed
+            print(f"error: required package '{exc.name}' is not installed", file=sys.stderr)
+            print("  hint: run `pip install -r requirements.txt` in this environment", file=sys.stderr)
+            return EXIT_FAILURE
     limits = None
     if args.max_seconds is not None or args.max_file_mb is not None:
         from backend.platform import AnalysisLimits

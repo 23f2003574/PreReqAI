@@ -78,3 +78,16 @@ def test_cli_and_api_report_the_same_single_version(capsys):
     assert exit_info.value.code == 0
     assert capsys.readouterr().out.strip() == f"PreReqAI {__version__}"
     assert app.version == __version__
+
+
+def test_missing_dependency_gives_a_clean_error_not_a_traceback(monkeypatch, capsys):
+    import sys
+
+    for name in [n for n in sys.modules if n == "backend.platform" or n.startswith("backend.platform.")]:
+        monkeypatch.delitem(sys.modules, name)
+    monkeypatch.setitem(sys.modules, "pymupdf", None)  # makes `import pymupdf` raise ModuleNotFoundError
+
+    assert main(["prerequisites", "analyze", str(SAMPLE)]) == 1
+    err = capsys.readouterr().err
+    assert "required package 'pymupdf' is not installed" in err
+    assert "pip install -r requirements.txt" in err
