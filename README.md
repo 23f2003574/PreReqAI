@@ -31,6 +31,15 @@ curl -F "paper=@examples/prerequisites/sample-paper.pdf;type=application/pdf" \
     http://127.0.0.1:8000/api/prerequisites/analyze
 ```
 
+There is no config file or environment variable to set. The only options for your own papers are
+CLI limits (both optional, off by default):
+
+```bash
+python -m backend.cli prerequisites analyze my-paper.pdf --max-file-mb 20 --max-seconds 60
+```
+
+Hitting either limit stops the analysis with exit code 123.
+
 Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (use `python -m pytest`: bare `pytest` cannot import `backend`; a few tests, such as the arXiv download, need network access).
 
 ## Prerequisite Explorer

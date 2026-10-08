@@ -59,3 +59,10 @@ def test_human_summary_shows_the_study_plan_and_counts_only_unsatisfied_prerequi
     assert len(plan) == 1 and all(f"{step['concept']} ({step['estimated_hours']}h)" in plan[0]
                                   for step in report["learning_plan"])
     assert {step["concept"] for step in report["learning_plan"]} <= set(missing)  # the plan covers what is missing
+
+
+def test_readme_documented_limit_flags_work_and_exceeding_them_exits_123(capsys):
+    assert "prerequisites analyze my-paper.pdf --max-file-mb 20 --max-seconds 60" in (ROOT / "README.md").read_text()
+    assert main(["prerequisites", "analyze", str(SAMPLE), "--max-file-mb", "20", "--max-seconds", "60"]) == EXIT_OK
+    capsys.readouterr()
+    assert main(["prerequisites", "analyze", str(SAMPLE), "--max-file-mb", "0.0001"]) == 123
