@@ -112,3 +112,17 @@ def test_readme_http_contract_matches_the_endpoints():
     assert client.post(f"/api/session/{sid}/question", json={"question": "What is attention?"}).status_code == 200
     assert client.post(f"/api/session/{sid}/question", json={"question": " "}).status_code == 422
     assert client.post("/api/session/nope/question", json={"question": "q"}).status_code == 404
+
+
+def test_example_workflow_analyse_then_ask_a_question():
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+
+    client = TestClient(app)
+    with SAMPLE.open("rb") as pdf:
+        sid = client.post("/api/prerequisites/analyze", files={"paper": ("s.pdf", pdf, "application/pdf")}).json()["session_id"]
+    reply = client.post(f"/api/session/{sid}/question", json={"question": "What is attention?"}).json()
+    assert reply["status"] == "success" and reply["responses"]
+    assert reply["responses"][0]["supporting_concepts"] == ["Attention"]
+    assert "tutoring model has not yet been configured" in reply["responses"][0]["answer"]  # documented placeholder
