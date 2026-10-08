@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-REQUIRED = ("README.md", "LICENSE", "requirements.txt", "backend/cli.py", "backend/main.py",
+REQUIRED = ("README.md", "LICENSE", "requirements.txt", "backend/cli.py", "backend/main.py", "backend/version.py",
             "examples/prerequisites/sample-paper.pdf", "examples/api-generation/draft.json")
 
 
@@ -54,3 +54,23 @@ def test_release_runs_the_quickstart_and_the_api_generation_example(release, tmp
     assert generated.returncode == 0, generated.stderr
     check = _run(release, "-m", "backend.cli", "api-generation", "check", str(tmp_path / "api"))
     assert check.returncode == 0 and "HEALTHY" in check.stdout, check.stdout + check.stderr
+
+
+def test_release_serves_the_http_workflow_and_reports_one_version(release):
+    """The exported tree alone answers the HTTP workflow (upload -> session -> question) and the CLI and
+    API report the same version."""
+    probe = (
+        "from fastapi.testclient import TestClient\n"
+        "from backend.main import app\n"
+        "c = TestClient(app)\n"
+        "with open('examples/prerequisites/sample-paper.pdf', 'rb') as pdf:\n"
+        "    r = c.post('/api/prerequisites/analyze', files={'paper': ('s.pdf', pdf, 'application/pdf')})\n"
+        "assert r.status_code == 200 and r.json()['status'] == 'success', r.text\n"
+        "q = c.post('/api/session/' + r.json()['session_id'] + '/question', json={'question': 'What is attention?'})\n"
+        "assert q.status_code == 200 and q.json()['responses'], q.text\n"
+        "print(app.version)\n"
+    )
+    served = _run(release, "-c", probe)
+    assert served.returncode == 0, served.stderr
+    cli = _run(release, "-m", "backend.cli", "--version")
+    assert cli.returncode == 0 and cli.stdout.strip() == f"PreReqAI {served.stdout.strip()}", cli.stderr
