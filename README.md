@@ -1540,8 +1540,10 @@ python -m backend.cli prerequisites analyze <paper.pdf> --max-seconds 60 --max-f
 ```
 
 Exits `0` on success; `1` when the analysis failed (including invalid
-limits); `2` on a usage error; `123` when a resource limit was reached;
-`124` when an operation timed out; `130` when cancelled (Ctrl-C).
+limits or a missing dependency); `2` on a usage error; `123` when a limit
+(`--max-file-mb` or `--max-seconds`) was reached; `130` when cancelled (Ctrl-C).
+Errors go to stderr as `error: ...` with a `hint:` line; `--json` prints the
+result envelope to stdout instead. `python -m backend.cli --version` prints the version.
 
 `recovery-decision evaluate` runs the recovery execution decision
 lifecycle for a task end to end (authoritative decision, lineage
@@ -1585,6 +1587,23 @@ python -m backend.cli recovery-decision readiness --json
 
 Exits `0` only when `ready`; non-zero (`1`) when `blocked`; `2` on a
 usage error.
+
+## HTTP API
+
+Start it with `uvicorn backend.main:app --port 8000`; interactive docs are at `/docs`.
+
+| Request | Success | Failure |
+| --- | --- | --- |
+| `POST /api/prerequisites/analyze` (multipart field `paper`, a PDF) | `200`: `status`, `session_id`, `report`, `timings`, `warnings` | `400` unreadable or invalid PDF; `422` no `paper` field (the HTTP route sets no size or time limits) |
+| `GET /api/session/{session_id}` | `200`: `paper_title`, `active_concept`, `conversation_history`, ... | `404` unknown session |
+| `POST /api/session/{session_id}/question` (JSON `{"question": "...", "topic": null, "mode": "intuition"}`) | `200`: `responses`, `recommendations`, ... | `404` unknown session; `422` empty question |
+
+Workflow failures return the same envelope everywhere: `{"status": "failure", "stage": ..., "detail": ...,
+"hint": ..., "warnings": [...]}`. Sessions are held in memory and end with the server process.
+
+```bash
+curl -s http://127.0.0.1:8000/api/session/<session_id>   # session_id comes from the analyze response
+```
 
 ## API Generation
 

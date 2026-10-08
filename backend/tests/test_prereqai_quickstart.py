@@ -91,3 +91,24 @@ def test_missing_dependency_gives_a_clean_error_not_a_traceback(monkeypatch, cap
     err = capsys.readouterr().err
     assert "required package 'pymupdf' is not installed" in err
     assert "pip install -r requirements.txt" in err
+
+
+def test_readme_http_contract_matches_the_endpoints():
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+
+    client = TestClient(app)
+    with SAMPLE.open("rb") as pdf:
+        ok = client.post("/api/prerequisites/analyze", files={"paper": ("s.pdf", pdf, "application/pdf")})
+    assert ok.status_code == 200 and {"status", "session_id", "report", "timings", "warnings"} <= set(ok.json())
+    bad = client.post("/api/prerequisites/analyze", files={"paper": ("x.pdf", b"not a pdf", "application/pdf")})
+    assert bad.status_code == 400 and bad.json()["status"] == "failure"
+    assert client.post("/api/prerequisites/analyze").status_code == 422
+
+    sid = ok.json()["session_id"]
+    assert client.get(f"/api/session/{sid}").status_code == 200
+    assert client.get("/api/session/nope").status_code == 404
+    assert client.post(f"/api/session/{sid}/question", json={"question": "What is attention?"}).status_code == 200
+    assert client.post(f"/api/session/{sid}/question", json={"question": " "}).status_code == 422
+    assert client.post("/api/session/nope/question", json={"question": "q"}).status_code == 404
