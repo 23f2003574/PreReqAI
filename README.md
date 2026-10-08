@@ -31,7 +31,7 @@ curl -F "paper=@examples/prerequisites/sample-paper.pdf;type=application/pdf" \
     http://127.0.0.1:8000/api/prerequisites/analyze
 ```
 
-Run `python -m backend.cli --help` for every command, and `pytest backend/tests` for the test suite.
+Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (use `python -m pytest`: bare `pytest` cannot import `backend`; a few tests, such as the arXiv download, need network access).
 
 ## Prerequisite Explorer
 
