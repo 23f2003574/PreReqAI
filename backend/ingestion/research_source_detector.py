@@ -18,6 +18,14 @@ DOI_PATTERN = re.compile(
 )
 
 
+def has_dot_segment(doi: str) -> bool:
+    """A DOI may contain '.' and '/', but a '.' or '..' path segment is never part of a
+    real one and would be resolved away when the DOI is placed in an API URL
+    (10.1234/../../members -> /members), so it is not accepted as a DOI."""
+
+    return any(segment in (".", "..") for segment in doi.split("/"))
+
+
 @dataclass
 class ResearchSource:
 
@@ -72,7 +80,7 @@ class ResearchSourceDetector:
 
         doi_match = DOI_PATTERN.fullmatch(source)
 
-        if doi_match:
+        if doi_match and not has_dot_segment(doi_match.group(1)):
 
             return ResearchSource(
                 source_type="doi",

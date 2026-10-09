@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 import requests
 
+from .research_source_detector import has_dot_segment
+
 
 @dataclass
 class PaperMetadata:
@@ -30,6 +32,10 @@ class ResearchMetadataResolver:
         self,
         doi: str,
     ) -> PaperMetadata:
+
+        if has_dot_segment(doi):
+
+            raise ValueError(f"Not a valid DOI: {doi}")
 
         response = requests.get(
             self.CROSSREF_API + doi,
