@@ -40,7 +40,7 @@ python -m backend.cli prerequisites analyze my-paper.pdf --max-file-mb 20 --max-
 
 Hitting either limit stops the analysis with exit code 123.
 
-Releasing? Follow [docs/release-checklist.md](docs/release-checklist.md). Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (first `pip install -r requirements-dev.txt`, which adds pytest on top of the runtime requirements; use `python -m pytest`: bare `pytest` cannot import `backend`; a few tests, such as the arXiv download, need network access).
+Releasing? Follow [docs/release-checklist.md](docs/release-checklist.md). Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (first `pip install -r requirements-dev.txt`, which adds pytest on top of the runtime requirements; run it from the repository root; a few tests, such as the arXiv download, need network access).
 
 ## Prerequisite Explorer
 

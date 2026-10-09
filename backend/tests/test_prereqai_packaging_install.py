@@ -95,3 +95,15 @@ def test_test_tooling_is_kept_out_of_the_runtime_requirements():
     assert not runtime & {"pytest", "httpx2", "httpx"}, "test-only packages in requirements.txt"
     assert {"pytest", "httpx2"} <= dev
     assert "-r requirements.txt" in (ROOT / "requirements-dev.txt").read_text().splitlines()
+
+
+def test_pytest_config_makes_the_test_command_work_from_the_repository_root():
+    """Without `pythonpath = .` a plain `pytest` (the console script, which does not put the working
+    directory on sys.path) fails every test module with 'No module named backend'."""
+    import configparser
+
+    config = configparser.ConfigParser()
+    config.read(ROOT / "pytest.ini")
+
+    assert config["pytest"]["pythonpath"].strip() == "."
+    assert config["pytest"]["testpaths"].strip() == "backend/tests"

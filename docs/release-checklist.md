@@ -12,7 +12,7 @@ exports. Run from the repository root on Python 3.10+. Last verified on Python 3
    python -m pytest -q backend/tests/test_api_generation_*.py backend/tests/test_generated_project_*.py
    ```
    These include the `git archive HEAD` check (`test_prereqai_release_artifact.py`), so commit everything first.
-   Use `python -m pytest`, not bare `pytest`.
+   Run from the repository root (`pytest.ini` puts it on the import path, so bare `pytest` works too).
 4. **Primary path.**
    ```bash
    python -m backend.cli --version
