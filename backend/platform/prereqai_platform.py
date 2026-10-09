@@ -75,6 +75,11 @@ def _is_timeout(exc: BaseException) -> bool:
     return _caused_by(exc, (requests.exceptions.Timeout, TimeoutError, urllib3.exceptions.TimeoutError))
 
 
+# Stages that read the user's input: a failure there is about the paper or its path, which the
+# generic hints already explain. A failure in any later stage is an internal one.
+_INPUT_STAGES = ("source_detector", "source_resolver", "ingestion")
+
+
 def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
     """The terminal outcome of an analysis run that raised `exc`: a cancellation
     caused by an exceeded time limit (exceeded_limits) is limit_exceeded, any
@@ -208,6 +213,10 @@ class PreReqAIPlatform:
             # Every way a run can stop becomes one terminal outcome here, with what finished before it.
             outcome = _stopped_outcome(exc, limits if exceeded else None)
             failed_stage = getattr(exc, "failed_stage", None) if outcome["status"] == "failure" else None
+            if failed_stage not in (None, *_INPUT_STAGES):  # name the stage so the failure can be located without --diagnose
+                outcome["detail"] += f" (in analysis stage '{failed_stage}')"
+                outcome["hint"] = (f"The '{failed_stage}' stage failed on this paper, which usually means a bug rather than a "
+                                   f"problem with the file; re-run with --diagnose and report it.")
             return with_diagnostics(outcome, getattr(exc, "stage_timings", {}), failed_stage=failed_stage)
         incomplete = [stage for stage in PIPELINE_STAGES if stage not in result.timings]
         incomplete += [f"report.{key}" for key in REQUIRED_REPORT_KEYS if key not in result.report]
