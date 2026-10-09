@@ -110,3 +110,24 @@ def test_question_topic_must_be_a_concept_of_the_paper():
     assert accepted.status_code == 200 and accepted.json()["question"]["topic"] == "Softmax"
     assert client.get(f"/api/session/{sid}").json()["active_concept"] == "Softmax"
     assert client.post(url, json={"question": "and?"}).status_code == 200  # no topic stays valid
+
+
+def test_a_failed_question_leaves_the_session_exactly_as_it_was(monkeypatch):
+    """If answering fails halfway (here: the tutor raises), the session must not keep the question, the
+    new active concept or any other partial update, and the next question works normally."""
+    sid = client.post("/api/prerequisites/analyze", files={"paper": ("paper.pdf", _paper_pdf(), "application/pdf")}).json()["session_id"]
+    url = f"/api/session/{sid}/question"
+    assert client.post(url, json={"question": "first?", "topic": "Attention"}).status_code == 200
+    before = client.get(f"/api/session/{sid}").json()
+
+    def broken(*args, **kwargs):
+        raise RuntimeError("tutor unavailable")
+
+    monkeypatch.setattr(session_routes.pipeline.tutor, "answer", broken)
+    failed = client.post(url, json={"question": "second?", "topic": "Softmax"})
+    assert failed.status_code == 500 and failed.json()["status"] == "failure"  # still visible to the caller
+    assert client.get(f"/api/session/{sid}").json() == before
+
+    monkeypatch.undo()
+    assert client.post(url, json={"question": "third?", "topic": "Softmax"}).status_code == 200
+    assert client.get(f"/api/session/{sid}").json()["active_concept"] == "Softmax"

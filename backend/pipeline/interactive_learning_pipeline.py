@@ -24,6 +24,9 @@ from backend.interaction import (
 )
 
 
+from copy import deepcopy
+
+
 class InteractiveLearningPipeline:
     """
     Orchestrates the complete tutoring workflow
@@ -85,6 +88,55 @@ class InteractiveLearningPipeline:
         )
 
     def answer(
+
+        self,
+
+        session,
+
+        paper,
+
+        question,
+
+        mode,
+
+        topic=None,
+
+    ):
+        """Answer a learner question. All-or-nothing for the session: if any
+        stage fails, the question, active concept, context and workflow memory
+        are put back as they were, so a failed question leaves no trace."""
+
+        before = (
+            session.active_concept,
+            session.current_context,
+            list(session.conversation_history),
+            deepcopy(session.workflow_memory),
+        )
+
+        try:
+
+            return self._answer(
+                session,
+                paper,
+                question,
+                mode,
+                topic,
+            )
+
+        except Exception:
+
+            (
+                session.active_concept,
+                session.current_context,
+                history,
+                session.workflow_memory,
+            ) = before
+
+            session.conversation_history[:] = history
+
+            raise
+
+    def _answer(
 
         self,
 
