@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-REQUIRED = ("README.md", "LICENSE", "requirements.txt", "backend/cli.py", "backend/main.py", "backend/version.py",
+REQUIRED = ("README.md", "LICENSE", "requirements.txt", "backend/cli.py", "backend/main.py", "backend/version.py", "requirements-dev.txt",
             "examples/prerequisites/sample-paper.pdf", "examples/api-generation/draft.json")
 
 

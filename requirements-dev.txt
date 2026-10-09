@@ -1,0 +1,4 @@
+# Everything needed to run the tests (python -m pytest backend/tests) on top of the runtime.
+-r requirements.txt
+pytest>=8.0.0
+httpx2>=2.5.0

@@ -68,7 +68,8 @@ def test_unrelated_host_dependencies_never_reach_the_generated_manifest(tmp_path
                  "--output-dir", str(project)]) == EXIT_OK
     capsys.readouterr()
 
-    host = set(_names((REPO_ROOT / "requirements.txt").read_text()))
+    host = set(_names((REPO_ROOT / "requirements.txt").read_text())) | set(
+        _names((REPO_ROOT / "requirements-dev.txt").read_text()))
     generated = set(_names((project / "requirements.txt").read_text()))
     unrelated = host - {"fastapi", "pydantic", "uvicorn"}
 

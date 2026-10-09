@@ -4,7 +4,8 @@ PreReqAI ships as its source tree (no wheel, no package metadata): the release i
 exports. Run from the repository root on Python 3.10+. Last verified on Python 3.13.
 
 1. **Version.** Set `__version__` in `backend/version.py` (the one source for the API and `--version`).
-2. **Clean install.** In a fresh virtualenv: `pip install -r requirements.txt`.
+2. **Clean install.** In a fresh virtualenv: `pip install -r requirements.txt` (what users run), then
+   `pip install -r requirements-dev.txt` for the test tools (pytest, httpx2).
 3. **Release checks** (about 1 minute, offline; must all pass):
    ```bash
    python -m pytest -q backend/tests/test_prereqai_*.py backend/tests/test_prerequisite_endpoint.py

@@ -19,11 +19,11 @@ PROVIDED_BY = {"fitz": "pymupdf", "pymupdf": "pymupdf", "pdfplumber": "pdfplumbe
                "urllib3": "requests", "multipart": "python-multipart"}
 
 
-def _requirements():
+def _requirements(filename="requirements.txt"):
     names = set()
-    for line in (ROOT / "requirements.txt").read_text().splitlines():
+    for line in (ROOT / filename).read_text().splitlines():
         line = line.split("#", 1)[0].strip()
-        if line:
+        if line and not line.startswith("-r "):
             names.add(re.split(r"[<>=!~\[; ]", line, 1)[0].lower())
     return names
 
@@ -70,7 +70,7 @@ def test_every_unconditional_runtime_import_is_provided_by_requirements_txt():
 
 def test_every_requirement_is_installed():
     absent = []
-    for name in _requirements():
+    for name in _requirements() | _requirements("requirements-dev.txt"):
         try:
             metadata.version(name)
         except metadata.PackageNotFoundError:
@@ -85,3 +85,13 @@ def test_documented_entry_points_start_in_a_fresh_interpreter():
     app = subprocess.run([sys.executable, "-c", "from backend.main import app; print(app.title)"],
                          cwd=ROOT, capture_output=True, text=True)
     assert app.returncode == 0 and app.stdout.strip() == "PreReqAI", app.stderr
+
+
+def test_test_tooling_is_kept_out_of_the_runtime_requirements():
+    """requirements.txt is what a user installs to run PreReqAI; the test tools live in
+    requirements-dev.txt, which builds on it."""
+    runtime, dev = _requirements(), _requirements("requirements-dev.txt")
+
+    assert not runtime & {"pytest", "httpx2", "httpx"}, "test-only packages in requirements.txt"
+    assert {"pytest", "httpx2"} <= dev
+    assert "-r requirements.txt" in (ROOT / "requirements-dev.txt").read_text().splitlines()
