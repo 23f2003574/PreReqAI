@@ -8,6 +8,8 @@ from fastapi import (
     File,
 )
 
+from starlette.concurrency import run_in_threadpool
+
 from fastapi.responses import (
     JSONResponse,
 )
@@ -29,11 +31,8 @@ router = APIRouter(
 pipeline = platform.analysis
 
 
-@router.post("/analyze")
-async def analyze_prerequisites(
-
-    paper: UploadFile = File(...),
-):
+def _analyze_upload(paper: UploadFile) -> dict:
+    """Blocking work (copy the upload, run the analysis): called off the event loop."""
 
     temp_file = tempfile.NamedTemporaryFile(
         suffix=".pdf",
@@ -53,7 +52,7 @@ async def analyze_prerequisites(
                 temp_file,
             )
 
-        outcome = platform.analyze(
+        return platform.analyze(
             temp_path,
         )
 
@@ -62,6 +61,20 @@ async def analyze_prerequisites(
         Path(temp_path).unlink(
             missing_ok=True,
         )
+
+
+@router.post("/analyze")
+async def analyze_prerequisites(
+
+    paper: UploadFile = File(...),
+):
+
+    # The analysis is blocking and CPU-bound: run on a worker thread so one
+    # upload never stalls every other request the server is handling.
+    outcome = await run_in_threadpool(
+        _analyze_upload,
+        paper,
+    )
 
     if outcome["status"] != SUCCESS:
 
