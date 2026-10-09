@@ -77,3 +77,18 @@ def test_sample_paper_analysis_result_through_the_http_entrypoint():
         ("Linear Algebra", 12), ("Probability", 10), ("Neural Networks", 15)]
     assert report["study_time"]["total_hours"] == 37
     assert report["readiness"]["ready_to_read"] is False and report["readiness"]["total_concepts"] == 3
+
+
+def test_answered_question_is_recorded_in_the_session_history():
+    """The question pipeline and the session store agree: after an answer, the session shows the question
+    as answered with its answer stored beside it."""
+    created = client.post("/api/prerequisites/analyze", files={"paper": ("paper.pdf", _paper_pdf(), "application/pdf")}).json()
+    sid = created["session_id"]
+    asked = client.post(f"/api/session/{sid}/question", json={"question": "What is attention?"}).json()
+    assert asked["question"]["answered"] is True
+
+    history = client.get(f"/api/session/{sid}").json()["conversation_history"]
+    question, answer = history[-2:]
+    assert question["type"] == "question" and question["data"]["answered"] is True
+    assert answer["type"] == "answer" and answer["data"]["question_id"] == question["data"]["question_id"]
+    assert len(answer["data"]["answers"]) == len(asked["responses"]) and "Attention" in answer["data"]["supporting_concepts"]

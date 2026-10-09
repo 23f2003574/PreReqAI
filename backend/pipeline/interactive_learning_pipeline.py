@@ -229,6 +229,12 @@ class InteractiveLearningPipeline:
                 )
             )
 
+        self._record_answer(
+            session,
+            learning_question,
+            result.responses,
+        )
+
         self.gap_analyzer.analyze(
             session,
         )
@@ -250,3 +256,43 @@ class InteractiveLearningPipeline:
             "recommendations":
                 session.recommendations,
         }
+
+    @staticmethod
+    def _record_answer(session, learning_question, responses):
+        """Keep the session's history consistent with what the learner was told:
+        the question is marked answered and its answer is stored beside it, so a
+        later GET /api/session/{id} shows the whole exchange."""
+
+        if not responses:
+
+            return
+
+        learning_question.answered = True
+
+        for turn in session.conversation_history:
+
+            if (
+                turn["type"] == "question"
+                and turn["data"]["question_id"] == learning_question.question_id
+            ):
+
+                turn["data"]["answered"] = True
+
+        session.conversation_history.append(
+
+            {
+                "type": "answer",
+                "data": {
+                    "question_id": learning_question.question_id,
+                    "answers": [
+                        getattr(response, "answer", None)
+                        for response in responses
+                    ],
+                    "supporting_concepts": sorted({
+                        concept
+                        for response in responses
+                        for concept in getattr(response, "supporting_concepts", None) or []
+                    }),
+                },
+            }
+        )
