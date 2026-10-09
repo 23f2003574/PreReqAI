@@ -104,6 +104,28 @@ def ask_question(
             hint="Send a question about the paper in the request body's `question` field.",
         )
 
+    topic = body.topic.strip() if body.topic is not None else None
+
+    if topic:  # a topic must name a concept of this paper; it becomes the session's active concept
+
+        known = {
+            concept.name.casefold(): concept.name
+            for concept in getattr(session.paper, "concepts", None) or []
+        }
+
+        if topic.casefold() not in known:
+
+            return failure_response(
+                422,
+                "question",
+                f"Unknown topic: {body.topic!r}",
+                hint="Use one of this paper's concepts: "
+                     + (", ".join(known.values()) or "none were detected")
+                     + ". Omit `topic` to ask without one.",
+            )
+
+        topic = known[topic.casefold()]
+
     try:
 
         result = pipeline.answer(
@@ -116,7 +138,7 @@ def ask_question(
 
             mode=body.mode,
 
-            topic=body.topic,
+            topic=topic or None,
         )
 
     except Exception as exc:  # same envelope as every other failure, never a bare 500

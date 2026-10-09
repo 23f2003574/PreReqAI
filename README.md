@@ -1596,7 +1596,7 @@ Start it with `uvicorn backend.main:app --port 8000`; interactive docs are at `/
 | --- | --- | --- |
 | `POST /api/prerequisites/analyze` (multipart field `paper`, a PDF) | `200`: `status`, `session_id`, `report`, `timings`, `warnings` | `400` unreadable or invalid PDF; `422` no `paper` field (the HTTP route sets no size or time limits) |
 | `GET /api/session/{session_id}` | `200`: `paper_title`, `active_concept`, `conversation_history`, ... | `404` unknown session |
-| `POST /api/session/{session_id}/question` (JSON `{"question": "...", "topic": null, "mode": "intuition"}`) | `200`: `responses`, `recommendations`, ... | `404` unknown session; `422` empty question |
+| `POST /api/session/{session_id}/question` (JSON `{"question": "...", "topic": null, "mode": "intuition"}`) | `200`: `responses`, `recommendations`, ... | `404` unknown session; `422` empty question or a `topic` that is not one of the paper's concepts |
 
 Workflow failures return the same envelope everywhere: `{"status": "failure", "stage": ..., "detail": ...,
 "hint": ..., "warnings": [...]}`. Sessions are held in memory and end with the server process.

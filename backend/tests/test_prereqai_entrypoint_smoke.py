@@ -92,3 +92,21 @@ def test_answered_question_is_recorded_in_the_session_history():
     assert question["type"] == "question" and question["data"]["answered"] is True
     assert answer["type"] == "answer" and answer["data"]["question_id"] == question["data"]["question_id"]
     assert len(answer["data"]["answers"]) == len(asked["responses"]) and "Attention" in answer["data"]["supporting_concepts"]
+
+
+def test_question_topic_must_be_a_concept_of_the_paper():
+    """The topic becomes the session's active concept, so an unknown one is rejected instead of silently
+    polluting the session; a valid one (any letter case) is stored under the paper's own name."""
+    sid = client.post("/api/prerequisites/analyze", files={"paper": ("paper.pdf", _paper_pdf(), "application/pdf")}).json()["session_id"]
+    url = f"/api/session/{sid}/question"
+
+    rejected = client.post(url, json={"question": "why?", "topic": "Quantum Gravity"})
+    assert rejected.status_code == 422 and rejected.json()["status"] == "failure"
+    assert "Attention" in rejected.json()["hint"]
+    session = client.get(f"/api/session/{sid}").json()
+    assert session["active_concept"] is None and session["conversation_history"] == []  # nothing was recorded
+
+    accepted = client.post(url, json={"question": "why?", "topic": " softmax "})
+    assert accepted.status_code == 200 and accepted.json()["question"]["topic"] == "Softmax"
+    assert client.get(f"/api/session/{sid}").json()["active_concept"] == "Softmax"
+    assert client.post(url, json={"question": "and?"}).status_code == 200  # no topic stays valid
