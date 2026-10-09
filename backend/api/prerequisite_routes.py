@@ -1,4 +1,3 @@
-import shutil
 import tempfile
 from pathlib import Path
 
@@ -17,6 +16,7 @@ from fastapi.responses import (
 from backend.api.workflow_result import (
     HTTP_STATUS,
     SUCCESS,
+    limit_exceeded_body,
 )
 
 from backend.platform import (
@@ -29,6 +29,14 @@ router = APIRouter(
 )
 
 pipeline = platform.analysis
+
+
+# Far above any real paper; it only stops an upload from filling the disk. (The CLI's
+# --max-file-mb is the adjustable equivalent.) Over the limit is the same
+# `limit_exceeded` outcome (HTTP 413) the analysis limits already produce.
+MAX_UPLOAD_BYTES = 100 * 1024 * 1024
+
+_CHUNK_BYTES = 1024 * 1024
 
 
 def _analyze_upload(paper: UploadFile) -> dict:
@@ -47,10 +55,21 @@ def _analyze_upload(paper: UploadFile) -> dict:
 
         with temp_file:
 
-            shutil.copyfileobj(
-                paper.file,
-                temp_file,
-            )
+            copied = 0
+
+            while chunk := paper.file.read(_CHUNK_BYTES):
+
+                copied += len(chunk)
+
+                if copied > MAX_UPLOAD_BYTES:
+
+                    return limit_exceeded_body(
+                        "analysis",
+                        f"The paper is larger than the limit of {MAX_UPLOAD_BYTES} bytes.",
+                        hint="Upload a smaller paper; nothing was kept.",
+                    )
+
+                temp_file.write(chunk)
 
         return platform.analyze(
             temp_path,
