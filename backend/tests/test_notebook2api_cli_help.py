@@ -110,7 +110,7 @@ def test_every_subcommand_documents_its_exit_codes(capsys):
 
 
 def test_usage_and_error_lines_name_the_real_invocation_not_an_uninstalled_script(capsys):
-    assert _help(capsys).startswith("usage: python -m backend.cli [-h] <command>")
+    assert _help(capsys).startswith("usage: python -m backend.cli [-h] [--version] <command>")
     assert _help(capsys, "prerequisites", "analyze").startswith("usage: python -m backend.cli prerequisites analyze")
     with pytest.raises(SystemExit) as raised:
         main(["prerequisites"])
