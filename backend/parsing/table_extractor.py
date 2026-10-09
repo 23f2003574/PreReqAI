@@ -1,4 +1,5 @@
 import pdfplumber
+import pymupdf
 
 from backend.models import Paper, PaperTable
 
@@ -19,11 +20,19 @@ class TableExtractor:
 
         tables = []
 
+        drawn_pages = self._pages_with_vector_graphics(pdf_path)
+
         table_counter = 1
 
         with pdfplumber.open(pdf_path) as pdf:
 
             for page_number, page in enumerate(pdf.pages, start=1):
+
+                # pdfplumber's default (ruled-line) detection finds nothing on a page with no
+                # lines or rectangles, but loading that page's objects is by far the slowest
+                # stage of an analysis; PyMuPDF answers the same question almost instantly.
+                if drawn_pages is not None and page_number not in drawn_pages:
+                    continue
 
                 extracted_tables = page.extract_tables()
 
@@ -45,3 +54,22 @@ class TableExtractor:
         paper.tables = tables
 
         return paper
+
+    @staticmethod
+    def _pages_with_vector_graphics(pdf_path):
+        """1-based numbers of pages that draw any line, rectangle or curve, or None
+        when that cannot be determined (every page is then examined)."""
+
+        try:
+
+            with pymupdf.open(pdf_path) as document:
+
+                return {
+                    number
+                    for number, page in enumerate(document, start=1)
+                    if page.get_drawings()
+                }
+
+        except Exception:
+
+            return None
