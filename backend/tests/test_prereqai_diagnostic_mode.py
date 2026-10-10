@@ -38,7 +38,7 @@ def test_normal_mode_is_unchanged_and_has_no_diagnostics(tmp_path, capsys):
     api = TestClient(app).post("/api/prerequisites/analyze", files={"paper": ("p.pdf", path.read_bytes(), "application/pdf")}).json()
 
     assert "diagnostics" not in outcome and "diagnostics" not in api
-    assert len(out) <= 4 and not any(line.startswith("Diagnostics") for line in out)
+    assert len(out) <= 5 and not any(line.startswith("Diagnostics") for line in out)
 
 
 def test_diagnostic_mode_reports_the_run_in_the_json_result(tmp_path, capsys):

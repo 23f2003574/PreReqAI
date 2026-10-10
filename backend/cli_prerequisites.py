@@ -115,11 +115,16 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         covered = len(report["missing_prerequisites"]) - len(missing)
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "
               f"missing: {len(missing)}" + (f" ({covered} covered in the paper)" if covered else ""))
-        if report["learning_plan"]:  # one line: what to study, in order (the summary stays at most 4 lines)
+        if report["learning_plan"]:  # one line: what to study, in order (the summary stays at most 5 lines)
             print("  study plan: " + " -> ".join(
                 f"{step['step']}. {step['concept']} ({step['estimated_hours']}h)" for step in report["learning_plan"]))
         elif missing:
             print("  study first: " + ", ".join(missing))
+        readiness, study_time = report.get("readiness"), report.get("study_time")  # readiness, difficulty, preparation time
+        if readiness and study_time:
+                print(f"  readiness: {readiness['status']} ({readiness['completed_concepts']}/{readiness['total_concepts']} concepts ready); "
+                  f"difficulty: {report['paper_difficulty']['level']}; "
+                  f"preparation: ~{study_time['total_hours']}h over {study_time['recommended_days']} days")
         timings = outcome["timings"]
         if timings:
             slowest, seconds = max(timings.items(), key=lambda item: item[1])

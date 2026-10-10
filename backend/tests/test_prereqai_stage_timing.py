@@ -63,7 +63,7 @@ def test_the_cli_adds_one_concise_time_line_and_json_has_the_full_timings(tmp_pa
     assert main(["prerequisites", "analyze", str(path)]) == EXIT_OK
     out = capsys.readouterr().out.splitlines()
     time_lines = [line for line in out if line.startswith("  time: ")]
-    assert len(time_lines) == 1 and "slowest stage:" in time_lines[0] and len(out) <= 4
+    assert len(time_lines) == 1 and "slowest stage:" in time_lines[0] and len(out) <= 5
 
     assert main(["prerequisites", "analyze", str(path), "--json"]) == EXIT_OK
     assert MAJOR_STAGES <= set(json.loads(capsys.readouterr().out)["timings"])
