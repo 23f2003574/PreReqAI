@@ -5,6 +5,7 @@ from fastapi import (
     APIRouter,
     UploadFile,
     File,
+    Form,
 )
 
 from starlette.concurrency import run_in_threadpool
@@ -39,7 +40,7 @@ MAX_UPLOAD_BYTES = 100 * 1024 * 1024
 _CHUNK_BYTES = 1024 * 1024
 
 
-def _analyze_upload(paper: UploadFile) -> dict:
+def _analyze_upload(paper: UploadFile, known: list[str]) -> dict:
     """Blocking work (copy the upload, run the analysis): called off the event loop."""
 
     temp_file = tempfile.NamedTemporaryFile(
@@ -73,6 +74,7 @@ def _analyze_upload(paper: UploadFile) -> dict:
 
         return platform.analyze(
             temp_path,
+            **({'known': known} if known else {}),
         )
 
     finally:
@@ -86,6 +88,7 @@ def _analyze_upload(paper: UploadFile) -> dict:
 async def analyze_prerequisites(
 
     paper: UploadFile = File(...),
+    known: list[str] = Form(default=[]),
 ):
 
     # The analysis is blocking and CPU-bound: run on a worker thread so one
@@ -93,6 +96,7 @@ async def analyze_prerequisites(
     outcome = await run_in_threadpool(
         _analyze_upload,
         paper,
+        known,
     )
 
     if outcome["status"] != SUCCESS:

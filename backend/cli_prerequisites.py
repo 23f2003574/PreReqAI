@@ -41,6 +41,8 @@ def add_prerequisites_parser(subparsers):
     analyze.add_argument("--diagnose", action="store_true", dest="diagnose",
                          help="Also report per-stage durations, completed stages, warnings and run statistics "
                               "(in the --json result as `diagnostics`)")
+    analyze.add_argument("--known", action="append", default=[], metavar="CONCEPT",
+                         help="A concept you already know; it is left out of the study plan (repeat for several)")
     analyze.add_argument("--max-seconds", type=_finite_number, default=None, dest="max_seconds",
                          help="Stop the analysis once it has run this long (checked between stages; default: no limit)")
     analyze.add_argument("--max-file-mb", type=_finite_number, default=None, dest="max_file_mb",
@@ -77,7 +79,8 @@ def run_prerequisites_analyze(args, platform=None) -> int:
     except ValueError:  # not the main thread: no handler, cancellation is only available to library callers
         previous = None
     try:
-        outcome = platform.analyze(args.paper, diagnostics=args.diagnose, should_cancel=cancelled.is_set, limits=limits)
+        outcome = platform.analyze(args.paper, diagnostics=args.diagnose, should_cancel=cancelled.is_set, limits=limits,
+                                    **({'known': args.known} if args.known else {}))
     finally:
         if previous is not None:
             signal.signal(signal.SIGINT, previous)

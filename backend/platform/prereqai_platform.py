@@ -144,11 +144,11 @@ class PreReqAIPlatform:
             InteractiveLearningPipeline()
         )
 
-    def analyze(self, file_path: str, diagnostics: bool = False, should_cancel=None, limits=None) -> dict:
+    def analyze(self, file_path: str, diagnostics: bool = False, should_cancel=None, limits=None, known=()) -> dict:
         """The workflow's public entry point: _analyze() plus the final-state guard. A result that is
         not a valid terminal state (see workflow_result.terminal_violations) is never returned as it
         is -- it becomes a failure at stage "finalization"."""
-        outcome = self._analyze(file_path, diagnostics, should_cancel, limits)
+        outcome = self._analyze(file_path, diagnostics, should_cancel, limits, known)
         problems = terminal_violations(outcome)
         if problems:
             outcome = failure_body(
@@ -159,7 +159,7 @@ class PreReqAIPlatform:
                 outcome["diagnostics"] = _diagnostics(outcome, {}, None)
         return outcome
 
-    def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits) -> dict:
+    def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits, known=()) -> dict:
         """Run the analysis pipeline on a paper PDF and open a learning
         session for it. Returns the public workflow result envelope
         (backend.api.workflow_result): a success body carrying session_id and
@@ -225,6 +225,8 @@ class PreReqAIPlatform:
                 "finalization", f"The analysis did not complete: {', '.join(incomplete)}",
                 error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
             ), result.timings)
+        if known:
+            self._personalize(result, known)
         # The session keeps its own copy of the report: the caller owns the one returned below, and
         # changing it must not change what later session requests (tutoring, lookups) read.
         session = session_manager.create(
@@ -252,6 +254,19 @@ class PreReqAIPlatform:
         fresh = self.analysis.report_generator.generate(session.paper)
         session.report["study_progress"], session.report["readiness"] = fresh["study_progress"], fresh["readiness"]
         return {"study_progress": fresh["study_progress"], "readiness": fresh["readiness"]}
+
+    def _personalize(self, result, known) -> None:
+        """Drop concepts the learner says they already know from the study plan: the plan, time estimate,
+        actions, roadmap, progress and readiness are rebuilt without them."""
+        wanted = {name.strip().casefold() for name in known if name and name.strip()}
+        paper, pipeline = result.paper, self.analysis
+        paper.learning_plan = [step for step in paper.learning_plan if step.concept.casefold() not in wanted]
+        pipeline.study_time_estimator.estimate(paper)
+        pipeline.study_action_generator.generate(paper)
+        pipeline.study_roadmap_generator.generate(paper)
+        pipeline.progress_tracker.initialize(paper)
+        pipeline.readiness_engine.evaluate(paper)
+        result.report.update(pipeline.report_generator.generate(paper))
 
 
 # The one platform instance the HTTP application (backend.main) and its routers
