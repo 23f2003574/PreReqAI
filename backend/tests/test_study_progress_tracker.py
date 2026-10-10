@@ -3,8 +3,8 @@ from backend.progress import (
 )
 
 from backend.models import (
+    LearningStep,
     Paper,
-    RoadmapStep,
 )
 
 
@@ -15,21 +15,7 @@ def test_progress_initialization():
         metadata=None,
     )
 
-    paper.study_roadmap.append(
-
-        RoadmapStep(
-
-            step=1,
-
-            concept="Linear Algebra",
-
-            resource_title="MIT 18.06",
-
-            provider="MIT OCW",
-
-            estimated_hours=12,
-        )
-    )
+    paper.learning_plan.append(LearningStep(order=1, concept="Linear Algebra", estimated_hours=12))
 
     paper = (
         StudyProgressTracker()

@@ -7,7 +7,7 @@ from backend.models import (
 class StudyProgressTracker:
     """
     Initializes progress tracking for the
-    generated study roadmap.
+    learning plan: every planned concept, including those with no curated resource.
     """
 
     def initialize(
@@ -17,13 +17,13 @@ class StudyProgressTracker:
 
         paper.study_progress.clear()
 
-        for roadmap_step in paper.study_roadmap:
+        for plan_step in paper.learning_plan:
 
             paper.study_progress.append(
 
                 StudyProgress(
 
-                    concept=roadmap_step.concept,
+                    concept=plan_step.concept,
 
                     completed=False,
 

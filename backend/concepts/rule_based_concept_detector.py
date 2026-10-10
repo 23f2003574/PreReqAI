@@ -1,3 +1,5 @@
+import re
+
 from backend.models import (
     Paper,
     DetectedConcept,
@@ -28,6 +30,9 @@ class RuleBasedConceptDetector:
             paragraph.content
             for paragraph in paper.paragraphs
         ).lower()
+
+        # PDF text is hard-wrapped: "policy\ngradient" and "multi-\nhead" must still match their concept
+        full_text = re.sub(r"\s+", " ", re.sub(r"-\s*\n\s*", "-", full_text))
 
         for concept in self.registry.all():
 
