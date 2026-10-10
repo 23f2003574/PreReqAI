@@ -32,7 +32,7 @@ class DocumentMetadataExtractor:
         metadata = pdf.metadata or {}
 
         return DocumentMetadata(
-            title=metadata.get("title", "") or "Unknown Title",
+            title=(metadata.get("title", "") or "").strip() or self._title_from_first_page(pdf) or "Unknown Title",
             author=metadata.get("author", "") or "Unknown Author",
             subject=metadata.get("subject", ""),
             keywords=metadata.get("keywords", ""),
@@ -40,3 +40,18 @@ class DocumentMetadataExtractor:
             producer=metadata.get("producer", ""),
             page_count=len(pdf),
         )
+
+    @staticmethod
+    def _title_from_first_page(pdf) -> str:
+        """Most PDFs carry no title metadata: use the largest line among the first few lines of page one
+        (the first of them when sizes tie), or "" when the page has no text."""
+        if not len(pdf):
+            return ""
+        lines = []
+        for block in pdf[0].get_text("dict").get("blocks", []):
+            for line in block.get("lines", []):
+                text = " ".join(span["text"].strip() for span in line["spans"] if span["text"].strip())
+                if text:
+                    lines.append((max(span["size"] for span in line["spans"]), text))
+        head = lines[:5]
+        return max(head, key=lambda item: item[0])[1][:200] if head else ""
