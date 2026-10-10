@@ -144,11 +144,11 @@ class PreReqAIPlatform:
             InteractiveLearningPipeline()
         )
 
-    def analyze(self, file_path: str, diagnostics: bool = False, should_cancel=None, limits=None, known=()) -> dict:
+    def analyze(self, file_path: str, diagnostics: bool = False, should_cancel=None, limits=None, known=(), studied=()) -> dict:
         """The workflow's public entry point: _analyze() plus the final-state guard. A result that is
         not a valid terminal state (see workflow_result.terminal_violations) is never returned as it
         is -- it becomes a failure at stage "finalization"."""
-        outcome = self._analyze(file_path, diagnostics, should_cancel, limits, known)
+        outcome = self._analyze(file_path, diagnostics, should_cancel, limits, known, studied)
         problems = terminal_violations(outcome)
         if problems:
             outcome = failure_body(
@@ -159,7 +159,7 @@ class PreReqAIPlatform:
                 outcome["diagnostics"] = _diagnostics(outcome, {}, None)
         return outcome
 
-    def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits, known=()) -> dict:
+    def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits, known=(), studied=()) -> dict:
         """Run the analysis pipeline on a paper PDF and open a learning
         session for it. Returns the public workflow result envelope
         (backend.api.workflow_result): a success body carrying session_id and
@@ -226,6 +226,7 @@ class PreReqAIPlatform:
                 error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
             ), result.timings)
         unmatched = self._personalize(result, known) if known else []
+        not_studied = self._apply_studied(result, studied) if studied else []
         # The session keeps its own copy of the report: the caller owns the one returned below, and
         # changing it must not change what later session requests (tutoring, lookups) read.
         session = session_manager.create(
@@ -234,7 +235,8 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=[f"--known {name!r} is not in this paper's study plan and was ignored" for name in unmatched],
+            warnings=[f"--known {name!r} is not in this paper's study plan and was ignored" for name in unmatched]
+            + [f"--studied {name!r} is not in this paper's study plan and was ignored" for name in not_studied],
         )
         return with_diagnostics(outcome, result.timings, result.report)
 
@@ -272,6 +274,20 @@ class PreReqAIPlatform:
         pipeline.readiness_engine.evaluate(paper)
         result.report.update(pipeline.report_generator.generate(paper))
         return unmatched
+
+    def _apply_studied(self, result, studied) -> list:
+        """Start the learner with these planned concepts already marked studied (progress and readiness
+        follow); returns the names that are not in the study plan."""
+        paper, pipeline = result.paper, self.analysis
+        planned = {item.concept.casefold(): item.concept for item in paper.study_progress}
+        names = [name.strip() for name in studied if name and name.strip()]
+        for name in names:
+            if name.casefold() in planned:
+                pipeline.progress_tracker.complete(paper, planned[name.casefold()])
+        pipeline.readiness_engine.evaluate(paper)
+        fresh = pipeline.report_generator.generate(paper)
+        result.report["study_progress"], result.report["readiness"] = fresh["study_progress"], fresh["readiness"]
+        return sorted(name for name in names if name.casefold() not in planned)
 
 
 # The one platform instance the HTTP application (backend.main) and its routers
