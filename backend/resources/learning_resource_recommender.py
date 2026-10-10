@@ -33,6 +33,20 @@ class LearningResourceRecommender:
             15,
         ),
 
+        "Graphs": (
+            "Machine Learning with Graphs (CS224W)",
+            "Stanford University",
+            "https://web.stanford.edu/class/cs224w/",
+            20,
+        ),
+
+        "Markov Decision Process": (
+            "Introduction to Reinforcement Learning: Markov Decision Processes",
+            "David Silver (UCL)",
+            "https://www.davidsilver.uk/teaching/",
+            6,
+        ),
+
         "Attention": (
             "The Illustrated Transformer",
             "Jay Alammar",

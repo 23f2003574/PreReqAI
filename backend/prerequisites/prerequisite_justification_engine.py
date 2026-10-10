@@ -18,6 +18,12 @@ class PrerequisiteJustificationEngine:
         "Probability":
             "Probability is required to understand prediction confidence, likelihoods, and normalization functions such as Softmax.",
 
+        "Graphs":
+            "Graph neural networks operate on nodes, edges and adjacency structure, so graph basics are assumed.",
+
+        "Markov Decision Process":
+            "Reinforcement learning methods such as policy gradients are defined over states, actions, rewards and transitions.",
+
         "Neural Networks":
             "The paper builds upon neural network architectures and assumes familiarity with their components.",
 
