@@ -1,0 +1,8 @@
+class ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuditError(ValueError):
+    """
+    Raised when a consumer projection execution capability registry
+    event subscription lifecycle policy profile binding workspace
+    session audit event is invalid or cannot be recorded.
+    """
+
+    pass

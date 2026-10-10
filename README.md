@@ -1,0 +1,1615 @@
+# PreReqAI
+
+Turns a research paper into something you can actually learn from: a prerequisite
+tree, a mathematical dependency map, intuition-first explanations, and an
+implementation roadmap — instead of just a summary.
+
+Focused initially on transformers, diffusion, RL, and graph ML papers.
+
+**Status:** early development. The quickstart below runs end to end.
+
+## Quickstart
+
+Requires Python 3.10 or newer. From the repository root:
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# First run: analyse the bundled sample paper (no API keys or network needed)
+python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf
+```
+
+You should see `Analysed 'Attention Is All You Need (PreReqAI sample paper)'` with concept and
+prerequisite counts, and exit code 0. Add `--json` for the full report, or pass your own paper PDF.
+
+The same workflow over HTTP:
+
+```bash
+uvicorn backend.main:app --port 8000
+curl -F "paper=@examples/prerequisites/sample-paper.pdf;type=application/pdf" \
+    http://127.0.0.1:8000/api/prerequisites/analyze
+```
+
+There is no config file or environment variable to set. The only options for your own papers are
+CLI limits (both optional, off by default):
+
+```bash
+python -m backend.cli prerequisites analyze my-paper.pdf --max-file-mb 20 --max-seconds 60
+```
+
+Hitting either limit stops the analysis with exit code 123.
+
+Releasing? Follow [docs/release-checklist.md](docs/release-checklist.md). Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (first `pip install -r requirements-dev.txt`, which adds pytest on top of the runtime requirements; run it from the repository root; a few tests, such as the arXiv download, need network access).
+
+## Prerequisite Explorer
+
+Upload a research paper to receive:
+
+- Required prerequisite concepts
+- Missing knowledge analysis
+- Personalized learning plan
+- Curated learning resources
+- Estimated preparation time
+- Difficulty assessment
+- Readiness tracking
+
+## Interactive Learning
+
+After prerequisite analysis, learners can begin an interactive tutoring session.
+
+Features include:
+
+- Context-aware question answering
+- Multiple pedagogical teaching strategies
+- Adaptive quizzes
+- Learning gap analysis
+- Personalized recommendations
+- Persistent learning sessions
+
+## Navigation History
+
+Every navigation event is recorded during exploration.
+
+Example:
+
+```
+Attention
+        │
+        ▼
+Equation (3)
+        │
+        ▼
+Figure 2
+        │
+        ▼
+Experiment 1
+        │
+        ▼
+Related Paper
+        │
+        ▼
+Navigation Timeline
+```
+
+## Personalized Navigation
+
+Navigation recommendations adapt to the learner's exploration history.
+
+Example:
+
+```
+Attention
+        │
+        ▼
+Recommended:
+
+• Equation (3)
+• Figure 2
+• Experiment 1
+        │
+        ▼
+Continue Exploration
+```
+
+## Research Navigation Pipeline
+
+Every navigation request follows a unified execution flow.
+
+```
+Navigation Request
+        │
+        ▼
+Paper Navigator
+        │
+        ▼
+Specialized Navigator
+        │
+        ▼
+Navigation History
+        │
+        ▼
+Recommendation Engine
+        │
+        ▼
+Unified Navigation Response
+```
+
+## Workflow-Oriented Tutoring
+
+Every learner request is transformed into an educational execution plan.
+
+Example:
+
+```
+Explain Attention
+        │
+        ▼
+Explanation Workflow
+        │
+        ▼
+Example Workflow
+        │
+        ▼
+Follow-up Workflow
+        │
+        ▼
+Unified Learning Response
+```
+
+## Interactive Research Objects
+
+Each research object exposes only the educational actions appropriate for its type.
+
+Example:
+
+```
+Concept
+    │
+    ▼
+Explain
+Visualize
+Compare
+Quiz
+Show Prerequisites
+```
+
+## Concept Actions
+
+Selecting an action on a concept runs the real learning workflow behind it and returns the tutor's response, not just the workflow's name.
+
+Example:
+
+```
+Attention
+    │
+    ▼
+Explain
+    │
+    ▼
+Explanation Workflow
+    │
+    ▼
+Tutor Response
+```
+
+## Figure Actions
+
+Diagrams and plots run the same real workflows too, so explaining a figure or exploring its related concepts returns an actual tutor response.
+
+Example:
+
+```
+Figure 2
+    │
+    ▼
+Explain
+    │
+    ▼
+Explanation Workflow
+    │
+    ▼
+Tutor Response
+```
+
+## Experiment Actions
+
+Experimental evaluations run the same real workflows too, so comparing baselines or explaining results returns an actual tutor response.
+
+Example:
+
+```
+Experiment 1
+    │
+    ▼
+Compare
+    │
+    ▼
+Comparison Workflow
+    │
+    ▼
+Tutor Response
+```
+
+## Reference Actions
+
+Cited papers run the same real workflows too, so exploring a reference's related work returns an actual tutor response instead of a bibliography entry.
+
+Example:
+
+```
+Attention Is All You Need
+    │
+    ▼
+Show Relations
+    │
+    ▼
+Follow-up Workflow
+    │
+    ▼
+Tutor Response
+```
+
+## Equation Actions
+
+Mathematical expressions run the same real workflows as concepts, so explaining, visualizing, or implementing an equation returns an actual tutor response.
+
+Example:
+
+```
+Equation (3)
+    │
+    ▼
+Explain
+    │
+    ▼
+Explanation Workflow
+    │
+    ▼
+Tutor Response
+```
+
+## Personalized Object Actions
+
+Recommended actions adapt to what a learner has already completed on an object, instead of showing the same static list to everyone.
+
+Example:
+
+```
+Attention (first visit)
+    │
+    ▼
+Explain, Visualize, Compare, Implement, Quiz
+
+Attention (after completing Explain)
+    │
+    ▼
+Visualize, Compare, Implement, Quiz
+```
+
+## Interaction History
+
+Every educational interaction is recorded throughout the learning session, driving the personalized recommendations above.
+
+Attention
+
+↓
+
+Explain
+
+↓
+
+Equation (3)
+
+↓
+
+Visualize
+
+↓
+
+Experiment 1
+
+↓
+
+Compare
+
+↓
+
+Interaction Timeline
+
+## Interactive Object Pipeline
+
+Every interaction follows one execution flow, regardless of object type.
+
+```
+Research Object
+    │
+    ▼
+Dispatcher
+    │
+    ▼
+Action Engine
+    │
+    ▼
+Workflow
+    │
+    ▼
+Interaction History
+    │
+    ▼
+Action Recommendations
+    │
+    ▼
+Unified Response
+```
+
+## Interaction Orchestration
+
+Educational actions can be coordinated into structured learning experiences.
+
+Attention
+
+↓
+
+Explain
+
+↓
+
+Visualize
+
+↓
+
+Quiz
+
+↓
+
+Complete Learning Session
+
+## Interactive Research Engine
+
+Every educational interaction flows through one high-level engine, whether it's a single action or a multi-action plan.
+
+```
+Research Object
+    │
+    ▼
+Interactive Research Engine
+    │
+    ▼
+Interaction Pipeline
+    │
+    ▼
+Action Engine
+    │
+    ▼
+Learning Workflow
+    │
+    ▼
+Adaptive Tutor
+```
+
+## Platform Architecture
+
+```
+Research Paper
+        │
+        ▼
+Analysis Layer
+        │
+        ▼
+Knowledge Graph
+        │
+        ▼
+Navigation Layer
+        │
+        ▼
+Interaction Layer
+        │
+        ▼
+Learning Workflows
+        │
+        ▼
+Adaptive Tutor
+```
+
+Every subsystem is coordinated through the
+`PreReqAIPlatform`.
+
+## Visual Research Workspace
+
+PreReqAI provides a unified workspace for exploring and learning from research papers.
+
+The workspace is organized into five primary regions:
+
+- Workspace Header
+- Research Explorer
+- Main Research View
+- Research Object Inspector
+- Learning Timeline
+
+The workspace maintains shared state across paper navigation, research object selection, learning workflows, and educational interactions.
+
+## Modular Workspace Panels
+
+Visual capabilities are registered as modular workspace panels rather than being hardcoded into the workspace layout.
+
+Each panel defines:
+
+- A unique identifier
+- A display title
+- A workspace region
+- A component contract
+- Visibility state
+- Optional metadata
+
+This allows the research workspace to dynamically host features such as paper exploration, knowledge graph visualization, object inspection, learning timelines, and future research tools.
+
+## Research Object Inspector
+
+Selecting a research object opens a contextual inspector containing:
+
+- Object identity
+- Research object type
+- Description
+- Paper metadata
+- Available educational actions
+
+The inspector uses the unified research object model, allowing concepts, equations, figures, experiments, and references to share a consistent inspection experience.
+
+## Interactive Action Menu
+
+Selected research objects expose executable educational actions through the visual workspace.
+
+Example:
+
+```
+Attention
+    │
+    ▼
+Explain
+Visualize
+Implement
+Compare
+Quiz
+    │
+    ▼
+Interactive Research Engine
+    │
+    ▼
+Educational Workflow
+```
+
+The action menu validates object capabilities before forwarding interactions to the platform's educational interaction engine.
+
+## Paper Outline Explorer
+
+The visual research workspace provides a hierarchical representation of the paper's document structure.
+
+Extracted sections and subsections are transformed into navigable outline nodes that preserve:
+
+- Section identity
+- Section title
+- Hierarchical level
+- Section numbering
+- Page location
+- Parent-child relationships
+
+This allows learners to explore research papers structurally rather than relying exclusively on linear scrolling or conversational navigation.
+
+## Knowledge Graph Workspace
+
+The visual research workspace can represent a paper as an interconnected knowledge graph.
+
+Backend graph entities are transformed into visual nodes and edges containing:
+
+- Node identity
+- Node type
+- Description
+- Source context
+- Relationships
+- Selection state
+
+Learners can switch between the paper view and knowledge graph view while remaining inside the same research session.
+
+## Contextual Navigation Breadcrumbs
+
+The visual research workspace maintains a contextual navigation trail as learners move through papers, sections, knowledge graph nodes, and interactive research objects.
+
+Example:
+
+```
+Attention Is All You Need
+    →
+Model Architecture
+    →
+Multi-Head Attention
+    →
+Equation (3)
+```
+
+Breadcrumbs preserve the current research path and allow learners to return to earlier contexts without losing the structure of their exploration.
+
+## Learning Workflow Timeline
+
+The visual research workspace exposes the progress of structured educational workflows.
+
+Example:
+
+```
+✓ Explanation
+      ↓
+✓ Example
+      ↓
+● Visualization
+      ↓
+○ Quiz
+      ↓
+○ Reflection
+```
+
+Each timeline step can be represented as:
+
+- Pending
+- Active
+- Completed
+- Failed
+- Skipped
+
+This allows learners to understand where they are inside a multi-step educational experience rather than treating workflow execution as an opaque backend process.
+
+## Contextual Learning Panel
+
+Educational content generated from research object interactions is presented inside a dedicated contextual learning surface.
+
+The panel can represent:
+
+- Explanations
+- Visualizations
+- Implementations
+- Comparisons
+- Quizzes
+- Prerequisite guidance
+- Follow-up learning content
+
+Each learning output preserves its source research object, educational action, workflow context, and associated metadata.
+
+Learners can move between the paper, knowledge graph, and learning content without losing their current research context.
+
+## Workspace Interaction History
+
+The visual research workspace exposes the learner's educational interaction history throughout the current research session.
+
+Example:
+
+```
+Attention — Explained
+
+Equation (3) — Visualized
+
+Figure 2 — Explored
+
+Experiment 1 — Compared
+```
+
+Workspace history is derived from the backend interaction history, preserving a single source of truth for educational interactions.
+
+Historical entries can be selected and associated with previously generated learning content without automatically re-executing educational workflows.
+
+## Personalized Next Actions
+
+The visual research workspace can surface personalized recommendations for what the learner should explore next.
+
+Example:
+
+```
+Recommended Next
+
+- Visualize Attention
+- Explore Equation (3)
+- Test Your Understanding
+```
+
+Recommendations can be prioritized, selected, and explicitly executed when they target an action supported by the currently selected research object.
+
+The workspace can also consume recommendations returned by educational interactions, allowing learning experiences to continuously suggest meaningful next steps.
+
+## Workspace State Coordination
+
+The visual research workspace coordinates major state transitions through a centralized event-driven state coordinator.
+
+Workspace events include:
+
+- Paper loading
+- Section selection
+- Research object selection
+- Knowledge graph selection
+- View changes
+- Educational action execution
+- Workflow loading and progress
+- Learning content presentation
+- Interaction history updates
+- Recommendation updates
+
+The coordinator maintains a consistent workspace state while allowing independent visual subsystems to react to shared user interactions.
+
+Workspace events are also recorded as an ordered event history, providing a foundation for future debugging, session replay, state restoration, analytics, and undo or redo capabilities.
+
+## Visual Research Workspace API
+
+PreReqAI provides a unified visual environment for exploring and learning from research papers.
+
+The workspace coordinates:
+
+- Hierarchical paper exploration
+- Knowledge graph navigation
+- Contextual research object inspection
+- Executable educational actions
+- Learning workflow progress
+- Contextual educational content
+- Research navigation breadcrumbs
+- Interaction history
+- Personalized next-action recommendations
+- Unified workspace state
+
+### Research Experience
+
+```text
+Load Research Paper
+        ↓
+Explore Paper Structure
+        ↓
+Navigate Knowledge Graph
+        ↓
+Select Research Object
+        ↓
+Inspect Context and Capabilities
+        ↓
+Execute Educational Action
+        ↓
+Track Learning Workflow
+        ↓
+Present Contextual Learning Content
+        ↓
+Record Interaction History
+        ↓
+Recommend the Next Learning Step
+        ↓
+Continue Research
+```
+
+The `VisualResearchWorkspace` provides the application-facing interface for coordinating the complete research-learning experience.
+
+## Persistent Research Sessions
+
+PreReqAI can serialize active visual research workspaces into stable research session snapshots.
+
+Session snapshots preserve durable research context including:
+
+- Active paper
+- Active workspace view
+- Selected research object
+- Selected paper section
+- Selected knowledge graph node
+- Navigation breadcrumbs
+- Learning workflow progress
+- Interaction history
+- Personalized recommendations
+
+Research session persistence is separated into:
+
+- `ResearchSessionSnapshot` for stable serialized state
+- `ResearchSessionSerializer` for workspace serialization
+- `ResearchSessionStore` for persistence contracts
+- `ResearchSessionManager` for application-level coordination
+
+The initial in-memory store provides a development and testing implementation while preserving a storage abstraction that can later support database-backed persistence.
+
+## Research Session Restoration
+
+Persisted research sessions can be restored into live visual workspaces through runtime identifier resolution.
+
+The restoration architecture includes:
+
+- `ResearchRuntimeRegistry` for currently available runtime entities
+- `ResearchRuntimeResolver` for resolving durable identifiers
+- `ResearchSessionRestorer` for reconstructing workspace state
+- `ResearchSessionRestorationResult` for reporting successful and unresolved restoration state
+
+Restoration can recover:
+
+- Active workspace view
+- Selected research object
+- Selected paper section
+- Selected knowledge graph node
+- Navigation breadcrumbs
+- Learning workflow timeline
+- Personalized recommendations
+
+Historical educational actions are not re-executed during restoration.
+
+Missing or outdated runtime references are reported explicitly rather than silently failing.
+
+## Durable Research Artifacts
+
+Generated learning outputs are persisted independently from workspace state as durable research artifacts.
+
+Research artifacts can represent:
+
+- Explanations
+- Visualizations
+- Implementations
+- Comparisons
+- Quizzes
+- Summaries
+- Derivations
+- Exploratory outputs
+
+Each artifact preserves:
+
+- Session identity
+- Research object identity
+- Artifact type
+- Educational action
+- Generated content
+- Content format
+- Version
+- Metadata
+- Creation and update timestamps
+
+Repeated outputs for the same research object and educational action are versioned rather than silently overwritten.
+
+Research session snapshots store artifact references while artifact content remains independently managed by the artifact persistence layer.
+
+## Interaction-to-Artifact Correlation
+
+PreReqAI maintains explicit relationships between educational interactions and the exact durable research artifacts produced by those interactions.
+
+This removes ambiguity when the same educational action is performed multiple times against the same research object.
+
+Example:
+
+Interaction 1
+- Attention
+- Explain
+- Explanation artifact v1
+
+Interaction 2
+- Attention
+- Explain
+- Explanation artifact v2
+
+Historical interactions can therefore resolve the precise generated output associated with that moment rather than relying on research-object and action matching.
+
+The correlation model supports multiple artifacts per interaction, allowing a single educational workflow to produce related explanations, visualizations, implementations, or other outputs.
+
+## Historical Artifact Restoration
+
+PreReqAI can restore the exact durable learning outputs associated with previous educational interactions.
+
+Selecting a historical interaction can:
+
+- Resolve its exact correlated artifact identifiers
+- Load the corresponding durable research artifacts
+- Reconstruct contextual learning content
+- Present the historical output inside the active learning workspace
+- Preserve artifact version and content metadata
+- Avoid re-executing the original educational workflow
+
+Restored content is explicitly marked as historical and does not create duplicate learning-history entries when reopened repeatedly.
+
+Missing artifacts are reported gracefully rather than causing the research session to fail.
+
+## Automatic Research Checkpoints
+
+PreReqAI can automatically persist active research sessions after meaningful research transitions.
+
+Checkpoint triggers can include:
+
+- Durable artifact creation
+- Completed learning actions
+- Workflow progress
+- Research object changes
+- Paper section changes
+- Knowledge graph context changes
+- Application backgrounding
+- Explicit manual saves
+
+Checkpoint behavior is controlled through `ResearchCheckpointPolicy`, preventing insignificant workspace events from causing unnecessary persistence operations.
+
+Each recorded checkpoint preserves:
+
+- Session identity
+- Checkpoint reason
+- Snapshot update time
+- Checkpoint metadata
+- Creation time
+
+Automatic checkpoints allow research progress to remain durable without requiring learners to manually save after every meaningful interaction.
+
+## Filesystem Research Persistence
+
+PreReqAI includes JSON-backed implementations of its research persistence contracts.
+
+Persistent local storage is available for:
+
+- Research session snapshots
+- Durable research artifacts
+- Interaction-to-artifact correlations
+
+The filesystem backend uses atomic file replacement to reduce the risk of partially written JSON files.
+
+A persistent application can be created with:
+
+```python
+from frontend.src.persistent_app import (
+    create_persistent_application,
+)
+
+application = (
+    create_persistent_application(
+        ".prereqai"
+    )
+)
+```
+
+Research state is stored under the configured data directory and can survive application process restarts.
+
+The JSON persistence backend is intended for local development, testing, single-user workflows, and single-process deployments. Multi-process and distributed deployments should use a transactional database-backed persistence implementation.
+
+## Persistent Research Checkpoint History
+
+Research checkpoint records can be persisted independently from the current research session snapshot.
+
+Each durable checkpoint preserves:
+
+- Checkpoint identity
+- Research session identity
+- Checkpoint reason
+- Snapshot update time
+- Checkpoint metadata
+- Creation time
+
+Checkpoint persistence uses the `ResearchCheckpointStore` contract.
+
+Available implementations include:
+
+- `InMemoryResearchCheckpointStore`
+- `JsonResearchCheckpointStore`
+
+When filesystem persistence is enabled, checkpoint timelines survive application restarts and continue accumulating as research progresses.
+
+This allows PreReqAI to preserve not only the latest research state, but also the sequence of meaningful persistence events that led to it.
+
+## Immutable Session Snapshot Versions
+
+Every research checkpoint can preserve an immutable historical version of the research session snapshot that existed when the checkpoint was created.
+
+The latest research session snapshot remains mutable and represents the current durable state.
+
+Historical session versions are stored independently and preserve:
+
+- Version identity
+- Research session identity
+- Exact serialized session snapshot
+- Version metadata
+- Creation time
+
+Each new checkpoint can reference its exact historical session version through `snapshot_version_id`.
+
+This allows older checkpoints to preserve their original research state even after the current session continues changing.
+
+Historical session versions can be stored using:
+
+- `InMemoryResearchSessionVersionStore`
+- `JsonResearchSessionVersionStore`
+
+Filesystem-backed versions survive application restarts and provide the foundation for exact research checkpoint recovery.
+
+## Safe Research Checkpoint Recovery
+
+PreReqAI supports non-destructive recovery of historical research checkpoint states.
+
+A recovery operation:
+
+1. Validates the requested checkpoint.
+2. Resolves its immutable historical session version.
+3. Creates a safety checkpoint preserving the current research state.
+4. Restores the historical snapshot into a new active workspace.
+5. Persists the restored state as the latest current session state.
+6. Creates a new recovery checkpoint describing the operation.
+
+Recovery never deletes newer checkpoints or historical session versions.
+
+If a research timeline contains states A, B, and C, restoring A produces a new current state derived from A while preserving B and C:
+
+```text
+A → B → C → Safety(C) → Restored(A)
+```
+
+Recovery checkpoints preserve references to:
+
+- The source checkpoint
+- The source immutable version
+- The pre-recovery safety checkpoint
+
+This makes checkpoint recovery auditable and itself recoverable.
+
+## Research Recovery Preview and Comparison
+
+PreReqAI can compare the current research state with an immutable historical checkpoint before recovery is executed.
+
+Recovery previews are read-only and do not:
+
+- Persist the current session
+- Create checkpoints
+- Create historical session versions
+- Modify the active workspace
+- Execute recovery
+
+A preview can report meaningful changes including:
+
+- Paper context changes
+- Active section changes
+- Selected research object changes
+- Knowledge graph context changes
+- Workflow position changes
+- Added and removed research artifacts
+
+The comparison layer uses explicit semantic fields rather than blindly comparing complete serialized snapshots.
+
+Historical session versions can also be compared directly, allowing future interfaces to inspect differences between arbitrary research checkpoints.
+
+## Human-Friendly Checkpoint Annotations
+
+Research checkpoints can be enriched with mutable human-authored annotations without modifying their immutable historical state.
+
+Checkpoint annotations support:
+
+- Custom labels
+- Personal notes
+- Pinned status
+- Partial updates
+- Explicit field clearing
+- Persistent storage across application restarts
+
+Annotations are stored independently from checkpoint records and immutable session versions.
+
+This separation allows a user to rename, annotate, pin, unpin, or remove human metadata without changing the historical checkpoint event or the exact research state associated with it.
+
+PreReqAI can expose annotated checkpoint timelines and pinned recovery points for future user interfaces.
+
+## Research History Querying
+
+PreReqAI provides a dedicated query layer for navigating large research checkpoint timelines.
+
+Research history can be filtered by:
+
+- Checkpoint reason
+- Pinned status
+- Recovery-related events
+- Creation date range
+- Human-authored label and note text
+
+Results can be:
+
+- Sorted newest-first
+- Sorted oldest-first
+- Paginated using offset and limit
+
+Each timeline result combines the historical checkpoint with its optional mutable human annotation.
+
+Paginated responses include:
+
+- Matching timeline items
+- Total result count
+- Current offset
+- Page limit
+- Number of returned items
+- Whether more results exist
+- The next offset when available
+
+Research history queries are read-only and do not modify session state, checkpoint history, immutable versions, or annotations.
+
+## Research Session Branching
+
+PreReqAI can create independent research sessions from immutable historical checkpoints.
+
+Branching differs from checkpoint recovery.
+
+Recovery changes the current trajectory while preserving history:
+
+```text
+A → B → C → Restore(A)
+```
+
+Branching preserves the original trajectory and creates a new independent session:
+
+```text
+A → B → C
+    │
+    └── A' → D → E
+```
+
+A branch records:
+
+- Source research session
+- Source checkpoint
+- Source immutable session version
+- New branch session
+- Branch metadata
+- Creation time
+
+The source checkpoint and immutable historical version are read-only during branch creation.
+
+Each new branch receives its own session identity and an initial `SESSION_BRANCHED` checkpoint describing its origin.
+
+Multiple independent branches can be created from the same historical checkpoint.
+
+## Research Session Lineage
+
+Research session branches form a rooted lineage forest.
+
+Each research session may have:
+
+- Zero or one direct parent session
+- Zero or many child sessions
+
+The lineage service derives graph relationships directly from persisted branch records.
+
+Supported lineage operations include:
+
+- Parent lookup
+- Direct child lookup
+- Ancestor traversal
+- Descendant traversal
+- Root resolution
+- Branch depth calculation
+- Root-to-session paths
+- Relationship detection
+- Ancestor checks
+- Lowest common ancestor discovery
+- Paths between related sessions
+- Nested lineage tree construction
+- Compact lineage summaries
+
+Lineage traversal includes cycle detection to prevent corrupted branch data from causing infinite traversal.
+
+The graph itself is not separately persisted. Branch relationships remain the single source of truth, while lineage structures are derived on demand.
+
+## Research Session Profiles
+
+Research sessions can have mutable human-facing profiles independent of their immutable branch origins.
+
+A session profile may contain:
+
+- Display name
+- Description
+- Lifecycle status
+- Archived state
+- Custom metadata
+- Creation time
+- Last update time
+
+Supported lifecycle statuses are:
+
+- Active
+- Paused
+- Completed
+
+Archiving is independent from lifecycle status. For example, a completed session may be archived without changing its completed state.
+
+Branch origin records remain immutable lineage facts. Renaming, describing, pausing, completing, or archiving a session does not modify the checkpoint or immutable session version from which the branch originated.
+
+When no explicit display name exists, presentation falls back to the session's paper title and then to the raw session ID.
+
+Research lineage trees can be enriched with session profile information for frontend presentation.
+
+## Research Session Discovery
+
+PreReqAI provides a dedicated query layer for discovering and browsing research sessions across a workspace.
+
+Research sessions can be searched using:
+
+- Session display name
+- Session description
+- Paper title
+- Paper identifier
+- Session identifier
+- Lifecycle status
+- Session kind
+
+Sessions can be filtered by:
+
+- One or more lifecycle statuses
+- Archived state
+- Root or branch session kind
+- Lineage root
+- Direct parent session
+
+Results can be sorted by:
+
+- Creation time, newest or oldest
+- Last update time, newest or oldest
+- Display name, ascending or descending
+
+Session discovery results include:
+
+- Human-readable session identity
+- Paper information
+- Lifecycle status
+- Archived state
+- Root or branch kind
+- Parent session
+- Root session
+- Lineage depth
+- Direct child count
+- Total descendant count
+- Creation and update timestamps
+
+Results are paginated and expose total count, returned count, next offset, and whether additional results exist.
+
+The query system is read-only and does not create profiles or modify research sessions while browsing them.
+
+## Research Session Comparison
+
+PreReqAI can derive structured comparisons between research sessions.
+
+Session comparison includes:
+
+- Lineage relationship
+- Whether the sessions belong to the same lineage
+- Lowest common ancestor session
+- Lineage distance
+- Paths from the common ancestor
+- First divergent lineage sessions
+- Historical checkpoint and immutable version origins for divergent branches
+- Domain-relevant session state differences
+- Workflow-step differences
+- Artifact differences
+- Knowledge-graph node differences
+- Knowledge-graph edge differences
+
+Supported lineage relationships include:
+
+- Same session
+- Ancestor
+- Descendant
+- Sibling
+- Related non-sibling branch (cousin)
+- Unrelated
+
+Unrelated sessions can still be compared by state, workflow, and artifacts. They simply do not have a common lineage ancestor or lineage distance.
+
+Comparisons are derived on demand and are not persisted separately. Persistent sessions, branch relationships, and artifacts remain the sources of truth.
+
+## Workspace Organization
+
+PreReqAI supports reusable research tags and user-curated research collections.
+
+### Tags
+
+Research sessions can have multiple tags.
+
+Tag names are normalized so equivalent values such as `#Transformers`, `transformers`, and `TRANSFORMERS` resolve to the same reusable tag.
+
+Tags can be:
+
+- Assigned to multiple sessions
+- Removed independently from individual sessions
+- Used as research session discovery filters
+- Combined using all-tags or any-tag matching
+
+### Collections
+
+Research collections are first-class workspace entities with:
+
+- Stable identifiers
+- Human-readable names
+- Optional descriptions
+- Creation timestamps
+- Update timestamps
+
+A research session can belong to multiple collections, and a collection can contain multiple research sessions.
+
+Deleting a collection removes only the collection and its membership relationships. It does not delete the research sessions contained within it.
+
+### Discovery Integration
+
+Research session discovery can combine:
+
+- Text search
+- Lifecycle status
+- Archived state
+- Root or branch kind
+- Lineage root
+- Direct parent
+- Tags
+- Collections
+- Sorting
+- Pagination
+
+Session discovery results also expose the session's current tag names and collection identifiers.
+
+## Research Activity Timeline
+
+PreReqAI records immutable domain-level activity events for meaningful research workspace actions.
+
+The unified activity timeline can represent:
+
+- Research session creation
+- Session activation
+- Profile renaming
+- Description updates
+- Lifecycle status changes
+- Archiving and restoration
+- Checkpoint creation
+- Immutable version creation
+- Research branch creation
+- Tag assignment and removal
+- Collection creation and updates
+- Collection membership changes
+- User-triggered research session comparisons
+
+Activity events contain:
+
+- Stable event identifiers
+- Typed activity categories
+- UTC occurrence timestamps
+- Primary session identifiers
+- Optional related session identifiers
+- Actor categories
+- Optional actor identifiers
+- JSON-serializable event metadata
+
+Activity history is append-only. Events represent completed domain facts and are not silently rewritten.
+
+The activity query system supports:
+
+- Global workspace activity
+- Per-session timelines
+- Related-session activity
+- Activity-type filtering
+- Actor-type filtering
+- Time-range filtering
+- Newest-first or oldest-first ordering
+- Pagination
+
+Idempotent domain operations do not produce duplicate activity events when no state change occurred.
+
+Persistent applications restore activity history without re-emitting historical events during application startup.
+
+Checkpoint and version activity events are recorded only for explicit user-triggered checkpoints, not for the many automatic system checkpoints created during ordinary research interaction, to keep the timeline meaningful rather than noisy.
+
+## Research Workspace Insights
+
+PreReqAI derives workspace-level research analytics directly from canonical research state.
+
+The insights engine provides:
+
+### Workspace Overview
+
+- Total research sessions
+- Archived and unarchived session counts
+- Root and branch session counts
+- Total reusable tags
+- Total research collections
+- Total recorded activity events
+
+### Lifecycle Statistics
+
+Research sessions are grouped by their current lifecycle state.
+
+### Lineage Statistics
+
+The workspace can derive:
+
+- Total research roots
+- Total research branches
+- Maximum lineage depth
+- Average lineage depth
+- Deepest research session
+- Session with the most direct branches
+
+### Organization Statistics
+
+The workspace ranks:
+
+- Most-used research tags
+- Largest research collections
+
+### Activity Statistics
+
+Activity analytics include:
+
+- Total activity events
+- Activity during the last 24 hours
+- Activity during the last 7 days
+- Activity during the last 30 days
+- Counts grouped by activity type
+
+### Session Activity Insights
+
+The workspace identifies:
+
+- Recently active research sessions
+- Active or paused sessions that have become dormant
+
+Dormancy is configurable and excludes completed or archived research sessions.
+
+Workspace insights are derived from canonical domain stores and are not independently persisted as a second source of truth.
+
+## Portable Research Snapshots
+
+PreReqAI can export research state into a versioned, portable snapshot format.
+
+Supported snapshot scopes include:
+
+- A single research session
+- A research session and all descendant branches
+- An entire connected research lineage
+- The complete research workspace
+
+Portable snapshots can contain:
+
+- Research sessions
+- Human-readable session profiles
+- Checkpoints
+- Immutable research versions
+- Internal branch relationships
+- Tags used by included sessions
+- Tag assignments
+- Collections containing included sessions
+- Filtered collection memberships
+- Referentially closed research activity history
+
+Each snapshot contains a manifest with:
+
+- Snapshot format name
+- Schema version
+- Unique snapshot identifier
+- UTC creation timestamp
+- Export scope
+- Optional root research session identifier
+- Application identity
+
+Snapshot generation is read-only and does not mutate research state or create activity events.
+
+The snapshot validator checks structural and referential integrity before generated snapshots are returned.
+
+Scoped exports omit relationships and activity events that would otherwise reference sessions outside the exported snapshot.
+
+Snapshots use a stable JSON-compatible representation rather than serializing internal store implementations.
+
+## Transactional Research Snapshot Import
+
+PreReqAI can restore portable research snapshots into a workspace through a validation-first transactional import pipeline.
+
+### Import Preview
+
+Snapshots can be analyzed before any workspace state changes. Previewing an import reports entities that would be created, identity conflicts, planned identity remapping, and final import counts. Preview is read-only.
+
+### Conflict Strategies
+
+Supported identity conflict strategies:
+
+- Reject conflicting identities
+- Remap only conflicting identities
+- Remap every imported identity
+
+When identities are remapped, every typed internal reference is rewritten consistently: profiles, checkpoints (including their version reference), immutable versions, branch relationships (including their checkpoint and version references), tag assignments, collection memberships, and activity events.
+
+### Transactional Application
+
+Snapshot imports are applied as a single logical transaction. If any restoration step fails, all participating stores are restored to their pre-import state and the restored state is re-persisted, so partial imports are not retained after an application restart.
+
+### Historical Restoration
+
+Imported records preserve their original identities (unless remapped) and timestamps. Import restoration bypasses normal user-facing creation commands, so it does not generate duplicate domain activity events or overwrite historical timestamps with the current time.
+
+## Research Workspace Integrity Auditing
+
+PreReqAI includes a read-only workspace integrity auditor for detecting structural, referential, graph, and semantic inconsistencies.
+
+The auditor can detect:
+
+- Orphan research session profiles
+- Sessions missing human-readable profiles
+- Checkpoints referencing missing sessions or missing immutable versions
+- Versions referencing missing sessions
+- Branches with missing endpoints
+- Self-referencing branches
+- Duplicate branch relationships
+- Research sessions with multiple branch parents
+- Cycles in research lineage graphs
+- Tag assignments referencing missing sessions or tags
+- Duplicate tag assignments
+- Collection memberships referencing missing sessions or collections
+- Duplicate collection memberships
+- Historical activity referencing missing sessions
+- Duplicate canonical entity identifiers
+
+Findings are classified by severity: info, warning, error, and critical. The auditor is read-only and does not mutate workspace state.
+
+## Research Repair Planning
+
+Integrity reports can be converted into explicit repair plans. Repair actions are classified as safe, review required, or destructive.
+
+Only operations whose intent is unambiguous, such as removing exact duplicate relationships, are eligible for automatic repair. Ambiguous graph corruption, including lineage cycles and multiple-parent conflicts, is never repaired automatically. Repair planning is also read-only.
+
+## Reactive Research Workspace Change Feed
+
+PreReqAI exposes a transport-agnostic reactive change system for synchronizing external consumers with workspace mutations.
+
+The system includes:
+
+### Ordered Change Events
+
+Workspace changes receive monotonically increasing sequence numbers. Consumers can request all changes after a known sequence cursor without relying on timestamp ordering.
+
+### Cursor-Based Synchronization
+
+Change events can be queried using:
+
+- Sequence cursors
+- Page limits
+- Entity type filters
+- Operation filters
+
+This supports efficient incremental synchronization for future user interfaces and external integrations.
+
+### In-Process Event Subscriptions
+
+Consumers can subscribe to workspace changes and optionally filter subscriptions by entity type or change operation. Subscriber failures are isolated and do not invalidate successfully committed domain mutations.
+
+### Persistent Change History
+
+The workspace change feed can persist its event sequence and change history across application restarts. Sequence numbers remain monotonic after restart.
+
+### Import-Aware Synchronization
+
+Large snapshot imports emit a single summary change event after the import transaction succeeds. Failed imports emit no workspace change event.
+
+### Separation from Research Activity History
+
+The reactive workspace change feed is distinct from the human-readable research activity timeline. Research activity describes meaningful historical actions. Workspace change events provide machine-oriented synchronization signals for interfaces and integrations.
+
+Read-only operations, including workspace queries, comparisons, insights, snapshot export, import preview, integrity auditing, and repair planning, never emit workspace change events.
+
+## Unified Research Workspace Gateway
+
+PreReqAI exposes its research workspace through a unified application-facing gateway (`application.research_workspace`).
+
+The gateway provides a stable capability surface for:
+
+- Research sessions
+- Session discovery
+- Research lineage
+- Session comparison
+- Tags and collections
+- Activity history
+- Workspace insights
+- Snapshot export
+- Transactional snapshot import
+- Integrity auditing
+- Repair planning
+- Reactive change feeds
+- Live in-process subscriptions
+
+External interfaces should depend on the gateway rather than directly coupling themselves to internal stores and services. Full architectural details live in `docs/research-workspace-architecture.md`.
+
+## Capability Discovery
+
+The workspace exposes discoverable capability metadata describing:
+
+- Available capability names
+- Capability versions
+- Supported public operations
+- Whether a capability is enabled
+
+This provides a foundation for future frontend and API compatibility handling.
+
+## End-to-End Architecture Validation
+
+Integration tests exercise complete research workspace lifecycles through the public gateway only, including:
+
+- Session creation
+- Profile updates
+- Checkpointing
+- Independent branching
+- Lineage traversal
+- Research organization
+- Session comparison
+- Workspace insights
+- Reactive change tracking
+- Integrity auditing
+- Snapshot export
+- Transactional import
+- Post-import integrity verification
+- Persistence across application restarts
+
+## Command Line
+
+`prerequisites analyze` runs the Prerequisite Explorer on a paper PDF -- the
+same workflow as `POST /api/prerequisites/analyze` -- and prints a summary
+(`--json` for the full result envelope).
+
+```
+python -m backend.cli prerequisites analyze <paper.pdf>
+python -m backend.cli prerequisites analyze <paper.pdf> --json --diagnose
+python -m backend.cli prerequisites analyze <paper.pdf> --max-seconds 60 --max-file-mb 20
+```
+
+Exits `0` on success; `1` when the analysis failed (including invalid
+limits or a missing dependency); `2` on a usage error; `123` when a limit
+(`--max-file-mb` or `--max-seconds`) was reached; `130` when cancelled (Ctrl-C).
+Errors go to stderr as `error: ...` with a `hint:` line; `--json` prints the
+result envelope to stdout instead. `python -m backend.cli --version` prints the version.
+
+`recovery-decision evaluate` runs the recovery execution decision
+lifecycle for a task end to end (authoritative decision, lineage
+validation, impact/staleness detection, remediation/reconciliation,
+final verification) and reports one consolidated result.
+
+```
+python -m backend.cli recovery-decision evaluate <task-id>
+python -m backend.cli recovery-decision evaluate <task-id> --json
+```
+
+Exits `0` when the lifecycle completed with nothing left blocking;
+non-zero (`1`) when it is blocked, failed, unresolved, or the
+verification result is invalid; `2` on a usage error (missing/malformed
+arguments).
+
+`recovery-decision diagnose` is diagnostic-only: it reports the health
+of a task's recovery execution decision lifecycle and each of its
+dependencies (decision store, supersession resolver, impact analyzer,
+staleness detector, remediation/reconciliation, lifecycle result
+persistence, verification) without evaluating or changing anything.
+
+```
+python -m backend.cli recovery-decision diagnose <task-id>
+python -m backend.cli recovery-decision diagnose <task-id> --json
+```
+
+Exits `0` only when overall status is `healthy`; non-zero (`1`) for
+`degraded`, `blocked`, or `unavailable`; `2` on a usage error.
+
+`recovery-decision readiness` is a deploy/CI gate: it composes
+configuration validation, dependency diagnostics, and (if a task id is
+given) that task's lifecycle health into one `ready`/`blocked` verdict.
+Diagnostic-only -- it never evaluates or changes anything.
+
+```
+python -m backend.cli recovery-decision readiness
+python -m backend.cli recovery-decision readiness <task-id>
+python -m backend.cli recovery-decision readiness --json
+```
+
+Exits `0` only when `ready`; non-zero (`1`) when `blocked`; `2` on a
+usage error.
+
+## HTTP API
+
+Start it with `uvicorn backend.main:app --port 8000`; interactive docs are at `/docs`.
+
+| Request | Success | Failure |
+| --- | --- | --- |
+| `POST /api/prerequisites/analyze` (multipart field `paper`, a PDF) | `200`: `status`, `session_id`, `report`, `timings`, `warnings` | `400` unreadable or invalid PDF; `413` upload over 100 MB (`limit_exceeded`); `422` no `paper` field (no time limit) |
+| `GET /api/session/{session_id}` | `200`: `paper_title`, `active_concept`, `conversation_history`, ... | `404` unknown session |
+| `POST /api/session/{session_id}/question` (JSON `{"question": "...", "topic": null, "mode": "intuition"}`) | `200`: `responses`, `recommendations`, ... | `404` unknown session; `422` empty question or a `topic` that is not one of the paper's concepts |
+
+Workflow failures return the same envelope everywhere: `{"status": "failure", "stage": ..., "detail": ...,
+"hint": ..., "warnings": [...]}`. Sessions are held in memory and end with the server process.
+
+```bash
+curl -s http://127.0.0.1:8000/api/session/<session_id>   # session_id comes from the analyze response
+```
+
+## API Generation
+
+`python -m backend.cli api-generation` turns a validated API documentation
+draft into a runnable FastAPI project. It has two commands: `generate`
+(supports `--dry-run` and `--json`) and `check`.
+
+See the walkthrough in `docs/api-generation-walkthrough.md` and the complete
+example in `examples/api-generation/`.

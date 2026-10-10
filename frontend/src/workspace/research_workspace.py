@@ -1,0 +1,1052 @@
+from .workspace_region import (
+    WorkspaceRegion,
+)
+
+from .workspace_state import (
+    WorkspaceState,
+)
+
+from .workspace_event_type import (
+    WorkspaceEventType,
+)
+
+from .workspace_state_coordinator import (
+    WorkspaceStateCoordinator,
+)
+
+from .default_panels import (
+    DEFAULT_WORKSPACE_PANELS,
+)
+
+from .workspace_panel_registry import (
+    WorkspacePanelRegistry,
+)
+
+from frontend.src.inspector import (
+    ResearchObjectInspector,
+)
+
+from backend.engine import (
+    InteractiveResearchEngine,
+)
+
+from frontend.src.actions import (
+    ObjectActionMenu,
+    WorkspaceActionResult,
+)
+
+from frontend.src.explorer import (
+    PaperOutlineExplorer,
+)
+
+from frontend.src.graph import (
+    KnowledgeGraphWorkspaceView,
+)
+
+from frontend.src.navigation import (
+    NavigationBreadcrumbs,
+)
+
+from frontend.src.timeline import (
+    LearningWorkflowTimeline,
+)
+
+from frontend.src.learning import (
+    ContextualLearningPanel,
+)
+
+from frontend.src.history import (
+    WorkspaceInteractionHistory,
+)
+
+from frontend.src.recommendations import (
+    PersonalizedNextActionPanel,
+)
+
+
+class ResearchWorkspace:
+    """
+    Coordinates the visual research
+    workspace and its active state.
+    """
+
+    def __init__(
+
+        self,
+
+        correlation_provider=None,
+
+    ):
+
+        self.state = (
+            WorkspaceState()
+        )
+
+        self.state_coordinator = (
+            WorkspaceStateCoordinator(
+
+                self.state
+            )
+        )
+
+        self.regions = [
+
+            WorkspaceRegion.HEADER,
+
+            WorkspaceRegion.EXPLORER,
+
+            WorkspaceRegion.MAIN,
+
+            WorkspaceRegion.INSPECTOR,
+
+            WorkspaceRegion.TIMELINE,
+        ]
+
+        self.panel_registry = (
+            WorkspacePanelRegistry()
+        )
+
+        for panel in DEFAULT_WORKSPACE_PANELS:
+
+            self.panel_registry.register(
+                panel
+            )
+
+        self.object_inspector = (
+            ResearchObjectInspector()
+        )
+
+        self.inspector_view = None
+
+        self.interaction_engine = (
+            InteractiveResearchEngine()
+        )
+
+        self.action_menu = (
+
+            ObjectActionMenu(
+
+                self.interaction_engine
+            )
+        )
+
+        self.active_action_result = None
+
+        self.paper_explorer = (
+            PaperOutlineExplorer()
+        )
+
+        self.paper_outline = None
+
+        self.knowledge_graph_view = (
+            KnowledgeGraphWorkspaceView()
+        )
+
+        self.graph_view_model = None
+
+        self.breadcrumbs = (
+            NavigationBreadcrumbs()
+        )
+
+        self.learning_timeline = (
+            LearningWorkflowTimeline()
+        )
+
+        self.learning_panel = (
+            ContextualLearningPanel()
+        )
+
+        self.interaction_history_view = (
+
+            WorkspaceInteractionHistory(
+
+                correlation_provider=(
+                    correlation_provider
+                )
+            )
+        )
+
+        self.history_view_model = None
+
+        self.next_action_panel = (
+            PersonalizedNextActionPanel()
+        )
+
+        self.recommendation_view_model = None
+
+    def panels_for(
+
+        self,
+
+        region: WorkspaceRegion,
+
+    ):
+
+        return (
+
+            self.panel_registry.for_region(
+
+                region
+            )
+        )
+
+    def select_object(
+
+        self,
+
+        research_object,
+
+    ):
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.OBJECT_SELECTED,
+
+            payload=research_object,
+        )
+
+        self.inspector_view = (
+
+            self.object_inspector.inspect(
+
+                research_object
+            )
+        )
+
+        self.breadcrumbs.enter(
+
+            id=research_object.id,
+
+            label=research_object.title,
+
+            context_type=(
+
+                research_object
+                .object_type
+                .value
+            ),
+
+            source=research_object,
+        )
+
+        return self.inspector_view
+
+    def available_actions(self):
+
+        if (
+
+            self.state.selected_object
+
+            is None
+        ):
+
+            return []
+
+        return self.action_menu.build(
+
+            self.state.selected_object
+        )
+
+    def execute_action(
+
+        self,
+
+        session,
+
+        action,
+
+    ):
+
+        research_object = (
+
+            self.state.selected_object
+        )
+
+        if research_object is None:
+
+            raise ValueError(
+
+                "No research object "
+                "is currently selected."
+            )
+
+        response = (
+
+            self.action_menu.execute(
+
+                session,
+
+                research_object,
+
+                action,
+            )
+        )
+
+        result = WorkspaceActionResult(
+
+            object_id=(
+                research_object.id
+            ),
+
+            action=action.value,
+
+            response=response,
+        )
+
+        self.active_action_result = result
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.ACTION_EXECUTED,
+
+            payload=result,
+        )
+
+        learning_content = (
+
+            self.learning_panel.present_response(
+
+                research_object,
+
+                action,
+
+                response,
+            )
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.LEARNING_CONTENT_PRESENTED,
+
+            payload=learning_content,
+        )
+
+        self.show_learning_content()
+
+        workflow_steps = (
+
+            response.get(
+                "workflow_steps"
+            )
+
+            if isinstance(
+                response,
+                dict,
+            )
+
+            else None
+        )
+
+        if workflow_steps:
+
+            self.load_workflow_timeline(
+
+                workflow_steps
+            )
+
+        self.load_interaction_history(
+
+            session
+        )
+
+        recommendations = (
+
+            response.get(
+                "recommendations"
+            )
+
+            if isinstance(
+                response,
+                dict,
+            )
+
+            else None
+        )
+
+        if recommendations:
+
+            self.load_recommendations(
+
+                recommendations
+            )
+
+        return result
+
+    def set_active_view(
+
+        self,
+
+        view: str,
+
+    ):
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.VIEW_CHANGED,
+
+            payload=view,
+        )
+
+    def set_active_region(
+
+        self,
+
+        region: WorkspaceRegion,
+
+    ):
+
+        self.state.active_region = (
+            region.value
+        )
+
+    def load_paper_outline(
+
+        self,
+
+        paper_title: str,
+
+        sections,
+
+    ):
+
+        self.paper_outline = (
+
+            self.paper_explorer.build(
+
+                paper_title,
+
+                sections,
+            )
+        )
+
+        self.breadcrumbs.trail.clear()
+
+        self.breadcrumbs.enter(
+
+            id="paper",
+
+            label=paper_title,
+
+            context_type="paper",
+
+            source=self.paper_outline,
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.PAPER_LOADED,
+
+            payload=self.paper_outline,
+        )
+
+        return self.paper_outline
+
+    def select_outline_node(
+
+        self,
+
+        node,
+
+    ):
+
+        section = (
+
+            self.paper_explorer.select(
+
+                node
+            )
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.SECTION_SELECTED,
+
+            payload=section,
+        )
+
+        self.breadcrumbs.enter(
+
+            id=node.id,
+
+            label=node.title,
+
+            context_type="section",
+
+            source=section,
+        )
+
+        return section
+
+    def load_knowledge_graph(
+
+        self,
+
+        knowledge_graph,
+
+    ):
+
+        self.graph_view_model = (
+
+            self.knowledge_graph_view.build(
+
+                knowledge_graph
+            )
+        )
+
+        return self.graph_view_model
+
+    def select_graph_node(
+
+        self,
+
+        node_id: str,
+
+    ):
+
+        node = (
+
+            self.knowledge_graph_view
+
+            .select_node(
+
+                node_id
+            )
+        )
+
+        if node is None:
+
+            return None
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.GRAPH_NODE_SELECTED,
+
+            payload=node,
+        )
+
+        self.breadcrumbs.enter(
+
+            id=node.id,
+
+            label=node.label,
+
+            context_type=(
+
+                f"graph_{node.node_type}"
+            ),
+
+            source=node,
+        )
+
+        return node
+
+    def show_knowledge_graph(self):
+
+        self.set_active_view(
+
+            "knowledge_graph"
+        )
+
+    def show_paper(self):
+
+        self.set_active_view(
+
+            "paper"
+        )
+
+    def show_learning_content(self):
+
+        self.set_active_view(
+
+            "learning"
+        )
+
+    def navigate_breadcrumb(
+
+        self,
+
+        index: int,
+
+    ):
+
+        item = (
+
+            self.breadcrumbs.navigate_to(
+
+                index
+            )
+        )
+
+        self.state.metadata[
+
+            "navigation_context"
+
+        ] = item
+
+        return item
+
+    def breadcrumb_items(self):
+
+        return (
+
+            self.breadcrumbs.items()
+        )
+
+    def load_workflow_timeline(
+
+        self,
+
+        workflow_steps,
+
+    ):
+
+        steps = (
+
+            self.learning_timeline.load(
+
+                workflow_steps
+            )
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.WORKFLOW_LOADED,
+
+            payload=steps,
+        )
+
+        return steps
+
+    def activate_workflow_step(
+
+        self,
+
+        step_id: str,
+
+    ):
+
+        return (
+
+            self.learning_timeline.activate(
+
+                step_id
+            )
+        )
+
+    def complete_workflow_step(
+
+        self,
+
+        step_id: str,
+
+    ):
+
+        return (
+
+            self.learning_timeline.complete(
+
+                step_id
+            )
+        )
+
+    def fail_workflow_step(
+
+        self,
+
+        step_id: str,
+
+    ):
+
+        return (
+
+            self.learning_timeline.fail(
+
+                step_id
+            )
+        )
+
+    def skip_workflow_step(
+
+        self,
+
+        step_id: str,
+
+    ):
+
+        return (
+
+            self.learning_timeline.skip(
+
+                step_id
+            )
+        )
+
+    def workflow_timeline_steps(self):
+
+        return list(
+
+            self.learning_timeline.steps
+        )
+
+    def active_learning_content(self):
+
+        return (
+
+            self.learning_panel
+            .active_content
+        )
+
+    def learning_content_history(self):
+
+        return list(
+
+            self.learning_panel
+            .content_history
+        )
+
+    def load_interaction_history(
+
+        self,
+
+        session,
+
+    ):
+
+        self.history_view_model = (
+
+            self.interaction_history_view.load(
+
+                session.interaction_history
+            )
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.HISTORY_UPDATED,
+
+            payload=self.history_view_model,
+        )
+
+        return self.history_view_model
+
+    def interaction_history_entries(
+        self,
+    ):
+
+        if (
+
+            self.history_view_model
+
+            is None
+        ):
+
+            return []
+
+        return list(
+
+            self.history_view_model.entries
+        )
+
+    def select_history_entry(
+
+        self,
+
+        entry_id: str,
+
+    ):
+
+        entry = (
+
+            self.interaction_history_view
+
+            .select(
+
+                entry_id
+            )
+        )
+
+        if entry is None:
+
+            return None
+
+        self.state.metadata[
+
+            "selected_history_entry"
+
+        ] = entry
+
+        return entry
+
+    def learning_content_for_history(
+
+        self,
+
+        entry_id: str,
+
+    ):
+
+        entry = (
+
+            self.interaction_history_view
+
+            .select(
+
+                entry_id
+            )
+        )
+
+        if entry is None:
+
+            return None
+
+        matches = [
+
+            content
+
+            for content
+
+            in self.learning_panel
+            .content_history
+
+            if (
+
+                content.object_id
+
+                == entry.object_id
+
+                and
+
+                content.action
+
+                == entry.action
+            )
+        ]
+
+        if not matches:
+
+            return None
+
+        return matches[-1]
+
+    def artifact_ids_for_history(
+
+        self,
+
+        entry_id: str,
+
+    ):
+
+        entry = (
+
+            self.interaction_history_view
+            .select(
+
+                entry_id
+            )
+        )
+
+        if entry is None:
+
+            return []
+
+        return list(
+            entry.artifact_ids
+        )
+
+    def restore_learning_artifact(
+
+        self,
+
+        artifact,
+
+    ):
+
+        learning_content = (
+
+            self.learning_panel
+            .restore_artifact(
+
+                artifact
+            )
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType
+            .LEARNING_CONTENT_PRESENTED,
+
+            payload=(
+                learning_content
+            ),
+
+            metadata={
+
+                "restored": True,
+
+                "artifact_id":
+                    artifact.id,
+            },
+        )
+
+        return learning_content
+
+    def load_recommendations(
+
+        self,
+
+        recommendations,
+
+    ):
+
+        self.recommendation_view_model = (
+
+            self.next_action_panel.load(
+
+                recommendations
+            )
+        )
+
+        self.state_coordinator.emit(
+
+            WorkspaceEventType.RECOMMENDATIONS_UPDATED,
+
+            payload=(
+                self.recommendation_view_model
+            ),
+        )
+
+        return (
+
+            self.recommendation_view_model
+        )
+
+    def next_action_recommendations(
+        self,
+    ):
+
+        if (
+
+            self.recommendation_view_model
+
+            is None
+        ):
+
+            return []
+
+        return list(
+
+            self.recommendation_view_model
+            .recommendations
+        )
+
+    def select_recommendation(
+
+        self,
+
+        recommendation_id: str,
+
+    ):
+
+        recommendation = (
+
+            self.next_action_panel.select(
+
+                recommendation_id
+            )
+        )
+
+        if recommendation is None:
+
+            return None
+
+        self.state.metadata[
+
+            "selected_recommendation"
+
+        ] = recommendation
+
+        return recommendation
+
+    def execute_recommendation(
+
+        self,
+
+        session,
+
+        recommendation_id: str,
+
+    ):
+
+        recommendation = (
+
+            self.select_recommendation(
+
+                recommendation_id
+            )
+        )
+
+        if recommendation is None:
+
+            raise ValueError(
+
+                "Recommendation "
+                "could not be found."
+            )
+
+        research_object = (
+
+            self.state.selected_object
+        )
+
+        if research_object is None:
+
+            raise ValueError(
+
+                "No research object "
+                "is currently selected."
+            )
+
+        action = next(
+
+            (
+
+                item.action
+
+                for item
+
+                in self.available_actions()
+
+                if (
+
+                    item.action.value
+
+                    == recommendation.action
+                )
+            ),
+
+            None,
+        )
+
+        if action is None:
+
+            raise ValueError(
+
+                "Recommended action "
+                "is not available for "
+                "the selected object."
+            )
+
+        return self.execute_action(
+
+            session,
+
+            action,
+        )
+
+    def workspace_events(self):
+
+        return list(
+
+            self.state_coordinator
+            .event_history
+        )

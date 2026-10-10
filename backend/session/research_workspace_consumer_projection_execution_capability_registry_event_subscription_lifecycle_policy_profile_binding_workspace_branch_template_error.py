@@ -1,0 +1,11 @@
+class ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplateError(
+    ValueError
+):
+    """
+    Raised when a consumer projection execution capability registry
+    event subscription lifecycle policy profile binding workspace
+    branch template or template assignment is invalid, unknown, or
+    cannot be registered, assigned, or unassigned.
+    """
+
+    pass

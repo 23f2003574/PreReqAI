@@ -1,0 +1,29 @@
+{
+  "draft_id": "example-loan-quote",
+  "endpoint": "POST /loan-quote",
+  "summary": "Quotes a fixed-rate loan for an applicant.",
+  "description": "Computes the monthly payment for a fixed-rate loan from the requested amount, term and annual rate, and decides whether the applicant's credit score qualifies.",
+  "parameters": {
+    "amount": {"type": "float", "required": true, "constraints": {"min": 1000, "max": 50000}},
+    "term_months": {"type": "int", "required": false, "default": 12, "constraints": {"min": 6, "max": 60}},
+    "annual_rate": {"type": "float", "required": false, "default": 0.06},
+    "applicant": {
+      "type": "dict",
+      "required": true,
+      "structure": {"type": "object", "properties": {"name": "str", "credit_score": "int"}}
+    },
+    "tags": {"type": "list", "required": false, "structure": {"type": "list", "items": "str"}}
+  },
+  "responses": {
+    "monthly_payment": {"type": "float", "nullable": false},
+    "approved": {"type": "bool", "nullable": false},
+    "applicant_name": {"type": "str", "nullable": false}
+  },
+  "examples": [
+    {
+      "input": {"amount": 12000, "term_months": 12, "annual_rate": 0.06, "applicant": {"name": "Ada", "credit_score": 720}},
+      "output": {"monthly_payment": 1032.8, "approved": true, "applicant_name": "Ada"}
+    }
+  ],
+  "status": "VALIDATED"
+}
