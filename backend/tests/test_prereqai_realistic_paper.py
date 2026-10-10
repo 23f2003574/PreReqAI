@@ -67,3 +67,18 @@ def test_numbered_headings_and_hard_wrapped_concept_names_are_understood():
     paper.paragraphs.append(Paragraph(paragraph_id=1, section_title="x", content="A policy\ngradient and multi-\nhead attention."))
     names = {c.name for c in RuleBasedConceptDetector().detect(paper).concepts}
     assert {"Policy Gradient", "Multi-Head Attention"} <= names
+
+
+def test_text_before_the_first_heading_is_analysed(tmp_path, capsys):
+    path = tmp_path / "paper.pdf"
+    doc = pymupdf.open()
+    doc.new_page().insert_textbox(
+        pymupdf.Rect(72, 72, 540, 760),
+        "Diffusion Learning at Scale\nWe study a diffusion model with score matching and a U-Net.\n\n"
+        "1 Introduction\nDeep learning has used a transformer.\n\nReferences\n[1] A. Paper.\n", fontsize=10)
+    doc.save(path)
+
+    assert main(["prerequisites", "analyze", str(path), "--json"]) == 0
+    report = json.loads(capsys.readouterr().out)["report"]
+    names = {c["name"] if isinstance(c, dict) else c for c in report["concepts"]}
+    assert {"Diffusion Model", "Score Matching", "U-Net", "Transformer"} <= names
