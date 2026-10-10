@@ -103,3 +103,26 @@ async def analyze_prerequisites(
         )
 
     return outcome
+
+
+@router.post("/sessions/{session_id}/studied")
+async def mark_concept_studied(
+
+    session_id: str,
+    concept: str,
+):
+    """Mark a concept from the session's study plan as studied; returns the updated readiness."""
+
+    try:
+
+        progress = platform.mark_concept_studied(session_id, concept)
+
+    except ValueError as error:
+
+        return JSONResponse(status_code=422, content={"status": "invalid_concept", "detail": str(error)})
+
+    if progress is None:
+
+        return JSONResponse(status_code=404, content={"status": "unknown_session", "detail": "No such session."})
+
+    return {"status": "success", "session_id": session_id, **progress}

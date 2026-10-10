@@ -236,6 +236,23 @@ class PreReqAIPlatform:
         )
         return with_diagnostics(outcome, result.timings, result.report)
 
+    def mark_concept_studied(self, session_id: str, concept: str) -> dict | None:
+        """Record that the learner finished studying `concept` in an analysed session and return the
+        refreshed study progress and readiness. None: unknown session; ValueError: concept not in its plan."""
+        from backend.progress import PaperReadinessEngine, StudyProgressTracker
+        from backend.session import session_manager
+
+        session = session_manager.get(session_id)
+        if session is None or session.paper is None:
+            return None
+        if concept not in {item.concept for item in session.paper.study_progress}:
+            raise ValueError(f"'{concept}' is not a concept in this session's study plan")
+        StudyProgressTracker().complete(session.paper, concept)
+        PaperReadinessEngine().evaluate(session.paper)
+        fresh = self.analysis.report_generator.generate(session.paper)
+        session.report["study_progress"], session.report["readiness"] = fresh["study_progress"], fresh["readiness"]
+        return {"study_progress": fresh["study_progress"], "readiness": fresh["readiness"]}
+
 
 # The one platform instance the HTTP application (backend.main) and its routers
 # share, so the user-facing endpoints run the platform's own pipelines.
