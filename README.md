@@ -40,6 +40,12 @@ python -m backend.cli prerequisites analyze my-paper.pdf --max-file-mb 20 --max-
 
 Hitting either limit stops the analysis with exit code 123.
 
+Already know a concept? Leave it out of the study plan with `--known "Linear Algebra"` (repeat the flag for
+several; over HTTP, repeat the `known` form field). A name that is not in the plan is reported as a warning.
+Over HTTP, mark a planned concept as studied with
+`POST /api/prerequisites/sessions/{session_id}/studied?concept=Probability`; `GET /api/session/{session_id}`
+then shows the updated `study_progress` and `readiness`.
+
 Releasing? Follow [docs/release-checklist.md](docs/release-checklist.md). Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (first `pip install -r requirements-dev.txt`, which adds pytest on top of the runtime requirements; run it from the repository root; a few tests, such as the arXiv download, need network access).
 
 ## Prerequisite Explorer
