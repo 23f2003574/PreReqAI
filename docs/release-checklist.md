@@ -41,6 +41,23 @@ exports. Run from the repository root on Python 3.10+. Last verified on Python 3
 - Not verified: an actual published paper (the sandbox has no internet; only generated PDFs were used) and session persistence
   (sessions are in memory by design; progress across runs uses `--studied`).
 
+## Completion baseline (2026-10-10)
+
+Verified: release checks 480 passed; full `python -m pytest backend/tests`: 11,928 passed, 2 skipped, 46 failed (the same 44
+workspace/projection failures plus the 2 network tests listed below, nothing new). Primary path rehearsed above.
+**Not claiming release readiness:** the product has only been run on generated PDFs, so real-paper behaviour is unproven.
+
+| Class | Item |
+|---|---|
+| Blocker before release | Run at least one real published paper (e.g. an arXiv PDF) end to end and fix what it exposes. |
+| Required before January | Decide session persistence (HTTP sessions are lost on restart; CLI progress uses `--studied`). |
+| Required before January | Wire a tutoring model (answers are a placeholder) or document the placeholder prominently. |
+| Required before January | Fix or retire the 44 `test_research_workspace_*` / `test_consumer_projection_*` failures. |
+| Required before January | Section parser knows only a fixed heading list; other headings fold into the previous section. |
+| Optional | Author extraction when PDF metadata is empty (shows "Unknown Author"). |
+| Optional | Concepts outside the registry (e.g. Calculus) have no rules, resources or explanations. |
+| Optional | `--known` / `--studied` for the HTTP analyze form's `studied` parity; unmark a studied concept. |
+
 ## Known open items (not release gates today)
 
 - The 44 non-network failures in the full run (`test_research_workspace_*`, `test_consumer_projection_*`) are real
