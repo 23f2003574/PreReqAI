@@ -31,6 +31,16 @@ exports. Run from the repository root on Python 3.10+. Last verified on Python 3
   (`test_arxiv_resolver`, `test_research_metadata_resolver`) that need internet access.
 - Working tree clean; `cache/` is git-ignored; the only credential-shaped strings are fake test fixtures.
 
+## Rehearsal (2026-10-10, after the day 1-12 product work)
+
+- Fresh virtualenv, `pip install -r requirements-dev.txt`: clean; no undocumented manual step was needed.
+- Release checks (step 3): 245 passed (PreReqAI + endpoint) and 235 passed (API generation); includes `git archive HEAD`.
+- Primary path (step 4): `--version` -> `PreReqAI 0.1.0`; sample analysis exits 0 and prints the plan, readiness line and time.
+  Against a running `uvicorn`: upload with `known=Linear Algebra` -> plan without it; `POST .../sessions/{id}/studied?concept=Probability`
+  -> readiness 50%; `GET /api/session/{id}` shows the same progress; a question is answered; a missing upload is HTTP 422.
+- Not verified: an actual published paper (the sandbox has no internet; only generated PDFs were used) and session persistence
+  (sessions are in memory by design; progress across runs uses `--studied`).
+
 ## Known open items (not release gates today)
 
 - The 44 non-network failures in the full run (`test_research_workspace_*`, `test_consumer_projection_*`) are real
