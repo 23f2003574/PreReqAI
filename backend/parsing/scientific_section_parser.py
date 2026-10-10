@@ -5,7 +5,7 @@ from backend.models import Paper, PaperSection
 
 
 SECTION_PATTERN = re.compile(
-    r"^(Abstract|Introduction|Related Work|Background|Method|Methods|Methodology|Approach|Experiments|Experimental Setup|Results|Discussion|Conclusion|Conclusions|References|Appendix)\s*$",
+    r"^(?:\d+(?:\.\d+)*\.?\s+)?(?:Abstract|Introduction|Related Work|Background|Method|Methods|Methodology|Approach|Experiments|Experimental Setup|Results|Discussion|Conclusion|Conclusions|References|Appendix)\s*$",
     re.IGNORECASE | re.MULTILINE,
 )
 
