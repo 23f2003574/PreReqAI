@@ -43,6 +43,33 @@ class PrerequisiteDetector:
             "Markov Decision Process",
             "Probability",
         ],
+
+        "Self-Attention": [
+            "Attention",
+            "Linear Algebra",
+        ],
+
+        "Diffusion Model": [
+            "Probability",
+            "Neural Networks",
+        ],
+
+        "Forward Process": [
+            "Probability",
+        ],
+
+        "Noise Schedule": [
+            "Probability",
+        ],
+
+        "Score Matching": [
+            "Probability",
+            "Neural Networks",
+        ],
+
+        "U-Net": [
+            "Neural Networks",
+        ],
     }
 
     def detect(
