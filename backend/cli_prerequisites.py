@@ -43,6 +43,9 @@ def add_prerequisites_parser(subparsers):
                               "(in the --json result as `diagnostics`)")
     analyze.add_argument("--known", action="append", default=[], metavar="CONCEPT",
                          help="A concept you already know; it is left out of the study plan (repeat for several)")
+    analyze.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
+                         help="A planned concept you have finished studying; it counts toward readiness "
+                              "(repeat for several; re-run with more as you progress)")
     analyze.add_argument("--max-seconds", type=_finite_number, default=None, dest="max_seconds",
                          help="Stop the analysis once it has run this long (checked between stages; default: no limit)")
     analyze.add_argument("--max-file-mb", type=_finite_number, default=None, dest="max_file_mb",
@@ -80,7 +83,8 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         previous = None
     try:
         outcome = platform.analyze(args.paper, diagnostics=args.diagnose, should_cancel=cancelled.is_set, limits=limits,
-                                    **({'known': args.known} if args.known else {}))
+                                    **({'known': args.known} if args.known else {}),
+                                    **({'studied': args.studied} if args.studied else {}))
     finally:
         if previous is not None:
             signal.signal(signal.SIGINT, previous)
