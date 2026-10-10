@@ -32,6 +32,12 @@ class ScientificSectionParser:
         else:
             sections = []
 
+            front = text[:matches[0].start()].strip()
+
+            if front:  # title and abstract text before the first recognised heading
+
+                sections.append(PaperSection(title="Front Matter", content=front))
+
             for index, match in enumerate(matches):
 
                 start = match.end()
