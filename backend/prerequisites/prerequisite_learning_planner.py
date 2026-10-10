@@ -22,6 +22,7 @@ class PrerequisiteLearningPlanner:
         "Self-Attention": 8,
         "Multi-Head Attention": 9,
         "Transformer": 10,
+        "Markov Decision Process": 11,
     }
 
     STUDY_TIME = {
@@ -36,6 +37,7 @@ class PrerequisiteLearningPlanner:
         "Self-Attention": 6,
         "Multi-Head Attention": 6,
         "Transformer": 10,
+        "Markov Decision Process": 8,
     }
 
     def generate(
