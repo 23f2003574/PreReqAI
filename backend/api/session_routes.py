@@ -58,6 +58,10 @@ def get_session(session_id: str):
 
         "status": session.status,
 
+        "study_progress": session.report.get("study_progress", []),
+
+        "readiness": session.report.get("readiness"),
+
         "active_concept": session.active_concept,
 
         "conversation_history": session.conversation_history,
