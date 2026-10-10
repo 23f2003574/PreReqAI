@@ -225,8 +225,7 @@ class PreReqAIPlatform:
                 "finalization", f"The analysis did not complete: {', '.join(incomplete)}",
                 error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
             ), result.timings)
-        if known:
-            self._personalize(result, known)
+        unmatched = self._personalize(result, known) if known else []
         # The session keeps its own copy of the report: the caller owns the one returned below, and
         # changing it must not change what later session requests (tutoring, lookups) read.
         session = session_manager.create(
@@ -235,6 +234,7 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
+            warnings=[f"--known {name!r} is not in this paper's study plan and was ignored" for name in unmatched],
         )
         return with_diagnostics(outcome, result.timings, result.report)
 
@@ -255,18 +255,23 @@ class PreReqAIPlatform:
         session.report["study_progress"], session.report["readiness"] = fresh["study_progress"], fresh["readiness"]
         return {"study_progress": fresh["study_progress"], "readiness": fresh["readiness"]}
 
-    def _personalize(self, result, known) -> None:
+    def _personalize(self, result, known) -> list:
         """Drop concepts the learner says they already know from the study plan: the plan, time estimate,
         actions, roadmap, progress and readiness are rebuilt without them."""
         wanted = {name.strip().casefold() for name in known if name and name.strip()}
         paper, pipeline = result.paper, self.analysis
+        planned = {step.concept.casefold() for step in paper.learning_plan}
+        unmatched = sorted(name.strip() for name in known if name and name.strip() and name.strip().casefold() not in planned)
         paper.learning_plan = [step for step in paper.learning_plan if step.concept.casefold() not in wanted]
+        for order, step in enumerate(paper.learning_plan, start=1):  # numbering restarts after the skipped steps
+            step.order = order
         pipeline.study_time_estimator.estimate(paper)
         pipeline.study_action_generator.generate(paper)
         pipeline.study_roadmap_generator.generate(paper)
         pipeline.progress_tracker.initialize(paper)
         pipeline.readiness_engine.evaluate(paper)
         result.report.update(pipeline.report_generator.generate(paper))
+        return unmatched
 
 
 # The one platform instance the HTTP application (backend.main) and its routers
