@@ -29,4 +29,5 @@ curl -s -X POST http://127.0.0.1:8000/api/session/$SID/question \
 
 The reply has `status: "success"` and the paper's matching concepts and sections (`supporting_concepts`,
 `supporting_sections`). No tutoring model is configured in this release, so each `answer` is the placeholder
-"A tutoring model has not yet been configured." Sessions are in memory and end with the server process.
+"A tutoring model has not yet been configured.", and the response carries a matching entry in `warnings`. Sessions are in memory
+and end with the server process unless `PREREQAI_SESSION_DIR` is set (see the main README).

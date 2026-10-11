@@ -63,6 +63,9 @@ Upload a research paper to receive:
 
 ## Interactive Learning
 
+> **Current limitation:** no tutoring model is configured in this release. A question returns the paper's matching
+> concepts and sections, but the `answer` text is a placeholder, and the response says so in `warnings`.
+
 After prerequisite analysis, learners can begin an interactive tutoring session.
 
 Features include:
