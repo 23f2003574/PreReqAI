@@ -18,6 +18,10 @@ import argparse
 import json
 import sys
 
+from backend.python_version import check_python_version
+
+check_python_version()  # before the heavy imports below, which fail obscurely on an old interpreter
+
 from backend.agent_task_recovery_execution_precondition_snapshots import (
     HEALTH_HEALTHY,
     IMPACT_LIFECYCLE_CLEAN,

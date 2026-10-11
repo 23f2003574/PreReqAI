@@ -1,3 +1,7 @@
+from backend.python_version import check_python_version
+
+check_python_version()  # before the imports below, which fail obscurely on an old interpreter
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 

@@ -109,5 +109,5 @@ Evidence at this commit: release checks (PreReqAI, endpoint, API generation, gen
 | Release blocker | Run a real published paper end to end (CLI and HTTP) and fix what it exposes. |
 | Required before January | Tutoring model (placeholder is disclosed; a model-backed tutor needs a provider decision). |
 | Required before January | The 44 workspace/projection test failures (scoped in the triage above). |
-| Required before January | Python versions other than 3.13 (only 3.13 has been verified). |
+| Required before January | Python versions: 3.11 verified (quickstart + 303 PreReqAI tests, 2026-10-11); 3.12 and 3.10 not yet run. Older interpreters are refused with a clear message; all sources parse under the 3.10 grammar. |
 | Optional | unnumbered-heading detection, unmark a studied concept, OCR, multi-line authors, concepts outside the registry. |
