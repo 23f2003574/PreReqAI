@@ -160,4 +160,14 @@ def ask_question(
     # Same success envelope as analysis (status/feature/stage/warnings), so a
     # client checks `status` the same way for every PreReqAI response; the
     # answer's own keys (question, responses, ...) stay at the top level.
-    return success_body("Interactive Learning", "answered", **result)
+    placeholder = any(
+        "tutoring model has not yet been configured" in str(getattr(response, "answer", ""))
+        for response in result.get("responses", [])
+    )
+
+    return success_body(
+        "Interactive Learning", "answered",
+        warnings=["No tutoring model is configured in this release: the answer is a placeholder; "
+                  "supporting_concepts and supporting_sections show where the paper covers the question."] if placeholder else (),
+        **result,
+    )
