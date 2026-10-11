@@ -94,3 +94,20 @@ Order of work, most consequential first. Everything the product's documented wor
    out of the `backend.session` import path and out of the release test target.
 4. **Optional, ordered by user impact:** session-file cleanup/expiry; unnumbered-heading detection; unmark a studied concept; OCR for scanned PDFs;
    resources/explanations for concepts outside the registry.
+
+## Release readiness decision (2026-10-11)
+
+**Status: NOT release-ready.** One blocker remains and it is unverified work, not a failing test: PreReqAI has never been run on a real
+published paper. Passing tests alone do not change that, because every test input is a generated PDF or the bundled sample.
+
+Evidence at this commit: release checks (PreReqAI, endpoint, API generation, generated project) 492 passed; full `python -m pytest backend/tests`
+11,940 passed, 2 skipped, 46 failed (the 44 workspace/projection failures plus the 2 network tests, nothing new); the primary path was run from a
+`git archive` in a clean virtualenv (CLI, real `uvicorn` + `curl`, session restart with `PREREQAI_SESSION_DIR`) -- see the sections above.
+
+| Class | Item |
+|---|---|
+| Release blocker | Run a real published paper end to end (CLI and HTTP) and fix what it exposes. |
+| Required before January | Tutoring model (placeholder is disclosed; a model-backed tutor needs a provider decision). |
+| Required before January | The 44 workspace/projection test failures (scoped in the triage above). |
+| Required before January | Python versions other than 3.13 (only 3.13 has been verified). |
+| Optional | Session-file cleanup, unnumbered-heading detection, unmark a studied concept, OCR, multi-line authors, concepts outside the registry. |
