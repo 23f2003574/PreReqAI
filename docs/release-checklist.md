@@ -54,7 +54,6 @@ workspace/projection failures plus the 2 network tests listed below, nothing new
 | Required before January | Wire a tutoring model (answers are a placeholder) or document the placeholder prominently. |
 | Required before January | Fix or retire the 44 `test_research_workspace_*` / `test_consumer_projection_*` failures. |
 | Required before January | Section parser: numbered title-case headings now split; unnumbered or all-caps headings outside the fixed list still fold into the previous section. |
-| Optional | Author extraction when PDF metadata is empty (shows "Unknown Author"). |
 | Optional | Concepts outside the registry (e.g. Calculus) have no rules, resources or explanations. |
 | Optional | Unmark a studied concept (HTTP analyze form now accepts `studied`, matching the CLI). |
 
@@ -66,3 +65,4 @@ workspace/projection failures plus the 2 network tests listed below, nothing new
 - `test_arxiv_resolver.py` needs network access.
 - Tutor answers are a placeholder ("A tutoring model has not yet been configured.") until a model is wired in.
 - A PDF with no extractable text analyses "successfully" with zero concepts.
+| Optional | Author extraction now reads a plain name-list line on page one; multi-line, affiliation-interleaved or single-name author blocks still show "Unknown Author". |
