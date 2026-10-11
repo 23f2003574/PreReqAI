@@ -178,3 +178,24 @@ class SessionManager:
             self.sessions[session_id] = session
 
         return session
+
+    def delete(self, session_id: str) -> bool:
+        """Forget a session: drop it from memory and delete its saved file. False when no such session existed."""
+
+        known = self.get(session_id) is not None
+
+        self.sessions.pop(session_id, None)
+
+        path = self._path(session_id)
+
+        if path is not None:
+
+            try:
+
+                path.unlink(missing_ok=True)
+
+            except OSError:
+
+                pass
+
+        return known

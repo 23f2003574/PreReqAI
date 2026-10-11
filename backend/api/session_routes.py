@@ -80,6 +80,22 @@ def get_session(session_id: str):
     }
 
 
+@router.delete("/{session_id}")
+def delete_session(session_id: str):
+    """Delete a session and its saved file (when PREREQAI_SESSION_DIR is set); its id is unknown afterwards."""
+
+    if not session_manager.delete(session_id):
+
+        return failure_response(
+            404,
+            "session_lookup",
+            "Session not found",
+            hint="Run an analysis first and use the session_id it returns.",
+        )
+
+    return {"status": "success", "session_id": session_id, "deleted": True}
+
+
 @router.post("/{session_id}/question")
 def ask_question(
 
