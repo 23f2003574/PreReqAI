@@ -43,7 +43,7 @@ Hitting either limit stops the analysis with exit code 123.
 Already know a concept? Leave it out of the study plan with `--known "Linear Algebra"` (repeat the flag for
 several; over HTTP, repeat the `known` form field). A name that is not in the plan is reported as a warning.
 To track progress from the command line, re-run the analysis with `--studied Probability` (repeatable) for the
-concepts you have finished; they stay in the plan and count toward readiness. Over HTTP, mark a planned concept as studied with
+concepts you have finished; they stay in the plan and count toward readiness. Over HTTP, send the `studied` form field (repeatable) with the upload, or mark a planned concept as studied later with
 `POST /api/prerequisites/sessions/{session_id}/studied?concept=Probability`; `GET /api/session/{session_id}`
 then shows the updated `study_progress` and `readiness`.
 
