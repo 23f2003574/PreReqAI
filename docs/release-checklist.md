@@ -52,7 +52,7 @@ workspace/projection failures plus the 2 network tests listed below, nothing new
 | Blocker before release | Run at least one real published paper (e.g. an arXiv PDF) end to end and fix what it exposes. |
 | Done | Session persistence: opt-in `PREREQAI_SESSION_DIR` (pickle files; single-process, no locking or expiry/cleanup). Default stays in-memory. Verified with a real `uvicorn` stop/start in `test_prereqai_restart_acceptance.py`. |
 | Done (documented) | Tutor answers are a placeholder: stated in the README, and every question response carries a warning. Wiring a real model remains open and needs a provider decision. |
-| Required before January | Fix or retire the 44 `test_research_workspace_*` / `test_consumer_projection_*` failures. |
+| Required before January | The 44 workspace/projection test failures: scoped in "January scope triage" below. |
 | Required before January | Section parser: numbered title-case headings now split; unnumbered or all-caps headings outside the fixed list still fold into the previous section. |
 | Optional | Concepts outside the registry (e.g. Calculus) have no rules, resources or explanations. |
 | Optional | Unmark a studied concept (HTTP analyze form now accepts `studied`, matching the CLI). |
@@ -74,3 +74,23 @@ the CLI analysis with `--known "Linear Algebra"` exits 0 and plans Probability t
 documented `curl` upload (with `known`), marked `probability` studied (case-insensitive), answered a question (placeholder warning
 present) and, with `PREREQAI_SESSION_DIR` set, left one session file. `starlette.testclient` needs the dev requirement `httpx2`, as documented.
 Still unverified: a real published paper, and Python versions other than 3.13.
+
+## January scope triage (2026-10-11)
+
+Order of work, most consequential first. Everything the product's documented workflows need is done and tested except item 1.
+
+1. **Real published paper (blocker, needs input).** Run an arXiv PDF end to end (CLI and HTTP), then fix what it exposes. Likely findings:
+   headings outside the numbered/fixed list, multi-line author blocks, two-column text order. Dependency: a PDF in the repo or network access;
+   the sandbox cannot reach arXiv (proxy 403). Next step: add the PDF under `examples/` (if its licence allows) or run it locally and send the report.
+2. **Tutoring model (needs a decision).** The tutor is the rule-based placeholder and is disclosed in the README and every answer's `warnings`.
+   Dependency: a provider choice and an API key. Next step: implement a `Tutor` that builds prompts with the existing `TutorPromptBuilder`
+   (`backend/tutor/tutor_prompt_builder.py`), selected when a key is configured; keep the placeholder as the offline default.
+3. **44 failing tests in `test_research_workspace_*` (30) and `test_consumer_projection_*` (20 incl. 13 fingerprinting) — scoped, not in the release path.**
+   Counts by file: fingerprinting 13, actions 12, execution_receipt 5, bootstrap 3, projection_context 3, formatter 2, diagnostics 2, and one each in budget,
+   freshness, gateway, readiness. Causes seen: tests mutating frozen dataclasses (`enabled`), a descriptor without `.name`, missing helper
+   `ResearchWorkspaceConsumerProjectionDiagnosticsStageHelper`, lambdas not accepting `value=`, status `degraded` where `succeeded` is expected.
+   They are the unused research-workspace subsystem, but `backend.session` imports it, so the product loads ~1,260 modules (about 1.3 s at start-up).
+   Next step: decide per file whether the test or the code is wrong (start with `fingerprinting`, one `_make_policy` fix covers 11), or move the subsystem
+   out of the `backend.session` import path and out of the release test target.
+4. **Optional, ordered by user impact:** session-file cleanup/expiry; unnumbered-heading detection; unmark a studied concept; OCR for scanned PDFs;
+   resources/explanations for concepts outside the registry.
