@@ -4,9 +4,13 @@ from backend.ingestion import RawDocument
 from backend.models import Paper, PaperSection
 
 
+# An optional section number ("2", "3.1.", "IV.", "A.1") in front of a heading.
+_NUMBER = r"(?:\d+(?:\.\d+)*\.?|[IVX]+\.|[A-Z](?:\.\d+)+\.?|[A-Z]\.?)[ \t]+"
 _KNOWN = (
-    r"(?:\d+(?:\.\d+)*\.?\s+)?(?:Abstract|Introduction|Related Work|Background|Method|Methods|Methodology|Approach|"
-    r"Experiments|Experimental Setup|Results|Discussion|Conclusion|Conclusions|References|Appendix)"
+    rf"(?:{_NUMBER})?(?:Abstract|Introduction|Related Works?|Background|Preliminaries|Problem (?:Statement|Formulation|Setup)|"
+    r"Method|Methods|Methodology|Approach|Model(?: Architecture)?|Overview|Experiments|Experimental (?:Setup|Results)|Evaluation|"
+    r"Results(?: and Discussion)?|Analysis|Ablations?(?: Study| Studies)?|Discussion|Limitations|Broader Impacts?|Future Work|"
+    r"Conclusions?(?: and Future Work)?|Acknowledge?ments?|References|Appendix|Appendices|Supplementary Material)"
 )
 # A numbered, title-cased line such as "3.2 Scaled Dot-Product Attention": at most 8 words, no digits or sentence punctuation.
 _WORD = r"(?:[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"
