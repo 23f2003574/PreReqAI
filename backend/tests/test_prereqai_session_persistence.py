@@ -46,3 +46,15 @@ def test_without_the_variable_nothing_is_written(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     session_manager.save(session_manager.create("t"))
     assert list(tmp_path.iterdir()) == []
+
+
+def test_studied_matches_the_concept_name_case_insensitively_and_lists_the_plan_on_a_miss():
+    client = TestClient(app)
+    with open("examples/prerequisites/sample-paper.pdf", "rb") as handle:
+        sid = client.post("/api/prerequisites/analyze", files={"paper": ("p.pdf", handle, "application/pdf")}).json()["session_id"]
+
+    done = client.post(f"/api/prerequisites/sessions/{sid}/studied", params={"concept": " probability "})
+    assert done.status_code == 200 and done.json()["readiness"]["completed_concepts"] == 1
+
+    miss = client.post(f"/api/prerequisites/sessions/{sid}/studied", params={"concept": "Calculus"})
+    assert miss.status_code == 422 and "Probability" in miss.json()["detail"]
