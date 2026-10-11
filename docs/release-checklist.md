@@ -50,7 +50,7 @@ workspace/projection failures plus the 2 network tests listed below, nothing new
 | Class | Item |
 |---|---|
 | Blocker before release | Run at least one real published paper (e.g. an arXiv PDF) end to end and fix what it exposes. |
-| Done | Session persistence: opt-in `PREREQAI_SESSION_DIR` (pickle files; single-process, no locking or expiry/cleanup). Default stays in-memory. |
+| Done | Session persistence: opt-in `PREREQAI_SESSION_DIR` (pickle files; single-process, no locking or expiry/cleanup). Default stays in-memory. Verified with a real `uvicorn` stop/start in `test_prereqai_restart_acceptance.py`. |
 | Done (documented) | Tutor answers are a placeholder: stated in the README, and every question response carries a warning. Wiring a real model remains open and needs a provider decision. |
 | Required before January | Fix or retire the 44 `test_research_workspace_*` / `test_consumer_projection_*` failures. |
 | Required before January | Section parser: numbered title-case headings now split; unnumbered or all-caps headings outside the fixed list still fold into the previous section. |
