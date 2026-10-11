@@ -1,5 +1,6 @@
 import os
 import pickle
+import time
 from pathlib import Path
 from uuid import UUID
 
@@ -14,8 +15,12 @@ class SessionManager:
     """
     Manages active learning sessions. Sessions live in memory; when the PREREQAI_SESSION_DIR environment
     variable names a directory they are also saved there (one local file per session, written by this
-    process only) so a restarted server still knows them.
+    process only) so a restarted server still knows them. Saved sessions expire after
+    PREREQAI_SESSION_MAX_AGE_DAYS days without activity (default 30; 0 keeps them forever): expired files are
+    deleted when a new session is created and are treated as unknown if requested first.
     """
+
+    DEFAULT_MAX_AGE_DAYS = 30.0
 
     def __init__(self):
 
@@ -35,6 +40,64 @@ class SessionManager:
             valid = False
 
         return Path(directory) / f"{session_id}.session" if directory and valid else None
+
+    @classmethod
+    def _max_age_seconds(cls) -> float | None:
+        """None: never expire. An unset, unreadable or negative setting falls back to the default."""
+
+        try:
+
+            days = float(os.environ.get("PREREQAI_SESSION_MAX_AGE_DAYS", cls.DEFAULT_MAX_AGE_DAYS))
+
+        except ValueError:
+
+            days = cls.DEFAULT_MAX_AGE_DAYS
+
+        if days != days or days < 0:  # NaN or negative
+
+            days = cls.DEFAULT_MAX_AGE_DAYS
+
+        return days * 86400 if days > 0 else None
+
+    @classmethod
+    def _expired(cls, path: Path) -> bool:
+
+        max_age = cls._max_age_seconds()
+
+        try:
+
+            return max_age is not None and time.time() - path.stat().st_mtime > max_age
+
+        except OSError:
+
+            return False
+
+    def purge_expired(self) -> int:
+        """Delete saved session files (and leftover temp files) past the expiry; returns how many were removed."""
+
+        directory = os.environ.get("PREREQAI_SESSION_DIR")
+
+        if not directory or not Path(directory).is_dir():
+
+            return 0
+
+        removed = 0
+
+        for path in [*Path(directory).glob("*.session"), *Path(directory).glob("*.tmp")]:
+
+            if self._expired(path):
+
+                try:
+
+                    path.unlink()
+
+                    removed += 1
+
+                except OSError:
+
+                    pass
+
+        return removed
 
     def save(self, session: LearningSession) -> None:
         """Write the session to PREREQAI_SESSION_DIR (no-op when unset or the write fails: memory stays authoritative)."""
@@ -79,6 +142,8 @@ class SessionManager:
             session.session_id
         ] = session
 
+        self.purge_expired()
+
         self.save(session)
 
         return session
@@ -95,6 +160,12 @@ class SessionManager:
         path = self._path(session_id) if session is None else None
 
         if path is not None and path.is_file():
+
+            if self._expired(path):  # past its expiry: gone, even if no new session has triggered a purge yet
+
+                path.unlink(missing_ok=True)
+
+                return None
 
             try:
 

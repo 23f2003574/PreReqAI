@@ -92,7 +92,7 @@ Order of work, most consequential first. Everything the product's documented wor
    They are the unused research-workspace subsystem, but `backend.session` imports it, so the product loads ~1,260 modules (about 1.3 s at start-up).
    Next step: decide per file whether the test or the code is wrong (start with `fingerprinting`, one `_make_policy` fix covers 11), or move the subsystem
    out of the `backend.session` import path and out of the release test target.
-4. **Optional, ordered by user impact:** session-file cleanup/expiry; unnumbered-heading detection; unmark a studied concept; OCR for scanned PDFs;
+4. **Optional, ordered by user impact:** unnumbered-heading detection; unmark a studied concept; OCR for scanned PDFs;
    resources/explanations for concepts outside the registry.
 
 ## Release readiness decision (2026-10-11)
@@ -110,4 +110,4 @@ Evidence at this commit: release checks (PreReqAI, endpoint, API generation, gen
 | Required before January | Tutoring model (placeholder is disclosed; a model-backed tutor needs a provider decision). |
 | Required before January | The 44 workspace/projection test failures (scoped in the triage above). |
 | Required before January | Python versions other than 3.13 (only 3.13 has been verified). |
-| Optional | Session-file cleanup, unnumbered-heading detection, unmark a studied concept, OCR, multi-line authors, concepts outside the registry. |
+| Optional | unnumbered-heading detection, unmark a studied concept, OCR, multi-line authors, concepts outside the registry. |
