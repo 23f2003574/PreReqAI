@@ -16,6 +16,15 @@ class ConceptRelationshipBuilder:
 
     RELATIONSHIPS = {
 
+        "Transformer": [
+            "Attention",
+            "Multi-Head Attention",
+            "Positional Encoding",
+            "Layer Normalization",
+            "Residual Connection",
+            "Feed Forward Network",
+        ],
+
         "Multi-Head Attention": [
             "Attention",
             "Self-Attention",
@@ -25,25 +34,61 @@ class ConceptRelationshipBuilder:
             "Attention",
         ],
 
+        "Cross-Attention": [
+            "Attention",
+        ],
+
         "Attention": [
             "Softmax",
+        ],
+
+        "Graph Neural Network": [
+            "Message Passing",
         ],
 
         "Graph Attention Network": [
             "Attention",
             "Graph Neural Network",
+            "Message Passing",
+        ],
+
+        "Graph Convolution": [
+            "Graph Neural Network",
+            "Message Passing",
         ],
 
         "Policy Gradient": [
             "Markov Decision Process",
         ],
 
+        "Value Function": [
+            "Markov Decision Process",
+        ],
+
         "Bellman Equation": [
+            "Value Function",
+            "Markov Decision Process",
+        ],
+
+        "Q-Learning": [
+            "Bellman Equation",
+            "Value Function",
+            "Markov Decision Process",
+        ],
+
+        "Actor-Critic": [
+            "Policy Gradient",
             "Value Function",
         ],
 
-        "Graph Convolution": [
-            "Graph Neural Network",
+        "Diffusion Model": [
+            "Forward Process",
+            "Reverse Process",
+            "Noise Schedule",
+        ],
+
+        "Reverse Process": [
+            "Forward Process",
         ],
     }
 
