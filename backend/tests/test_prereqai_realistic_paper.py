@@ -112,3 +112,23 @@ def test_http_analyze_accepts_studied_concepts_like_the_cli(tmp_path):
     assert [s["concept"] for s in body["report"]["learning_plan"]] == plan  # studied stays in the plan
     assert body["report"]["readiness"]["completed_concepts"] == 1
     assert any("Not A Concept" in w for w in body["warnings"])
+
+
+def test_author_is_read_from_the_first_page_when_pdf_metadata_is_empty(tmp_path, capsys):
+    def make(path, lines):
+        doc = pymupdf.open()
+        doc.new_page().insert_textbox(pymupdf.Rect(72, 72, 540, 400), "\n".join(lines), fontsize=10)
+        doc.save(path)
+
+    def author(path):
+        assert main(["prerequisites", "analyze", str(path), "--json"]) == 0
+        return json.loads(capsys.readouterr().out)["report"]["paper"]["author"]
+
+    with_names = tmp_path / "a.pdf"
+    make(with_names, ["Attention Models", "Ashish Vaswani*, Noam Shazeer and Niki Parmar", "Google Brain",
+                      "Abstract", "We study a transformer."])
+    assert author(with_names) == "Ashish Vaswani, Noam Shazeer, Niki Parmar"
+
+    without = tmp_path / "b.pdf"
+    make(without, ["Attention Models", "Google Brain", "Abstract", "We study a transformer."])
+    assert author(without) == "Unknown Author"
