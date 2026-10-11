@@ -48,3 +48,20 @@ class StudyProgressTracker:
                 progress.progress_percent = 100
 
         return paper
+
+    def reset(
+        self,
+        paper: Paper,
+        concept: str,
+    ) -> Paper:
+        """Undo `complete`: the concept goes back to not studied."""
+
+        for progress in paper.study_progress:
+
+            if progress.concept == concept:
+
+                progress.completed = False
+
+                progress.progress_percent = 0
+
+        return paper

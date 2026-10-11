@@ -112,17 +112,13 @@ async def analyze_prerequisites(
     return outcome
 
 
-@router.post("/sessions/{session_id}/studied")
-async def mark_concept_studied(
+def _update_studied(session_id: str, concept: str, studied: bool):
 
-    session_id: str,
-    concept: str,
-):
-    """Mark a concept from the session's study plan as studied; returns the updated readiness."""
+    action = platform.mark_concept_studied if studied else platform.unmark_concept_studied
 
     try:
 
-        progress = platform.mark_concept_studied(session_id, concept)
+        progress = action(session_id, concept)
 
     except ValueError as error:
 
@@ -133,3 +129,25 @@ async def mark_concept_studied(
         return JSONResponse(status_code=404, content={"status": "unknown_session", "detail": "No such session."})
 
     return {"status": "success", "session_id": session_id, **progress}
+
+
+@router.post("/sessions/{session_id}/studied")
+async def mark_concept_studied(
+
+    session_id: str,
+    concept: str,
+):
+    """Mark a concept from the session's study plan as studied; returns the updated readiness."""
+
+    return _update_studied(session_id, concept, True)
+
+
+@router.delete("/sessions/{session_id}/studied")
+async def unmark_concept_studied(
+
+    session_id: str,
+    concept: str,
+):
+    """Undo a mistaken mark: the concept goes back to not studied and readiness drops accordingly."""
+
+    return _update_studied(session_id, concept, False)

@@ -254,7 +254,15 @@ class PreReqAIPlatform:
 
     def mark_concept_studied(self, session_id: str, concept: str) -> dict | None:
         """Record that the learner finished studying `concept` in an analysed session and return the
-        refreshed study progress and readiness. None: unknown session; ValueError: concept not in its plan."""
+        refreshed study progress and readiness. None: unknown session; ValueError: concept not in its plan.
+        The concept name is matched ignoring case and surrounding spaces."""
+        return self._set_concept_studied(session_id, concept, True)
+
+    def unmark_concept_studied(self, session_id: str, concept: str) -> dict | None:
+        """Undo a mistaken `mark_concept_studied`; same return values and errors."""
+        return self._set_concept_studied(session_id, concept, False)
+
+    def _set_concept_studied(self, session_id: str, concept: str, studied: bool) -> dict | None:
         from backend.progress import PaperReadinessEngine, StudyProgressTracker
         from backend.session import session_manager
 
@@ -265,7 +273,8 @@ class PreReqAIPlatform:
         if concept.strip().casefold() not in planned:  # matched like --studied and question topics: case-insensitively
             raise ValueError(f"'{concept}' is not a concept in this session's study plan ({', '.join(planned.values()) or 'it is empty'})")
         concept = planned[concept.strip().casefold()]
-        StudyProgressTracker().complete(session.paper, concept)
+        tracker = StudyProgressTracker()
+        (tracker.complete if studied else tracker.reset)(session.paper, concept)
         PaperReadinessEngine().evaluate(session.paper)
         fresh = self.analysis.report_generator.generate(session.paper)
         session.report["study_progress"], session.report["readiness"] = fresh["study_progress"], fresh["readiness"]
