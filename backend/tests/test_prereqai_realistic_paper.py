@@ -146,3 +146,15 @@ def test_a_paper_without_extractable_text_warns_instead_of_claiming_readiness(tm
     with path.open("rb") as handle:
         body = TestClient(app).post("/api/prerequisites/analyze", files={"paper": ("b.pdf", handle, "application/pdf")}).json()
     assert body["status"] == "success" and any("no extractable text" in w for w in body["warnings"])
+
+
+def test_a_known_concept_disappears_from_resources_and_missing_prerequisites_too(capsys):
+    sample = "examples/prerequisites/sample-paper.pdf"
+    assert main(["prerequisites", "analyze", sample, "--json", "--known", "Linear Algebra"]) == 0
+    report = json.loads(capsys.readouterr().out)["report"]
+
+    assert "Linear Algebra" not in [s["concept"] for s in report["learning_plan"]]
+    assert "Linear Algebra" not in [r["concept"] for r in report["learning_resources"]]
+    missing = {m["concept"]: m for m in report["missing_prerequisites"]}
+    assert missing["Linear Algebra"]["satisfied"] is True and "known" in missing["Linear Algebra"]["reason"]
+    assert missing["Probability"]["satisfied"] is False and report["learning_resources"]  # the rest is untouched
