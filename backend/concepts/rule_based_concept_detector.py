@@ -12,7 +12,8 @@ class RuleBasedConceptDetector:
     """
     Detects known concepts using exact,
     case-insensitive matching against the
-    Concept Registry.
+    Concept Registry, counting a concept's
+    whole-word aliases (GNN, DDPM, MDP...) too.
     """
 
     def __init__(self):
@@ -38,6 +39,9 @@ class RuleBasedConceptDetector:
 
             occurrences = full_text.count(
                 concept.name.lower()
+            ) + sum(
+                len(re.findall(rf"\b{re.escape(alias.lower())}\b", full_text))
+                for alias in concept.aliases
             )
 
             if occurrences == 0:

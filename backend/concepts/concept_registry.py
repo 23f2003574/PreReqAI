@@ -6,6 +6,8 @@ class Concept:
 
     name: str
     domain: str
+    # Other spellings papers use for the same concept (acronyms, hyphen variants); matched as whole words.
+    aliases: tuple = ()
 
 
 class ConceptRegistry:
@@ -25,18 +27,18 @@ class ConceptRegistry:
 
             Concept("Transformer", "transformers"),
             Concept("Attention", "transformers"),
-            Concept("Self-Attention", "transformers"),
+            Concept("Self-Attention", "transformers", aliases=('self attention',)),
             Concept("Cross-Attention", "transformers"),
-            Concept("Multi-Head Attention", "transformers"),
-            Concept("Positional Encoding", "transformers"),
-            Concept("Layer Normalization", "transformers"),
-            Concept("Residual Connection", "transformers"),
-            Concept("Feed Forward Network", "transformers"),
+            Concept("Multi-Head Attention", "transformers", aliases=('MHA', 'multi head attention')),
+            Concept("Positional Encoding", "transformers", aliases=('position encoding', 'positional embedding')),
+            Concept("Layer Normalization", "transformers", aliases=('LayerNorm', 'layer norm')),
+            Concept("Residual Connection", "transformers", aliases=('skip connection', 'residual link')),
+            Concept("Feed Forward Network", "transformers", aliases=('FFN', 'feed-forward network')),
             Concept("Softmax", "transformers"),
 
             # Diffusion
 
-            Concept("Diffusion Model", "diffusion"),
+            Concept("Diffusion Model", "diffusion", aliases=('DDPM', 'denoising diffusion', 'diffusion probabilistic model')),
             Concept("Forward Process", "diffusion"),
             Concept("Reverse Process", "diffusion"),
             Concept("Noise Schedule", "diffusion"),
@@ -45,19 +47,19 @@ class ConceptRegistry:
 
             # Reinforcement Learning
 
-            Concept("Markov Decision Process", "rl"),
+            Concept("Markov Decision Process", "rl", aliases=('MDP', 'MDPs')),
             Concept("Bellman Equation", "rl"),
             Concept("Policy Gradient", "rl"),
             Concept("Value Function", "rl"),
-            Concept("Q-Learning", "rl"),
-            Concept("Actor-Critic", "rl"),
+            Concept("Q-Learning", "rl", aliases=('Q learning',)),
+            Concept("Actor-Critic", "rl", aliases=('actor critic',)),
 
             # Graph ML
 
-            Concept("Graph Neural Network", "graph_ml"),
+            Concept("Graph Neural Network", "graph_ml", aliases=('GNN', 'GNNs')),
             Concept("Message Passing", "graph_ml"),
-            Concept("Graph Convolution", "graph_ml"),
-            Concept("Graph Attention Network", "graph_ml"),
+            Concept("Graph Convolution", "graph_ml", aliases=('GCN', 'GCNs', 'graph convolutional')),
+            Concept("Graph Attention Network", "graph_ml", aliases=('GAT', 'GATs')),
             Concept("Node Embedding", "graph_ml"),
         ]
 
