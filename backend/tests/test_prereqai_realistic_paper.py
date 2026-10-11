@@ -158,3 +158,17 @@ def test_a_known_concept_disappears_from_resources_and_missing_prerequisites_too
     missing = {m["concept"]: m for m in report["missing_prerequisites"]}
     assert missing["Linear Algebra"]["satisfied"] is True and "known" in missing["Linear Algebra"]["reason"]
     assert missing["Probability"]["satisfied"] is False and report["learning_resources"]  # the rest is untouched
+
+
+def test_a_password_protected_paper_is_reported_as_such(tmp_path, capsys):
+    path = tmp_path / "locked.pdf"
+    doc = pymupdf.open()
+    doc.new_page().insert_text((72, 72), "A transformer with attention.")
+    doc.save(path, encryption=pymupdf.PDF_ENCRYPT_AES_256, user_pw="pw", owner_pw="pw")
+
+    assert main(["prerequisites", "analyze", str(path)]) != 0
+    assert "password-protected" in capsys.readouterr().err
+
+    with path.open("rb") as handle:
+        response = TestClient(app).post("/api/prerequisites/analyze", files={"paper": ("l.pdf", handle, "application/pdf")})
+    assert response.status_code == 400 and "password-protected" in response.json()["detail"]

@@ -110,6 +110,11 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
             "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
             hint="The paper must be a PDF file (a path ending in .pdf), not another file type or a directory.",
         )
+    if "encrypted" in str(exc).casefold():  # a password-protected PDF: say so instead of a bare library message
+        return failure_body(
+            "analysis", "The paper is a password-protected PDF and cannot be read.", error=exc,
+            hint="Remove the password (for example, print the PDF to a new file) and upload that copy.",
+        )
     return failure_body(
         "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
         hint="Upload a text-based PDF research paper.",
