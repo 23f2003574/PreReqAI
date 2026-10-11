@@ -15,13 +15,17 @@ class KnowledgeGraphTraversalEngine:
         self,
         graph: KnowledgeGraph,
         node_id: str,
+        relationships: frozenset | None = None,
     ) -> list[str]:
+        """Targets of the edges leaving `node_id`; only edges of the given relationship types when `relationships` is set."""
 
         neighbors = []
 
         for edge in graph.edges:
 
-            if edge.source == node_id:
+            if edge.source == node_id and (
+                relationships is None or edge.relationship in relationships
+            ):
 
                 neighbors.append(edge.target)
 
@@ -31,6 +35,7 @@ class KnowledgeGraphTraversalEngine:
         self,
         graph: KnowledgeGraph,
         start_node: str,
+        relationships: frozenset | None = None,
     ) -> list[str]:
 
         visited = set()
@@ -53,6 +58,7 @@ class KnowledgeGraphTraversalEngine:
             for neighbor in self.neighbors(
                 graph,
                 current,
+                relationships,
             ):
 
                 if neighbor not in visited:

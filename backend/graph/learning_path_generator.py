@@ -13,6 +13,10 @@ class LearningPathGenerator:
     learning paths from the Knowledge Graph.
     """
 
+    # Only real prerequisites count: a "co_occurs_with" edge means two concepts share a paragraph, which
+    # would otherwise put unrelated concepts (a Transformer's path listing Q-Learning) into the path.
+    PATH_RELATIONSHIPS = frozenset({"depends_on"})
+
     def __init__(self):
 
         self.traversal = (
@@ -34,6 +38,7 @@ class LearningPathGenerator:
         traversal = self.traversal.breadth_first_search(
             graph,
             start_node,
+            self.PATH_RELATIONSHIPS,
         )
 
         return [
