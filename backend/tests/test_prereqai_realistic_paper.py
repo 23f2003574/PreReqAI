@@ -82,3 +82,16 @@ def test_text_before_the_first_heading_is_analysed(tmp_path, capsys):
     report = json.loads(capsys.readouterr().out)["report"]
     names = {c["name"] if isinstance(c, dict) else c for c in report["concepts"]}
     assert {"Diffusion Model", "Score Matching", "U-Net", "Transformer"} <= names
+
+
+def test_arbitrary_numbered_headings_split_sections_but_prose_and_tables_do_not():
+    from backend.ingestion import RawDocument
+    from backend.ingestion.pdf_ingestion_engine import RawPage
+    from backend.parsing.scientific_section_parser import ScientificSectionParser
+
+    text = ("Title\n1 Introduction\nWe begin.\n3 Model Architecture\nThe encoder.\n3.2 Scaled Dot-Product Attention\n"
+            "Softmax of scores.\n3 layers were used in the encoder.\n2 0.5 0.7\n4 Training Details\nAdam.\nReferences\n[1] A.\n")
+    doc = RawDocument(source_path="p.pdf", metadata=None, pages=[RawPage(page_number=1, text=text)])
+    titles = [s.title for s in ScientificSectionParser().parse(doc).sections]
+    assert titles == ["Front Matter", "1 Introduction", "3 Model Architecture", "3.2 Scaled Dot-Product Attention",
+                      "4 Training Details", "References"]

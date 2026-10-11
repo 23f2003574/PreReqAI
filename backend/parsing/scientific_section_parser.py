@@ -4,10 +4,15 @@ from backend.ingestion import RawDocument
 from backend.models import Paper, PaperSection
 
 
-SECTION_PATTERN = re.compile(
-    r"^(?:\d+(?:\.\d+)*\.?\s+)?(?:Abstract|Introduction|Related Work|Background|Method|Methods|Methodology|Approach|Experiments|Experimental Setup|Results|Discussion|Conclusion|Conclusions|References|Appendix)\s*$",
-    re.IGNORECASE | re.MULTILINE,
+_KNOWN = (
+    r"(?:\d+(?:\.\d+)*\.?\s+)?(?:Abstract|Introduction|Related Work|Background|Method|Methods|Methodology|Approach|"
+    r"Experiments|Experimental Setup|Results|Discussion|Conclusion|Conclusions|References|Appendix)"
 )
+# A numbered, title-cased line such as "3.2 Scaled Dot-Product Attention": at most 8 words, no digits or sentence punctuation.
+_WORD = r"(?:[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"
+_NUMBERED = rf"\d+(?:\.\d+)*\.?[ \t]+[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{0,7}}"
+
+SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN})|{_NUMBERED})[ \t]*$", re.MULTILINE)
 
 
 class ScientificSectionParser:
