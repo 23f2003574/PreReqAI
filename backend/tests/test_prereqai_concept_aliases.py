@@ -32,3 +32,13 @@ def test_aliases_match_whole_words_only_and_never_double_count_the_full_name():
     assert "Graph Neural Network" in found and found["Graph Neural Network"] == 1
     assert found["Layer Normalization"] == 1
     assert "Graph Attention Network" not in found and "Markov Decision Process" not in found
+
+
+def test_a_longer_concept_is_not_also_counted_as_the_shorter_concept_it_contains():
+    found = _detect("Self-Attention and multi head attention are used, as is Cross-Attention.",
+                    "Graph Attention Network layers follow.")
+    assert "Attention" not in found
+    assert found["Self-Attention"] == 1 and found["Multi-Head Attention"] == 1 and found["Cross-Attention"] == 1
+
+    found = _detect("Self-Attention builds on attention. Attention is softmax over scores; attention again.")
+    assert found["Attention"] == 3 and found["Self-Attention"] == 1

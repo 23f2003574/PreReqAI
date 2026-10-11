@@ -35,16 +35,34 @@ class RuleBasedConceptDetector:
         # PDF text is hard-wrapped: "policy\ngradient" and "multi-\nhead" must still match their concept
         full_text = re.sub(r"\s+", " ", re.sub(r"-\s*\n\s*", "-", full_text))
 
-        for concept in self.registry.all():
+        concepts = self.registry.all()
 
-            occurrences = full_text.count(
-                concept.name.lower()
-            ) + sum(
+        def mentions(concept):
+            return full_text.count(concept.name.lower()) + sum(
                 len(re.findall(rf"\b{re.escape(alias.lower())}\b", full_text))
                 for alias in concept.aliases
             )
 
-            if occurrences == 0:
+        for concept in concepts:
+
+            name = concept.name.lower()
+
+            # "Self-Attention" and "Multi-Head Attention" contain "attention": mentions of the longer concept
+            # (by name or alias) are not also mentions of the shorter one, only a standalone "attention" is.
+            inside_longer = sum(
+                full_text.count(other.name.lower())
+                + sum(
+                    len(re.findall(rf"\b{re.escape(alias.lower())}\b", full_text))
+                    for alias in other.aliases
+                    if name in alias.lower()
+                )
+                for other in concepts
+                if other is not concept and name in other.name.lower()
+            )
+
+            occurrences = mentions(concept) - inside_longer
+
+            if occurrences <= 0:
                 continue
 
             paper.concepts.append(
