@@ -262,6 +262,7 @@ class PreReqAIPlatform:
         PaperReadinessEngine().evaluate(session.paper)
         fresh = self.analysis.report_generator.generate(session.paper)
         session.report["study_progress"], session.report["readiness"] = fresh["study_progress"], fresh["readiness"]
+        session_manager.save(session)
         return {"study_progress": fresh["study_progress"], "readiness": fresh["readiness"]}
 
     def _personalize(self, result, known) -> list:
