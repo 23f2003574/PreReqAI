@@ -95,3 +95,20 @@ def test_arbitrary_numbered_headings_split_sections_but_prose_and_tables_do_not(
     titles = [s.title for s in ScientificSectionParser().parse(doc).sections]
     assert titles == ["Front Matter", "1 Introduction", "3 Model Architecture", "3.2 Scaled Dot-Product Attention",
                       "4 Training Details", "References"]
+
+
+def test_http_analyze_accepts_studied_concepts_like_the_cli(tmp_path):
+    path = tmp_path / "paper.pdf"
+    _paper(path)
+    client = TestClient(app)
+
+    def analyze(**data):
+        with path.open("rb") as handle:
+            return client.post("/api/prerequisites/analyze", data=data,
+                               files={"paper": ("p.pdf", handle, "application/pdf")}).json()
+
+    plan = [s["concept"] for s in analyze()["report"]["learning_plan"]]
+    body = analyze(studied=[plan[0], "Not A Concept"])
+    assert [s["concept"] for s in body["report"]["learning_plan"]] == plan  # studied stays in the plan
+    assert body["report"]["readiness"]["completed_concepts"] == 1
+    assert any("Not A Concept" in w for w in body["warnings"])
