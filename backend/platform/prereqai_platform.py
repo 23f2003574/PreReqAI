@@ -256,8 +256,10 @@ class PreReqAIPlatform:
         session = session_manager.get(session_id)
         if session is None or session.paper is None:
             return None
-        if concept not in {item.concept for item in session.paper.study_progress}:
-            raise ValueError(f"'{concept}' is not a concept in this session's study plan")
+        planned = {item.concept.casefold(): item.concept for item in session.paper.study_progress}
+        if concept.strip().casefold() not in planned:  # matched like --studied and question topics: case-insensitively
+            raise ValueError(f"'{concept}' is not a concept in this session's study plan ({', '.join(planned.values()) or 'it is empty'})")
+        concept = planned[concept.strip().casefold()]
         StudyProgressTracker().complete(session.paper, concept)
         PaperReadinessEngine().evaluate(session.paper)
         fresh = self.analysis.report_generator.generate(session.paper)
