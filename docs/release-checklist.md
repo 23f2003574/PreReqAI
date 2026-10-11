@@ -66,3 +66,11 @@ workspace/projection failures plus the 2 network tests listed below, nothing new
   are the gate until they are fixed.
 - `test_arxiv_resolver.py` needs network access.
 - Tutor answers are a placeholder ("A tutoring model has not yet been configured.") until a model is wired in.
+
+## Fresh-environment verification (2026-10-11, after the day 13 work)
+
+From `git archive HEAD` in a new virtualenv with only `pip install -r requirements.txt` (no dev tools): `--version` -> `PreReqAI 0.1.0`;
+the CLI analysis with `--known "Linear Algebra"` exits 0 and plans Probability then Neural Networks; a real `uvicorn` accepted the
+documented `curl` upload (with `known`), marked `probability` studied (case-insensitive), answered a question (placeholder warning
+present) and, with `PREREQAI_SESSION_DIR` set, left one session file. `starlette.testclient` needs the dev requirement `httpx2`, as documented.
+Still unverified: a real published paper, and Python versions other than 3.13.
