@@ -31,7 +31,7 @@ curl -F "paper=@examples/prerequisites/sample-paper.pdf;type=application/pdf" \
     http://127.0.0.1:8000/api/prerequisites/analyze
 ```
 
-There is no config file or environment variable to set. The only options for your own papers are
+There is no config file or required environment variable. Optionally, set `PREREQAI_SESSION_DIR=/some/dir` to keep HTTP sessions on disk (one local file each, trusted data only) so they survive a server restart. The only options for your own papers are
 CLI limits (both optional, off by default):
 
 ```bash

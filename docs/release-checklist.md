@@ -50,7 +50,7 @@ workspace/projection failures plus the 2 network tests listed below, nothing new
 | Class | Item |
 |---|---|
 | Blocker before release | Run at least one real published paper (e.g. an arXiv PDF) end to end and fix what it exposes. |
-| Required before January | Decide session persistence (HTTP sessions are lost on restart; CLI progress uses `--studied`). |
+| Done | Session persistence: opt-in `PREREQAI_SESSION_DIR` (pickle files; single-process, no locking or expiry/cleanup). Default stays in-memory. |
 | Required before January | Wire a tutoring model (answers are a placeholder) or document the placeholder prominently. |
 | Required before January | Fix or retire the 44 `test_research_workspace_*` / `test_consumer_projection_*` failures. |
 | Required before January | Section parser: numbered title-case headings now split; unnumbered or all-caps headings outside the fixed list still fold into the previous section. |

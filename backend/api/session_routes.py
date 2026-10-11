@@ -155,6 +155,8 @@ def ask_question(
             hint="Try rephrasing the question; if it keeps failing, re-run the analysis to start a new session.",
         )
 
+    session_manager.save(session)
+
     # Same success envelope as analysis (status/feature/stage/warnings), so a
     # client checks `status` the same way for every PreReqAI response; the
     # answer's own keys (question, responses, ...) stay at the top level.
