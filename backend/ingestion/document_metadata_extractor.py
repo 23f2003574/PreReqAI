@@ -62,14 +62,18 @@ class DocumentMetadataExtractor:
 
     @classmethod
     def _author_from_first_page(cls, pdf) -> str:
-        """The author line of page one when the metadata has none: the first line within the few after the title
-        that is a list of person names (affiliations, e-mail addresses and the abstract are skipped), or ""."""
+        """The author lines of page one when the metadata has none: the run of consecutive lines within the few after
+        the title that are lists of person names (one author per line or several per line; affiliations, e-mail
+        addresses and the abstract are skipped and end the run), or ""."""
         if not len(pdf):
             return ""
         lines = [line.strip() for line in pdf[0].get_text().splitlines() if line.strip()]
-        for line in lines[1:9]:
+        authors = []
+        for line in lines[1:12]:
             cleaned = re.sub(r"[*†‡§¶∗]", "", line).strip()
             names = [n.strip() for n in re.split(r",|\band\b|;", cleaned) if n.strip()]
             if names and not cls._NOT_AUTHORS.search(cleaned) and all(cls._NAME.match(n) for n in names):
-                return ", ".join(names)
-        return ""
+                authors.extend(name for name in names if name not in authors)
+            elif authors:
+                break  # the author block ended (affiliation, e-mail, abstract)
+        return ", ".join(authors)
