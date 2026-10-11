@@ -232,10 +232,17 @@ class PreReqAIPlatform:
         session = session_manager.create(
             paper_title=result.report["paper"]["title"], report=deepcopy(result.report), paper=result.paper,
         )
+        no_concepts = []
+        if not result.report.get("concepts"):
+            has_text = any((getattr(page, "text", "") or "").strip() for page in (result.paper.pages or []))
+            no_concepts = [
+                "No concepts were detected in this paper, so the study plan is empty and 'Ready to Read' means nothing."
+                + ("" if has_text else " The PDF has no extractable text (a scanned or image-only paper?); run OCR on it first.")
+            ]
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=[f"--known {name!r} is not in this paper's study plan and was ignored" for name in unmatched]
+            warnings=no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored" for name in unmatched]
             + [f"--studied {name!r} is not in this paper's study plan and was ignored" for name in not_studied],
         )
         return with_diagnostics(outcome, result.timings, result.report)

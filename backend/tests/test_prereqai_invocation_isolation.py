@@ -58,7 +58,7 @@ def test_a_second_run_with_a_different_input_carries_only_its_own_data(papers):
     platform.analyze(papers[0], limits=AnalysisLimits(max_seconds=0.000001))  # stopped by a budget: its state must not stick
     first, second = platform.analyze(papers[0]), platform.analyze(papers[1])
 
-    assert first["status"] == second["status"] == "success" and second["warnings"] == []
+    assert first["status"] == second["status"] == "success" and not [w for w in second["warnings"] if "--known" in w or "--studied" in w]  # no leaked personalisation warnings
     assert _report(second) != _report(first) and _report(second) == _report(PreReqAIPlatform().analyze(papers[1]))
 
 
