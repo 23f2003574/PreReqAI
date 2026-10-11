@@ -85,7 +85,7 @@ Order of work, most consequential first. Everything the product's documented wor
 2. **Tutoring model (needs a decision).** The tutor is the rule-based placeholder and is disclosed in the README and every answer's `warnings`.
    Dependency: a provider choice and an API key. Next step: implement a `Tutor` that builds prompts with the existing `TutorPromptBuilder`
    (`backend/tutor/tutor_prompt_builder.py`), selected when a key is configured; keep the placeholder as the offline default.
-3. **44 failing tests in `test_research_workspace_*` (30) and `test_consumer_projection_*` (20 incl. 13 fingerprinting) — scoped, not in the release path.**
+3. **44 failing tests in `test_research_workspace_*` (24) and `test_consumer_projection_*` (20, 13 of them fingerprinting) — scoped, not in the release path.**
    Counts by file: fingerprinting 13, actions 12, execution_receipt 5, bootstrap 3, projection_context 3, formatter 2, diagnostics 2, and one each in budget,
    freshness, gateway, readiness. Causes seen: tests mutating frozen dataclasses (`enabled`), a descriptor without `.name`, missing helper
    `ResearchWorkspaceConsumerProjectionDiagnosticsStageHelper`, lambdas not accepting `value=`, status `degraded` where `succeeded` is expected.
