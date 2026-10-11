@@ -132,3 +132,17 @@ def test_author_is_read_from_the_first_page_when_pdf_metadata_is_empty(tmp_path,
     without = tmp_path / "b.pdf"
     make(without, ["Attention Models", "Google Brain", "Abstract", "We study a transformer."])
     assert author(without) == "Unknown Author"
+
+
+def test_a_paper_without_extractable_text_warns_instead_of_claiming_readiness(tmp_path, capsys):
+    path = tmp_path / "blank.pdf"
+    doc = pymupdf.open()
+    doc.new_page()
+    doc.save(path)
+
+    assert main(["prerequisites", "analyze", str(path)]) == 0
+    assert "no extractable text" in capsys.readouterr().out
+
+    with path.open("rb") as handle:
+        body = TestClient(app).post("/api/prerequisites/analyze", files={"paper": ("b.pdf", handle, "application/pdf")}).json()
+    assert body["status"] == "success" and any("no extractable text" in w for w in body["warnings"])

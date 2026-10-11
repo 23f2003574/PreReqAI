@@ -57,7 +57,7 @@ def test_report_collections_come_out_in_the_same_order_in_every_process(tmp_path
 def test_an_empty_paper_has_empty_lists_not_missing_or_null_fields(tmp_path, capsys):
     api, cli = _both(_pdf(tmp_path, "Nothing technical is discussed here."), capsys)
 
-    assert api["status"] == "success" and api["warnings"] == [] and _without_run_ids(api) == _without_run_ids(cli)
+    assert api["status"] == "success" and len(api["warnings"]) == 1 and api["warnings"][0].startswith("No concepts were detected") and _without_run_ids(api) == _without_run_ids(cli)
     for key in ("concepts", "prerequisites", "missing_prerequisites"):
         assert isinstance(api["report"][key], list)
 
