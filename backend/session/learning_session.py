@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass, field
 from uuid import uuid4
 
@@ -62,3 +63,5 @@ class LearningSession:
     last_navigation: NavigationResult | None = None
 
     status: str = "active"
+
+    created_at: float = field(default_factory=time.time)

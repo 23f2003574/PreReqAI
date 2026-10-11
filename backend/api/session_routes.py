@@ -36,6 +36,24 @@ class QuestionRequest(BaseModel):
     mode: TutorMode = TutorMode.INTUITION
 
 
+@router.get("")
+def list_sessions():
+    """The sessions this server knows (newest first), so a client that lost an id can find its analysis again."""
+
+    return {
+        "status": "success",
+        "sessions": [
+            {
+                "session_id": session.session_id,
+                "paper_title": session.paper_title,
+                "created_at": getattr(session, "created_at", None),
+                "readiness": (session.report.get("readiness") or {}).get("status"),
+            }
+            for session in session_manager.list()
+        ],
+    }
+
+
 @router.get("/{session_id}")
 def get_session(session_id: str):
 

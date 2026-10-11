@@ -199,3 +199,18 @@ class SessionManager:
                 pass
 
         return known
+
+    def list(self) -> list[LearningSession]:
+        """Every known session: those in memory plus those only saved in PREREQAI_SESSION_DIR (restored on the way),
+        newest first. Expired, unreadable and foreign files are skipped."""
+
+        directory = os.environ.get("PREREQAI_SESSION_DIR")
+
+        if directory and Path(directory).is_dir():
+
+            for path in Path(directory).glob("*.session"):
+
+                self.get(path.stem)  # loads (and caches) it when valid; does nothing for bad names
+
+        # sessions saved by older versions lack created_at
+        return sorted(self.sessions.values(), key=lambda session: getattr(session, "created_at", 0.0), reverse=True)

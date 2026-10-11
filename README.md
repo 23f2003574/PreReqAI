@@ -31,7 +31,7 @@ curl -F "paper=@examples/prerequisites/sample-paper.pdf;type=application/pdf" \
     http://127.0.0.1:8000/api/prerequisites/analyze
 ```
 
-There is no config file or required environment variable. Optionally, set `PREREQAI_SESSION_DIR=/some/dir` to keep HTTP sessions on disk (one local file each, trusted data only) so they survive a server restart; saved sessions expire after 30 days without activity (`PREREQAI_SESSION_MAX_AGE_DAYS=N` changes that, `0` keeps them forever). `DELETE /api/session/{session_id}` removes a session and its saved file. The only options for your own papers are
+There is no config file or required environment variable. Optionally, set `PREREQAI_SESSION_DIR=/some/dir` to keep HTTP sessions on disk (one local file each, trusted data only) so they survive a server restart; saved sessions expire after 30 days without activity (`PREREQAI_SESSION_MAX_AGE_DAYS=N` changes that, `0` keeps them forever). `DELETE /api/session/{session_id}` removes a session and its saved file. `GET /api/session` lists the sessions the server knows (newest first), including saved ones after a restart. The only options for your own papers are
 CLI limits (both optional, off by default):
 
 ```bash
