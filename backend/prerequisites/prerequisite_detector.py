@@ -70,6 +70,77 @@ class PrerequisiteDetector:
         "U-Net": [
             "Neural Networks",
         ],
+
+        "Cross-Attention": [
+            "Attention",
+            "Linear Algebra",
+        ],
+
+        "Positional Encoding": [
+            "Linear Algebra",
+        ],
+
+        "Layer Normalization": [
+            "Neural Networks",
+            "Probability",
+        ],
+
+        "Residual Connection": [
+            "Neural Networks",
+        ],
+
+        "Feed Forward Network": [
+            "Neural Networks",
+            "Linear Algebra",
+        ],
+
+        "Reverse Process": [
+            "Probability",
+            "Neural Networks",
+        ],
+
+        "Markov Decision Process": [
+            "Probability",
+        ],
+
+        "Bellman Equation": [
+            "Markov Decision Process",
+            "Probability",
+        ],
+
+        "Value Function": [
+            "Markov Decision Process",
+        ],
+
+        "Q-Learning": [
+            "Markov Decision Process",
+            "Probability",
+        ],
+
+        "Actor-Critic": [
+            "Markov Decision Process",
+            "Neural Networks",
+        ],
+
+        "Message Passing": [
+            "Graphs",
+            "Neural Networks",
+        ],
+
+        "Graph Convolution": [
+            "Graphs",
+            "Linear Algebra",
+        ],
+
+        "Graph Attention Network": [
+            "Graphs",
+            "Attention",
+        ],
+
+        "Node Embedding": [
+            "Graphs",
+            "Linear Algebra",
+        ],
     }
 
     def detect(
