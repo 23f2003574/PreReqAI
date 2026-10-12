@@ -22,7 +22,7 @@ def test_quickstart_succeeds_with_the_documented_human_and_json_output():
     assert human.returncode == 0 and human.stderr == ""
     assert human.stdout.startswith("Analysed 'Attention Is All You Need (PreReqAI sample paper)' (session ")
     assert "concepts: " in human.stdout and "prerequisites: " in human.stdout
-    assert "  missing: 3 (1 covered in the paper)" in human.stdout  # only unsatisfied prerequisites count
+    assert "  missing: 4 (1 covered in the paper)" in human.stdout  # only unsatisfied prerequisites count
     assert "\n  study plan: 1. " in human.stdout and len(human.stdout.splitlines()) <= 5
 
     machine = _cli("prerequisites", "analyze", SAMPLE, "--json")

@@ -61,6 +61,10 @@ class ConceptRelationshipBuilder:
             "Markov Decision Process",
         ],
 
+        "Backpropagation": [
+            "Gradient Descent",
+        ],
+
         "Value Function": [
             "Markov Decision Process",
         ],

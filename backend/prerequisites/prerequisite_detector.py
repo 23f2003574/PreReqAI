@@ -96,6 +96,31 @@ class PrerequisiteDetector:
             "Linear Algebra",
         ],
 
+        "Gradient Descent": [
+            "Calculus",
+            "Linear Algebra",
+        ],
+
+        "Backpropagation": [
+            "Calculus",
+            "Neural Networks",
+        ],
+
+        "Convolutional Neural Network": [
+            "Neural Networks",
+            "Linear Algebra",
+        ],
+
+        "Batch Normalization": [
+            "Neural Networks",
+            "Probability",
+        ],
+
+        "Dropout": [
+            "Neural Networks",
+            "Probability",
+        ],
+
         "Reverse Process": [
             "Probability",
             "Neural Networks",

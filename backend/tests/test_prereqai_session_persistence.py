@@ -56,7 +56,7 @@ def test_studied_matches_the_concept_name_case_insensitively_and_lists_the_plan_
     done = client.post(f"/api/prerequisites/sessions/{sid}/studied", params={"concept": " probability "})
     assert done.status_code == 200 and done.json()["readiness"]["completed_concepts"] == 1
 
-    miss = client.post(f"/api/prerequisites/sessions/{sid}/studied", params={"concept": "Calculus"})
+    miss = client.post(f"/api/prerequisites/sessions/{sid}/studied", params={"concept": "Graphs"})
     assert miss.status_code == 422 and "Probability" in miss.json()["detail"]
 
 

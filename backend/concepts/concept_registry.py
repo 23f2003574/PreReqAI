@@ -36,6 +36,14 @@ class ConceptRegistry:
             Concept("Feed Forward Network", "transformers", aliases=('FFN', 'feed-forward network')),
             Concept("Softmax", "transformers"),
 
+            # Deep learning fundamentals
+
+            Concept("Gradient Descent", "deep_learning", aliases=('SGD', 'stochastic gradient descent')),
+            Concept("Backpropagation", "deep_learning", aliases=('backprop', 'back-propagation')),
+            Concept("Convolutional Neural Network", "deep_learning", aliases=('CNN', 'CNNs', 'convolutional network')),
+            Concept("Batch Normalization", "deep_learning", aliases=('BatchNorm', 'batch norm')),
+            Concept("Dropout", "deep_learning"),
+
             # Diffusion
 
             Concept("Diffusion Model", "diffusion", aliases=('DDPM', 'denoising diffusion', 'diffusion probabilistic model')),

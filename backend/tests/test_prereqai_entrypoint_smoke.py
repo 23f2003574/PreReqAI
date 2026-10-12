@@ -70,13 +70,13 @@ def test_sample_paper_analysis_result_through_the_http_entrypoint():
     report = body["report"]
 
     assert report["paper"]["title"] == "Attention Is All You Need (PreReqAI sample paper)"
-    assert report["concepts"] == ["Transformer", "Attention", "Softmax"]
+    assert report["concepts"] == ["Transformer", "Attention", "Softmax", "Gradient Descent", "Backpropagation"]
     status = {item["concept"]: item["satisfied"] for item in report["missing_prerequisites"]}
-    assert status == {"Attention": True, "Neural Networks": False, "Linear Algebra": False, "Probability": False}
+    assert status == {"Attention": True, "Neural Networks": False, "Linear Algebra": False, "Probability": False, "Calculus": False}
     assert [(step["concept"], step["estimated_hours"]) for step in report["learning_plan"]] == [
-        ("Linear Algebra", 12), ("Probability", 10), ("Neural Networks", 15)]
-    assert report["study_time"]["total_hours"] == 37
-    assert report["readiness"]["ready_to_read"] is False and report["readiness"]["total_concepts"] == 3
+        ("Linear Algebra", 12), ("Probability", 10), ("Calculus", 10), ("Neural Networks", 15)]
+    assert report["study_time"]["total_hours"] == 47
+    assert report["readiness"]["ready_to_read"] is False and report["readiness"]["total_concepts"] == 4
 
 
 def test_answered_question_is_recorded_in_the_session_history():

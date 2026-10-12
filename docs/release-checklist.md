@@ -133,3 +133,11 @@ Defect (reproduced first): one question returned 3 identical entries in `respons
 only if no earlier one has the same answer and supporting concepts/sections, so the response and the stored conversation agree. Test:
 `test_identical_workflow_answers_are_returned_once`. Remaining blockers unchanged: real published paper (needs a PDF or network), tutor model provider,
 44 workspace failures, Python 3.10/3.12 runs.
+
+## Deep-learning fundamentals (2026-10-12)
+
+Concepts outside the original registry, now detected with aliases, prerequisites, definitions and (for Backpropagation) a graph edge: Gradient Descent (SGD),
+Backpropagation (backprop), Convolutional Neural Network (CNN), Batch Normalization (BatchNorm), Dropout. Tests: `test_prereqai_deep_learning_fundamentals.py`.
+Visible change: the bundled sample paper genuinely mentions gradient descent and backpropagation, so its quickstart plan is now Linear Algebra -> Probability ->
+Calculus -> Neural Networks (4 steps, ~47h) instead of 3 steps (~37h); pinned tests updated. Still outside the registry: optimisers beyond SGD, embeddings,
+RNN/LSTM, autoencoders/VAE, GANs. Blockers unchanged: real published paper, tutor model provider, 44 workspace failures, Python 3.10/3.12.

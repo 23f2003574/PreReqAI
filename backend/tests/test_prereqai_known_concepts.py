@@ -40,6 +40,6 @@ def test_plan_steps_are_renumbered_and_an_unknown_name_is_warned_about(capsys):
     skip = _plan(json.loads(capsys.readouterr().out)["report"])[0]
     assert main(["prerequisites", "analyze", str(SAMPLE), "--json", "--known", skip, "--known", "Typo"]) == 0
     outcome = json.loads(capsys.readouterr().out)
-    assert [s["step"] for s in outcome["report"]["learning_plan"]] == [1, 2]
-    assert [r["step"] for r in outcome["report"]["study_roadmap"]] == [1, 2]
+    assert [s["step"] for s in outcome["report"]["learning_plan"]] == [1, 2, 3]
+    assert [r["step"] for r in outcome["report"]["study_roadmap"]] == [1, 2, 3]
     assert outcome["warnings"] == ["--known 'Typo' is not in this paper's study plan and was ignored"]

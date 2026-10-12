@@ -137,6 +137,31 @@ class ConceptExplanationEngine:
             "Advanced",
         ),
 
+        "Gradient Descent": (
+            "An optimisation method that repeatedly moves model parameters a small step against the gradient of the loss to reduce it.",
+            "Beginner",
+        ),
+
+        "Backpropagation": (
+            "The algorithm that computes the loss gradient for every weight of a neural network by applying the chain rule backwards through its layers.",
+            "Intermediate",
+        ),
+
+        "Convolutional Neural Network": (
+            "A neural network that slides small learned filters over its input, reusing the same weights at every position, mainly for images.",
+            "Intermediate",
+        ),
+
+        "Batch Normalization": (
+            "A layer that normalises activations using the statistics of the current mini-batch to make deep networks train faster and more stably.",
+            "Intermediate",
+        ),
+
+        "Dropout": (
+            "A regularisation technique that randomly switches off units during training so the network cannot over-rely on any one of them.",
+            "Beginner",
+        ),
+
         "Graph Attention Network": (
             "A graph neural network that learns attention weights over each node's neighbours instead of treating them equally.",
             "Advanced",
