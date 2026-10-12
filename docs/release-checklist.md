@@ -155,3 +155,11 @@ Failure (reproduced first): the built-in tutor matched concept names as substrin
 justification, "improbability" with Probability, and "self-attention" also pulled in Attention. Matching is now whole-word (plural `s`, case, hyphen/space
 tolerant) and longest-name-first. Tests: `test_prereqai_question_matching.py` (7; 4 fail without the fix). Remaining blockers unchanged: real published
 paper, tutor model provider, 44 workspace failures, Python 3.10/3.12; concept-group gaps (RNN/LSTM, embeddings, VAE/GAN, other optimisers).
+
+## Personalised difficulty (2026-10-12)
+
+Failure (reproduced first): `--known` / the `known` form field rebuilt the plan, time, actions and readiness but left `paper_difficulty` and
+`difficulty_explanations` as computed for the unpersonalised paper (e.g. "2 prerequisite concepts require additional study" with an empty plan).
+`PreReqAIPlatform._personalize` now re-runs the difficulty engine and its explanation. Tests: `test_prereqai_known_difficulty.py` (3, all fail without the fix).
+Open: `--studied` keeps the full plan hours in `study_time` (by design: studied concepts stay in the plan; remaining-hours semantics not decided).
+Blockers unchanged: real published paper, tutor model provider, 44 workspace failures, Python 3.10/3.12.

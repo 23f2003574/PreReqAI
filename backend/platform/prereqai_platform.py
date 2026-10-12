@@ -283,7 +283,7 @@ class PreReqAIPlatform:
 
     def _personalize(self, result, known) -> list:
         """Drop concepts the learner says they already know from the study plan: the plan, time estimate,
-        actions, roadmap, progress and readiness are rebuilt without them, their resources are dropped and they
+        difficulty, actions, roadmap, progress and readiness are rebuilt without them, their resources are dropped and they
         are no longer reported as missing prerequisites."""
         wanted = {name.strip().casefold() for name in known if name and name.strip()}
         paper, pipeline = result.paper, self.analysis
@@ -296,7 +296,9 @@ class PreReqAIPlatform:
         for prerequisite in paper.missing_prerequisites:  # a known concept is no longer missing
             if prerequisite.concept.casefold() in wanted and not prerequisite.satisfied:
                 prerequisite.satisfied, prerequisite.reason = True, "Already known (reported by the learner)"
+        pipeline.difficulty_engine.assess(paper)  # the paper is easier once known concepts are not missing
         pipeline.study_time_estimator.estimate(paper)
+        pipeline.difficulty_explanation_engine.explain(paper)
         pipeline.study_action_generator.generate(paper)
         pipeline.study_roadmap_generator.generate(paper)
         pipeline.progress_tracker.initialize(paper)
