@@ -8,6 +8,11 @@ from backend.models import (
 from .concept_registry import ConceptRegistry
 
 
+# A bibliography lists titles of other papers ("Graph attention networks", "Policy gradient methods"):
+# they say what the paper cites, not what it needs the reader to know, so they are not counted.
+_BACK_MATTER = re.compile(r"^[\dIVXLivxl.]*\s*(references|bibliography|works cited|acknowledge?ments?)\b", re.IGNORECASE)
+
+
 class RuleBasedConceptDetector:
     """
     Detects known concepts using exact,
@@ -30,6 +35,7 @@ class RuleBasedConceptDetector:
         full_text = "\n".join(
             paragraph.content
             for paragraph in paper.paragraphs
+            if not _BACK_MATTER.match((paragraph.section_title or "").strip())
         ).lower()
 
         # PDF text is hard-wrapped: "policy\ngradient" and "multi-\nhead" must still match their concept

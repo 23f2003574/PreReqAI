@@ -192,3 +192,11 @@ Mismatch (verified first): the README "Current limitation" note and `examples/pr
 built-in tutor a concept question ("What is attention?", the documented example) returns the concept's definition. Both docs now describe the real behaviour and
 the `ask` command; `test_the_documented_question_behaves_as_the_examples_readme_describes` ties the documented example to the actual response. Blockers
 unchanged: real published paper, tutor model provider, 44 workspace failures, Python 3.10/3.12.
+
+## References excluded from concept detection (2026-10-12)
+
+Failure (reproduced first): cited titles in the bibliography counted as concepts, so a transformer paper citing GNN, RL and diffusion work got Graphs and Markov Decision
+Process study steps. The detector now skips paragraphs of References/Bibliography/Works Cited/Acknowledgements sections (numbered or roman headings too); the section parser
+gained Bibliography and Works Cited headings. Tests: `test_prereqai_references_excluded.py` (6; 5 fail without the fix). Limit: a bibliography whose heading the parser
+does not recognise is still counted. Unresolved for the next project day: a real published paper has still never been run (needs a PDF or network), the tutor model provider
+decision, the 44 workspace/projection failures, Python 3.10/3.12 runs, concept groups (RNN/LSTM, embeddings, VAE/GAN, other optimisers), two-column reading order. NOT release-ready.
