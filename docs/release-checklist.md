@@ -177,3 +177,11 @@ Mismatch (reproduced first): `PDFIngestionEngine` cleaned ligatures/dashes in pa
 read "an ff/ffi-ligature title" (ligature glyphs) while the body concepts were fine. The cleaner now lives in `backend/ingestion/text_cleaning.py` and is
 applied to the PDF metadata fields, the first-page title and the author lines too. Test: `test_title_author_and_metadata_use_the_same_cleaned_text_as_the_body`.
 Remaining blockers unchanged: real published paper, tutor model provider, 44 workspace failures, Python 3.10/3.12.
+
+## Learner journey acceptance (2026-10-12)
+
+`test_prereqai_learner_journey.py` runs one learner's whole HTTP journey in order: upload with `known` + `studied` -> personalised plan, readiness and difficulty;
+listing; a disclosed built-in answer; a corrupt upload mid-journey (400, no new session, existing session untouched); studying the plan to `ready_to_read`; undoing
+a step; a known concept rejected as not planned (422); delete and 404s everywhere. It passed on first run (no new defect found). Limitation: in-process
+`TestClient`, not a live server (the live-server restart journey is `test_prereqai_restart_acceptance.py`). Blockers unchanged: real published paper, tutor model
+provider, 44 workspace failures, Python 3.10/3.12.
