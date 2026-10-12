@@ -47,6 +47,10 @@ concepts you have finished; they stay in the plan and count toward readiness. Ov
 `POST /api/prerequisites/sessions/{session_id}/studied?concept=Probability`; `GET /api/session/{session_id}`
 then shows the updated `study_progress` and `readiness`.
 
+To ask a question without running a server, use `python -m backend.cli prerequisites ask paper.pdf "Why do I need calculus?"`
+(add `--json` for machine-readable output). It analyses the paper and answers from the analysis; the same no-model limitation applies and is
+printed as a warning.
+
 Releasing? Follow [docs/release-checklist.md](docs/release-checklist.md). Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (first `pip install -r requirements-dev.txt`, which adds pytest on top of the runtime requirements; run it from the repository root; a few tests, such as the arXiv download, need network access).
 
 ## Prerequisite Explorer

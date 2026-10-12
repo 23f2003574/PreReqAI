@@ -10,7 +10,7 @@ import signal
 import sys
 import threading
 
-from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT
+from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
 def _finite_number(value):
@@ -52,6 +52,23 @@ def add_prerequisites_parser(subparsers):
                          help="Refuse a paper file larger than this many megabytes (default: no limit)")
     analyze.add_argument("--json", action="store_true", dest="as_json",
                          help="Print the workflow result envelope (status, stage, warnings, session_id, report, timings) as JSON")
+    add_prerequisites_ask_parser(commands)
+
+
+def add_prerequisites_ask_parser(commands):
+    ask = commands.add_parser(
+        "ask",
+        help="Analyse a paper PDF and answer a question about it",
+        description="Analyses the paper (as `analyze` does) and answers one question from the analysis in the same process. "
+                    "Same workflow as POST /api/prerequisites/analyze followed by POST /api/session/{id}/question.",
+        epilog="Example: python -m backend.cli prerequisites ask paper.pdf \"Why do I need calculus?\". "
+               "No tutoring model is configured in this release: answers are built-in definitions and prerequisite reasons. "
+               "Exit codes: 0 success; 1 analysis or answer failed; 2 usage error.",
+    )
+    ask.add_argument("paper", help="Path to the paper PDF")
+    ask.add_argument("question", help="The question to ask about the paper")
+    ask.add_argument("--json", action="store_true", dest="as_json",
+                     help="Print session_id, warnings and the answers as JSON")
 
 
 def _megabytes_to_bytes(megabytes):
@@ -155,3 +172,49 @@ def run_prerequisites_analyze(args, platform=None) -> int:
     if limit_hit:
         return EXIT_LIMIT_EXCEEDED
     return EXIT_CANCELLED if was_cancelled else (EXIT_FAILURE if failed else EXIT_OK)
+
+
+def run_prerequisites_ask(args, platform=None) -> int:
+    """Analyse the paper, then answer the question from that session; the same two calls the HTTP API makes."""
+    import dataclasses
+
+    if not args.question.strip():
+        print("error: the question must not be empty", file=sys.stderr)
+        return EXIT_USAGE
+    if platform is None:
+        try:
+            from backend.platform import platform
+        except ModuleNotFoundError as exc:
+            print(f"error: required package '{exc.name}' is not installed", file=sys.stderr)
+            print("  hint: run `pip install -r requirements.txt` in this environment", file=sys.stderr)
+            return EXIT_FAILURE
+    outcome = platform.analyze(args.paper)
+    if outcome["status"] != "success":
+        print(f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
+        if outcome.get("hint"):
+            print(f"  hint: {outcome['hint']}", file=sys.stderr)
+        return EXIT_FAILURE
+    from backend.session import TutorMode, session_manager
+
+    session = session_manager.get(outcome["session_id"])
+    try:
+        result = platform.learning.answer(session=session, paper=session.paper, question=args.question,
+                                          mode=TutorMode.INTUITION, topic=None)
+    except Exception as exc:  # same envelope idea as the API: one readable line, never a traceback
+        print(f"error: failed to answer the question: {exc}", file=sys.stderr)
+        return EXIT_FAILURE
+    responses = [dataclasses.asdict(r) for r in result["responses"]]
+    placeholder = any("tutoring model has not yet been configured" in r["answer"] for r in responses)
+    warning = ("No tutoring model is configured in this release: the answer is a placeholder."
+               if placeholder else
+               "No tutoring model is configured in this release: answers are built-in definitions and prerequisite reasons, not generated explanations.")
+    if args.as_json:
+        print(json.dumps({"status": "success", "session_id": outcome["session_id"], "question": args.question,
+                          "responses": responses, "warnings": [warning]}, indent=2))
+        return EXIT_OK
+    for response in responses:
+        print(response["answer"])
+    if responses and responses[0]["supporting_concepts"]:
+        print("  concepts: " + ", ".join(responses[0]["supporting_concepts"]))
+    print(f"  warning: {warning}")
+    return EXIT_OK

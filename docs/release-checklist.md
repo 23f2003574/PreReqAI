@@ -141,3 +141,10 @@ Backpropagation (backprop), Convolutional Neural Network (CNN), Batch Normalizat
 Visible change: the bundled sample paper genuinely mentions gradient descent and backpropagation, so its quickstart plan is now Linear Algebra -> Probability ->
 Calculus -> Neural Networks (4 steps, ~47h) instead of 3 steps (~37h); pinned tests updated. Still outside the registry: optimisers beyond SGD, embeddings,
 RNN/LSTM, autoencoders/VAE, GANs. Blockers unchanged: real published paper, tutor model provider, 44 workspace failures, Python 3.10/3.12.
+
+## CLI question workflow (2026-10-12)
+
+`python -m backend.cli prerequisites ask paper.pdf "question" [--json]` closes a workflow gap: questions were only possible over HTTP because CLI sessions end
+with the command. It runs the platform analysis, then the same learning pipeline the API uses, prints the answers and the no-model warning, exits 0; a blank
+question is exit 2, an unreadable paper exit 1 with a readable message. Tests: `test_prereqai_cli_ask.py` (4). Not covered: `--known`/`--studied`/limit flags on
+`ask`, and `--topic`. Blockers unchanged: real published paper, tutor model provider, 44 workspace failures, Python 3.10/3.12.
