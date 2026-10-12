@@ -54,14 +54,20 @@ class RuleBasedTutor(BaseTutor):
             mode,
         )
 
+        answer = self._built_in_answer(
+            paper,
+            context,
+            question,
+        )
+
         return TutorResponse(
 
-            answer=(
+            answer=answer or (
                 "A tutoring model has not yet "
                 "been configured."
             ),
 
-            confidence=0.0,
+            confidence=0.5 if answer else 0.0,
 
             supporting_concepts=context.concepts,
 
@@ -76,3 +82,39 @@ class RuleBasedTutor(BaseTutor):
                 "Summarize this section",
             ],
         )
+
+    @staticmethod
+    def _built_in_answer(paper, context, question):
+        """Answer from the analysis already computed (definitions and
+        prerequisite justifications) for the concepts the question is about."""
+
+        text = f" {question.lower()} "
+
+        definitions = {
+            e.concept: e.definition
+            for e in getattr(paper, "concept_explanations", [])
+        }
+
+        reasons = {
+            j.concept: j.justification
+            for j in getattr(paper, "prerequisite_justifications", [])
+        }
+
+        asked = [
+            name for name in {**definitions, **reasons}
+            if name.lower() in text
+        ]
+
+        for name in context.concepts:
+            if name not in asked and name in definitions:
+                asked.append(name)
+
+        parts = []
+
+        for name in asked:
+            if name in definitions:
+                parts.append(f"{name}: {definitions[name]}")
+            if name in reasons:
+                parts.append(f"Why it is needed here: {reasons[name]}")
+
+        return " ".join(parts)

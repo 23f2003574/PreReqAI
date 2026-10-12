@@ -118,3 +118,11 @@ Policy Gradient, Actor-Critic, Score Matching and Reverse Process now list Calcu
 justification and the existing order/time entries, so RL and diffusion papers get a derivative refresher in the study plan (`--known Calculus` skips it).
 Tests: `test_prereqai_calculus_prerequisite.py`; release checks plus API generation checks pass. Unchanged: real-paper blocker, tutor model,
 44 workspace failures, Python 3.10/3.12 runs.
+
+## Built-in tutor answers (2026-10-12)
+
+Integration gap closed: `POST /api/session/{id}/question` returned the bare placeholder even when the analysis already held the answer. The rule-based tutor now
+answers from `concept_explanations` and `prerequisite_justifications` for concepts named in the question or retrieved for it ("Why do I need calculus?",
+"What is policy gradient?"); unrelated questions keep the placeholder. The response `warnings` still disclose that no tutoring model is configured
+(wording differs: "built-in definitions" vs "placeholder"). Tests: `test_prereqai_built_in_answers.py`. Still open: a model-backed tutor (provider decision),
+the repeated identical response per workflow in `responses`, real-paper blocker, the 44 workspace failures, Python 3.10/3.12.

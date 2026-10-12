@@ -199,9 +199,22 @@ def ask_question(
         for response in result.get("responses", [])
     )
 
+    responses = result.get("responses", [])
+    built_in = bool(responses) and not placeholder and any(
+        getattr(response, "confidence", 0) for response in responses
+    )
+
+    if placeholder:
+        warnings = ["No tutoring model is configured in this release: the answer is a placeholder; "
+                    "supporting_concepts and supporting_sections show where the paper covers the question."]
+    elif built_in:
+        warnings = ["No tutoring model is configured in this release: answers are the built-in definitions "
+                    "and prerequisite reasons from the analysis, not generated explanations."]
+    else:
+        warnings = []
+
     return success_body(
         "Interactive Learning", "answered",
-        warnings=["No tutoring model is configured in this release: the answer is a placeholder; "
-                  "supporting_concepts and supporting_sections show where the paper covers the question."] if placeholder else (),
+        warnings=warnings,
         **result,
     )

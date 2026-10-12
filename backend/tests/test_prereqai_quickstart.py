@@ -125,7 +125,7 @@ def test_example_workflow_analyse_then_ask_a_question():
     reply = client.post(f"/api/session/{sid}/question", json={"question": "What is attention?"}).json()
     assert reply["status"] == "success" and reply["responses"]
     assert reply["responses"][0]["supporting_concepts"] == ["Attention"]
-    assert "tutoring model has not yet been configured" in reply["responses"][0]["answer"]  # documented placeholder
+    assert "Attention:" in reply["responses"][0]["answer"]  # built-in definition, not the bare placeholder
 
 
 def test_unsupported_paper_type_gets_an_actionable_hint_and_keeps_its_cause(tmp_path, capsys):

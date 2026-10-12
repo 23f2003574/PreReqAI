@@ -67,5 +67,5 @@ def test_the_session_resource_is_unchanged_and_the_answer_uses_the_success_envel
     assert session["status"] == "active" and "stage" not in session  # a session resource, not a workflow result
     assert {"question", "responses", "recommendations"} <= set(answer)  # backward compatible: keys stay top level
     assert (answer["status"], answer["feature"], answer["stage"]) == ("success", "Interactive Learning", "answered")
-    assert len(answer["warnings"]) == 1 and "placeholder" in answer["warnings"][0]  # the unconfigured tutor is disclosed
+    assert len(answer["warnings"]) == 1 and "built-in" in answer["warnings"][0]  # the unconfigured tutor is disclosed
     assert json_violations(answer) == []

@@ -60,10 +60,10 @@ def test_studied_matches_the_concept_name_case_insensitively_and_lists_the_plan_
     assert miss.status_code == 422 and "Probability" in miss.json()["detail"]
 
 
-def test_a_placeholder_tutor_answer_is_flagged_in_the_response_warnings():
+def test_a_non_model_tutor_answer_is_flagged_in_the_response_warnings():
     client = TestClient(app)
     with open("examples/prerequisites/sample-paper.pdf", "rb") as handle:
         sid = client.post("/api/prerequisites/analyze", files={"paper": ("p.pdf", handle, "application/pdf")}).json()["session_id"]
     body = client.post(f"/api/session/{sid}/question", json={"question": "What is attention?"}).json()
-    assert body["status"] == "success" and len(body["warnings"]) == 1 and "placeholder" in body["warnings"][0]
+    assert body["status"] == "success" and len(body["warnings"]) == 1 and "built-in" in body["warnings"][0]
     assert body["responses"][0]["supporting_concepts"]  # the useful part is still returned
