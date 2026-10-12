@@ -42,3 +42,24 @@ def test_clean_text_leaves_ordinary_text_and_hyphens_alone():
     plain = "Multi-head attention, 12 layers, x_i = W q (eq. 3).\n"
     assert clean_pdf_text(plain) == plain
     assert clean_pdf_text("pages 1–5") == "pages 1-5"
+
+
+@needs_font
+def test_title_author_and_metadata_use_the_same_cleaned_text_as_the_body(tmp_path, capsys):
+    """Ingestion cleans body text; the metadata extractor reads the PDF separately, so it must clean too."""
+    path = tmp_path / "paper.pdf"
+    doc = pymupdf.open()
+    page = doc.new_page()
+    page.insert_font(fontname="dj", fontfile=FONT)
+    page.insert_text((72, 72), "Eﬃcient Diﬀusion for Q‑learning", fontsize=18, fontname="dj")
+    page.insert_text((72, 110), "Jane Smith, Ann Lee", fontsize=11, fontname="dj")
+    page.insert_text((72, 140), "Abstract\nA diﬀusion model.\n", fontsize=10, fontname="dj")
+    doc.set_metadata({"keywords": "eﬃcient, diﬀusion"})
+    doc.save(path)
+    assert main(["prerequisites", "analyze", str(path), "--json"]) == 0
+    report = json.loads(capsys.readouterr().out)["report"]
+    assert report["paper"]["title"] == "Efficient Diffusion for Q-learning"
+    assert report["paper"]["author"] == "Jane Smith, Ann Lee"
+    meta = PDFIngestionEngine().ingest(str(path)).metadata
+    assert meta.keywords == "efficient, diffusion"
+    assert "Diffusion Model" in report["concepts"]

@@ -3,6 +3,8 @@ import pymupdf as fitz  # PyMuPDF; "import fitz" prints a deprecation notice to 
 
 from dataclasses import dataclass
 
+from .text_cleaning import clean_pdf_text
+
 
 @dataclass
 class DocumentMetadata:
@@ -30,7 +32,7 @@ class DocumentMetadataExtractor:
         """The metadata of an already-open PDF, so a caller that has the
         document open does not parse the file a second time."""
 
-        metadata = pdf.metadata or {}
+        metadata = {key: clean_pdf_text(value) if isinstance(value, str) else value for key, value in (pdf.metadata or {}).items()}
 
         return DocumentMetadata(
             title=(metadata.get("title", "") or "").strip() or self._title_from_first_page(pdf) or "Unknown Title",
@@ -51,7 +53,7 @@ class DocumentMetadataExtractor:
         lines = []
         for block in pdf[0].get_text("dict").get("blocks", []):
             for line in block.get("lines", []):
-                text = " ".join(span["text"].strip() for span in line["spans"] if span["text"].strip())
+                text = clean_pdf_text(" ".join(span["text"].strip() for span in line["spans"] if span["text"].strip()))
                 if text:
                     lines.append((max(span["size"] for span in line["spans"]), text))
         head = lines[:5]
@@ -67,7 +69,7 @@ class DocumentMetadataExtractor:
         addresses and the abstract are skipped and end the run), or ""."""
         if not len(pdf):
             return ""
-        lines = [line.strip() for line in pdf[0].get_text().splitlines() if line.strip()]
+        lines = [line.strip() for line in clean_pdf_text(pdf[0].get_text()).splitlines() if line.strip()]
         authors = []
         for line in lines[1:12]:
             cleaned = re.sub(r"[*†‡§¶∗]", "", line).strip()

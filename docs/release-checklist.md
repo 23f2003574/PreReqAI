@@ -170,3 +170,10 @@ Failure (reproduced first, with a PDF holding real ligature/dash glyphs via Deja
 detected, because PDF text keeps ligature glyphs (ff, fi, fl, ffi, ffl) and non-ASCII dashes. `PDFIngestionEngine` now maps ligatures to their letters,
 U+2010-2013 to "-" and drops soft hyphens (`clean_pdf_text`). Side effect: an en dash in a page range reads as "-". Tests: `test_prereqai_typeset_text.py`.
 This is real-paper-class behaviour verified only on generated PDFs; the real-paper blocker, tutor provider, 44 workspace failures and Python 3.10/3.12 remain.
+
+## Metadata/body text contract (2026-10-12)
+
+Mismatch (reproduced first): `PDFIngestionEngine` cleaned ligatures/dashes in page text, but `DocumentMetadataExtractor` reads the PDF separately, so the report title
+read "an ff/ffi-ligature title" (ligature glyphs) while the body concepts were fine. The cleaner now lives in `backend/ingestion/text_cleaning.py` and is
+applied to the PDF metadata fields, the first-page title and the author lines too. Test: `test_title_author_and_metadata_use_the_same_cleaned_text_as_the_body`.
+Remaining blockers unchanged: real published paper, tutor model provider, 44 workspace failures, Python 3.10/3.12.
