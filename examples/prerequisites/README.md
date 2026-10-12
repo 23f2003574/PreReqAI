@@ -28,6 +28,7 @@ curl -s -X POST http://127.0.0.1:8000/api/session/$SID/question \
 ```
 
 The reply has `status: "success"` and the paper's matching concepts and sections (`supporting_concepts`,
-`supporting_sections`). No tutoring model is configured in this release, so each `answer` is the placeholder
-"A tutoring model has not yet been configured.", and the response carries a matching entry in `warnings`. Sessions are in memory
+`supporting_sections`). No tutoring model is configured in this release, so the `answer` is the built-in definition of the concept
+asked about (here "Attention: A mechanism that allows a model to focus ..."; a question that names no concept of the paper gets the placeholder
+"A tutoring model has not yet been configured."), and the response carries a matching entry in `warnings`. Sessions are in memory
 and end with the server process unless `PREREQAI_SESSION_DIR` is set (see the main README).

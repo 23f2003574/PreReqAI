@@ -185,3 +185,10 @@ listing; a disclosed built-in answer; a corrupt upload mid-journey (400, no new 
 a step; a known concept rejected as not planned (422); delete and 404s everywhere. It passed on first run (no new defect found). Limitation: in-process
 `TestClient`, not a live server (the live-server restart journey is `test_prereqai_restart_acceptance.py`). Blockers unchanged: real published paper, tutor model
 provider, 44 workspace failures, Python 3.10/3.12.
+
+## Docs vs behaviour: tutor answers (2026-10-12)
+
+Mismatch (verified first): the README "Current limitation" note and `examples/prerequisites/README.md` still said every answer is the placeholder, but since the
+built-in tutor a concept question ("What is attention?", the documented example) returns the concept's definition. Both docs now describe the real behaviour and
+the `ask` command; `test_the_documented_question_behaves_as_the_examples_readme_describes` ties the documented example to the actual response. Blockers
+unchanged: real published paper, tutor model provider, 44 workspace failures, Python 3.10/3.12.

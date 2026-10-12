@@ -161,3 +161,26 @@ def test_public_entry_points_import_and_work_from_a_clean_process(tmp_path):
                             env={**os.environ, "PYTHONPATH": str(ROOT)})
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "ok"
+
+
+def test_the_documented_question_behaves_as_the_examples_readme_describes():
+    """examples/prerequisites/README.md asks "What is attention?" and describes the reply; keep the two in step."""
+    from starlette.testclient import TestClient
+
+    from backend.main import app
+
+    guide = (ROOT / "examples/prerequisites/README.md").read_text()
+    assert '"question": "What is attention?"' in guide and "built-in definition" in guide
+    client = TestClient(app)
+    with open(ROOT / "examples/prerequisites/sample-paper.pdf", "rb") as handle:
+        sid = client.post("/api/prerequisites/analyze", files={"paper": ("p.pdf", handle, "application/pdf")}).json()["session_id"]
+    body = client.post(f"/api/session/{sid}/question", json={"question": "What is attention?"}).json()
+    assert body["status"] == "success" and body["warnings"]
+    assert body["responses"][0]["answer"].startswith("Attention: A mechanism that allows a model to focus")
+    assert body["responses"][0]["supporting_concepts"] == ["Attention"]
+    assert "A tutoring model has not yet been configured." in guide  # the placeholder case is still documented
+    unrelated = client.post(f"/api/session/{sid}/question", json={"question": "hello"}).json()
+    assert unrelated["responses"][0]["answer"] == "A tutoring model has not yet been configured."
+
+    readme = (ROOT / "README.md").read_text()
+    assert 'prerequisites ask paper.pdf "What is attention?"' in readme and "built-in definition" in readme

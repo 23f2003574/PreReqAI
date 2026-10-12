@@ -67,8 +67,11 @@ Upload a research paper to receive:
 
 ## Interactive Learning
 
-> **Current limitation:** no tutoring model is configured in this release. A question returns the paper's matching
-> concepts and sections, but the `answer` text is a placeholder, and the response says so in `warnings`.
+> **Current limitation:** no tutoring model is configured in this release. A question about a concept of the paper is answered
+> with that concept's built-in definition and, for a prerequisite, why it is needed; any other question gets the placeholder
+> "A tutoring model has not yet been configured." Either way the response says so in `warnings`, and `supporting_concepts` /
+> `supporting_sections` show where the paper covers the question. From the command line:
+> `python -m backend.cli prerequisites ask paper.pdf "What is attention?"`.
 
 After prerequisite analysis, learners can begin an interactive tutoring session.
 
