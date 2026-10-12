@@ -163,3 +163,10 @@ Failure (reproduced first): `--known` / the `known` form field rebuilt the plan,
 `PreReqAIPlatform._personalize` now re-runs the difficulty engine and its explanation. Tests: `test_prereqai_known_difficulty.py` (3, all fail without the fix).
 Open: `--studied` keeps the full plan hours in `study_time` (by design: studied concepts stay in the plan; remaining-hours semantics not decided).
 Blockers unchanged: real published paper, tutor model provider, 44 workspace failures, Python 3.10/3.12.
+
+## Typeset PDF text (2026-10-12)
+
+Failure (reproduced first, with a PDF holding real ligature/dash glyphs via DejaVu Sans): "Diffusion (ff ligature) Model", "Q-learning (non-breaking hyphen)" and "Actor-Critic (en dash)" were not
+detected, because PDF text keeps ligature glyphs (ff, fi, fl, ffi, ffl) and non-ASCII dashes. `PDFIngestionEngine` now maps ligatures to their letters,
+U+2010-2013 to "-" and drops soft hyphens (`clean_pdf_text`). Side effect: an en dash in a page range reads as "-". Tests: `test_prereqai_typeset_text.py`.
+This is real-paper-class behaviour verified only on generated PDFs; the real-paper blocker, tutor provider, 44 workspace failures and Python 3.10/3.12 remain.
