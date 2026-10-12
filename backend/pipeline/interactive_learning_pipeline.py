@@ -87,6 +87,20 @@ class InteractiveLearningPipeline:
             )
         )
 
+    @staticmethod
+    def _same_answer(first, second):
+        """Planned workflows can reach the same reply; the learner sees it once."""
+
+        return (
+            first.answer,
+            first.supporting_concepts,
+            first.supporting_sections,
+        ) == (
+            second.answer,
+            second.supporting_concepts,
+            second.supporting_sections,
+        )
+
     def answer(
 
         self,
@@ -242,9 +256,13 @@ class InteractiveLearningPipeline:
                         mode,
                     )
 
-                result.responses.append(
-                    response,
-                )
+                if not any(
+                    self._same_answer(response, earlier)
+                    for earlier in result.responses
+                ):
+                    result.responses.append(
+                        response,
+                    )
 
                 result.executed_workflows.append(
                     planned_workflow.value,

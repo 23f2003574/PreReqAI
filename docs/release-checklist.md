@@ -126,3 +126,10 @@ answers from `concept_explanations` and `prerequisite_justifications` for concep
 "What is policy gradient?"); unrelated questions keep the placeholder. The response `warnings` still disclose that no tutoring model is configured
 (wording differs: "built-in definitions" vs "placeholder"). Tests: `test_prereqai_built_in_answers.py`. Still open: a model-backed tutor (provider decision),
 the repeated identical response per workflow in `responses`, real-paper blocker, the 44 workspace failures, Python 3.10/3.12.
+
+## Duplicate question responses (2026-10-12)
+
+Defect (reproduced first): one question returned 3 identical entries in `responses` (one per planned workflow). `InteractiveLearningPipeline` now keeps a reply
+only if no earlier one has the same answer and supporting concepts/sections, so the response and the stored conversation agree. Test:
+`test_identical_workflow_answers_are_returned_once`. Remaining blockers unchanged: real published paper (needs a PDF or network), tutor model provider,
+44 workspace failures, Python 3.10/3.12 runs.

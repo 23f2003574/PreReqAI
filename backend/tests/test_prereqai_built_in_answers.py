@@ -37,3 +37,11 @@ def test_an_unrelated_question_keeps_the_disclosed_placeholder(tmp_path):
     body = client.post(f"/api/session/{sid}/question", json={"question": "hello"}).json()
     assert "tutoring model has not" in body["responses"][0]["answer"]
     assert "placeholder" in body["warnings"][0]
+
+
+def test_identical_workflow_answers_are_returned_once(tmp_path):
+    client, sid = _session(tmp_path, "Abstract\nWe train a policy gradient agent over a Markov decision process.\n")
+    body = client.post(f"/api/session/{sid}/question", json={"question": "What is policy gradient?"}).json()
+    answers = [r["answer"] for r in body["responses"]]
+    assert len(answers) == len(set(answers)) == 1
+    assert client.get(f"/api/session/{sid}").status_code == 200
