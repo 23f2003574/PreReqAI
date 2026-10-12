@@ -42,6 +42,7 @@ class PrerequisiteDetector:
         "Policy Gradient": [
             "Markov Decision Process",
             "Probability",
+            "Calculus",
         ],
 
         "Self-Attention": [
@@ -65,6 +66,7 @@ class PrerequisiteDetector:
         "Score Matching": [
             "Probability",
             "Neural Networks",
+            "Calculus",
         ],
 
         "U-Net": [
@@ -97,6 +99,7 @@ class PrerequisiteDetector:
         "Reverse Process": [
             "Probability",
             "Neural Networks",
+            "Calculus",
         ],
 
         "Markov Decision Process": [
@@ -120,6 +123,7 @@ class PrerequisiteDetector:
         "Actor-Critic": [
             "Markov Decision Process",
             "Neural Networks",
+            "Calculus",
         ],
 
         "Message Passing": [

@@ -111,3 +111,10 @@ Evidence at this commit: release checks (PreReqAI, endpoint, API generation, gen
 | Required before January | The 44 workspace/projection test failures (scoped in the triage above). |
 | Required before January | Python versions: 3.11 verified (quickstart + 303 PreReqAI tests, 2026-10-11); 3.12 and 3.10 not yet run. Older interpreters are refused with a clear message; all sources parse under the 3.10 grammar. |
 | Optional | unnumbered-heading detection, unmark a studied concept, OCR, multi-line authors, concepts outside the registry. |
+
+## Calculus prerequisite (2026-10-12)
+
+Policy Gradient, Actor-Critic, Score Matching and Reverse Process now list Calculus as a prerequisite, with a curated resource (MIT 18.01), a
+justification and the existing order/time entries, so RL and diffusion papers get a derivative refresher in the study plan (`--known Calculus` skips it).
+Tests: `test_prereqai_calculus_prerequisite.py`; release checks plus API generation checks pass. Unchanged: real-paper blocker, tutor model,
+44 workspace failures, Python 3.10/3.12 runs.

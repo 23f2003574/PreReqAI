@@ -26,6 +26,13 @@ class LearningResourceRecommender:
             10,
         ),
 
+        "Calculus": (
+            "MIT 18.01 Single Variable Calculus",
+            "MIT OpenCourseWare",
+            "https://ocw.mit.edu/courses/18-01-single-variable-calculus-fall-2006/",
+            10,
+        ),
+
         "Neural Networks": (
             "Neural Networks and Deep Learning",
             "Coursera",

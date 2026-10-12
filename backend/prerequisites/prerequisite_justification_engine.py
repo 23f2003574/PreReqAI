@@ -18,6 +18,9 @@ class PrerequisiteJustificationEngine:
         "Probability":
             "Probability is required to understand prediction confidence, likelihoods, and normalization functions such as Softmax.",
 
+        "Calculus":
+            "Gradients and derivatives underlie policy-gradient updates, score functions and the training of the networks involved.",
+
         "Graphs":
             "Graph neural networks operate on nodes, edges and adjacency structure, so graph basics are assumed.",
 
