@@ -1,3 +1,5 @@
+import re
+
 from .base_tutor import (
     BaseTutor,
 )
@@ -9,6 +11,10 @@ from .tutor_prompt_builder import (
 from .tutor_response import (
     TutorResponse,
 )
+
+
+def _normalise(value):
+    return re.sub(r"[\s\-_]+", " ", value.lower())
 
 
 class RuleBasedTutor(BaseTutor):
@@ -88,7 +94,7 @@ class RuleBasedTutor(BaseTutor):
         """Answer from the analysis already computed (definitions and
         prerequisite justifications) for the concepts the question is about."""
 
-        text = f" {question.lower()} "
+        text = _normalise(question)
 
         definitions = {
             e.concept: e.definition
@@ -100,10 +106,15 @@ class RuleBasedTutor(BaseTutor):
             for j in getattr(paper, "prerequisite_justifications", [])
         }
 
-        asked = [
-            name for name in {**definitions, **reasons}
-            if name.lower() in text
-        ]
+        asked = []
+
+        # Longest names first and each match is removed, so "self-attention" does not also
+        # answer for "Attention" and "paragraphs" or "improbable" match no concept at all.
+        for name in sorted({**definitions, **reasons}, key=len, reverse=True):
+            pattern = rf"(?<![a-z0-9]){re.escape(_normalise(name))}s?(?![a-z0-9])"
+            if re.search(pattern, text):
+                asked.append(name)
+                text = re.sub(pattern, " ", text)
 
         for name in context.concepts:
             if name not in asked and name in definitions:

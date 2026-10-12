@@ -148,3 +148,10 @@ RNN/LSTM, autoencoders/VAE, GANs. Blockers unchanged: real published paper, tuto
 with the command. It runs the platform analysis, then the same learning pipeline the API uses, prints the answers and the no-model warning, exits 0; a blank
 question is exit 2, an unreadable paper exit 1 with a readable message. Tests: `test_prereqai_cli_ask.py` (4). Not covered: `--known`/`--studied`/limit flags on
 `ask`, and `--topic`. Blockers unchanged: real published paper, tutor model provider, 44 workspace failures, Python 3.10/3.12.
+
+## Question matching boundary (2026-10-12)
+
+Failure (reproduced first): the built-in tutor matched concept names as substrings of the question, so "Summarize the paragraphs" answered with the Graphs
+justification, "improbability" with Probability, and "self-attention" also pulled in Attention. Matching is now whole-word (plural `s`, case, hyphen/space
+tolerant) and longest-name-first. Tests: `test_prereqai_question_matching.py` (7; 4 fail without the fix). Remaining blockers unchanged: real published
+paper, tutor model provider, 44 workspace failures, Python 3.10/3.12; concept-group gaps (RNN/LSTM, embeddings, VAE/GAN, other optimisers).
