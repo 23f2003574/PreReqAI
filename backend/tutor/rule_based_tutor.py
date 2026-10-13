@@ -60,10 +60,9 @@ class RuleBasedTutor(BaseTutor):
             mode,
         )
 
-        answer = self._built_in_answer(
-            paper,
-            context,
-            question,
+        answer = (
+            self._built_in_answer(paper, context, question)
+            or self._study_plan_answer(paper, question)
         )
 
         return TutorResponse(
@@ -129,3 +128,38 @@ class RuleBasedTutor(BaseTutor):
                 parts.append(f"Why it is needed here: {reasons[name]}")
 
         return " ".join(parts)
+
+    @staticmethod
+    def _study_plan_answer(paper, question):
+        """Answer paper-level study questions (what to learn first, how long,
+        how hard) from the learning plan, study time and difficulty already computed."""
+
+        text = _normalise(question)
+
+        if re.search(r"\b(how (long|many hours|many days|much time)|time (to|will|does))\b", text):
+            estimate = getattr(paper, "study_time", None)
+            if estimate is None:
+                return ""
+            return (
+                f"Plan about {estimate.total_hours} hours of preparation, roughly "
+                f"{estimate.recommended_days} days at {estimate.average_hours_per_day:g} hours a day."
+            )
+
+        if re.search(r"\b(how (hard|difficult)|difficulty)\b", text):
+            difficulty = getattr(paper, "difficulty", None)
+            if difficulty is None:
+                return ""
+            return f"Difficulty: {difficulty.level}. {difficulty.explanation}".strip()
+
+        if re.search(
+            r"\b(prerequisites?|prereqs?|background|study|learn|know|read first|start with|before reading)\b", text
+        ):
+            steps = sorted(getattr(paper, "learning_plan", []), key=lambda step: step.order)
+            if not steps:
+                return ""
+            listed = "; ".join(
+                f"{step.order}. {step.concept} (~{step.estimated_hours} h)" for step in steps
+            )
+            return f"Study these in order before the paper: {listed}."
+
+        return ""
