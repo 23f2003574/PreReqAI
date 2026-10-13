@@ -29,9 +29,18 @@ class SessionManager:
         self.last_save_ok = True
 
     @staticmethod
+    def _directory() -> str | None:
+        """PREREQAI_SESSION_DIR with a leading ~ expanded (env files, systemd and Docker pass it unexpanded,
+        which would otherwise create a directory literally named "~" in the working directory); None when unset or blank."""
+
+        value = os.environ.get("PREREQAI_SESSION_DIR", "").strip()
+
+        return os.path.expanduser(value) if value else None
+
+    @staticmethod
     def _path(session_id: str) -> Path | None:
 
-        directory = os.environ.get("PREREQAI_SESSION_DIR")
+        directory = SessionManager._directory()
 
         try:  # the id is client input: only a canonical UUID may become a file name
 
@@ -77,7 +86,7 @@ class SessionManager:
     def purge_expired(self) -> int:
         """Delete saved session files (and leftover temp files) past the expiry; returns how many were removed."""
 
-        directory = os.environ.get("PREREQAI_SESSION_DIR")
+        directory = SessionManager._directory()
 
         if not directory or not Path(directory).is_dir():
 
@@ -217,7 +226,7 @@ class SessionManager:
         """Every known session: those in memory plus those only saved in PREREQAI_SESSION_DIR (restored on the way),
         newest first. Expired, unreadable and foreign files are skipped."""
 
-        directory = os.environ.get("PREREQAI_SESSION_DIR")
+        directory = SessionManager._directory()
 
         if directory and Path(directory).is_dir():
 
