@@ -143,16 +143,20 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         covered = len(report["missing_prerequisites"]) - len(missing)
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "
               f"missing: {len(missing)}" + (f" ({covered} covered in the paper)" if covered else ""))
+        done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
         if report["learning_plan"]:  # one line: what to study, in order (the summary stays at most 5 lines)
             print("  study plan: " + " -> ".join(
-                f"{step['step']}. {step['concept']} ({step['estimated_hours']}h)" for step in report["learning_plan"]))
+                f"{step['step']}. {step['concept']} ({step['estimated_hours']}h" + (", studied)" if step["concept"] in done else ")")
+                for step in report["learning_plan"]))
         elif missing:
             print("  study first: " + ", ".join(missing))
         readiness, study_time = report.get("readiness"), report.get("study_time")  # readiness, difficulty, preparation time
         if readiness and study_time:
                 print(f"  readiness: {readiness['status']} ({readiness['completed_concepts']}/{readiness['total_concepts']} concepts ready); "
                   f"difficulty: {report['paper_difficulty']['level']}; "
-                  f"preparation: ~{study_time['total_hours']}h over {study_time['recommended_days']} days")
+                  f"preparation: ~{study_time['total_hours']}h over {study_time['recommended_days']} days"
+                  + (f" ({left}h left)" if done and (left := sum(step["estimated_hours"] for step in report["learning_plan"]
+                                                               if step["concept"] not in done)) != study_time["total_hours"] else ""))
         timings = outcome["timings"]
         if timings:
             slowest, seconds = max(timings.items(), key=lambda item: item[1])
