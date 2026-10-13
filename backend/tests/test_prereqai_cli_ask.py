@@ -55,3 +55,9 @@ def test_studying_the_whole_plan_says_the_learner_is_ready():
     code, out, _ = _ask(SAMPLE, "What do I need to know first?", "--studied", "Linear Algebra", "--studied",
                         "Probability", "--studied", "Calculus", "--studied", "Neural Networks")
     assert code == 0 and "ready to read the paper" in out
+
+
+def test_the_documented_progress_commands_work_as_the_example_readme_describes():
+    code, out, err = _ask(SAMPLE, "What should I learn first?", "--known", "Calculus", "--studied", "Linear Algebra")
+    assert code == 0 and err == "" and "Already studied: Linear Algebra" in out and "Calculus" not in out.split("warning")[0]
+    assert "study-plan figures" in out

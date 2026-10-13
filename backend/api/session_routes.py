@@ -209,7 +209,7 @@ def ask_question(
                     "supporting_concepts and supporting_sections show where the paper covers the question."]
     elif built_in:
         warnings = ["No tutoring model is configured in this release: answers are the built-in definitions "
-                    "and prerequisite reasons from the analysis, not generated explanations."]
+                    "prerequisite reasons and study plan from the analysis, not generated explanations."]
     else:
         warnings = []
 

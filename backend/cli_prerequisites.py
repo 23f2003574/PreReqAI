@@ -62,7 +62,7 @@ def add_prerequisites_ask_parser(commands):
         description="Analyses the paper (as `analyze` does) and answers one question from the analysis in the same process. "
                     "Same workflow as POST /api/prerequisites/analyze followed by POST /api/session/{id}/question.",
         epilog="Example: python -m backend.cli prerequisites ask paper.pdf \"Why do I need calculus?\". "
-               "No tutoring model is configured in this release: answers are built-in definitions and prerequisite reasons. "
+               "No tutoring model is configured in this release: answers are built-in definitions, prerequisite reasons and study-plan figures. "
                "Exit codes: 0 success; 1 analysis or answer failed; 2 usage error.",
     )
     ask.add_argument("paper", help="Path to the paper PDF")
@@ -215,7 +215,7 @@ def run_prerequisites_ask(args, platform=None) -> int:
     placeholder = any("tutoring model has not yet been configured" in r["answer"] for r in responses)
     warning = ("No tutoring model is configured in this release: the answer is a placeholder."
                if placeholder else
-               "No tutoring model is configured in this release: answers are built-in definitions and prerequisite reasons, not generated explanations.")
+               "No tutoring model is configured in this release: answers are built-in definitions, prerequisite reasons and study-plan figures, not generated explanations.")
     warnings = [*(outcome.get("warnings") or []), warning]  # e.g. a --known name that is not in the plan
     if args.as_json:
         print(json.dumps({"status": "success", "session_id": outcome["session_id"], "question": args.question,

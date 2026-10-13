@@ -29,6 +29,21 @@ curl -s -X POST http://127.0.0.1:8000/api/session/$SID/question \
 
 The reply has `status: "success"` and the paper's matching concepts and sections (`supporting_concepts`,
 `supporting_sections`). No tutoring model is configured in this release, so the `answer` is the built-in definition of the concept
-asked about (here "Attention: A mechanism that allows a model to focus ..."; a question that names no concept of the paper gets the placeholder
-"A tutoring model has not yet been configured."), and the response carries a matching entry in `warnings`. Sessions are in memory
+asked about (here "Attention: A mechanism that allows a model to focus ..."). A study-plan question such as "What should I learn first?",
+"How long will this take?" or "How difficult is it?" is answered from the analysis too. Any other question that names no concept of the
+paper gets the placeholder "A tutoring model has not yet been configured." The response carries a matching entry in `warnings`. Sessions are in memory
 and end with the server process unless `PREREQAI_SESSION_DIR` is set (see the main README).
+
+## Track your progress
+
+Tell PreReqAI what you already know or have finished, and the plan, readiness and answers follow. From the repository root:
+
+```bash
+python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf --known Calculus --studied "Linear Algebra"
+python -m backend.cli prerequisites ask examples/prerequisites/sample-paper.pdf "What should I learn first?" --known Calculus --studied "Linear Algebra"
+```
+
+The summary marks studied steps (`(12h, studied)`) and shows the hours left; the answer lists the remaining steps. Over HTTP, send
+`known` / `studied` form fields with the upload, then mark more later with
+`curl -s -X POST "http://127.0.0.1:8000/api/prerequisites/sessions/$SID/studied?concept=Probability"` (`-X DELETE` undoes it).
+A name that is not in the study plan is reported in `warnings` (CLI/upload) or answered with HTTP 422 (the `studied` endpoint).
