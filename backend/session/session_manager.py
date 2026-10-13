@@ -175,6 +175,10 @@ class SessionManager:
 
                 return None
 
+            if not isinstance(session, LearningSession):  # readable but not a session: same as unknown
+
+                return None
+
             self.sessions[session_id] = session
 
         return session
