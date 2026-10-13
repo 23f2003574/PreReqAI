@@ -281,7 +281,8 @@ class PreReqAIPlatform:
         (tracker.complete if studied else tracker.reset)(session.paper, concept)
         PaperReadinessEngine().evaluate(session.paper)
         fresh = self.analysis.report_generator.generate(session.paper)
-        session.report["study_progress"], session.report["readiness"] = fresh["study_progress"], fresh["readiness"]
+        for key in ("study_progress", "readiness", "study_actions"):
+            session.report[key] = fresh[key]
         session_manager.save(session)
         return {"study_progress": fresh["study_progress"], "readiness": fresh["readiness"]}
 
@@ -321,7 +322,8 @@ class PreReqAIPlatform:
                 pipeline.progress_tracker.complete(paper, planned[name.casefold()])
         pipeline.readiness_engine.evaluate(paper)
         fresh = pipeline.report_generator.generate(paper)
-        result.report["study_progress"], result.report["readiness"] = fresh["study_progress"], fresh["readiness"]
+        for key in ("study_progress", "readiness", "study_actions"):
+            result.report[key] = fresh[key]
         return sorted(name for name in names if name.casefold() not in planned)
 
 

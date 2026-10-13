@@ -164,6 +164,10 @@ class LearningReportGenerator:
                 }
 
                 for action in paper.study_actions
+                # a concept the learner has finished is no longer something to study
+                if action.title not in {
+                    f"Study {item.concept}" for item in paper.study_progress if item.completed
+                }
             ],
 
             "learning_resources": [
