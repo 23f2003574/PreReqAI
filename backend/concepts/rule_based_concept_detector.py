@@ -38,10 +38,24 @@ class RuleBasedConceptDetector:
             if not _BACK_MATTER.match((paragraph.section_title or "").strip())
         ).lower()
 
-        # PDF text is hard-wrapped: "policy\ngradient" and "multi-\nhead" must still match their concept
-        full_text = re.sub(r"\s+", " ", re.sub(r"-\s*\n\s*", "-", full_text))
-
         concepts = self.registry.all()
+
+        # PDF text is hard-wrapped: "policy\ngradient" and "multi-\nhead" must still match their concept.
+        # A line-end hyphen is a typesetting break ("trans-\nformer" is "transformer") unless the word is
+        # a real compound ("self-\nattention"); a joined word that is part of a concept name settles it.
+        words = {
+            word.rstrip("s")
+            for concept in concepts
+            for term in (concept.name, *concept.aliases)
+            for word in term.lower().split()
+        }
+
+        def unwrap(match):
+            joined = match.group(1) + match.group(2)
+            return joined if joined.rstrip("s") in words else f"{match.group(1)}-{match.group(2)}"
+
+        full_text = re.sub(r"(\w+)-[ \t]*\n\s*(\w+)", unwrap, full_text)
+        full_text = re.sub(r"\s+", " ", re.sub(r"-\s*\n\s*", "-", full_text))
 
         def mentions(concept):
             return full_text.count(concept.name.lower()) + sum(
