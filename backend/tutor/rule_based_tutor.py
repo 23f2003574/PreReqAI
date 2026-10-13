@@ -157,9 +157,16 @@ class RuleBasedTutor(BaseTutor):
             steps = sorted(getattr(paper, "learning_plan", []), key=lambda step: step.order)
             if not steps:
                 return ""
+            done = {
+                item.concept for item in getattr(paper, "study_progress", []) if item.completed
+            }
+            todo = [step for step in steps if step.concept not in done]
+            if not todo:
+                return "You have studied every planned prerequisite; you are ready to read the paper."
             listed = "; ".join(
-                f"{step.order}. {step.concept} (~{step.estimated_hours} h)" for step in steps
+                f"{step.order}. {step.concept} (~{step.estimated_hours} h)" for step in todo
             )
-            return f"Study these in order before the paper: {listed}."
+            finished = f" Already studied: {', '.join(c for c in (s.concept for s in steps) if c in done)}." if done else ""
+            return f"Study these in order before the paper: {listed}.{finished}"
 
         return ""

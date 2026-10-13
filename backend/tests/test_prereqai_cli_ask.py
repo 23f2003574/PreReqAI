@@ -39,3 +39,19 @@ def test_a_blank_question_is_a_usage_error_and_a_missing_paper_fails_readably():
     assert code == 2 and out == "" and "must not be empty" in err
     code, out, err = _ask("/no/such/paper.pdf", "What is softmax?")
     assert code == 1 and out == "" and "analysis failed" in err and "Traceback" not in err
+
+
+def test_known_and_studied_personalize_the_answer_and_unmatched_names_are_reported():
+    code, out, err = _ask(SAMPLE, "What should I learn first?", "--known", "Calculus", "--studied", "Linear Algebra",
+                          "--known", "Bogus", "--json")
+    body = json.loads(out)
+    answer = body["responses"][0]["answer"]
+    assert code == 0 and err == ""
+    assert "Calculus" not in answer and "Probability" in answer and "Already studied: Linear Algebra" in answer
+    assert any("'Bogus' is not in this paper's study plan" in w for w in body["warnings"])
+
+
+def test_studying_the_whole_plan_says_the_learner_is_ready():
+    code, out, _ = _ask(SAMPLE, "What do I need to know first?", "--studied", "Linear Algebra", "--studied",
+                        "Probability", "--studied", "Calculus", "--studied", "Neural Networks")
+    assert code == 0 and "ready to read the paper" in out

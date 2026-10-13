@@ -67,6 +67,10 @@ def add_prerequisites_ask_parser(commands):
     )
     ask.add_argument("paper", help="Path to the paper PDF")
     ask.add_argument("question", help="The question to ask about the paper")
+    ask.add_argument("--known", action="append", default=[], metavar="CONCEPT",
+                     help="A concept you already know; it is left out of the study plan (repeat for several)")
+    ask.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
+                     help="A planned concept you have finished studying (repeat for several)")
     ask.add_argument("--json", action="store_true", dest="as_json",
                      help="Print session_id, warnings and the answers as JSON")
 
@@ -188,7 +192,7 @@ def run_prerequisites_ask(args, platform=None) -> int:
             print(f"error: required package '{exc.name}' is not installed", file=sys.stderr)
             print("  hint: run `pip install -r requirements.txt` in this environment", file=sys.stderr)
             return EXIT_FAILURE
-    outcome = platform.analyze(args.paper)
+    outcome = platform.analyze(args.paper, known=args.known, studied=args.studied)
     if outcome["status"] != "success":
         print(f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
         if outcome.get("hint"):
@@ -208,13 +212,15 @@ def run_prerequisites_ask(args, platform=None) -> int:
     warning = ("No tutoring model is configured in this release: the answer is a placeholder."
                if placeholder else
                "No tutoring model is configured in this release: answers are built-in definitions and prerequisite reasons, not generated explanations.")
+    warnings = [*(outcome.get("warnings") or []), warning]  # e.g. a --known name that is not in the plan
     if args.as_json:
         print(json.dumps({"status": "success", "session_id": outcome["session_id"], "question": args.question,
-                          "responses": responses, "warnings": [warning]}, indent=2))
+                          "responses": responses, "warnings": warnings}, indent=2))
         return EXIT_OK
     for response in responses:
         print(response["answer"])
     if responses and responses[0]["supporting_concepts"]:
         print("  concepts: " + ", ".join(responses[0]["supporting_concepts"]))
-    print(f"  warning: {warning}")
+    for line in warnings:
+        print(f"  warning: {line}")
     return EXIT_OK
