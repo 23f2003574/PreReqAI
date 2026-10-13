@@ -22,6 +22,10 @@ class SessionManager:
 
     DEFAULT_MAX_AGE_DAYS = 30.0
 
+    # A long-running server must not hold every analysed paper forever: past this many sessions in memory the
+    # oldest are dropped from memory (saved ones can still be restored from PREREQAI_SESSION_DIR on request).
+    MAX_SESSIONS_IN_MEMORY = 500
+
     def __init__(self):
 
         self.sessions = {}
@@ -164,7 +168,21 @@ class SessionManager:
 
         self.save(session)
 
+        self._evict_oldest()
+
         return session
+
+    def _evict_oldest(self) -> None:
+
+        excess = len(self.sessions) - self.MAX_SESSIONS_IN_MEMORY
+
+        if excess > 0:
+
+            oldest = sorted(self.sessions.values(), key=lambda item: getattr(item, "created_at", 0.0))[:excess]
+
+            for old in oldest:
+
+                self.sessions.pop(old.session_id, None)
 
     def get(
         self,
