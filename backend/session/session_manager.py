@@ -32,6 +32,8 @@ class SessionManager:
 
         self.last_save_ok = True
 
+        self._last_used = {}  # session_id -> time of the latest create/get, so eviction drops the idlest session
+
     @staticmethod
     def _directory() -> str | None:
         """PREREQAI_SESSION_DIR with a leading ~ expanded (env files, systemd and Docker pass it unexpanded,
@@ -164,6 +166,8 @@ class SessionManager:
             session.session_id
         ] = session
 
+        self._last_used[session.session_id] = time.time()
+
         self.purge_expired()
 
         self.save(session)
@@ -178,11 +182,16 @@ class SessionManager:
 
         if excess > 0:
 
-            oldest = sorted(self.sessions.values(), key=lambda item: getattr(item, "created_at", 0.0))[:excess]
+            oldest = sorted(
+                self.sessions.values(),
+                key=lambda item: self._last_used.get(item.session_id, getattr(item, "created_at", 0.0)),
+            )[:excess]
 
             for old in oldest:
 
                 self.sessions.pop(old.session_id, None)
+
+                self._last_used.pop(old.session_id, None)
 
     def get(
         self,
@@ -216,6 +225,10 @@ class SessionManager:
                 return None
 
             self.sessions[session_id] = session
+
+        if session is not None:
+
+            self._last_used[session_id] = time.time()
 
         return session
 

@@ -28,3 +28,19 @@ def test_an_evicted_session_is_still_restored_from_disk_and_the_newest_is_never_
 
     assert list(session_manager.sessions) == [second.session_id]
     assert session_manager.get(first.session_id).paper_title == "First"  # restored from its saved file
+
+
+def test_an_active_old_session_outlives_an_idle_newer_one(monkeypatch):
+    monkeypatch.delenv("PREREQAI_SESSION_DIR", raising=False)
+    monkeypatch.setattr(type(session_manager), "MAX_SESSIONS_IN_MEMORY", 2)
+    session_manager.sessions.clear()
+    session_manager._last_used.clear()
+    old = session_manager.create("Old but active")
+    idle = session_manager.create("Newer but idle")
+    session_manager._last_used[old.session_id], session_manager._last_used[idle.session_id] = 10.0, 20.0
+    assert session_manager.get(old.session_id) is old  # the learner comes back to it: now the most recently used
+
+    newest = session_manager.create("Newest")
+
+    assert set(session_manager.sessions) == {old.session_id, newest.session_id}
+    assert session_manager.get(idle.session_id) is None

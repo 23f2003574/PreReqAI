@@ -200,3 +200,13 @@ Process study steps. The detector now skips paragraphs of References/Bibliograph
 gained Bibliography and Works Cited headings. Tests: `test_prereqai_references_excluded.py` (6; 5 fail without the fix). Limit: a bibliography whose heading the parser
 does not recognise is still counted. Unresolved for the next project day: a real published paper has still never been run (needs a PDF or network), the tutor model provider
 decision, the 44 workspace/projection failures, Python 3.10/3.12 runs, concept groups (RNN/LSTM, embeddings, VAE/GAN, other optimisers), two-column reading order. NOT release-ready.
+
+## Day 13 record: bounded sessions evict the idlest (2026-10-13)
+
+Defect (found reviewing the memory cap added earlier today): eviction dropped the session created longest ago, so a learner returning to a long-running study session could lose it
+before an idle newer one. Eviction now uses the latest create/get time. Test: `test_an_active_old_session_outlives_an_idle_newer_one` (fails without the change).
+Today's other changes (all separate commits): study-plan answers from the analysis, `ask --known/--studied`, hyphenated line breaks, unsaved-session warning, study actions follow
+progress, progress shown in the CLI summary, `~` in `PREREQAI_SESSION_DIR`, session cap, example README. Full suite: 45 failed, 12,030 passed (arXiv test deselected, network).
+Unresolved for the next project day (genuine blockers): a real published paper has still never been run; the tutor model provider decision; the 45 failures (all in the
+research-workspace / consumer-projection subsystems and the network resolver tests, none in the release checks); Python 3.10/3.12 runs; the API `study_time` still describes the whole plan after
+progress; a failed save after analysis (studied/question) is still silent; concept groups (RNN/LSTM, embeddings, VAE/GAN) and two-column reading order. NOT release-ready.
