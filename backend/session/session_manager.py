@@ -26,6 +26,8 @@ class SessionManager:
 
         self.sessions = {}
 
+        self.last_save_ok = True
+
     @staticmethod
     def _path(session_id: str) -> Path | None:
 
@@ -99,14 +101,17 @@ class SessionManager:
 
         return removed
 
-    def save(self, session: LearningSession) -> None:
-        """Write the session to PREREQAI_SESSION_DIR (no-op when unset or the write fails: memory stays authoritative)."""
+    def save(self, session: LearningSession) -> bool:
+        """Write the session to PREREQAI_SESSION_DIR (no-op when unset or the write fails: memory stays authoritative).
+        Returns False only when saving was configured but failed; `last_save_ok` keeps the latest result."""
 
         path = self._path(session.session_id)
 
         if path is None:
 
-            return
+            self.last_save_ok = True
+
+            return True
 
         try:
 
@@ -118,9 +123,13 @@ class SessionManager:
 
             temp.replace(path)
 
+            self.last_save_ok = True
+
         except Exception:
 
-            pass
+            self.last_save_ok = False
+
+        return self.last_save_ok
 
     def create(
         self,

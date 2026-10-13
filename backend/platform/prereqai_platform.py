@@ -237,6 +237,10 @@ class PreReqAIPlatform:
         session = session_manager.create(
             paper_title=result.report["paper"]["title"], report=deepcopy(result.report), paper=result.paper,
         )
+        unsaved = [] if session_manager.last_save_ok else [
+            "The session could not be saved to PREREQAI_SESSION_DIR, so it will not survive a server restart; "
+            "check that the directory exists and is writable."
+        ]
         no_concepts = []
         if not result.report.get("concepts"):
             has_text = any((getattr(page, "text", "") or "").strip() for page in (result.paper.pages or []))
@@ -247,7 +251,7 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored" for name in unmatched]
+            warnings=unsaved + no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored" for name in unmatched]
             + [f"--studied {name!r} is not in this paper's study plan and was ignored" for name in not_studied],
         )
         return with_diagnostics(outcome, result.timings, result.report)
