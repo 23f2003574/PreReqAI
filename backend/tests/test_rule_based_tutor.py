@@ -106,3 +106,20 @@ def test_study_plan_question_without_a_plan_keeps_the_placeholder():
     paper.learning_plan = []
     response = _ask(paper, "What should I learn first?")
     assert "has not yet been configured" in response.answer and response.confidence == 0.0
+
+
+def test_time_answer_follows_study_progress_and_an_empty_plan():
+    from backend.models.paper import StudyProgress
+
+    paper = _planned_paper()  # 4 h + 3 h over 2 days at 3.5 h/day
+    paper.study_progress = [StudyProgress("Linear Algebra", True, 100), StudyProgress("Probability", False, 0)]
+    assert _ask(paper, "How long will this take?").answer == "Plan about 3 hours of preparation, roughly 1 days at 3.5 hours a day."
+    assert "Already studied: Linear Algebra" in _ask(paper, "What should I learn first?").answer
+
+    paper.study_progress = [StudyProgress("Linear Algebra", True, 100), StudyProgress("Probability", True, 100)]
+    assert "no preparation time is left" in _ask(paper, "How many hours will I need?").answer
+
+    paper.learning_plan, paper.study_time = [], paper.study_time.__class__(0, 1, 0.0)
+    paper.concepts = [object()]
+    assert "no prerequisites left" in _ask(paper, "What should I study first?").answer
+    assert "no preparation time is left" in _ask(paper, "How long will this take?").answer

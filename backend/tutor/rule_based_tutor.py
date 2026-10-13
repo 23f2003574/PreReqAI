@@ -130,6 +130,10 @@ class RuleBasedTutor(BaseTutor):
         return " ".join(parts)
 
     @staticmethod
+    def _studied(paper):
+        return {item.concept for item in getattr(paper, "study_progress", []) if item.completed}
+
+    @staticmethod
     def _study_plan_answer(paper, question):
         """Answer paper-level study questions (what to learn first, how long,
         how hard) from the learning plan, study time and difficulty already computed."""
@@ -140,9 +144,18 @@ class RuleBasedTutor(BaseTutor):
             estimate = getattr(paper, "study_time", None)
             if estimate is None:
                 return ""
+            plan = getattr(paper, "learning_plan", [])
+            done = RuleBasedTutor._studied(paper)
+            if estimate.total_hours == 0 or (plan and all(step.concept in done for step in plan)):
+                return "You have studied every planned prerequisite; no preparation time is left."
+            hours = sum(step.estimated_hours for step in plan if step.concept not in done) if plan else estimate.total_hours
+            if hours == estimate.total_hours:
+                days = estimate.recommended_days
+            else:  # progress was made: re-plan the remaining hours at the same daily pace
+                days = max(1, -(-hours // max(estimate.average_hours_per_day, 1)))
             return (
-                f"Plan about {estimate.total_hours} hours of preparation, roughly "
-                f"{estimate.recommended_days} days at {estimate.average_hours_per_day:g} hours a day."
+                f"Plan about {hours} hours of preparation, roughly "
+                f"{int(days)} days at {estimate.average_hours_per_day:g} hours a day."
             )
 
         if re.search(r"\b(how (hard|difficult)|difficulty)\b", text):
@@ -156,10 +169,10 @@ class RuleBasedTutor(BaseTutor):
         ):
             steps = sorted(getattr(paper, "learning_plan", []), key=lambda step: step.order)
             if not steps:
+                if getattr(paper, "concepts", None):  # concepts were found but nothing is left to study
+                    return "There are no prerequisites left to study for this paper."
                 return ""
-            done = {
-                item.concept for item in getattr(paper, "study_progress", []) if item.completed
-            }
+            done = RuleBasedTutor._studied(paper)
             todo = [step for step in steps if step.concept not in done]
             if not todo:
                 return "You have studied every planned prerequisite; you are ready to read the paper."
