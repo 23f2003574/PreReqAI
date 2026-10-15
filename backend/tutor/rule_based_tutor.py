@@ -71,7 +71,8 @@ class RuleBasedTutor(BaseTutor):
         )
 
         answer = (
-            self._built_in_answer(paper, context, question)
+            self._resources_answer(paper, question)
+            or self._built_in_answer(paper, context, question)
             or self._study_plan_answer(paper, question)
         )
 
@@ -143,6 +144,29 @@ class RuleBasedTutor(BaseTutor):
                 parts.append(f"Why it is needed here: {reasons[name]}")
 
         return " ".join(parts)
+
+    @staticmethod
+    def _resources_answer(paper, question):
+        """'Which resources/courses should I use for X?' -> the curated study link(s) already in the analysis:
+        the named concept's, or every concept still to study (in study order) when none is named."""
+
+        text = _normalise(question)
+
+        if not re.search(r"\b(resources?|courses?|tutorials?|where (can|do|should) i (learn|study))\b", text):
+            return ""
+
+        resources = list(getattr(paper, "learning_resources", []))
+        named = [r for r in resources if re.search(rf"(?<![a-z0-9]){re.escape(_normalise(r.concept))}(?![a-z0-9])", text)]
+        if named:
+            chosen = named
+        else:
+            done = RuleBasedTutor._studied(paper)
+            order = {step.concept: step.order for step in getattr(paper, "learning_plan", [])}
+            chosen = sorted((r for r in resources if r.concept not in done), key=lambda r: order.get(r.concept, len(order) + 1))
+        if not chosen:
+            return ""
+        listed = "; ".join(f"{r.concept}: {r.title} ({r.provider}, ~{r.estimated_hours} h) {r.url}" for r in chosen)
+        return f"Suggested resources: {listed}."
 
     @staticmethod
     def _studied(paper):
