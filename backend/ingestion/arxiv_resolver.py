@@ -33,10 +33,9 @@ class ArxivResolver(BaseSourceResolver):
 
     def __init__(self):
 
-        self.CACHE_DIRECTORY.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
+        # The cache directory is created when a download is stored, not here: building the resolver (which every
+        # analysis does, even of a local PDF) must not write into, or fail because of, the current directory.
+        pass
 
     def resolve(
         self,
@@ -66,6 +65,11 @@ class ArxivResolver(BaseSourceResolver):
             raise ValueError(
                 f"arXiv returned no PDF for {source.identifier}"
             )
+
+        self.CACHE_DIRECTORY.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         partial_path = pdf_path.with_name(
             f"{pdf_path.name}.{os.getpid()}.{threading.get_ident()}.part"
