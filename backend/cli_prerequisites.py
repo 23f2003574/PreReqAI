@@ -46,6 +46,8 @@ def add_prerequisites_parser(subparsers):
     analyze.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
                          help="A planned concept you have finished studying; it counts toward readiness "
                               "(repeat for several; re-run with more as you progress)")
+    analyze.add_argument("--resources", action="store_true",
+                         help="Also list a curated course or article (with link) for each concept still to study")
     analyze.add_argument("--max-seconds", type=_finite_number, default=None, dest="max_seconds",
                          help="Stop the analysis once it has run this long (checked between stages; default: no limit)")
     analyze.add_argument("--max-file-mb", type=_finite_number, default=None, dest="max_file_mb",
@@ -157,6 +159,16 @@ def run_prerequisites_analyze(args, platform=None) -> int:
                   f"preparation: ~{study_time['total_hours']}h over {study_time['recommended_days']} days"
                   + (f" ({left}h left)" if done and (left := sum(step["estimated_hours"] for step in report["learning_plan"]
                                                                if step["concept"] not in done)) != study_time["total_hours"] else ""))
+        if args.resources:
+            pending = [item for item in report.get("learning_resources", []) if item["concept"] not in done]
+            if pending:
+                print("  resources:")
+                for item in pending:
+                    print(f"    {item['concept']}: {item['title']} ({item['provider']}, ~{item['estimated_hours']}h) {item['url']}")
+            elif report.get("learning_resources"):
+                print("  resources: none left to study")
+            else:
+                print("  resources: none available for this paper's concepts")
         timings = outcome["timings"]
         if timings:
             slowest, seconds = max(timings.items(), key=lambda item: item[1])
