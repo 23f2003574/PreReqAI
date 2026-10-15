@@ -13,11 +13,6 @@ import threading
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
-def _concept_names(values):
-    """--known/--studied values with comma-separated lists split (`--studied "Probability, Calculus"`); concept names never contain commas."""
-    return [name for value in values for name in value.split(",")]
-
-
 def _finite_number(value):
     """argparse type for the limit flags: a finite number. NaN/infinity are a usage
     error naming the flag (never a traceback); a value of 0 or below still reaches
@@ -111,8 +106,8 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         previous = None
     try:
         outcome = platform.analyze(args.paper, diagnostics=args.diagnose, should_cancel=cancelled.is_set, limits=limits,
-                                    **({'known': _concept_names(args.known)} if args.known else {}),
-                                    **({'studied': _concept_names(args.studied)} if args.studied else {}))
+                                    **({'known': args.known} if args.known else {}),
+                                    **({'studied': args.studied} if args.studied else {}))
     finally:
         if previous is not None:
             signal.signal(signal.SIGINT, previous)
@@ -217,7 +212,7 @@ def run_prerequisites_ask(args, platform=None) -> int:
             print(f"error: required package '{exc.name}' is not installed", file=sys.stderr)
             print("  hint: run `pip install -r requirements.txt` in this environment", file=sys.stderr)
             return EXIT_FAILURE
-    outcome = platform.analyze(args.paper, known=_concept_names(args.known), studied=_concept_names(args.studied))
+    outcome = platform.analyze(args.paper, known=args.known, studied=args.studied)
     if outcome["status"] != "success":
         print(f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
         if outcome.get("hint"):

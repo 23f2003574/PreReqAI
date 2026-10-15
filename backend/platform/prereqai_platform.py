@@ -126,6 +126,12 @@ def _concept_label(name: str) -> str:
     return " ".join(name.split())
 
 
+def _split_names(values) -> list:
+    """`known`/`studied` values with comma-separated lists split, so every surface (CLI, upload form, Python)
+    accepts "Probability,Calculus"; concept names never contain commas."""
+    return [name for value in (values or ()) for name in str(value).split(",")]
+
+
 def _concept_key(name: str) -> str:
     return _concept_label(name).casefold()
 
@@ -162,7 +168,7 @@ class PreReqAIPlatform:
         """The workflow's public entry point: _analyze() plus the final-state guard. A result that is
         not a valid terminal state (see workflow_result.terminal_violations) is never returned as it
         is -- it becomes a failure at stage "finalization"."""
-        outcome = self._analyze(file_path, diagnostics, should_cancel, limits, known, studied)
+        outcome = self._analyze(file_path, diagnostics, should_cancel, limits, _split_names(known), _split_names(studied))
         problems = terminal_violations(outcome)
         if problems:
             outcome = failure_body(

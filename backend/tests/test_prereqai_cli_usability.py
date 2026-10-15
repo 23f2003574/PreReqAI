@@ -26,3 +26,18 @@ def test_empty_plan_readiness_reads_naturally_and_separate_flags_still_work():
     out = _run("analyze", SAMPLE, "--known", "Linear Algebra,Probability", "--known", "Calculus", "--known", "Neural Networks")
     assert "Ready to Read (no concepts left to study)" in out and "0/0" not in out
     assert "(1/4 concepts ready)" in _run("analyze", SAMPLE, "--studied", "Calculus")
+
+
+def test_comma_lists_behave_the_same_over_http_and_python(tmp_path):
+    from fastapi.testclient import TestClient
+    from backend.main import app
+    from backend.platform import platform
+
+    sample = ROOT / SAMPLE
+    body = TestClient(app).post("/api/prerequisites/analyze", files={"paper": ("p.pdf", sample.read_bytes(), "application/pdf")},
+                                data={"known": "Linear Algebra, Probability", "studied": "Calculus,Nonsense"}).json()
+    assert [s["concept"] for s in body["report"]["learning_plan"]] == ["Calculus", "Neural Networks"]
+    assert body["report"]["readiness"]["completed_concepts"] == 1
+    assert body["warnings"] == ["--studied 'Nonsense' is not in this paper's study plan and was ignored"]
+    direct = platform.analyze(str(sample), known=["Linear Algebra,Probability"])
+    assert [s["concept"] for s in direct["report"]["learning_plan"]] == ["Calculus", "Neural Networks"]

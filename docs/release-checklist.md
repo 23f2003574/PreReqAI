@@ -210,3 +210,21 @@ progress, progress shown in the CLI summary, `~` in `PREREQAI_SESSION_DIR`, sess
 Unresolved for the next project day (genuine blockers): a real published paper has still never been run; the tutor model provider decision; the 45 failures (all in the
 research-workspace / consumer-projection subsystems and the network resolver tests, none in the release checks); Python 3.10/3.12 runs; the API `study_time` still describes the whole plan after
 progress; a failed save after analysis (studied/question) is still silent; concept groups (RNN/LSTM, embeddings, VAE/GAN) and two-column reading order. NOT release-ready.
+
+## Day 13 hand-off (2026-10-15)
+
+Release checks (step 3, PreReqAI + endpoint tests) were green at commit 11 (367 passed) and again at the day-13 commit (370 passed). Done today: `analyze --resources` and the
+session `next_resources` list (study order), whitespace- and comma-tolerant `known`/`studied` on every surface, unreadable saved
+sessions explained and clearable, one failure envelope for the studied endpoints, prerequisite definitions in answers, no
+`cache/` written for local PDFs, upload errors name the uploaded file, example walkthrough corrected.
+
+Still open for the next session:
+
+| Class | Item |
+|---|---|
+| Blocker before release | Run a real published paper end to end (the sandbox has no internet; only generated PDFs so far). |
+| Blocker before release | The tutor is a placeholder: wiring a model needs a provider decision. |
+| Required before January | The 44 `test_research_workspace_*` / `test_consumer_projection_*` failures, plus the two network tests. |
+| Required before January | Detector coverage: only 7 prerequisite concepts and 8 curated resources; e.g. diffusion papers get no variational-inference or KL-divergence prerequisites. |
+| Optional | CLI keeps no state between runs (progress is re-sent with `--studied`); `python -m backend.cli` only works from the repository root. |
+| Optional | The resource library has one entry per concept and no alternatives or difficulty levels. |
