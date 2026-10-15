@@ -16,6 +16,7 @@ Usage:
 
 import argparse
 import json
+import os
 import sys
 
 from backend.python_version import check_python_version
@@ -305,5 +306,16 @@ def main(argv=None, facade=None, health_service=None, readiness_service=None) ->
     return EXIT_USAGE
 
 
+def _main_quietly() -> int:
+    """`... | head` or quitting `less` closes our stdout early: stop quietly instead of a BrokenPipeError traceback."""
+    try:
+        code = main()
+        sys.stdout.flush()
+        return code
+    except BrokenPipeError:
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())  # so interpreter shutdown does not flush into the dead pipe
+        return 141  # 128 + SIGPIPE, what a shell reports for a command stopped this way
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(_main_quietly())
