@@ -1,3 +1,4 @@
+import difflib
 import os
 from copy import deepcopy
 from time import perf_counter
@@ -136,6 +137,16 @@ def _concept_key(name: str) -> str:
     return _concept_label(name).casefold()
 
 
+def _did_you_mean(name, concept_names):
+    """' (did you mean 'Probability'?)' for a near-miss spelling of a prerequisite, else nothing."""
+    by_folded = {concept.casefold(): concept for concept in concept_names}
+    folded = " ".join(str(name).split()).casefold()
+    if folded in by_folded:  # spelled right: it is simply not in the plan (e.g. already known)
+        return ""
+    close = difflib.get_close_matches(folded, by_folded, n=1, cutoff=0.7)
+    return f" (did you mean {by_folded[close[0]]!r}?)" if close else ""
+
+
 class PreReqAIPlatform:
     """
     High-level platform entry point
@@ -245,6 +256,7 @@ class PreReqAIPlatform:
                 "finalization", f"The analysis did not complete: {', '.join(incomplete)}",
                 error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
             ), result.timings)
+        concept_names = [item["concept"] for item in result.report.get("missing_prerequisites", [])]
         unmatched = self._personalize(result, known) if known else []
         not_studied = self._apply_studied(result, studied) if studied else []
         # The session keeps its own copy of the report: the caller owns the one returned below, and
@@ -266,8 +278,8 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=unsaved + no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored" for name in unmatched]
-            + [f"--studied {name!r} is not in this paper's study plan and was ignored" for name in not_studied],
+            warnings=unsaved + no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
+            + [f"--studied {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in not_studied],
         )
         return with_diagnostics(outcome, result.timings, result.report)
 
