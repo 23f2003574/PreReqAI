@@ -17,6 +17,16 @@ def _normalise(value):
     return re.sub(r"[\s\-_]+", " ", value.lower())
 
 
+PREREQUISITE_DEFINITIONS = {
+    "Linear Algebra": "The mathematics of vectors, matrices and linear transformations.",
+    "Probability": "The mathematics of uncertainty: how likely events are and how to reason about random outcomes.",
+    "Calculus": "The mathematics of change: derivatives and gradients, and integrals.",
+    "Neural Networks": "Models built from layers of simple units whose weights are learned from data by gradient descent.",
+    "Graphs": "Structures of nodes connected by edges, used to model relationships between things.",
+    "Markov Decision Process": "A framework for sequential decisions where an agent's actions change its state and earn rewards.",
+}
+
+
 class RuleBasedTutor(BaseTutor):
     """
     Temporary tutor used before the
@@ -95,15 +105,20 @@ class RuleBasedTutor(BaseTutor):
 
         text = _normalise(question)
 
-        definitions = {
-            e.concept: e.definition
-            for e in getattr(paper, "concept_explanations", [])
-        }
-
         reasons = {
             j.concept: j.justification
             for j in getattr(paper, "prerequisite_justifications", [])
         }
+
+        # a prerequisite the paper never names (Probability, Calculus...) has no paper-concept explanation
+        definitions = {
+            name: PREREQUISITE_DEFINITIONS[name] for name in reasons if name in PREREQUISITE_DEFINITIONS
+        }
+
+        definitions.update({
+            e.concept: e.definition
+            for e in getattr(paper, "concept_explanations", [])
+        })
 
         asked = []
 
