@@ -9,6 +9,7 @@ import math
 import signal
 import sys
 import threading
+from pathlib import Path
 
 from backend.study_plan_markdown import plan_markdown
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
@@ -86,7 +87,21 @@ def _megabytes_to_bytes(megabytes):
     return max(1, size) if megabytes > 0 else size
 
 
+def _plan_file_problem(path):
+    """Why `path` cannot be written, found before the analysis runs; None when it looks writable."""
+    target = Path(path)
+    if target.is_dir():
+        return "it is a directory"
+    if not target.resolve().parent.is_dir():
+        return f"the folder {target.resolve().parent} does not exist"
+    return None
+
+
 def run_prerequisites_analyze(args, platform=None) -> int:
+    if args.plan_file and (problem := _plan_file_problem(args.plan_file)):
+        print(f"error: cannot save the study plan to {args.plan_file}: {problem}", file=sys.stderr)
+        print("  hint: choose a file path in an existing folder (for example --plan-file plan.md); nothing was analysed", file=sys.stderr)
+        return EXIT_USAGE
     if platform is None:
         try:
             from backend.platform import platform
@@ -202,6 +217,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
                 print(f"  plan saved: {args.plan_file}")
         except OSError as exc:
             print(f"error: could not save the study plan to {args.plan_file}: {exc.strerror or exc}", file=sys.stderr)
+            print("  hint: the analysis succeeded; fix the path or permissions and re-run with the same options", file=sys.stderr)
             return EXIT_FAILURE
     if timed_out:
         return EXIT_TIMEOUT

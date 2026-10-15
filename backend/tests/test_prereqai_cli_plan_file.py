@@ -22,10 +22,11 @@ def test_plan_file_is_a_checklist_with_progress_and_links(tmp_path):
     assert "- [ ] " in text and "](https://" in text
 
 
-def test_unwritable_plan_file_fails_cleanly(tmp_path):
-    run = _run("--plan-file", str(tmp_path / "missing" / "plan.md"))
-    assert run.returncode == 1 and "could not save the study plan" in run.stderr
-    assert "Traceback" not in run.stderr
+def test_unwritable_plan_file_is_refused_before_analysing_with_a_hint(tmp_path):
+    for bad, reason in ((tmp_path / "missing" / "plan.md", "does not exist"), (tmp_path, "is a directory")):
+        run = _run("--plan-file", str(bad))
+        assert run.returncode == 2 and reason in run.stderr and "hint:" in run.stderr
+        assert run.stdout == "" and "Traceback" not in run.stderr  # nothing was analysed
 
 
 def test_plan_file_is_written_with_json_and_stdout_stays_json(tmp_path):
