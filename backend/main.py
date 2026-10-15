@@ -44,6 +44,12 @@ app.include_router(
 )
 
 
+@app.get("/health", tags=["Service"])
+def health():
+    """Liveness probe for deployments and uptime checks: the server is up, and which release it is."""
+    return {"status": "ok", "service": "PreReqAI", "version": __version__}
+
+
 def _field(location) -> str:
     """("body", "mode") -> "mode": the request field a client actually sent."""
     parts = [str(part) for part in location if part not in ("body", "query", "path")]
