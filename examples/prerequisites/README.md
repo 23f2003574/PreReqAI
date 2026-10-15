@@ -27,8 +27,9 @@ curl -s -X POST http://127.0.0.1:8000/api/session/$SID/question \
     -H 'Content-Type: application/json' -d '{"question": "What is attention?"}'
 ```
 
-The reply has `status: "success"` and the paper's matching concepts and sections (`supporting_concepts`,
-`supporting_sections`). No tutoring model is configured in this release, so the `answer` is the built-in definition of the concept
+The reply has `status: "success"` and a `responses` list; `responses[0]` holds the `answer` plus the paper's matching concepts and sections
+(`supporting_concepts`, `supporting_sections`). To print just the answer, pipe the reply to
+`python -c "import sys, json; print(json.load(sys.stdin)['responses'][0]['answer'])"`. No tutoring model is configured in this release, so the `answer` is the built-in definition of the concept
 asked about (here "Attention: A mechanism that allows a model to focus ..."). A study-plan question such as "What should I learn first?",
 "How long will this take?" or "How difficult is it?" is answered from the analysis too. Any other question that names no concept of the
 paper gets the placeholder "A tutoring model has not yet been configured." The response carries a matching entry in `warnings`. Sessions are in memory
@@ -46,4 +47,6 @@ python -m backend.cli prerequisites ask examples/prerequisites/sample-paper.pdf 
 The summary marks studied steps (`(12h, studied)`) and shows the hours left; the answer lists the remaining steps. Over HTTP, send
 `known` / `studied` form fields with the upload, then mark more later with
 `curl -s -X POST "http://127.0.0.1:8000/api/prerequisites/sessions/$SID/studied?concept=Probability"` (`-X DELETE` undoes it).
+Separate several names with commas (`--studied "Probability,Calculus"`) or repeat the flag. Add `--resources` to `analyze` to list a
+course or article link for each concept still to study, in study order; over HTTP, `GET /api/session/$SID` returns the same list as `next_resources`.
 A name that is not in the study plan is reported in `warnings` (CLI/upload) or answered with HTTP 422 (the `studied` endpoint).
