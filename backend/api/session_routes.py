@@ -1,7 +1,10 @@
 from fastapi import (
     APIRouter,
 )
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
+
+from backend.study_plan_markdown import plan_markdown
 
 from backend.api.workflow_result import (
     failure_response,
@@ -126,6 +129,19 @@ def get_session(session_id: str):
             else None
         ),
     }
+
+
+@router.get("/{session_id}/plan")
+def get_study_plan(session_id: str):
+    """The session's study plan as a Markdown checklist, with progress ticked (same text as `analyze --plan-file`)."""
+
+    session = session_manager.get(session_id)
+
+    if session is None:
+
+        return session_not_found(session_id)
+
+    return PlainTextResponse(plan_markdown(session.report), media_type="text/markdown; charset=utf-8")
 
 
 @router.delete("/{session_id}")

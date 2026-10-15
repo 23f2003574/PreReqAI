@@ -10,6 +10,7 @@ import signal
 import sys
 import threading
 
+from backend.study_plan_markdown import plan_markdown
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
@@ -83,21 +84,6 @@ def _megabytes_to_bytes(megabytes):
     """A positive limit never rounds down to 0 bytes; 0 or below stays invalid."""
     size = int(megabytes * 1024 * 1024)
     return max(1, size) if megabytes > 0 else size
-
-
-def _plan_markdown(report):
-    done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
-    links = {item["concept"]: item for item in report.get("learning_resources", [])}
-    lines = [f"# Study plan: {report['paper']['title']}", ""]
-    for step in report["learning_plan"]:
-        concept = step["concept"]
-        line = f"- [{'x' if concept in done else ' '}] {step['step']}. {concept} (~{step['estimated_hours']}h)"
-        if concept in links:
-            line += f" - [{links[concept]['title']}]({links[concept]['url']})"
-        lines.append(line)
-    if not report["learning_plan"]:
-        lines.append("Nothing left to study: no planned prerequisites.")
-    return "\n".join(lines) + "\n"
 
 
 def run_prerequisites_analyze(args, platform=None) -> int:
@@ -211,7 +197,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
     if args.plan_file and not failed:  # also with --json, where stdout stays the JSON envelope only
         try:
             with open(args.plan_file, "w", encoding="utf-8") as handle:
-                handle.write(_plan_markdown(outcome["report"]))
+                handle.write(plan_markdown(outcome["report"]))
             if not args.as_json:
                 print(f"  plan saved: {args.plan_file}")
         except OSError as exc:
