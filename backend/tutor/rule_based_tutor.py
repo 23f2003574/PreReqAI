@@ -161,6 +161,8 @@ class RuleBasedTutor(BaseTutor):
                 return ""
             plan = getattr(paper, "learning_plan", [])
             done = RuleBasedTutor._studied(paper)
+            if not plan and estimate.total_hours == 0:  # nothing was planned (e.g. everything marked known), so nothing was studied either
+                return "There are no prerequisites left to study, so no preparation time is left."
             if estimate.total_hours == 0 or (plan and all(step.concept in done for step in plan)):
                 return "You have studied every planned prerequisite; no preparation time is left."
             hours = sum(step.estimated_hours for step in plan if step.concept not in done) if plan else estimate.total_hours
