@@ -26,3 +26,13 @@ def test_unwritable_plan_file_fails_cleanly(tmp_path):
     run = _run("--plan-file", str(tmp_path / "missing" / "plan.md"))
     assert run.returncode == 1 and "could not save the study plan" in run.stderr
     assert "Traceback" not in run.stderr
+
+
+def test_plan_file_is_written_with_json_and_stdout_stays_json(tmp_path):
+    import json
+
+    target = tmp_path / "plan.md"
+    run = _run("--json", "--plan-file", str(target))
+    assert run.returncode == 0
+    assert json.loads(run.stdout)["status"] == "success"
+    assert target.read_text(encoding="utf-8").startswith("# Study plan:")

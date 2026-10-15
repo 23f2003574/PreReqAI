@@ -190,14 +190,6 @@ def run_prerequisites_analyze(args, platform=None) -> int:
                 print("  resources: none left to study")
             else:
                 print("  resources: none available for this paper's concepts")
-        if args.plan_file:
-            try:
-                with open(args.plan_file, "w", encoding="utf-8") as handle:
-                    handle.write(_plan_markdown(report))
-                print(f"  plan saved: {args.plan_file}")
-            except OSError as exc:
-                print(f"error: could not save the study plan to {args.plan_file}: {exc.strerror or exc}", file=sys.stderr)
-                return EXIT_FAILURE
         timings = outcome["timings"]
         if timings:
             slowest, seconds = max(timings.items(), key=lambda item: item[1])
@@ -216,6 +208,15 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             if len(slowest) > len(shown):
                 print(f"  ({len(slowest) - len(shown)} faster stages not shown; --json has every stage's timing)")
             print("  statistics: " + ", ".join(f"{key}={value}" for key, value in info["statistics"].items()))
+    if args.plan_file and not failed:  # also with --json, where stdout stays the JSON envelope only
+        try:
+            with open(args.plan_file, "w", encoding="utf-8") as handle:
+                handle.write(_plan_markdown(outcome["report"]))
+            if not args.as_json:
+                print(f"  plan saved: {args.plan_file}")
+        except OSError as exc:
+            print(f"error: could not save the study plan to {args.plan_file}: {exc.strerror or exc}", file=sys.stderr)
+            return EXIT_FAILURE
     if timed_out:
         return EXIT_TIMEOUT
     if limit_hit:
