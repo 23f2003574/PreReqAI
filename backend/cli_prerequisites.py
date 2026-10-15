@@ -160,7 +160,9 @@ def run_prerequisites_analyze(args, platform=None) -> int:
                   + (f" ({left}h left)" if done and (left := sum(step["estimated_hours"] for step in report["learning_plan"]
                                                                if step["concept"] not in done)) != study_time["total_hours"] else ""))
         if args.resources:
-            pending = [item for item in report.get("learning_resources", []) if item["concept"] not in done]
+            order = {step["concept"]: step["step"] for step in report["learning_plan"]}  # list them in study order
+            pending = sorted((item for item in report.get("learning_resources", []) if item["concept"] not in done),
+                             key=lambda item: order.get(item["concept"], len(order) + 1))
             if pending:
                 print("  resources:")
                 for item in pending:

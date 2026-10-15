@@ -31,3 +31,10 @@ def test_everything_studied_says_nothing_is_left():
     out = _summary("--resources", "--studied", "Linear Algebra", "--studied", "Probability",
                    "--studied", "Calculus", "--studied", "Neural Networks")
     assert "resources: none left to study" in out
+
+
+def test_resources_follow_the_study_plan_order():
+    out = _summary("--resources", "--known", "Linear Algebra")
+    plan = [c for c in ("Probability", "Calculus", "Neural Networks") if f"    {c}:" in out]
+    listed = [line.split(":")[0].strip() for line in out.splitlines() if line.startswith("    ")]
+    assert plan == listed == ["Probability", "Calculus", "Neural Networks"]
