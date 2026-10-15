@@ -121,6 +121,15 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
     )
 
 
+def _concept_label(name: str) -> str:
+    """A learner-typed concept name with stray and repeated whitespace collapsed ("  linear   algebra " -> "linear algebra")."""
+    return " ".join(name.split())
+
+
+def _concept_key(name: str) -> str:
+    return _concept_label(name).casefold()
+
+
 class PreReqAIPlatform:
     """
     High-level platform entry point
@@ -274,9 +283,9 @@ class PreReqAIPlatform:
         if session is None or session.paper is None:
             return None
         planned = {item.concept.casefold(): item.concept for item in session.paper.study_progress}
-        if concept.strip().casefold() not in planned:  # matched like --studied and question topics: case-insensitively
+        if _concept_key(concept) not in planned:  # matched like --studied and question topics: case-insensitively
             raise ValueError(f"'{concept}' is not a concept in this session's study plan ({', '.join(planned.values()) or 'it is empty'})")
-        concept = planned[concept.strip().casefold()]
+        concept = planned[_concept_key(concept)]
         tracker = StudyProgressTracker()
         (tracker.complete if studied else tracker.reset)(session.paper, concept)
         PaperReadinessEngine().evaluate(session.paper)
@@ -290,10 +299,10 @@ class PreReqAIPlatform:
         """Drop concepts the learner says they already know from the study plan: the plan, time estimate,
         difficulty, actions, roadmap, progress and readiness are rebuilt without them, their resources are dropped and they
         are no longer reported as missing prerequisites."""
-        wanted = {name.strip().casefold() for name in known if name and name.strip()}
+        wanted = {_concept_key(name) for name in known if name and name.strip()}
         paper, pipeline = result.paper, self.analysis
         planned = {step.concept.casefold() for step in paper.learning_plan}
-        unmatched = sorted(name.strip() for name in known if name and name.strip() and name.strip().casefold() not in planned)
+        unmatched = sorted(_concept_label(name) for name in known if name and name.strip() and _concept_key(name) not in planned)
         paper.learning_plan = [step for step in paper.learning_plan if step.concept.casefold() not in wanted]
         for order, step in enumerate(paper.learning_plan, start=1):  # numbering restarts after the skipped steps
             step.order = order
@@ -316,15 +325,15 @@ class PreReqAIPlatform:
         follow); returns the names that are not in the study plan."""
         paper, pipeline = result.paper, self.analysis
         planned = {item.concept.casefold(): item.concept for item in paper.study_progress}
-        names = [name.strip() for name in studied if name and name.strip()]
+        names = [_concept_label(name) for name in studied if name and name.strip()]
         for name in names:
-            if name.casefold() in planned:
-                pipeline.progress_tracker.complete(paper, planned[name.casefold()])
+            if _concept_key(name) in planned:
+                pipeline.progress_tracker.complete(paper, planned[_concept_key(name)])
         pipeline.readiness_engine.evaluate(paper)
         fresh = pipeline.report_generator.generate(paper)
         for key in ("study_progress", "readiness", "study_actions"):
             result.report[key] = fresh[key]
-        return sorted(name for name in names if name.casefold() not in planned)
+        return sorted(name for name in names if _concept_key(name) not in planned)
 
 
 # The one platform instance the HTTP application (backend.main) and its routers
