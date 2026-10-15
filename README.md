@@ -41,7 +41,7 @@ python -m backend.cli prerequisites analyze my-paper.pdf --max-file-mb 20 --max-
 Hitting either limit stops the analysis with exit code 123.
 
 Already know a concept? Leave it out of the study plan with `--known "Linear Algebra"` (repeat the flag for
-several; over HTTP, repeat the `known` form field). A name that is not in the plan is reported as a warning.
+several, or separate names with commas, as in `--studied "Probability,Calculus"`; over HTTP, repeat the `known` form field). A name that is not in the plan is reported as a warning.
 To track progress from the command line, re-run the analysis with `--studied Probability` (repeatable) for the
 concepts you have finished; they stay in the plan, are marked `studied` in the summary, and count toward readiness (the summary also shows the hours left). Over HTTP, send the `studied` form field (repeatable) with the upload, or mark a planned concept as studied later with
 `POST /api/prerequisites/sessions/{session_id}/studied?concept=Probability`; `GET /api/session/{session_id}`

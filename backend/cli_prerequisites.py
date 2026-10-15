@@ -13,6 +13,11 @@ import threading
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
+def _concept_names(values):
+    """--known/--studied values with comma-separated lists split (`--studied "Probability, Calculus"`); concept names never contain commas."""
+    return [name for value in values for name in value.split(",")]
+
+
 def _finite_number(value):
     """argparse type for the limit flags: a finite number. NaN/infinity are a usage
     error naming the flag (never a traceback); a value of 0 or below still reaches
@@ -106,8 +111,8 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         previous = None
     try:
         outcome = platform.analyze(args.paper, diagnostics=args.diagnose, should_cancel=cancelled.is_set, limits=limits,
-                                    **({'known': args.known} if args.known else {}),
-                                    **({'studied': args.studied} if args.studied else {}))
+                                    **({'known': _concept_names(args.known)} if args.known else {}),
+                                    **({'studied': _concept_names(args.studied)} if args.studied else {}))
     finally:
         if previous is not None:
             signal.signal(signal.SIGINT, previous)
@@ -154,7 +159,9 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             print("  study first: " + ", ".join(missing))
         readiness, study_time = report.get("readiness"), report.get("study_time")  # readiness, difficulty, preparation time
         if readiness and study_time:
-                print(f"  readiness: {readiness['status']} ({readiness['completed_concepts']}/{readiness['total_concepts']} concepts ready); "
+                ready = (f"{readiness['completed_concepts']}/{readiness['total_concepts']} concepts ready"
+                         if readiness["total_concepts"] else "no concepts left to study")
+                print(f"  readiness: {readiness['status']} ({ready}); "
                   f"difficulty: {report['paper_difficulty']['level']}; "
                   f"preparation: ~{study_time['total_hours']}h over {study_time['recommended_days']} days"
                   + (f" ({left}h left)" if done and (left := sum(step["estimated_hours"] for step in report["learning_plan"]
@@ -210,7 +217,7 @@ def run_prerequisites_ask(args, platform=None) -> int:
             print(f"error: required package '{exc.name}' is not installed", file=sys.stderr)
             print("  hint: run `pip install -r requirements.txt` in this environment", file=sys.stderr)
             return EXIT_FAILURE
-    outcome = platform.analyze(args.paper, known=args.known, studied=args.studied)
+    outcome = platform.analyze(args.paper, known=_concept_names(args.known), studied=_concept_names(args.studied))
     if outcome["status"] != "success":
         print(f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
         if outcome.get("hint"):
