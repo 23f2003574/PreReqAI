@@ -14,8 +14,13 @@ from fastapi.responses import (
     JSONResponse,
 )
 
+from backend.api.session_routes import (
+    session_not_found,
+)
+
 from backend.api.workflow_result import (
     HTTP_STATUS,
+    failure_response,
     SUCCESS,
     limit_exceeded_body,
 )
@@ -122,11 +127,16 @@ def _update_studied(session_id: str, concept: str, studied: bool):
 
     except ValueError as error:
 
-        return JSONResponse(status_code=422, content={"status": "invalid_concept", "detail": str(error)})
+        return failure_response(
+            422,
+            "study_progress",
+            str(error),
+            hint="Use a concept name from the session's study plan (GET /api/session/{session_id} lists study_progress).",
+        )
 
     if progress is None:
 
-        return JSONResponse(status_code=404, content={"status": "unknown_session", "detail": "No such session."})
+        return session_not_found(session_id)
 
     return {"status": "success", "session_id": session_id, **progress}
 

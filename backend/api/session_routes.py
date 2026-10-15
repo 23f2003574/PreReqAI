@@ -54,7 +54,7 @@ def list_sessions():
     }
 
 
-def _not_found(session_id: str):
+def session_not_found(session_id: str):
     """404 for an unknown session; a saved file that cannot be read says so instead of looking like a typo."""
 
     if session_manager.is_unreadable(session_id):
@@ -94,7 +94,7 @@ def get_session(session_id: str):
 
     if session is None:
 
-        return _not_found(session_id)
+        return session_not_found(session_id)
 
     return {
 
@@ -156,7 +156,7 @@ def ask_question(
 
     if session is None:
 
-        return _not_found(session_id)
+        return session_not_found(session_id)
 
     if not body.question or not body.question.strip():
 
