@@ -33,3 +33,13 @@ def test_documented_question_reply_has_the_answer_under_responses_and_a_bad_repl
     first = reply["responses"][0]
     assert first["answer"].startswith("Attention: A mechanism") and first["supporting_concepts"] == ["Attention"]
     assert "responses[0]" in DOC and "next_resources" in DOC
+
+
+def test_documented_plan_checklist_exists_in_the_cli_and_over_http():
+    assert "--plan-file" in DOC and "--plan-file" in _help("analyze")
+    client = TestClient(app)
+    sid = client.post("/api/prerequisites/analyze", files={"paper": ("p.pdf", SAMPLE.read_bytes(), "application/pdf")}).json()["session_id"]
+    assert "/api/session/$SID/plan" in DOC
+    reply = client.get(f"/api/session/{sid}/plan")
+    assert reply.status_code == 200 and reply.headers["content-type"].startswith("text/markdown")
+    assert reply.text.startswith("# Study plan:") and "- [ ] 1. " in reply.text

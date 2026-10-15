@@ -50,3 +50,14 @@ The summary marks studied steps (`(12h, studied)`) and shows the hours left; the
 Separate several names with commas (`--studied "Probability,Calculus"`) or repeat the flag. Add `--resources` to `analyze` to list a
 course or article link for each concept still to study, in study order; over HTTP, `GET /api/session/$SID` returns the same list as `next_resources`.
 A name that is not in the study plan is reported in `warnings` (CLI/upload) or answered with HTTP 422 (the `studied` endpoint).
+
+## Keep your study plan
+
+Save the plan as a Markdown checklist (studied concepts ticked, with a study link each) to read or print:
+
+```bash
+python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf --studied Probability --plan-file plan.md
+curl -s http://127.0.0.1:8000/api/session/$SID/plan   # the same checklist over HTTP, as text/markdown
+```
+
+A misspelt `--known` / `--studied` name is ignored with a warning that suggests the nearest concept ("did you mean 'Probability'?").
