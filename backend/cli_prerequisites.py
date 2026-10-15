@@ -48,6 +48,8 @@ def add_prerequisites_parser(subparsers):
                               "(repeat for several; re-run with more as you progress)")
     analyze.add_argument("--resources", action="store_true",
                          help="Also list a curated course or article (with link) for each concept still to study")
+    analyze.add_argument("--plan-file", default=None, metavar="PATH", dest="plan_file",
+                         help="Also save the study plan as a Markdown checklist (studied concepts ticked, with study links) to PATH")
     analyze.add_argument("--max-seconds", type=_finite_number, default=None, dest="max_seconds",
                          help="Stop the analysis once it has run this long (checked between stages; default: no limit)")
     analyze.add_argument("--max-file-mb", type=_finite_number, default=None, dest="max_file_mb",
@@ -81,6 +83,21 @@ def _megabytes_to_bytes(megabytes):
     """A positive limit never rounds down to 0 bytes; 0 or below stays invalid."""
     size = int(megabytes * 1024 * 1024)
     return max(1, size) if megabytes > 0 else size
+
+
+def _plan_markdown(report):
+    done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
+    links = {item["concept"]: item for item in report.get("learning_resources", [])}
+    lines = [f"# Study plan: {report['paper']['title']}", ""]
+    for step in report["learning_plan"]:
+        concept = step["concept"]
+        line = f"- [{'x' if concept in done else ' '}] {step['step']}. {concept} (~{step['estimated_hours']}h)"
+        if concept in links:
+            line += f" - [{links[concept]['title']}]({links[concept]['url']})"
+        lines.append(line)
+    if not report["learning_plan"]:
+        lines.append("Nothing left to study: no planned prerequisites.")
+    return "\n".join(lines) + "\n"
 
 
 def run_prerequisites_analyze(args, platform=None) -> int:
@@ -173,6 +190,14 @@ def run_prerequisites_analyze(args, platform=None) -> int:
                 print("  resources: none left to study")
             else:
                 print("  resources: none available for this paper's concepts")
+        if args.plan_file:
+            try:
+                with open(args.plan_file, "w", encoding="utf-8") as handle:
+                    handle.write(_plan_markdown(report))
+                print(f"  plan saved: {args.plan_file}")
+            except OSError as exc:
+                print(f"error: could not save the study plan to {args.plan_file}: {exc.strerror or exc}", file=sys.stderr)
+                return EXIT_FAILURE
         timings = outcome["timings"]
         if timings:
             slowest, seconds = max(timings.items(), key=lambda item: item[1])

@@ -49,6 +49,8 @@ then shows the updated `study_progress` and `readiness`. It also lists `next_res
 
 To see where to study each remaining concept, add `--resources` to `analyze`: it lists a curated course or article (with link and hours) for every concept in the plan you have not yet marked studied.
 
+To keep the plan, add `--plan-file plan.md` to `analyze`: it saves a Markdown checklist (studied concepts ticked, with study links).
+
 To ask a question without running a server, use `python -m backend.cli prerequisites ask paper.pdf "Why do I need calculus?"`
 (add `--json` for machine-readable output; `--known` and `--studied` work as for `analyze`, so answers such as "What should I learn first?" reflect your progress). It analyses the paper and answers from the analysis; the same no-model limitation applies and is
 printed as a warning.
