@@ -233,6 +233,11 @@ def run_prerequisites_ask(args, platform=None) -> int:
     if not args.question.strip():
         print("error: the question must not be empty", file=sys.stderr)
         return EXIT_USAGE
+    from backend.api.session_routes import MAX_QUESTION_CHARS
+
+    if len(args.question) > MAX_QUESTION_CHARS:
+        print(f"error: the question is too long ({len(args.question)} characters; the limit is {MAX_QUESTION_CHARS})", file=sys.stderr)
+        return EXIT_USAGE
     if platform is None:
         try:
             from backend.platform import platform

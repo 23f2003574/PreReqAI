@@ -30,6 +30,10 @@ router = APIRouter(
 pipeline = platform.learning
 
 
+# Far above any real question; it keeps one request from bloating the stored conversation (and its saved file).
+MAX_QUESTION_CHARS = 2000
+
+
 class QuestionRequest(BaseModel):
 
     question: str
@@ -181,6 +185,15 @@ def ask_question(
             "question",
             "Question must be a non-empty string",
             hint="Send a question about the paper in the request body's `question` field.",
+        )
+
+    if len(body.question) > MAX_QUESTION_CHARS:
+
+        return failure_response(
+            422,
+            "question",
+            f"Question is too long ({len(body.question)} characters; the limit is {MAX_QUESTION_CHARS})",
+            hint="Ask about one thing at a time with a shorter question.",
         )
 
     topic = body.topic.strip() if body.topic is not None else None

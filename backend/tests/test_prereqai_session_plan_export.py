@@ -35,3 +35,15 @@ def test_line_breaks_in_a_paper_title_cannot_forge_checklist_items():
     text = plan_markdown({"paper": {"title": "A\nB\r\n- [x] 9. Fake"}, "learning_plan": []})
     assert text.splitlines()[0] == "# Study plan: A B - [x] 9. Fake"
     assert "\n- [x]" not in text
+
+
+def test_question_length_is_bounded_with_a_clear_422_and_the_limit_is_accepted():
+    from backend.api.session_routes import MAX_QUESTION_CHARS
+
+    session_id = _analyze()
+    too_long = client.post(f"/api/session/{session_id}/question", json={"question": "x" * (MAX_QUESTION_CHARS + 1)})
+    assert too_long.status_code == 422 and too_long.json()["stage"] == "question"
+    assert "too long" in too_long.json()["detail"] and "hint" in too_long.json()
+    assert client.get(f"/api/session/{session_id}").json()["conversation_history"] == []
+    at_limit = client.post(f"/api/session/{session_id}/question", json={"question": "x" * MAX_QUESTION_CHARS})
+    assert at_limit.status_code == 200
