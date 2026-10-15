@@ -45,6 +45,22 @@ MAX_UPLOAD_BYTES = 100 * 1024 * 1024
 _CHUNK_BYTES = 1024 * 1024
 
 
+def _hide_server_path(outcome: dict, temp_path: str, name: str) -> dict:
+    """Error text names the upload by its own file name, not the server's temporary copy."""
+
+    for holder in (outcome, outcome.get("error")):
+
+        if isinstance(holder, dict):
+
+            for key in ("detail", "message", "hint"):
+
+                if isinstance(holder.get(key), str):
+
+                    holder[key] = holder[key].replace(temp_path, name)
+
+    return outcome
+
+
 def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str]) -> dict:
     """Blocking work (copy the upload, run the analysis): called off the event loop."""
 
@@ -77,11 +93,13 @@ def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str]) -> 
 
                 temp_file.write(chunk)
 
-        return platform.analyze(
+        outcome = platform.analyze(
             temp_path,
             **({'known': known} if known else {}),
             **({'studied': studied} if studied else {}),
         )
+
+        return _hide_server_path(outcome, temp_path, Path(paper.filename or "").name or "the uploaded paper")
 
     finally:
 
