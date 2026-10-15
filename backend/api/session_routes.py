@@ -54,6 +54,27 @@ def list_sessions():
     }
 
 
+def _not_found(session_id: str):
+    """404 for an unknown session; a saved file that cannot be read says so instead of looking like a typo."""
+
+    if session_manager.is_unreadable(session_id):
+
+        return failure_response(
+            404,
+            "session_lookup",
+            "Session could not be restored",
+            hint="Its saved file is unreadable (corrupt or from another version). "
+            "DELETE /api/session/{session_id} clears it; then run the analysis again.".replace("{session_id}", session_id),
+        )
+
+    return failure_response(
+        404,
+        "session_lookup",
+        "Session not found",
+        hint="Run an analysis first and use the session_id it returns.",
+    )
+
+
 def _next_resources(report):
     """Study links for the planned concepts not yet studied, in study order (same list as `analyze --resources`)."""
 
@@ -73,12 +94,7 @@ def get_session(session_id: str):
 
     if session is None:
 
-        return failure_response(
-            404,
-            "session_lookup",
-            "Session not found",
-            hint="Run an analysis first and use the session_id it returns.",
-        )
+        return _not_found(session_id)
 
     return {
 
@@ -140,12 +156,7 @@ def ask_question(
 
     if session is None:
 
-        return failure_response(
-            404,
-            "session_lookup",
-            "Session not found",
-            hint="Run an analysis first and use the session_id it returns.",
-        )
+        return _not_found(session_id)
 
     if not body.question or not body.question.strip():
 

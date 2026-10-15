@@ -232,6 +232,13 @@ class SessionManager:
 
         return session
 
+    def is_unreadable(self, session_id: str) -> bool:
+        """True when a saved file exists for this id but cannot be loaded (corrupt or from another version)."""
+
+        path = self._path(session_id)
+
+        return path is not None and path.is_file() and self.get(session_id) is None
+
     def delete(self, session_id: str) -> bool:
         """Forget a session: drop it from memory and delete its saved file. False when no such session existed."""
 
@@ -240,6 +247,10 @@ class SessionManager:
         self.sessions.pop(session_id, None)
 
         path = self._path(session_id)
+
+        if not known and path is not None and path.is_file():  # an unreadable saved file: removing it is a real delete
+
+            known = True
 
         if path is not None:
 
