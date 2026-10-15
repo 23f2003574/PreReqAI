@@ -27,3 +27,11 @@ def test_plan_export_ticks_progress_and_links_resources():
 
 def test_plan_export_for_unknown_session_is_404():
     assert client.get("/api/session/does-not-exist/plan").status_code == 404
+
+
+def test_line_breaks_in_a_paper_title_cannot_forge_checklist_items():
+    from backend.study_plan_markdown import plan_markdown
+
+    text = plan_markdown({"paper": {"title": "A\nB\r\n- [x] 9. Fake"}, "learning_plan": []})
+    assert text.splitlines()[0] == "# Study plan: A B - [x] 9. Fake"
+    assert "\n- [x]" not in text
