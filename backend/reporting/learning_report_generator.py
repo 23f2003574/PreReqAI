@@ -24,6 +24,8 @@ class LearningReportGenerator:
         paper: Paper,
     ) -> dict:
 
+        study_order = {step.concept: step.order for step in paper.learning_plan}  # resources follow the plan
+
         return {
 
             "paper": {
@@ -181,7 +183,10 @@ class LearningReportGenerator:
                 }
 
                 for resource
-                in paper.learning_resources
+                in sorted(
+                    paper.learning_resources,
+                    key=lambda item: study_order.get(item.concept, len(study_order)),
+                )
             ],
 
             "study_roadmap": [

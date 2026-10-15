@@ -54,6 +54,18 @@ def list_sessions():
     }
 
 
+def _next_resources(report):
+    """Study links for the planned concepts not yet studied, in study order (same list as `analyze --resources`)."""
+
+    done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
+    order = {step["concept"]: step["step"] for step in report.get("learning_plan", [])}
+
+    return sorted(
+        (item for item in report.get("learning_resources", []) if item["concept"] not in done),
+        key=lambda item: order.get(item["concept"], len(order) + 1),
+    )
+
+
 @router.get("/{session_id}")
 def get_session(session_id: str):
 
@@ -79,6 +91,8 @@ def get_session(session_id: str):
         "study_progress": session.report.get("study_progress", []),
 
         "readiness": session.report.get("readiness"),
+
+        "next_resources": _next_resources(session.report),
 
         "active_concept": session.active_concept,
 

@@ -45,7 +45,7 @@ several; over HTTP, repeat the `known` form field). A name that is not in the pl
 To track progress from the command line, re-run the analysis with `--studied Probability` (repeatable) for the
 concepts you have finished; they stay in the plan, are marked `studied` in the summary, and count toward readiness (the summary also shows the hours left). Over HTTP, send the `studied` form field (repeatable) with the upload, or mark a planned concept as studied later with
 `POST /api/prerequisites/sessions/{session_id}/studied?concept=Probability`; `GET /api/session/{session_id}`
-then shows the updated `study_progress` and `readiness`.
+then shows the updated `study_progress` and `readiness`. It also lists `next_resources`: the study links for the planned concepts not yet studied, in study order.
 
 To see where to study each remaining concept, add `--resources` to `analyze`: it lists a curated course or article (with link and hours) for every concept in the plan you have not yet marked studied.
 
