@@ -31,6 +31,8 @@ curl -F "paper=@examples/prerequisites/sample-paper.pdf;type=application/pdf" \
     http://127.0.0.1:8000/api/prerequisites/analyze
 ```
 
+To call the API from a browser app on another origin, set `PREREQAI_CORS_ORIGINS=https://app.example.com` (comma separated; unset by default, so no cross-origin access).
+
 `GET /health` answers `{"status": "ok", "service": "PreReqAI", "version": ...}` for load balancers and uptime checks.
 
 There is no config file or required environment variable. Optionally, set `PREREQAI_SESSION_DIR=/some/dir` to keep HTTP sessions on disk (one local file each, trusted data only; a leading `~` is expanded, a blank value turns saving off) so they survive a server restart; if the directory cannot be written the analysis still succeeds and its `warnings` say the session will not survive a restart; saved sessions expire after 30 days without activity (`PREREQAI_SESSION_MAX_AGE_DAYS=N` changes that, `0` keeps them forever). The server keeps at most 500 sessions in memory (the oldest are dropped; with `PREREQAI_SESSION_DIR` set they are restored from disk when requested, otherwise they are gone and answer 404). `DELETE /api/session/{session_id}` removes a session and its saved file. A saved file that can no longer be read (corrupt, or from another version) answers 404 "Session could not be restored" with a hint, and `DELETE` clears it. `GET /api/session` lists the sessions the server knows (newest first), including saved ones after a restart. The only options for your own papers are

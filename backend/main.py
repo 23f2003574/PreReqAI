@@ -2,7 +2,10 @@ from backend.python_version import check_python_version
 
 check_python_version()  # before the imports below, which fail obscurely on an old interpreter
 
+import os
+
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 
 from backend.api.workflow_result import (
@@ -30,6 +33,14 @@ app = FastAPI(
     title="PreReqAI",
     version=__version__,
 )
+
+def cors_origins() -> list[str]:
+    """Origins allowed to call the API from a browser: PREREQAI_CORS_ORIGINS, comma separated (unset or blank: none)."""
+    return [origin.strip().rstrip("/") for origin in os.environ.get("PREREQAI_CORS_ORIGINS", "").split(",") if origin.strip()]
+
+
+if cors_origins():  # off by default: a same-origin or command-line deployment needs no cross-origin access
+    app.add_middleware(CORSMiddleware, allow_origins=cors_origins(), allow_methods=["GET", "POST", "DELETE"], allow_headers=["*"])
 
 app.include_router(
     prerequisite_router,
