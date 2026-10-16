@@ -147,6 +147,10 @@ def _did_you_mean(name, concept_names):
     return f" (did you mean {by_folded[close[0]]!r}?)" if close else ""
 
 
+# The report sections that change when the learner studies a concept.
+PROGRESS_REPORT_KEYS = ("study_progress", "readiness", "study_actions")
+
+
 class PreReqAIPlatform:
     """
     High-level platform entry point
@@ -294,7 +298,7 @@ class PreReqAIPlatform:
         return self._set_concept_studied(session_id, concept, False)
 
     def _set_concept_studied(self, session_id: str, concept: str, studied: bool) -> dict | None:
-        from backend.progress import PaperReadinessEngine, StudyProgressTracker
+        from backend.progress import StudyProgressTracker
         from backend.session import session_manager
 
         session = session_manager.get(session_id)
@@ -306,12 +310,19 @@ class PreReqAIPlatform:
         concept = planned[_concept_key(concept)]
         tracker = StudyProgressTracker()
         (tracker.complete if studied else tracker.reset)(session.paper, concept)
-        PaperReadinessEngine().evaluate(session.paper)
-        fresh = self.analysis.report_generator.generate(session.paper)
-        for key in ("study_progress", "readiness", "study_actions"):
-            session.report[key] = fresh[key]
+        fresh = self._refresh_progress(session.paper, session.report)
         session_manager.save(session)
         return {"study_progress": fresh["study_progress"], "readiness": fresh["readiness"]}
+
+    def _refresh_progress(self, paper, report) -> dict:
+        """Re-evaluate readiness after the paper's study progress changed and copy the parts of a freshly
+        generated report that depend on it into `report`; returns the fresh report. The one place that
+        knows which report keys follow progress (analysis-time --studied and the session endpoints share it)."""
+        self.analysis.readiness_engine.evaluate(paper)
+        fresh = self.analysis.report_generator.generate(paper)
+        for key in PROGRESS_REPORT_KEYS:
+            report[key] = fresh[key]
+        return fresh
 
     def mark_concept_known(self, session_id: str, concept: str) -> dict | None:
         """Drop a concept the learner already knows from an analysed session's study plan (like --known at
@@ -366,10 +377,7 @@ class PreReqAIPlatform:
         for name in names:
             if _concept_key(name) in planned:
                 pipeline.progress_tracker.complete(paper, planned[_concept_key(name)])
-        pipeline.readiness_engine.evaluate(paper)
-        fresh = pipeline.report_generator.generate(paper)
-        for key in ("study_progress", "readiness", "study_actions"):
-            result.report[key] = fresh[key]
+        self._refresh_progress(paper, result.report)
         return sorted(name for name in names if _concept_key(name) not in planned)
 
 

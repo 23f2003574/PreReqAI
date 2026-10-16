@@ -44,3 +44,16 @@ def test_marking_known_keeps_progress_on_other_studied_concepts():
     assert plan[1] not in [i["concept"] for i in done["study_progress"]]
     assert done["readiness"]["completed_concepts"] == 1
     assert client.get(f"/api/session/{session_id}").json()["readiness"]["completed_concepts"] == 1
+
+
+def test_studied_at_analysis_and_studied_later_give_the_same_progress_sections():
+    from backend.platform.prereqai_platform import PROGRESS_REPORT_KEYS
+    with SAMPLE.open("rb") as handle:
+        upfront = client.post("/api/prerequisites/analyze", data={"studied": ["Probability"]},
+                              files={"paper": ("p.pdf", handle, "application/pdf")}).json()["report"]
+    session_id, _ = _session()
+    client.post(f"/api/prerequisites/sessions/{session_id}/studied", params={"concept": "Probability"})
+    later = client.get(f"/api/session/{session_id}").json()
+    assert PROGRESS_REPORT_KEYS == ("study_progress", "readiness", "study_actions")
+    for key in ("study_progress", "readiness"):  # GET /api/session does not expose study_actions
+        assert later[key] == upfront[key], key
