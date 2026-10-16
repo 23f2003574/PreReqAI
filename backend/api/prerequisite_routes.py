@@ -61,7 +61,7 @@ def _hide_server_path(outcome: dict, temp_path: str, name: str) -> dict:
     return outcome
 
 
-def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str]) -> dict:
+def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], diagnostics: bool = False) -> dict:
     """Blocking work (copy the upload, run the analysis): called off the event loop."""
 
     temp_file = tempfile.NamedTemporaryFile(
@@ -95,6 +95,7 @@ def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str]) -> 
 
         outcome = platform.analyze(
             temp_path,
+            diagnostics=diagnostics,
             **({'known': known} if known else {}),
             **({'studied': studied} if studied else {}),
         )
@@ -114,6 +115,7 @@ async def analyze_prerequisites(
     paper: UploadFile = File(...),
     known: list[str] = Form(default=[]),
     studied: list[str] = Form(default=[]),
+    diagnostics: bool = Form(default=False),
 ):
 
     # The analysis is blocking and CPU-bound: run on a worker thread so one
@@ -123,6 +125,7 @@ async def analyze_prerequisites(
         paper,
         known,
         studied,
+        diagnostics,
     )
 
     if outcome["status"] != SUCCESS:
