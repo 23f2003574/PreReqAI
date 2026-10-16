@@ -31,3 +31,16 @@ def test_known_reports_unknown_session_and_concept():
     url = f"/api/prerequisites/sessions/{session_id}/known"
     assert client.post("/api/prerequisites/sessions/nope/known", params={"concept": "x"}).status_code == 404
     assert client.post(url, params={"concept": "Cooking"}).status_code == 422
+
+
+def test_marking_known_keeps_progress_on_other_studied_concepts():
+    session_id, report = _session()
+    plan = [item["concept"] for item in report["study_progress"]]
+    base = f"/api/prerequisites/sessions/{session_id}"
+    client.post(f"{base}/studied", params={"concept": plan[0]})
+    client.post(f"{base}/studied", params={"concept": plan[1]})
+    done = client.post(f"{base}/known", params={"concept": plan[1]}).json()["report"]  # studied, then known: leaves the plan
+    assert [(i["concept"], i["completed"]) for i in done["study_progress"]][0] == (plan[0], True)
+    assert plan[1] not in [i["concept"] for i in done["study_progress"]]
+    assert done["readiness"]["completed_concepts"] == 1
+    assert client.get(f"/api/session/{session_id}").json()["readiness"]["completed_concepts"] == 1

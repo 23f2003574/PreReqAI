@@ -325,7 +325,10 @@ class PreReqAIPlatform:
         planned = {item.concept.casefold(): item.concept for item in session.paper.learning_plan}
         if _concept_key(concept) not in planned:
             raise ValueError(f"'{concept}' is not a concept in this session's study plan ({', '.join(planned.values()) or 'it is empty'})")
-        self._personalize(SimpleNamespace(paper=session.paper, report=session.report), [planned[_concept_key(concept)]])
+        target = SimpleNamespace(paper=session.paper, report=session.report)
+        studied = [item.concept for item in session.paper.study_progress if item.completed]  # rebuilding the plan resets progress
+        self._personalize(target, [planned[_concept_key(concept)]])
+        self._apply_studied(target, studied)
         session_manager.save(session)
         return session.report
 
