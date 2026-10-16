@@ -1,10 +1,21 @@
+import re
+
 from backend.models import (
     Paper,
 )
 
+from backend.concepts import ConceptRegistry
+
 from backend.graph import (
     LearningPathGenerator,
 )
+
+
+_ALIASES = {concept.name: concept.aliases for concept in ConceptRegistry().all()}
+
+
+def registry_aliases(name: str) -> tuple:
+    return _ALIASES.get(name, ())
 
 
 class LearningReportGenerator:
@@ -18,6 +29,38 @@ class LearningReportGenerator:
         self.learning_path_generator = (
             LearningPathGenerator()
         )
+
+    @staticmethod
+    def _equations(paper: Paper) -> list:
+        """Each extracted equation with the detected concepts its section discusses, so a reader knows which
+        concepts to be comfortable with before the mathematics. The link is the equation itself plus the 300
+        characters of its section that lead up to it (the extractor only knows the equation's line and section)."""
+
+        sections = {section.title: section.content.lower() for section in paper.sections}
+
+        def context(equation) -> str:
+            content = sections.get(equation.section, "")
+            expression = equation.expression.lower()
+            at = content.find(expression)
+            return expression if at < 0 else content[max(0, at - 300):at + len(expression)]
+
+        terms = {
+            concept.name: (concept.name.lower(), *(alias.lower() for alias in registry_aliases(concept.name)))
+            for concept in paper.concepts
+        }
+
+        return [
+            {
+                "id": equation.equation_id,
+                "expression": equation.expression,
+                "section": equation.section,
+                "concepts": [
+                    name for name, names in terms.items()
+                    if any(re.search(rf"\b{re.escape(term)}s?\b", context(equation)) for term in names)
+                ],
+            }
+            for equation in paper.equations
+        ]
 
     def generate(
         self,
@@ -62,6 +105,8 @@ class LearningReportGenerator:
 
                 for concept in paper.concepts
             ],
+
+            "equations": self._equations(paper),
 
             "learning_paths": {
 
