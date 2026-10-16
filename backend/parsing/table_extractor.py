@@ -24,9 +24,17 @@ class TableExtractor:
 
         table_counter = 1
 
-        with pdfplumber.open(pdf_path) as pdf:
+        # No page draws anything: nothing can be found, so the file is not opened a third time (which
+        # parses every page object). Otherwise pdfplumber is told which pages it will be asked about.
+        if drawn_pages is not None and not drawn_pages:
+            paper.tables = tables
+            return paper
 
-            for page_number, page in enumerate(pdf.pages, start=1):
+        with pdfplumber.open(pdf_path, pages=sorted(drawn_pages) if drawn_pages else None) as pdf:
+
+            for page in pdf.pages:
+
+                page_number = page.page_number
 
                 # pdfplumber's default (ruled-line) detection finds nothing on a page with no
                 # lines or rectangles, but loading that page's objects is by far the slowest
