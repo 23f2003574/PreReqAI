@@ -25,3 +25,19 @@ def test_generous_limits_still_answer():
 def test_invalid_limit_is_refused_without_an_answer():
     run = _ask("--max-seconds", "-1")
     assert run.returncode != 0 and "greater than 0" in run.stderr and run.stdout == ""
+
+
+def test_a_question_that_yields_no_answer_fails_instead_of_exiting_quietly(capsys):
+    from types import SimpleNamespace
+
+    from backend.cli_prerequisites import run_prerequisites_ask
+    from backend.platform import platform as real
+
+    stub = SimpleNamespace(
+        analyze=lambda *a, **k: real.analyze(SAMPLE, **k),
+        learning=SimpleNamespace(answer=lambda **k: {"responses": []}),
+    )
+    args = SimpleNamespace(paper=SAMPLE, question="anything", known=[], studied=[], as_json=False, max_seconds=None, max_file_mb=None)
+    assert run_prerequisites_ask(args, platform=stub) == 1
+    captured = capsys.readouterr()
+    assert captured.out == "" and "no answer was produced" in captured.err

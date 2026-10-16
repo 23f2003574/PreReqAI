@@ -274,7 +274,11 @@ def run_prerequisites_ask(args, platform=None) -> int:
     except Exception as exc:  # same envelope idea as the API: one readable line, never a traceback
         print(f"error: failed to answer the question: {exc}", file=sys.stderr)
         return EXIT_FAILURE
-    responses = [dataclasses.asdict(r) for r in result["responses"]]
+    responses = [dataclasses.asdict(r) for r in result.get("responses") or []]
+    if not responses:  # exit 0 with nothing printed would look like an answer that was simply empty
+        print("error: no answer was produced for the question", file=sys.stderr)
+        print("  hint: rephrase the question, or name a concept from the study plan (see `analyze`)", file=sys.stderr)
+        return EXIT_FAILURE
     placeholder = any("tutoring model has not yet been configured" in r["answer"] for r in responses)
     warning = ("No tutoring model is configured in this release: the answer is a placeholder."
                if placeholder else
