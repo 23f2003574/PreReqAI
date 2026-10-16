@@ -52,13 +52,29 @@ def add_prerequisites_parser(subparsers):
                          help="Also list a curated course or article (with link) for each concept still to study")
     analyze.add_argument("--plan-file", default=None, metavar="PATH", dest="plan_file",
                          help="Also save the study plan as a Markdown checklist (studied concepts ticked, with study links) to PATH")
-    analyze.add_argument("--max-seconds", type=_finite_number, default=None, dest="max_seconds",
-                         help="Stop the analysis once it has run this long (checked between stages; default: no limit)")
-    analyze.add_argument("--max-file-mb", type=_finite_number, default=None, dest="max_file_mb",
-                         help="Refuse a paper file larger than this many megabytes (default: no limit)")
+    add_limit_arguments(analyze)
     analyze.add_argument("--json", action="store_true", dest="as_json",
                          help="Print the workflow result envelope (status, stage, warnings, session_id, report, timings) as JSON")
     add_prerequisites_ask_parser(commands)
+
+
+def add_limit_arguments(parser):
+    parser.add_argument("--max-seconds", type=_finite_number, default=None, dest="max_seconds",
+                        help="Stop the analysis once it has run this long (checked between stages; default: no limit)")
+    parser.add_argument("--max-file-mb", type=_finite_number, default=None, dest="max_file_mb",
+                        help="Refuse a paper file larger than this many megabytes (default: no limit)")
+
+
+def _limits_from(args):
+    """The AnalysisLimits the --max-seconds / --max-file-mb options ask for; None when neither is given."""
+    if args.max_seconds is None and args.max_file_mb is None:
+        return None
+    from backend.platform import AnalysisLimits
+
+    return AnalysisLimits(
+        max_seconds=args.max_seconds,
+        max_file_bytes=None if args.max_file_mb is None else _megabytes_to_bytes(args.max_file_mb),
+    )
 
 
 def add_prerequisites_ask_parser(commands):
@@ -77,6 +93,7 @@ def add_prerequisites_ask_parser(commands):
                      help="A concept you already know; it is left out of the study plan (repeat for several)")
     ask.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
                      help="A planned concept you have finished studying (repeat for several)")
+    add_limit_arguments(ask)
     ask.add_argument("--json", action="store_true", dest="as_json",
                      help="Print session_id, warnings and the answers as JSON")
 
@@ -109,14 +126,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             print(f"error: required package '{exc.name}' is not installed", file=sys.stderr)
             print("  hint: run `pip install -r requirements.txt` in this environment", file=sys.stderr)
             return EXIT_FAILURE
-    limits = None
-    if args.max_seconds is not None or args.max_file_mb is not None:
-        from backend.platform import AnalysisLimits
-
-        limits = AnalysisLimits(
-            max_seconds=args.max_seconds,
-            max_file_bytes=None if args.max_file_mb is None else _megabytes_to_bytes(args.max_file_mb),
-        )
+    limits = _limits_from(args)
     cancelled = threading.Event()
     try:  # Ctrl-C asks the analysis to stop before its next stage; a second Ctrl-C interrupts immediately
         previous = signal.signal(signal.SIGINT, lambda *_: (cancelled.set(), signal.signal(signal.SIGINT, signal.default_int_handler)))
@@ -245,7 +255,11 @@ def run_prerequisites_ask(args, platform=None) -> int:
             print(f"error: required package '{exc.name}' is not installed", file=sys.stderr)
             print("  hint: run `pip install -r requirements.txt` in this environment", file=sys.stderr)
             return EXIT_FAILURE
-    outcome = platform.analyze(args.paper, known=args.known, studied=args.studied)
+    outcome = platform.analyze(args.paper, limits=_limits_from(args), known=args.known, studied=args.studied)
+    if outcome["status"] in ("limit_exceeded", "timeout"):  # same wording and exit codes as `analyze`
+        print(f"error: {'limit exceeded' if outcome['status'] == 'limit_exceeded' else 'timed out'}: {outcome['detail']}", file=sys.stderr)
+        print(f"  hint: {outcome['hint']}", file=sys.stderr)
+        return EXIT_LIMIT_EXCEEDED if outcome["status"] == "limit_exceeded" else EXIT_TIMEOUT
     if outcome["status"] != "success":
         print(f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
         if outcome.get("hint"):

@@ -95,7 +95,7 @@ def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], dia
 
         outcome = platform.analyze(
             temp_path,
-            diagnostics=diagnostics,
+            **({'diagnostics': True} if diagnostics else {}),
             **({'known': known} if known else {}),
             **({'studied': studied} if studied else {}),
         )
