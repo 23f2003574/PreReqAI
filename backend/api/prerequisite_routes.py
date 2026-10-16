@@ -197,7 +197,7 @@ async def mark_concept_known(
 
         return failure_response(
             422,
-            "study_plan",
+            "study_progress",
             str(error),
             hint="Use a concept name from the session's study plan (GET /api/session/{session_id}).",
         )
@@ -206,4 +206,11 @@ async def mark_concept_known(
 
         return session_not_found(session_id)
 
-    return {"status": "success", "session_id": session_id, "report": report}
+    # Same fields as the /studied endpoints answer with, plus the rebuilt report (the plan itself changed).
+    return {
+        "status": "success",
+        "session_id": session_id,
+        "study_progress": report["study_progress"],
+        "readiness": report["readiness"],
+        "report": report,
+    }

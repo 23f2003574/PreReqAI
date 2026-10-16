@@ -57,3 +57,15 @@ def test_studied_at_analysis_and_studied_later_give_the_same_progress_sections()
     assert PROGRESS_REPORT_KEYS == ("study_progress", "readiness", "study_actions")
     for key in ("study_progress", "readiness"):  # GET /api/session does not expose study_actions
         assert later[key] == upfront[key], key
+
+
+def test_known_answers_like_studied_and_fails_at_the_same_stage():
+    session_id, report = _session()
+    base = f"/api/prerequisites/sessions/{session_id}"
+    plan = [item["concept"] for item in report["study_progress"]]
+    studied = client.post(f"{base}/studied", params={"concept": plan[0]}).json()
+    known = client.post(f"{base}/known", params={"concept": plan[1]}).json()
+    assert set(studied) <= set(known)  # every field /studied returns is returned by /known too
+    assert known["readiness"] == known["report"]["readiness"] and known["readiness"]["total_concepts"] == len(plan) - 1
+    bad = [client.post(f"{base}/{kind}", params={"concept": "Cooking"}).json() for kind in ("studied", "known")]
+    assert bad[0]["stage"] == bad[1]["stage"] == "study_progress"
