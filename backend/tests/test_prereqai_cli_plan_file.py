@@ -37,3 +37,16 @@ def test_plan_file_is_written_with_json_and_stdout_stays_json(tmp_path):
     assert run.returncode == 0
     assert json.loads(run.stdout)["status"] == "success"
     assert target.read_text(encoding="utf-8").startswith("# Study plan:")
+
+
+def test_plan_markdown_summarises_progress_and_hours_left():
+    from backend.study_plan_markdown import plan_markdown
+    report = {"paper": {"title": "T"}, "learning_plan": [
+        {"step": 1, "concept": "A", "estimated_hours": 4}, {"step": 2, "concept": "B", "estimated_hours": 6}],
+        "study_progress": [{"concept": "A", "completed": True}], "learning_resources": []}
+    assert "1 of 2 studied, about 6h left." in plan_markdown(report).splitlines()
+    report["study_progress"] = [{"concept": "A", "completed": True}, {"concept": "B", "completed": True}]
+    assert "2 of 2 studied, about 0h left." in plan_markdown(report)
+    report["learning_plan"] = []  # boundary: nothing planned, no summary line
+    text = plan_markdown(report)
+    assert "studied" not in text and "Nothing left to study" in text
