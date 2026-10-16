@@ -179,3 +179,31 @@ async def unmark_concept_studied(
     """Undo a mistaken mark: the concept goes back to not studied and readiness drops accordingly."""
 
     return _update_studied(session_id, concept, False)
+
+
+@router.post("/sessions/{session_id}/known")
+async def mark_concept_known(
+
+    session_id: str,
+    concept: str,
+):
+    """Drop a concept the learner already knows from the session's study plan; the plan, time estimate and readiness are rebuilt."""
+
+    try:
+
+        report = platform.mark_concept_known(session_id, concept)
+
+    except ValueError as error:
+
+        return failure_response(
+            422,
+            "study_plan",
+            str(error),
+            hint="Use a concept name from the session's study plan (GET /api/session/{session_id}).",
+        )
+
+    if report is None:
+
+        return session_not_found(session_id)
+
+    return {"status": "success", "session_id": session_id, "report": report}

@@ -313,6 +313,22 @@ class PreReqAIPlatform:
         session_manager.save(session)
         return {"study_progress": fresh["study_progress"], "readiness": fresh["readiness"]}
 
+    def mark_concept_known(self, session_id: str, concept: str) -> dict | None:
+        """Drop a concept the learner already knows from an analysed session's study plan (like --known at
+        analysis time) and return the rebuilt report. None: unknown session; ValueError: concept not in its plan."""
+        from types import SimpleNamespace
+        from backend.session import session_manager
+
+        session = session_manager.get(session_id)
+        if session is None or session.paper is None:
+            return None
+        planned = {item.concept.casefold(): item.concept for item in session.paper.learning_plan}
+        if _concept_key(concept) not in planned:
+            raise ValueError(f"'{concept}' is not a concept in this session's study plan ({', '.join(planned.values()) or 'it is empty'})")
+        self._personalize(SimpleNamespace(paper=session.paper, report=session.report), [planned[_concept_key(concept)]])
+        session_manager.save(session)
+        return session.report
+
     def _personalize(self, result, known) -> list:
         """Drop concepts the learner says they already know from the study plan: the plan, time estimate,
         difficulty, actions, roadmap, progress and readiness are rebuilt without them, their resources are dropped and they
