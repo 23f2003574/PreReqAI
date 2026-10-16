@@ -57,11 +57,17 @@ class RuleBasedConceptDetector:
         full_text = re.sub(r"(\w+)-[ \t]*\n\s*(\w+)", unwrap, full_text)
         full_text = re.sub(r"\s+", " ", re.sub(r"-\s*\n\s*", "-", full_text))
 
+        counts = {}
+
+        def count(term, plural):
+            # Whole-word match: "attention" is not "inattention", nor "softmax" "softmaxed"; names also match a plural.
+            key = (term, plural)
+            if key not in counts:
+                counts[key] = len(re.findall(rf"\b{re.escape(term.lower())}{'s?' if plural else ''}\b", full_text))
+            return counts[key]
+
         def mentions(concept):
-            return full_text.count(concept.name.lower()) + sum(
-                len(re.findall(rf"\b{re.escape(alias.lower())}\b", full_text))
-                for alias in concept.aliases
-            )
+            return count(concept.name, True) + sum(count(alias, False) for alias in concept.aliases)
 
         for concept in concepts:
 
@@ -70,12 +76,8 @@ class RuleBasedConceptDetector:
             # "Self-Attention" and "Multi-Head Attention" contain "attention": mentions of the longer concept
             # (by name or alias) are not also mentions of the shorter one, only a standalone "attention" is.
             inside_longer = sum(
-                full_text.count(other.name.lower())
-                + sum(
-                    len(re.findall(rf"\b{re.escape(alias.lower())}\b", full_text))
-                    for alias in other.aliases
-                    if name in alias.lower()
-                )
+                count(other.name, True)
+                + sum(count(alias, False) for alias in other.aliases if name in alias.lower())
                 for other in concepts
                 if other is not concept and name in other.name.lower()
             )
