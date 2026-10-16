@@ -61,7 +61,7 @@ To ask a question without running a server, use `python -m backend.cli prerequis
 (add `--json` for machine-readable output; `--known` and `--studied` work as for `analyze`, so answers such as "What should I learn first?" reflect your progress). It analyses the paper and answers from the analysis; the same no-model limitation applies and is
 printed as a warning.
 
-Releasing? Follow [docs/release-checklist.md](docs/release-checklist.md). Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (first `pip install -r requirements-dev.txt`, which adds pytest on top of the runtime requirements; run it from the repository root; a few tests, such as the arXiv download, need network access).
+Releasing? Follow [docs/release-checklist.md](docs/release-checklist.md). Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (`python -m pytest -m prereqai` runs just the PreReqAI product tests) (first `pip install -r requirements-dev.txt`, which adds pytest on top of the runtime requirements; run it from the repository root; a few tests, such as the arXiv download, need network access).
 
 ## Prerequisite Explorer
 
