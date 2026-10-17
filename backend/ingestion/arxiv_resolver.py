@@ -66,6 +66,12 @@ class ArxivResolver(BaseSourceResolver):
                 f"arXiv returned no PDF for {source.identifier}"
             )
 
+        self._store(pdf_path, content)
+
+        return str(pdf_path)
+
+    def _store(self, pdf_path: Path, content: bytes) -> None:
+
         self.CACHE_DIRECTORY.mkdir(
             parents=True,
             exist_ok=True,
@@ -84,8 +90,6 @@ class ArxivResolver(BaseSourceResolver):
         finally:
 
             partial_path.unlink(missing_ok=True)
-
-        return str(pdf_path)
 
     def _download(self, url: str) -> bytes:
 

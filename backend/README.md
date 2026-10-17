@@ -2,4 +2,4 @@
 
 - Local PDF ✅
 - arXiv URL ✅
-- DOI (Coming Soon)
+- DOI ✅ (arXiv DOIs and DOIs with an open PDF link in Crossref)

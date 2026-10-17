@@ -11,6 +11,11 @@ from .arxiv_resolver import (
 )
 
 
+from .doi_resolver import (
+    DoiResolver,
+)
+
+
 class PDFResolver(BaseSourceResolver):
 
     def resolve(
@@ -32,6 +37,7 @@ class ResearchSourceResolver:
         self._resolvers = {
             "pdf": PDFResolver(),
             "arxiv": ArxivResolver(),
+            "doi": DoiResolver(),
         }
 
     def resolve(

@@ -57,11 +57,15 @@ def test_arxiv_and_doi_inputs_are_still_detected_by_form(given, source_type, ide
     assert (source.source_type, source.identifier) == (source_type, identifier)
 
 
-def test_a_doi_input_fails_through_the_result_contract_because_doi_resolution_is_not_implemented():
+def test_a_doi_without_an_open_pdf_fails_through_the_result_contract(monkeypatch):
+    monkeypatch.setattr(
+        "backend.ingestion.doi_resolver.requests.get",
+        lambda url, timeout: type("R", (), {"raise_for_status": lambda self: None, "json": lambda self: {"message": {}}})(),
+    )
     outcome = platform.analyze("10.1000/xyz123")
 
     assert outcome["status"] == "failure" and outcome["stage"] == "analysis"
-    assert "doi resolution has not been implemented" in outcome["detail"] and outcome["error"]["type"] == "NotImplementedError"
+    assert "No open PDF is listed for DOI 10.1000/xyz123" in outcome["detail"]
 
 
 def test_a_successful_result_carries_what_the_cli_and_api_surfaces_use(tmp_path):
