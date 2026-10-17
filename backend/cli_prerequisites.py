@@ -34,12 +34,15 @@ def add_prerequisites_parser(subparsers):
     analyze = commands.add_parser(
         "analyze",
         help="Analyse a paper PDF into concepts, prerequisites and a learning plan",
-        description="Runs the paper analysis pipeline on a PDF file and opens a learning session in this process "
+        description="Runs the paper analysis pipeline on a PDF file (or an arXiv link, arXiv:ID or DOI, which is downloaded first) and opens a learning session in this process "
                     "(sessions are in memory and end with the command). Same workflow as POST /api/prerequisites/analyze.",
         epilog="Example: python -m backend.cli prerequisites analyze paper.pdf --json. "
                "Exit codes: 0 success; 1 analysis failed; 2 usage error; 123 a resource limit was reached; 124 an operation timed out; 130 cancelled (Ctrl-C).",
     )
-    analyze.add_argument("paper", help="Path to the paper PDF")
+    analyze.add_argument("paper", help="Path to the paper PDF, or an arXiv link / arXiv:ID, or a DOI (downloaded for you)")
+    analyze.add_argument("--tree", action="store_true",
+                         help="Also print the prerequisite tree: each paper concept expanded into what it needs "
+                              "(known/covered and studied concepts are marked)")
     analyze.add_argument("--diagnose", action="store_true", dest="diagnose",
                          help="Also report per-stage durations, completed stages, warnings and run statistics "
                               "(in the --json result as `diagnostics`)")
@@ -56,6 +59,14 @@ def add_prerequisites_parser(subparsers):
     analyze.add_argument("--json", action="store_true", dest="as_json",
                          help="Print the workflow result envelope (status, stage, warnings, session_id, report, timings) as JSON")
     add_prerequisites_ask_parser(commands)
+
+
+def _print_tree(nodes, depth):
+    """The prerequisite tree as indented lines, marking concepts already known/covered or studied."""
+    for node in nodes:
+        marks = [mark for mark, on in (("studied", node.get("studied")), ("known or covered", node.get("satisfied"))) if on]
+        print("  " * depth + "- " + node["concept"] + (f" ({', '.join(marks)})" if marks else ""))
+        _print_tree(node["prerequisites"], depth + 1)
 
 
 def add_limit_arguments(parser):
@@ -201,6 +212,10 @@ def run_prerequisites_analyze(args, platform=None) -> int:
                 print("  resources: none left to study")
             else:
                 print("  resources: none available for this paper's concepts")
+        if args.tree:
+            tree = report.get("prerequisite_tree") or []
+            print("  prerequisite tree:" if tree else "  prerequisite tree: no concept of this paper has prerequisites")
+            _print_tree(tree, 2)
         timings = outcome["timings"]
         if timings:
             slowest, seconds = max(timings.items(), key=lambda item: item[1])

@@ -53,6 +53,8 @@ concepts you have finished; they stay in the plan, are marked `studied` in the s
 `POST /api/prerequisites/sessions/{session_id}/studied?concept=Probability` (and drop a concept you already know from the plan of an existing session with `POST /api/prerequisites/sessions/{session_id}/known?concept=Probability`); `GET /api/session/{session_id}`
 then shows the updated `study_progress` and `readiness`. It also lists `next_resources`: the study links for the planned concepts not yet studied, in study order.
 
+Add `--tree` to `analyze` to print the prerequisite tree (each paper concept expanded into what it needs, with known/covered and studied concepts marked). `analyze` and `ask` also take an arXiv link, `arXiv:1706.03762` or a DOI in place of a PDF path; the paper is downloaded first.
+
 To see where to study each remaining concept, add `--resources` to `analyze`: it lists a curated course or article (with link and hours) for every concept in the plan you have not yet marked studied.
 
 The `--json` report's `prerequisite_tree` expands each paper concept into the chain of what it needs (`{concept, satisfied, studied, prerequisites}`; `satisfied` is true for concepts you already know or the paper covers, `studied` for concepts you have marked studied, and it follows `/studied` updates), so you see Transformer -> Attention -> Linear Algebra rather than a flat list.
