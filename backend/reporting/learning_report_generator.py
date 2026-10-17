@@ -54,6 +54,21 @@ class LearningReportGenerator:
         )
 
     @staticmethod
+    def _concept_evidence(paper: Paper) -> list:
+        """Why each concept was detected, so the detection can be checked against the paper: how many times the
+        paper mentions it (by name or alias, bibliography excluded) and whether that is a single passing mention.
+        Most-mentioned first; ties keep the detection order."""
+        return [
+            {
+                "concept": concept.name,
+                "domain": concept.domain,
+                "occurrences": concept.occurrences,
+                "mentioned_once": concept.occurrences == 1,
+            }
+            for concept in sorted(paper.concepts, key=lambda item: -item.occurrences)
+        ]
+
+    @staticmethod
     def _equations(paper: Paper) -> list:
         """Each extracted equation with the detected concepts its section discusses, so a reader knows which
         concepts to be comfortable with before the mathematics. The link is the equation itself plus the 300
@@ -130,6 +145,8 @@ class LearningReportGenerator:
             ],
 
             "equations": self._equations(paper),
+
+            "concept_evidence": self._concept_evidence(paper),
 
             "prerequisite_tree": _prerequisite_tree(paper),
 

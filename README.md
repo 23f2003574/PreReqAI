@@ -57,6 +57,8 @@ To see where to study each remaining concept, add `--resources` to `analyze`: it
 
 The `--json` report's `prerequisite_tree` expands each paper concept into the chain of what it needs (`{concept, satisfied, studied, prerequisites}`; `satisfied` is true for concepts you already know or the paper covers, `studied` for concepts you have marked studied, and it follows `/studied` updates), so you see Transformer -> Attention -> Linear Algebra rather than a flat list.
 
+The `--json` report's `concept_evidence` shows why each concept was detected (`{concept, domain, occurrences, mentioned_once}`, most-mentioned first; bibliography mentions are not counted), so you can check the detection against the paper: a concept mentioned once may be only a passing reference.
+
 The `--json` report also lists each extracted equation under `equations`, with the detected concepts discussed just before it (`{id, expression, section, concepts}`), so you can see which concepts to know before the mathematics.
 
 To keep the plan, add `--plan-file plan.md` to `analyze`: it saves a Markdown checklist (studied concepts ticked, with study links). Over HTTP, `GET /api/session/{session_id}/plan` returns the same checklist as `text/markdown`.
