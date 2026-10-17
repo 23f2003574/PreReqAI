@@ -179,7 +179,9 @@ class PrerequisiteDetector:
 
         paper.prerequisites.clear()
 
-        discovered = set()
+        # A prerequisite needed by several concepts is listed once, and its reason names every concept that
+        # needs it (not only the first one found), so the learner sees how much of the paper depends on it.
+        needed_by = {}
 
         for concept in paper.concepts:
 
@@ -188,24 +190,23 @@ class PrerequisiteDetector:
                 [],
             ):
 
-                if prerequisite in discovered:
-                    continue
+                needed_by.setdefault(prerequisite, []).append(concept.name)
 
-                paper.prerequisites.append(
+        for prerequisite, concepts in needed_by.items():
 
-                    Prerequisite(
+            paper.prerequisites.append(
 
-                        concept=prerequisite,
+                Prerequisite(
 
-                        reason=(
-                            f"Required to understand "
-                            f"{concept.name}"
-                        ),
+                    concept=prerequisite,
 
-                        confidence=1.0,
-                    )
+                    reason=(
+                        f"Required to understand "
+                        f"{', '.join(concepts)}"
+                    ),
+
+                    confidence=1.0,
                 )
-
-                discovered.add(prerequisite)
+            )
 
         return paper
