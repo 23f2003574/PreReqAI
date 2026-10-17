@@ -374,10 +374,11 @@ class PreReqAIPlatform:
         paper, pipeline = result.paper, self.analysis
         planned = {item.concept.casefold(): item.concept for item in paper.study_progress}
         names = [_concept_label(name) for name in studied if name and name.strip()]
-        for name in names:
-            if _concept_key(name) in planned:
-                pipeline.progress_tracker.complete(paper, planned[_concept_key(name)])
-        self._refresh_progress(paper, result.report)
+        matched = [name for name in names if _concept_key(name) in planned]
+        for name in matched:
+            pipeline.progress_tracker.complete(paper, planned[_concept_key(name)])
+        if matched:  # nothing completed: the report is already current, so do not rebuild it a second time
+            self._refresh_progress(paper, result.report)
         return sorted(name for name in names if _concept_key(name) not in planned)
 
 
