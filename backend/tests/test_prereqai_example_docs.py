@@ -20,7 +20,7 @@ def _help(command):
 
 def test_every_documented_cli_flag_exists_in_the_help():
     flags = set(re.findall(r"(?<![\w-])(--[a-z][a-z-]+)", DOC)) - {"--port"}  # --port belongs to uvicorn
-    assert {"--known", "--studied", "--resources"} <= flags
+    assert {"--known", "--studied", "--resources", "--tree"} <= flags
     available = _help("analyze") + _help("ask")
     assert [flag for flag in sorted(flags) if flag not in available] == []
 
