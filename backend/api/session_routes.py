@@ -117,6 +117,8 @@ def get_session(session_id: str):
 
         "next_resources": _next_resources(session.report),
 
+        "prerequisite_tree": session.report.get("prerequisite_tree", []),
+
         "active_concept": session.active_concept,
 
         "conversation_history": session.conversation_history,

@@ -43,6 +43,8 @@ def main() -> int:
     print(f"\nStudied {first}: {progress['readiness']['completed_concepts']}/{progress['readiness']['total_concepts']} concepts ready")
 
     session = client.get(f"/api/session/{sid}").json()
+    print("Tree after studying:")
+    show_tree([n for n in session["prerequisite_tree"] if n["concept"] == "Transformer"])
     print("Next to study:", ", ".join(item["concept"] for item in session["next_resources"]))
 
     # 3. Keep the plan as a Markdown checklist.

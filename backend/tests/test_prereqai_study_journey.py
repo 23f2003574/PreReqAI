@@ -17,3 +17,4 @@ def test_the_study_journey_example_runs_and_shows_the_documented_output():
     assert "Studied Linear Algebra: 1/3 concepts ready" in out
     assert "Next to study: Probability, Neural Networks" in out
     assert "- [x] 1. Linear Algebra" in out and "- [ ] 2. Probability" in out
+    assert "Tree after studying:\n  Transformer\n    Attention  [satisfied]\n      Linear Algebra  [studied]" in out

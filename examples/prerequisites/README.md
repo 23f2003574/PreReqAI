@@ -71,7 +71,7 @@ python examples/prerequisites/study_journey.py
 
 It runs offline against the sample paper and prints, in order: the study plan without Calculus (`Linear Algebra (12h) -> Probability (10h) -> Neural Networks (15h)`),
 the Transformer prerequisite tree (Attention, marked `[satisfied]` because the paper covers it, needs Linear Algebra and Probability; Neural Networks), `1/3 concepts ready` after Linear Algebra is
-studied, the next concepts to study, and the Markdown checklist with Linear Algebra ticked. `backend/tests/test_prereqai_study_journey.py` runs it and checks that output.
+studied, the tree again from `GET /api/session/$SID` with Linear Algebra marked `[studied]`, the next concepts to study, and the Markdown checklist with Linear Algebra ticked. `backend/tests/test_prereqai_study_journey.py` runs it and checks that output.
 
 For the same tree from the command line add `--tree` to `analyze`. A paper that is not a local file can be named directly: `analyze arXiv:1706.03762`, an arXiv URL or a DOI on the command line,
 or the `source` form field over HTTP (`curl -F source=arXiv:1706.03762 http://127.0.0.1:8000/api/prerequisites/analyze`; only arXiv links and DOIs are accepted there, never server paths). Those downloads need network access

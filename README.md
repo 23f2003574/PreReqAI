@@ -51,7 +51,7 @@ several, or separate names with commas, as in `--studied "Probability,Calculus"`
 To track progress from the command line, re-run the analysis with `--studied Probability` (repeatable) for the
 concepts you have finished; they stay in the plan, are marked `studied` in the summary, and count toward readiness (the summary also shows the hours left). Over HTTP, send the `studied` form field (repeatable) with the upload, or mark a planned concept as studied later with
 `POST /api/prerequisites/sessions/{session_id}/studied?concept=Probability` (and drop a concept you already know from the plan of an existing session with `POST /api/prerequisites/sessions/{session_id}/known?concept=Probability`); `GET /api/session/{session_id}`
-then shows the updated `study_progress` and `readiness`. It also lists `next_resources`: the study links for the planned concepts not yet studied, in study order.
+then shows the updated `study_progress`, `readiness` and `prerequisite_tree` (studied concepts marked). It also lists `next_resources`: the study links for the planned concepts not yet studied, in study order.
 
 Add `--tree` to `analyze` to print the prerequisite tree (each paper concept expanded into what it needs, with known/covered and studied concepts marked). `analyze` and `ask` also take an arXiv link, `arXiv:1706.03762` or a DOI in place of a PDF path; the paper is downloaded first.
 
