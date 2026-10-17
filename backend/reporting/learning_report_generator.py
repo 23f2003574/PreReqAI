@@ -18,6 +18,26 @@ def registry_aliases(name: str) -> tuple:
     return _ALIASES.get(name, ())
 
 
+def _prerequisite_tree(paper: Paper) -> list:
+    """One tree per concept of the paper: {concept, satisfied, prerequisites: [...]}, each prerequisite expanded into
+    what it needs in turn, so a reader sees the whole chain and not only the flat list. A concept that is already
+    being expanded further up its own branch is not expanded again. `satisfied` is True for a prerequisite the learner
+    already knows or the paper itself covers (as in missing_prerequisites)."""
+    from backend.prerequisites.prerequisite_detector import PrerequisiteDetector
+
+    rules = PrerequisiteDetector.PREREQUISITE_RULES
+    satisfied = {item.concept for item in paper.missing_prerequisites if item.satisfied}
+
+    def node(name, above):
+        return {
+            "concept": name,
+            "satisfied": name in satisfied,
+            "prerequisites": [node(child, above | {name}) for child in rules.get(name, []) if child not in above | {name}],
+        }
+
+    return [node(concept.name, frozenset()) for concept in paper.concepts if rules.get(concept.name)]
+
+
 class LearningReportGenerator:
     """
     Produces a user-facing learning report
@@ -107,6 +127,8 @@ class LearningReportGenerator:
             ],
 
             "equations": self._equations(paper),
+
+            "prerequisite_tree": _prerequisite_tree(paper),
 
             "learning_paths": {
 

@@ -55,6 +55,8 @@ then shows the updated `study_progress` and `readiness`. It also lists `next_res
 
 To see where to study each remaining concept, add `--resources` to `analyze`: it lists a curated course or article (with link and hours) for every concept in the plan you have not yet marked studied.
 
+The `--json` report's `prerequisite_tree` expands each paper concept into the chain of what it needs (`{concept, satisfied, prerequisites}`; `satisfied` is true for concepts you already know or the paper covers), so you see Transformer -> Attention -> Linear Algebra rather than a flat list.
+
 The `--json` report also lists each extracted equation under `equations`, with the detected concepts discussed just before it (`{id, expression, section, concepts}`), so you can see which concepts to know before the mathematics.
 
 To keep the plan, add `--plan-file plan.md` to `analyze`: it saves a Markdown checklist (studied concepts ticked, with study links). Over HTTP, `GET /api/session/{session_id}/plan` returns the same checklist as `text/markdown`.
