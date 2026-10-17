@@ -212,15 +212,9 @@ class SessionManager:
 
                 return None
 
-            try:
+            session = self._read(path)
 
-                session = pickle.loads(path.read_bytes())
-
-            except Exception:  # unreadable or from an incompatible version: same as unknown
-
-                return None
-
-            if not isinstance(session, LearningSession):  # readable but not a session: same as unknown
+            if session is None:
 
                 return None
 
@@ -230,7 +224,23 @@ class SessionManager:
 
             self._last_used[session_id] = time.time()
 
+            self._evict_oldest()  # restoring saved sessions one by one must not grow memory past the cap either
+
         return session
+
+    @staticmethod
+    def _read(path: Path) -> LearningSession | None:
+        """The session saved in `path`; None when it is unreadable, from an incompatible version, or not a session."""
+
+        try:
+
+            session = pickle.loads(path.read_bytes())
+
+        except Exception:
+
+            return None
+
+        return session if isinstance(session, LearningSession) else None
 
     def is_unreadable(self, session_id: str) -> bool:
         """True when a saved file exists for this id but cannot be loaded (corrupt or from another version)."""
@@ -270,11 +280,21 @@ class SessionManager:
 
         directory = SessionManager._directory()
 
+        found = dict(self.sessions)
+
         if directory and Path(directory).is_dir():
 
             for path in Path(directory).glob("*.session"):
 
-                self.get(path.stem)  # loads (and caches) it when valid; does nothing for bad names
+                # Saved-only sessions are read for the listing but not cached: restoring every saved file into
+                # memory would bypass MAX_SESSIONS_IN_MEMORY (a request for one session still restores it).
+                if path.stem not in found and self._path(path.stem) is not None and not self._expired(path):
+
+                    saved = self._read(path)
+
+                    if saved is not None:
+
+                        found[path.stem] = saved
 
         # sessions saved by older versions lack created_at
-        return sorted(self.sessions.values(), key=lambda session: getattr(session, "created_at", 0.0), reverse=True)
+        return sorted(found.values(), key=lambda session: getattr(session, "created_at", 0.0), reverse=True)
