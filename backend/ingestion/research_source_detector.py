@@ -12,8 +12,15 @@ ARXIV_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
+# How a paper is usually cited: "arXiv:1706.03762". The explicit prefix is required: a bare number such as
+# 1706.03762 is rejected as ambiguous (it could be a mistyped file name).
+ARXIV_ID_PATTERN = re.compile(
+    r"arxiv:\s*([0-9]+\.[0-9]+(?:v[0-9]+)?)",
+    re.IGNORECASE,
+)
+
 DOI_PATTERN = re.compile(
-    r"(?:doi:\s*|https?://(?:dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
+    r"(?:doi:\s*|https?://(?:www\.|dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
     re.IGNORECASE,
 )
 
@@ -70,11 +77,13 @@ class ResearchSourceDetector:
 
         arxiv_match = ARXIV_PATTERN.fullmatch(source)
 
-        if arxiv_match:
+        id_match = ARXIV_ID_PATTERN.fullmatch(source)
+
+        if arxiv_match or id_match:
 
             return ResearchSource(
                 source_type="arxiv",
-                identifier=arxiv_match.group(1),
+                identifier=(arxiv_match or id_match).group(1),
                 original_input=source,
             )
 
