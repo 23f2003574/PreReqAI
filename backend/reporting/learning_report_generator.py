@@ -19,19 +19,22 @@ def registry_aliases(name: str) -> tuple:
 
 
 def _prerequisite_tree(paper: Paper) -> list:
-    """One tree per concept of the paper: {concept, satisfied, prerequisites: [...]}, each prerequisite expanded into
+    """One tree per concept of the paper: {concept, satisfied, studied, prerequisites: [...]}, each prerequisite expanded into
     what it needs in turn, so a reader sees the whole chain and not only the flat list. A concept that is already
     being expanded further up its own branch is not expanded again. `satisfied` is True for a prerequisite the learner
-    already knows or the paper itself covers (as in missing_prerequisites)."""
+    already knows or the paper itself covers (as in missing_prerequisites); `studied` is True for a
+    planned concept the learner has marked studied."""
     from backend.prerequisites.prerequisite_detector import PrerequisiteDetector
 
     rules = PrerequisiteDetector.PREREQUISITE_RULES
+    studied = {item.concept for item in paper.study_progress if item.completed}
     satisfied = {item.concept for item in paper.missing_prerequisites if item.satisfied}
 
     def node(name, above):
         return {
             "concept": name,
             "satisfied": name in satisfied,
+            "studied": name in studied,
             "prerequisites": [node(child, above | {name}) for child in rules.get(name, []) if child not in above | {name}],
         }
 

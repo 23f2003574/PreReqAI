@@ -26,3 +26,23 @@ def test_known_concept_is_marked_satisfied_everywhere_in_the_tree():
     known = platform.analyze(SAMPLE, known=["Calculus"])["report"]["prerequisite_tree"]
     calculus = lambda tree: _find(_find(tree, "Gradient Descent")["prerequisites"], "Calculus")["satisfied"]
     assert calculus(plain) is False and calculus(known) is True
+
+
+def _linear_algebra(report):
+    return _find(_find(_find(report["prerequisite_tree"], "Transformer")["prerequisites"], "Attention")["prerequisites"], "Linear Algebra")
+
+
+def test_marking_a_concept_studied_updates_the_tree_of_the_session_and_undo_reverts_it():
+    from backend.session import session_manager
+
+    sid = platform.analyze(SAMPLE)["session_id"]
+    assert _linear_algebra(session_manager.get(sid).report)["studied"] is False
+    platform.mark_concept_studied(sid, "Linear Algebra")
+    assert _linear_algebra(session_manager.get(sid).report)["studied"] is True
+    platform.unmark_concept_studied(sid, "Linear Algebra")
+    assert _linear_algebra(session_manager.get(sid).report)["studied"] is False
+
+
+def test_studied_at_analysis_time_shows_in_the_tree():
+    report = platform.analyze(SAMPLE, studied=["Linear Algebra"])["report"]
+    assert _linear_algebra(report)["studied"] is True

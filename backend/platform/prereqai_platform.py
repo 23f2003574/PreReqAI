@@ -148,7 +148,7 @@ def _did_you_mean(name, concept_names):
 
 
 # The report sections that change when the learner studies a concept.
-PROGRESS_REPORT_KEYS = ("study_progress", "readiness", "study_actions")
+PROGRESS_REPORT_KEYS = ("study_progress", "readiness", "study_actions", "prerequisite_tree")
 
 
 class PreReqAIPlatform:
