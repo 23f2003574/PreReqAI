@@ -25,6 +25,10 @@ from backend.api.workflow_result import (
     limit_exceeded_body,
 )
 
+from backend.ingestion.research_source_detector import (
+    ResearchSourceDetector,
+)
+
 from backend.platform import (
     platform,
 )
@@ -109,14 +113,63 @@ def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], dia
         )
 
 
+def _analyze_source(source: str, known: list[str], studied: list[str], diagnostics: bool):
+    """Analyse an arXiv link or DOI. Only those are accepted: a server file path in `source` must never be read."""
+
+    try:
+
+        detected = ResearchSourceDetector().detect(source)
+
+    except ValueError:
+
+        detected = None
+
+    if detected is None or detected.source_type not in ("arxiv", "doi"):
+
+        return failure_response(
+            422,
+            "analysis",
+            f"`source` must be an arXiv link or a DOI, not: {source}",
+            hint="Upload a PDF as `paper` instead.",
+        )
+
+    outcome = platform.analyze(
+        detected.original_input,
+        **({'diagnostics': True} if diagnostics else {}),
+        **({'known': known} if known else {}),
+        **({'studied': studied} if studied else {}),
+    )
+
+    if outcome["status"] != SUCCESS:
+
+        return JSONResponse(status_code=HTTP_STATUS[outcome["status"]], content=outcome)
+
+    return outcome
+
+
 @router.post("/analyze")
 async def analyze_prerequisites(
 
-    paper: UploadFile = File(...),
+    paper: UploadFile | None = File(default=None),
+    source: str | None = Form(default=None),
     known: list[str] = Form(default=[]),
     studied: list[str] = Form(default=[]),
     diagnostics: bool = Form(default=False),
 ):
+    """Analyse an uploaded PDF (`paper`) or, instead, an arXiv link or DOI (`source`)."""
+
+    if (paper is None) == (source is None):
+
+        return failure_response(
+            422,
+            "input",
+            "Invalid request: paper: Field required (send exactly one of `paper`, a PDF upload, or `source`, an arXiv link or DOI).",
+            hint="Upload the PDF as `paper`, or pass `source` such as https://arxiv.org/abs/1706.03762 or 10.1145/3292500.3330701.",
+        )
+
+    if source is not None:
+
+        return await run_in_threadpool(_analyze_source, source, known, studied, diagnostics)
 
     # The analysis is blocking and CPU-bound: run on a worker thread so one
     # upload never stalls every other request the server is handling.
