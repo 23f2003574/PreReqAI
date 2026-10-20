@@ -264,8 +264,12 @@ class PreReqAIPlatform:
                 error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
             ), result.timings)
         concept_names = [item["concept"] for item in result.report.get("missing_prerequisites", [])]
+        in_plan = {step.concept.casefold() for step in result.paper.learning_plan}
         unmatched = self._personalize(result, known) if known else []
         not_studied = self._apply_studied(result, studied) if studied else []
+        # a name that was in the plan but dropped by --known is not "missing from the plan": say what happened
+        also_known = [name for name in not_studied if _concept_key(name) in in_plan]
+        not_studied = [name for name in not_studied if name not in also_known]
         # The session keeps its own copy of the report: the caller owns the one returned below, and
         # changing it must not change what later session requests (tutoring, lookups) read.
         session = session_manager.create(
@@ -286,6 +290,7 @@ class PreReqAIPlatform:
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
             warnings=unsaved + no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
+            + [f"--studied {name!r} was ignored because you also said you already know it, so it is not in the study plan" for name in also_known]
             + [f"--studied {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in not_studied],
         )
         return with_diagnostics(outcome, result.timings, result.report)
