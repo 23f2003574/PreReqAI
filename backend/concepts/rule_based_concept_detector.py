@@ -63,7 +63,10 @@ class RuleBasedConceptDetector:
             # Whole-word match: "attention" is not "inattention", nor "softmax" "softmaxed"; names also match a plural.
             key = (term, plural)
             if key not in counts:
-                counts[key] = len(re.findall(rf"\b{re.escape(term.lower())}{'s?' if plural else ''}\b", full_text))
+                needle = term.lower()
+                # Most registry terms are absent from a given paper, and a plain substring search rejects them far
+                # faster than a regex scan of the whole text; a term that is not a substring cannot match the pattern.
+                counts[key] = len(re.findall(rf"\b{re.escape(needle)}{'s?' if plural else ''}\b", full_text)) if needle in full_text else 0
             return counts[key]
 
         def mentions(concept):
