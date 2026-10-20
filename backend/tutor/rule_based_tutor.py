@@ -223,4 +223,11 @@ class RuleBasedTutor(BaseTutor):
             finished = f" Already studied: {', '.join(c for c in (s.concept for s in steps) if c in done)}." if done else ""
             return f"Study these in order before the paper: {listed}.{finished}"
 
+        if re.search(r"\b(ready|readiness)\b", text):
+            readiness = getattr(paper, "readiness", None)
+            if readiness is None:
+                return ""
+            verdict = "You are ready to read the paper." if readiness.ready_to_read else "You are not ready to read the paper yet."
+            return f"{verdict} {readiness.status}: {readiness.completed_concepts} of {readiness.total_concepts} planned concepts ready ({readiness.progress_percent}%)."
+
         return ""

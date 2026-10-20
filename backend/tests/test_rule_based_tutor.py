@@ -123,3 +123,16 @@ def test_time_answer_follows_study_progress_and_an_empty_plan():
     paper.concepts = [object()]
     assert "no prerequisites left" in _ask(paper, "What should I study first?").answer
     assert "no preparation time is left" in _ask(paper, "How long will this take?").answer
+
+
+def test_readiness_question_is_answered_from_the_readiness_evaluation():
+    from backend.models.paper import PaperReadiness
+
+    paper = _planned_paper()
+    assert "has not yet been configured" in _ask(paper, "Am I ready to read this?").answer  # nothing evaluated yet
+    paper.readiness = PaperReadiness(50, False, 1, 2, "Almost Ready")
+    answer = _ask(paper, "Am I ready to read this paper?")
+    assert answer.answer == "You are not ready to read the paper yet. Almost Ready: 1 of 2 planned concepts ready (50%)."
+    assert answer.confidence == 0.5
+    paper.readiness = PaperReadiness(100, True, 2, 2, "Ready to Read")
+    assert _ask(paper, "Is my readiness good enough?").answer.startswith("You are ready to read the paper.")

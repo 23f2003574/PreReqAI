@@ -86,7 +86,7 @@ Upload a research paper to receive:
 ## Interactive Learning
 
 > **Current limitation:** no tutoring model is configured in this release. A question about a concept of the paper is answered
-> with that concept's built-in definition and, for a prerequisite, why it is needed; a paper-level study question ("What should I learn first?", "How long will this take?", "How difficult is it?") is answered from the learning plan, study-time estimate and difficulty; any other question gets the placeholder
+> with that concept's built-in definition and, for a prerequisite, why it is needed; a paper-level study question ("What should I learn first?", "How long will this take?", "How difficult is it?", "Am I ready to read this?") is answered from the learning plan, study-time estimate and difficulty; any other question gets the placeholder
 > "A tutoring model has not yet been configured." Either way the response says so in `warnings`, and `supporting_concepts` /
 > `supporting_sections` show where the paper covers the question. From the command line:
 > `python -m backend.cli prerequisites ask paper.pdf "What is attention?"`.
