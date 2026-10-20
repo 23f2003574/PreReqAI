@@ -270,3 +270,37 @@ async def mark_concept_known(
         "readiness": report["readiness"],
         "report": report,
     }
+
+
+@router.delete("/sessions/{session_id}/known")
+async def unmark_concept_known(
+
+    session_id: str,
+    concept: str,
+):
+    """Undo a mistaken "known": the concept returns to the study plan; the plan, time estimate and readiness are rebuilt."""
+
+    try:
+
+        report = platform.unmark_concept_known(session_id, concept)
+
+    except ValueError as error:
+
+        return failure_response(
+            422,
+            "study_progress",
+            str(error),
+            hint="Use a concept you marked known in this session (POST /api/prerequisites/sessions/{session_id}/known).",
+        )
+
+    if report is None:
+
+        return session_not_found(session_id)
+
+    return {
+        "status": "success",
+        "session_id": session_id,
+        "study_progress": report["study_progress"],
+        "readiness": report["readiness"],
+        "report": report,
+    }

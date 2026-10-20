@@ -356,6 +356,31 @@ class PreReqAIPlatform:
         session_manager.save(session)
         return session.report
 
+    def unmark_concept_known(self, session_id: str, concept: str) -> dict | None:
+        """Undo a mistaken `mark_concept_known`: the concept returns to the study plan (with its resource and hours)
+        and the rebuilt report is returned; other known concepts stay known and studied progress is kept.
+        None: unknown session; ValueError: the concept is not currently marked known."""
+        from types import SimpleNamespace
+        from backend.session import session_manager
+
+        session = session_manager.get(session_id)
+        if session is None or session.paper is None:
+            return None
+        paper, pipeline = session.paper, self.analysis
+        known = {item.concept.casefold(): item.concept for item in paper.missing_prerequisites if item.reason == KNOWN_REASON}
+        if _concept_key(concept) not in known:
+            raise ValueError(f"'{concept}' is not marked as known in this session ({', '.join(known.values()) or 'nothing is marked known'})")
+        remaining = [name for key, name in known.items() if key != _concept_key(concept)]
+        studied = [item.concept for item in paper.study_progress if item.completed]
+        pipeline.missing_prerequisite_analyzer.analyze(paper)  # back to the analysis-time plan, then known concepts are dropped again
+        pipeline.learning_planner.generate(paper)
+        pipeline.resource_recommender.recommend(paper)
+        target = SimpleNamespace(paper=paper, report=session.report)
+        self._personalize(target, remaining)
+        self._apply_studied(target, studied)
+        session_manager.save(session)
+        return session.report
+
     def _personalize(self, result, known) -> list:
         """Drop concepts the learner says they already know from the study plan: the plan, time estimate,
         difficulty, actions, roadmap, progress and readiness are rebuilt without them, their resources are dropped and they
