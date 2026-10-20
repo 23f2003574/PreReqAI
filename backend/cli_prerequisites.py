@@ -11,7 +11,7 @@ import sys
 import threading
 from pathlib import Path
 
-from backend.study_plan_markdown import plan_markdown
+from backend.study_plan_markdown import plan_markdown, studied_from_plan
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
@@ -51,6 +51,9 @@ def add_prerequisites_parser(subparsers):
     analyze.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
                          help="A planned concept you have finished studying; it counts toward readiness "
                               "(repeat for several; re-run with more as you progress)")
+    analyze.add_argument("--resume", default=None, metavar="PLAN_FILE",
+                         help="Mark as studied every concept ticked in a plan saved earlier with --plan-file, "
+                              "so progress carries over between runs (add --studied for newly finished concepts)")
     analyze.add_argument("--resources", action="store_true",
                          help="Also list a curated course or article (with link) for each concept still to study")
     analyze.add_argument("--plan-file", default=None, metavar="PATH", dest="plan_file",
@@ -130,6 +133,14 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         print(f"error: cannot save the study plan to {args.plan_file}: {problem}", file=sys.stderr)
         print("  hint: choose a file path in an existing folder (for example --plan-file plan.md); nothing was analysed", file=sys.stderr)
         return EXIT_USAGE
+    if getattr(args, "resume", None):
+        try:
+            with open(args.resume, encoding="utf-8") as handle:
+                args.studied = list(args.studied) + studied_from_plan(handle.read())
+        except (OSError, UnicodeDecodeError) as exc:
+            print(f"error: cannot read the saved plan {args.resume}: {getattr(exc, 'strerror', None) or exc}", file=sys.stderr)
+            print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
+            return EXIT_USAGE
     if platform is None:
         try:
             from backend.platform import platform

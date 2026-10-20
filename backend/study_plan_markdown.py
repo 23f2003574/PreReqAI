@@ -1,5 +1,7 @@
 """The study plan as a Markdown checklist; shared by `analyze --plan-file` and GET /api/session/{id}/plan."""
 
+import re
+
 
 def _one_line(text):
     """PDF metadata can hold line breaks; one in a title would start a fake line (even a ticked checklist item)."""
@@ -27,3 +29,11 @@ def plan_markdown(report):
     if not report["learning_plan"]:
         lines.append("Nothing left to study: no planned prerequisites.")
     return "\n".join(lines) + "\n"
+
+
+_TICKED = re.compile(r"^- \[[xX]\] \d+\. (.+?) \(~\d+h\)", re.MULTILINE)
+
+
+def studied_from_plan(text):
+    """The concepts ticked in a checklist written by plan_markdown, so a saved plan can restore progress."""
+    return [match.group(1) for match in _TICKED.finditer(text)]
