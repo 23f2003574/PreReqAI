@@ -63,7 +63,7 @@ The `--json` report's `concept_evidence` shows why each concept was detected (`{
 
 The `--json` report also lists each extracted equation under `equations`, with the detected concepts discussed just before it (`{id, expression, section, concepts}`), so you can see which concepts to know before the mathematics.
 
-To keep the plan, add `--plan-file plan.md` to `analyze`: it saves a Markdown checklist (studied concepts ticked, with study links). Over HTTP, `GET /api/session/{session_id}/plan` returns the same checklist as `text/markdown`.
+To keep the plan, add `--plan-file plan.md` to `analyze`: it saves a Markdown checklist (studied concepts ticked, with study links and a one-line reason each concept is needed). Over HTTP, `GET /api/session/{session_id}/plan` returns the same checklist as `text/markdown`.
 
 To ask a question without running a server, use `python -m backend.cli prerequisites ask paper.pdf "Why do I need calculus?"`
 (add `--json` for machine-readable output; `--known` and `--studied` work as for `analyze`, so answers such as "What should I learn first?" reflect your progress). It analyses the paper and answers from the analysis; the same no-model limitation applies and is
