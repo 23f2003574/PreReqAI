@@ -53,7 +53,7 @@ workspace/projection failures plus the 2 network tests listed below, nothing new
 | Done | Session persistence: opt-in `PREREQAI_SESSION_DIR` (pickle files; single-process, no locking or expiry/cleanup). Default stays in-memory. Verified with a real `uvicorn` stop/start in `test_prereqai_restart_acceptance.py`. |
 | Done (documented) | Tutor answers are a placeholder: stated in the README, and every question response carries a warning. Wiring a real model remains open and needs a provider decision. |
 | Required before January | The 44 workspace/projection test failures: scoped in "January scope triage" below. |
-| Required before January | Section parser: numbered title-case headings now split; unnumbered or all-caps headings outside the fixed list still fold into the previous section. |
+| Required before January | Section parser: numbered title-case headings and IEEE-style roman-numbered all-caps headings (`II. PROPOSED METHOD`) now split; unnumbered headings outside the fixed list (and roman-numbered title-case ones) still fold into the previous section. |
 | Optional | Concepts outside the registry (e.g. Calculus) have no rules, resources or explanations. |
 | Optional | Unmark a studied concept (HTTP analyze form now accepts `studied`, matching the CLI). |
 | Optional | Author extraction now reads a plain name-list line on page one; multi-line, affiliation-interleaved or single-name author blocks still show "Unknown Author". |

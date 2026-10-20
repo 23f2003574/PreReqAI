@@ -16,7 +16,10 @@ _KNOWN = (
 _WORD = r"(?:[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"
 _NUMBERED = rf"\d+(?:\.\d+)*\.?[ \t]+[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{0,7}}"
 
-SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN})|{_NUMBERED})[ \t]*$", re.MULTILINE)
+# IEEE-style "II. PROPOSED METHOD": a roman numeral and an all-caps title (all caps keeps an author line like "I. Goodfellow" out of the headings).
+_ROMAN_CAPS = r"[IVX]+\.[ \t]+[A-Z]{3,}(?:[ \t]+[A-Z][A-Z\-]*){0,7}"
+
+SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN})|{_NUMBERED}|{_ROMAN_CAPS})[ \t]*$", re.MULTILINE)
 
 
 class ScientificSectionParser:
