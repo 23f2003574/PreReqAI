@@ -147,6 +147,9 @@ def _did_you_mean(name, concept_names):
     return f" (did you mean {by_folded[close[0]]!r}?)" if close else ""
 
 
+# Why a prerequisite the learner marked known counts as satisfied.
+KNOWN_REASON = "Already known (reported by the learner)"
+
 # The report sections that change when the learner studies a concept.
 PROGRESS_REPORT_KEYS = ("study_progress", "readiness", "study_actions", "prerequisite_tree")
 
@@ -334,6 +337,11 @@ class PreReqAIPlatform:
         if session is None or session.paper is None:
             return None
         planned = {item.concept.casefold(): item.concept for item in session.paper.learning_plan}
+        if _concept_key(concept) not in planned and any(
+            item.concept.casefold() == _concept_key(concept) and item.reason == KNOWN_REASON
+            for item in session.paper.missing_prerequisites
+        ):  # already marked known: repeating the request (a retry, a double click) changes nothing
+            return session.report
         if _concept_key(concept) not in planned:
             raise ValueError(f"'{concept}' is not a concept in this session's study plan ({', '.join(planned.values()) or 'it is empty'})")
         target = SimpleNamespace(paper=session.paper, report=session.report)
@@ -357,7 +365,7 @@ class PreReqAIPlatform:
         paper.learning_resources = [item for item in paper.learning_resources if item.concept.casefold() not in wanted]
         for prerequisite in paper.missing_prerequisites:  # a known concept is no longer missing
             if prerequisite.concept.casefold() in wanted and not prerequisite.satisfied:
-                prerequisite.satisfied, prerequisite.reason = True, "Already known (reported by the learner)"
+                prerequisite.satisfied, prerequisite.reason = True, KNOWN_REASON
         pipeline.difficulty_engine.assess(paper)  # the paper is easier once known concepts are not missing
         pipeline.study_time_estimator.estimate(paper)
         pipeline.difficulty_explanation_engine.explain(paper)
