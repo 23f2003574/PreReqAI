@@ -265,8 +265,12 @@ class PreReqAIPlatform:
             ), result.timings)
         concept_names = [item["concept"] for item in result.report.get("missing_prerequisites", [])]
         in_plan = {step.concept.casefold() for step in result.paper.learning_plan}
-        unmatched = self._personalize(result, known) if known else []
-        not_studied = self._apply_studied(result, studied) if studied else []
+        not_studied = []
+        if known:  # the studied concepts are completed inside the one rebuild, not in a second pass
+            unmatched = self._personalize(result, known, studied, not_studied)
+        else:
+            unmatched = []
+            not_studied = self._apply_studied(result, studied) if studied else []
         # a name that was in the plan but dropped by --known is not "missing from the plan": say what happened
         also_known = [name for name in not_studied if _concept_key(name) in in_plan]
         not_studied = [name for name in not_studied if name not in also_known]
@@ -351,8 +355,7 @@ class PreReqAIPlatform:
             raise ValueError(f"'{concept}' is not a concept in this session's study plan ({', '.join(planned.values()) or 'it is empty'})")
         target = SimpleNamespace(paper=session.paper, report=session.report)
         studied = [item.concept for item in session.paper.study_progress if item.completed]  # rebuilding the plan resets progress
-        self._personalize(target, [planned[_concept_key(concept)]])
-        self._apply_studied(target, studied)
+        self._personalize(target, [planned[_concept_key(concept)]], studied)
         session_manager.save(session)
         return session.report
 
@@ -376,12 +379,11 @@ class PreReqAIPlatform:
         pipeline.learning_planner.generate(paper)
         pipeline.resource_recommender.recommend(paper)
         target = SimpleNamespace(paper=paper, report=session.report)
-        self._personalize(target, remaining)
-        self._apply_studied(target, studied)
+        self._personalize(target, remaining, studied)
         session_manager.save(session)
         return session.report
 
-    def _personalize(self, result, known) -> list:
+    def _personalize(self, result, known, studied=(), not_studied=None) -> list:
         """Drop concepts the learner says they already know from the study plan: the plan, time estimate,
         difficulty, actions, roadmap, progress and readiness are rebuilt without them, their resources are dropped and they
         are no longer reported as missing prerequisites."""
@@ -402,22 +404,30 @@ class PreReqAIPlatform:
         pipeline.study_action_generator.generate(paper)
         pipeline.study_roadmap_generator.generate(paper)
         pipeline.progress_tracker.initialize(paper)
+        missing = self._complete_studied(paper, studied)  # before the one evaluation and report below
+        if not_studied is not None:
+            not_studied.extend(missing)
         pipeline.readiness_engine.evaluate(paper)
         result.report.update(pipeline.report_generator.generate(paper))
         return unmatched
 
+    def _complete_studied(self, paper, studied) -> list:
+        """Mark these planned concepts completed (no readiness or report refresh); returns the names that are not in the plan."""
+        planned = {item.concept.casefold(): item.concept for item in paper.study_progress}
+        names = [_concept_label(name) for name in studied if name and name.strip()]
+        for name in names:
+            if _concept_key(name) in planned:
+                self.analysis.progress_tracker.complete(paper, planned[_concept_key(name)])
+        return sorted(name for name in names if _concept_key(name) not in planned)
+
     def _apply_studied(self, result, studied) -> list:
         """Start the learner with these planned concepts already marked studied (progress and readiness
         follow); returns the names that are not in the study plan."""
-        paper, pipeline = result.paper, self.analysis
-        planned = {item.concept.casefold(): item.concept for item in paper.study_progress}
-        names = [_concept_label(name) for name in studied if name and name.strip()]
-        matched = [name for name in names if _concept_key(name) in planned]
-        for name in matched:
-            pipeline.progress_tracker.complete(paper, planned[_concept_key(name)])
-        if matched:  # nothing completed: the report is already current, so do not rebuild it a second time
+        paper = result.paper
+        missing = self._complete_studied(paper, studied)
+        if len([name for name in studied if name and name.strip()]) > len(missing):  # nothing completed: the report is already current
             self._refresh_progress(paper, result.report)
-        return sorted(name for name in names if _concept_key(name) not in planned)
+        return missing
 
 
 # The one platform instance the HTTP application (backend.main) and its routers
