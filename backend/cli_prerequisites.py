@@ -107,6 +107,8 @@ def add_prerequisites_ask_parser(commands):
                      help="A concept you already know; it is left out of the study plan (repeat for several)")
     ask.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
                      help="A planned concept you have finished studying (repeat for several)")
+    ask.add_argument("--resume", default=None, metavar="PLAN_FILE",
+                     help="Mark as studied every concept ticked in a plan saved with `analyze --plan-file`")
     add_limit_arguments(ask)
     ask.add_argument("--json", action="store_true", dest="as_json",
                      help="Print session_id, warnings and the answers as JSON")
@@ -128,19 +130,27 @@ def _plan_file_problem(path):
     return None
 
 
+def _apply_resume(args):
+    """Add the concepts ticked in the --resume plan file to args.studied; False (after printing why) when it cannot be read."""
+    if not getattr(args, "resume", None):
+        return True
+    try:
+        with open(args.resume, encoding="utf-8") as handle:
+            args.studied = list(args.studied) + studied_from_plan(handle.read())
+    except (OSError, UnicodeDecodeError) as exc:
+        print(f"error: cannot read the saved plan {args.resume}: {getattr(exc, 'strerror', None) or exc}", file=sys.stderr)
+        print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
+        return False
+    return True
+
+
 def run_prerequisites_analyze(args, platform=None) -> int:
     if args.plan_file and (problem := _plan_file_problem(args.plan_file)):
         print(f"error: cannot save the study plan to {args.plan_file}: {problem}", file=sys.stderr)
         print("  hint: choose a file path in an existing folder (for example --plan-file plan.md); nothing was analysed", file=sys.stderr)
         return EXIT_USAGE
-    if getattr(args, "resume", None):
-        try:
-            with open(args.resume, encoding="utf-8") as handle:
-                args.studied = list(args.studied) + studied_from_plan(handle.read())
-        except (OSError, UnicodeDecodeError) as exc:
-            print(f"error: cannot read the saved plan {args.resume}: {getattr(exc, 'strerror', None) or exc}", file=sys.stderr)
-            print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
-            return EXIT_USAGE
+    if not _apply_resume(args):
+        return EXIT_USAGE
     if platform is None:
         try:
             from backend.platform import platform
@@ -273,6 +283,8 @@ def run_prerequisites_ask(args, platform=None) -> int:
 
     if len(args.question) > MAX_QUESTION_CHARS:
         print(f"error: the question is too long ({len(args.question)} characters; the limit is {MAX_QUESTION_CHARS})", file=sys.stderr)
+        return EXIT_USAGE
+    if not _apply_resume(args):
         return EXIT_USAGE
     if platform is None:
         try:

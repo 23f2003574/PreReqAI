@@ -66,7 +66,7 @@ The `--json` report also lists each extracted equation under `equations`, with t
 To keep the plan, add `--plan-file plan.md` to `analyze`: it saves a Markdown checklist (studied concepts ticked, with study links and a one-line reason each concept is needed). Progress then carries over between runs: `--resume plan.md` marks every concept ticked in that saved plan as studied (it combines with `--studied`, and `--resume plan.md --plan-file plan.md` updates the same file). Over HTTP, `GET /api/session/{session_id}/plan` returns the same checklist as `text/markdown`.
 
 To ask a question without running a server, use `python -m backend.cli prerequisites ask paper.pdf "Why do I need calculus?"`
-(add `--json` for machine-readable output; `--known` and `--studied` work as for `analyze`, so answers such as "What should I learn first?" reflect your progress). It analyses the paper and answers from the analysis; the same no-model limitation applies and is
+(add `--json` for machine-readable output; `--known`, `--studied` and `--resume` work as for `analyze`, so answers such as "What should I learn first?" reflect your progress). It analyses the paper and answers from the analysis; the same no-model limitation applies and is
 printed as a warning.
 
 Releasing? Follow [docs/release-checklist.md](docs/release-checklist.md). Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (`python -m pytest -m prereqai` runs just the PreReqAI product tests) (first `pip install -r requirements-dev.txt`, which adds pytest on top of the runtime requirements; run it from the repository root; a few tests, such as the arXiv download, need network access).

@@ -41,3 +41,21 @@ def test_unreadable_resume_file_is_refused_with_a_hint(tmp_path):
     run = _run("--resume", str(tmp_path / "missing.md"))
     assert run.returncode == 2 and "cannot read the saved plan" in run.stderr and "hint:" in run.stderr
     assert run.stdout == "" and "Traceback" not in run.stderr
+
+
+def _ask(*flags):
+    return subprocess.run([sys.executable, "-m", "backend.cli", "prerequisites", "ask", SAMPLE, "What should I learn first?", *flags],
+                          cwd=ROOT, capture_output=True, text=True, timeout=120)
+
+
+def test_ask_answers_from_the_progress_restored_by_resume(tmp_path):
+    plan = tmp_path / "plan.md"
+    assert _run("--studied", "Probability", "--plan-file", str(plan)).returncode == 0
+    run = _ask("--resume", str(plan))
+    assert run.returncode == 0 and "Already studied: Probability" in run.stdout
+    assert "Already studied" not in _ask().stdout  # without it, the new run starts from nothing
+
+
+def test_ask_refuses_an_unreadable_resume_file(tmp_path):
+    run = _ask("--resume", str(tmp_path / "missing.md"))
+    assert run.returncode == 2 and "cannot read the saved plan" in run.stderr and run.stdout == ""
