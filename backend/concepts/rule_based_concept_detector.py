@@ -70,7 +70,15 @@ class RuleBasedConceptDetector:
             return counts[key]
 
         def mentions(concept):
-            return count(concept.name, True) + sum(count(alias, False) for alias in concept.aliases)
+            total = count(concept.name, True) + sum(count(alias, False) for alias in concept.aliases)
+            # Two of a concept's own terms can overlap ("graph convolutional" inside "graph convolutional network"):
+            # one mention is counted once, as the longer term.
+            terms = [alias.lower() for alias in concept.aliases]
+            for short in terms:
+                for longer in terms:
+                    if short != longer and re.search(rf"\b{re.escape(short)}\b", longer):
+                        total -= count(longer, False)
+            return total
 
         for concept in concepts:
 
@@ -84,6 +92,18 @@ class RuleBasedConceptDetector:
                 for other in concepts
                 if other is not concept and name in other.name.lower()
             )
+
+            # The same holds for an alias: "convolutional network" inside "graph convolutional network" belongs to
+            # the graph concept, not to Convolutional Neural Network. Whole words only ("gat" is not in "gated").
+            own = [alias.lower() for alias in concept.aliases]
+            counted = {other_term.lower() for other in concepts if other is not concept and name in other.name.lower()
+                       for other_term in (other.name, *other.aliases)}
+            for other in concepts:
+                if other is concept:
+                    continue
+                for term in (other.name, *other.aliases):
+                    if term.lower() not in counted and any(re.search(rf"\b{re.escape(a)}\b", term.lower()) and a != term.lower() for a in own):
+                        inside_longer += count(term, term == other.name)
 
             occurrences = mentions(concept) - inside_longer
 

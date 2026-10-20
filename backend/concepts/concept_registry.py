@@ -66,7 +66,7 @@ class ConceptRegistry:
 
             Concept("Graph Neural Network", "graph_ml", aliases=('GNN', 'GNNs')),
             Concept("Message Passing", "graph_ml"),
-            Concept("Graph Convolution", "graph_ml", aliases=('GCN', 'GCNs', 'graph convolutional')),
+            Concept("Graph Convolution", "graph_ml", aliases=('GCN', 'GCNs', 'graph convolutional', 'graph convolutional network')),
             Concept("Graph Attention Network", "graph_ml", aliases=('GAT', 'GATs')),
             Concept("Node Embedding", "graph_ml"),
         ]
