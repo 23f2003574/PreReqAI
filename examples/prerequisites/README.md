@@ -4,6 +4,7 @@
 | --- | --- |
 | `sample-paper.pdf` | A one-page, text-based paper ("Attention Is All You Need", abridged) used by the README quickstart. It analyses offline with no API keys. |
 | `study_journey.py` | A runnable end-to-end study journey (analyse with a known concept, read the prerequisite tree, mark a concept studied, print the checklist). Offline, no server needed. |
+| `cli_journey.py` | The same journey from the command line alone: save the plan, tick a finished concept in `plan.md`, then `--resume` it and `ask` from that progress. Offline, no server needed. |
 | `make_sample_paper.py` | Rebuilds `sample-paper.pdf` deterministically from the text it contains. |
 
 From the repository root:
@@ -62,6 +63,19 @@ curl -s http://127.0.0.1:8000/api/session/$SID/plan   # the same checklist over 
 ```
 
 A misspelt `--known` / `--studied` name is ignored with a warning that suggests the nearest concept ("did you mean 'Probability'?").
+
+## Resume from the command line
+
+The CLI keeps no state between runs; the saved plan is the state. Tick a finished concept in `plan.md` (`- [ ] 1. Linear Algebra` becomes `- [x] 1. Linear Algebra`), then:
+
+```bash
+python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf --known Calculus --resume plan.md --plan-file plan.md
+python -m backend.cli prerequisites ask examples/prerequisites/sample-paper.pdf "What should I learn first?" --known Calculus --resume plan.md
+python examples/prerequisites/cli_journey.py   # the whole sequence, offline, in a temporary folder
+```
+
+The summary then shows `1. Linear Algebra (12h, studied)` and `(1/3 concepts ready)` with the hours left. `--resume` restores only ticked concepts; repeat `--known` each run.
+`backend/tests/test_prereqai_cli_journey_example.py` runs the script and checks that output.
 
 ## Run the whole journey in one command
 
