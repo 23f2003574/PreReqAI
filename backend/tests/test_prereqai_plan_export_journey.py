@@ -23,7 +23,7 @@ def test_exported_plan_keeps_progress_across_a_restart_and_ends_with_the_session
     monkeypatch.setenv("PREREQAI_SESSION_DIR", str(tmp_path))
     session_id = _analyze(known="Calculus")
     plan = client.get(f"/api/session/{session_id}/plan").text
-    assert "Calculus" not in plan and _ticked(plan) == []
+    assert "Already known: Calculus" in plan and not any("Calculus" in line for line in plan.splitlines() if line.startswith("- [")) and _ticked(plan) == []
 
     for concept in ("Probability", "Neural Networks"):
         assert client.post(f"/api/prerequisites/sessions/{session_id}/studied", params={"concept": concept}).status_code == 200

@@ -209,6 +209,19 @@ async def analyze_prerequisites(
     return outcome
 
 
+def _unsaved(response: dict) -> dict:
+    """The change was applied in memory; when it could not be written to PREREQAI_SESSION_DIR, say so (as analysis does)
+    instead of letting the learner believe their progress will survive a server restart."""
+    from backend.session import session_manager
+
+    if not session_manager.last_save_ok:
+        response["warnings"] = [
+            "This change could not be saved to PREREQAI_SESSION_DIR, so it will not survive a server restart; "
+            "check that the directory exists and is writable."
+        ]
+    return response
+
+
 def _update_studied(session_id: str, concept: str, studied: bool):
 
     action = platform.mark_concept_studied if studied else platform.unmark_concept_studied
@@ -230,7 +243,7 @@ def _update_studied(session_id: str, concept: str, studied: bool):
 
         return session_not_found(session_id)
 
-    return {"status": "success", "session_id": session_id, **progress}
+    return _unsaved({"status": "success", "session_id": session_id, **progress})
 
 
 @router.post("/sessions/{session_id}/studied")
@@ -281,13 +294,13 @@ async def mark_concept_known(
         return session_not_found(session_id)
 
     # Same fields as the /studied endpoints answer with, plus the rebuilt report (the plan itself changed).
-    return {
+    return _unsaved({
         "status": "success",
         "session_id": session_id,
         "study_progress": report["study_progress"],
         "readiness": report["readiness"],
         "report": report,
-    }
+    })
 
 
 @router.delete("/sessions/{session_id}/known")
@@ -315,10 +328,10 @@ async def unmark_concept_known(
 
         return session_not_found(session_id)
 
-    return {
+    return _unsaved({
         "status": "success",
         "session_id": session_id,
         "study_progress": report["study_progress"],
         "readiness": report["readiness"],
         "report": report,
-    }
+    })
