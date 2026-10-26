@@ -315,8 +315,18 @@ def main(argv=None, facade=None, health_service=None, readiness_service=None) ->
     return EXIT_USAGE
 
 
+def _tolerate_unencodable_output() -> None:
+    """A paper title or concept outside the console's code page (cp1252 on a Windows console, ASCII under a C locale or a
+    redirect) must print as an escape like \\u2207, not crash the command with a UnicodeEncodeError after the analysis ran."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(errors="backslashreplace")
+
+
 def _main_quietly() -> int:
     """`... | head` or quitting `less` closes our stdout early: stop quietly instead of a BrokenPipeError traceback."""
+    _tolerate_unencodable_output()
     try:
         code = main()
         sys.stdout.flush()
