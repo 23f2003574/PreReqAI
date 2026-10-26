@@ -192,6 +192,22 @@ class PrerequisiteDetector:
 
                 needed_by.setdefault(prerequisite, []).append(concept.name)
 
+        # A prerequisite the paper does not discuss may itself need others (a graph attention paper needs Attention,
+        # which needs Probability): the learner must study those too, or the plan would send them to a course that
+        # assumes knowledge the plan never covers. Only prerequisites not already listed are added this way.
+        direct = list(needed_by)
+        for prerequisite in direct:
+            pending, seen = list(self.PREREQUISITE_RULES.get(prerequisite, [])), {prerequisite}
+            while pending:
+                deeper = pending.pop(0)
+                if deeper in seen:
+                    continue
+                seen.add(deeper)
+                if deeper not in direct:
+                    for concept in needed_by[prerequisite]:
+                        if concept not in needed_by.setdefault(deeper, []):
+                            needed_by[deeper].append(concept)
+                pending.extend(self.PREREQUISITE_RULES.get(deeper, []))
         for prerequisite, concepts in needed_by.items():
 
             paper.prerequisites.append(
