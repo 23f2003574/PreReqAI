@@ -255,6 +255,9 @@ class Paper:
         StudyProgress
     ] = field(default_factory=list)
 
+    # Concepts studied before being marked known: dropped from the plan, restored if the learner un-marks known.
+    studied_while_known: list[str] = field(default_factory=list)
+
     readiness: PaperReadiness | None = None
 
     prerequisite_justifications: list[

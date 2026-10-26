@@ -360,7 +360,10 @@ class PreReqAIPlatform:
             raise ValueError(f"'{concept}' is not a concept in this session's study plan ({', '.join(planned.values()) or 'it is empty'})")
         target = SimpleNamespace(paper=session.paper, report=session.report)
         studied = [item.concept for item in session.paper.study_progress if item.completed]  # rebuilding the plan resets progress
-        self._personalize(target, [planned[_concept_key(concept)]], studied)
+        name = planned[_concept_key(concept)]
+        if name in studied:  # remember it: un-marking known must not lose the study progress
+            session.paper.studied_while_known = [*getattr(session.paper, "studied_while_known", []), name]
+        self._personalize(target, [name], [item for item in studied if item != name])
         session_manager.save(session)
         return session.report
 
@@ -380,6 +383,9 @@ class PreReqAIPlatform:
             raise ValueError(f"'{concept}' is not marked as known in this session ({', '.join(known.values()) or 'nothing is marked known'})")
         remaining = [name for key, name in known.items() if key != _concept_key(concept)]
         studied = [item.concept for item in paper.study_progress if item.completed]
+        kept = getattr(paper, "studied_while_known", [])
+        studied += [name for name in kept if _concept_key(name) == _concept_key(concept)]  # studied before it was marked known
+        paper.studied_while_known = [name for name in kept if _concept_key(name) != _concept_key(concept)]
         pipeline.missing_prerequisite_analyzer.analyze(paper)  # back to the analysis-time plan, then known concepts are dropped again
         pipeline.learning_planner.generate(paper)
         pipeline.resource_recommender.recommend(paper)
