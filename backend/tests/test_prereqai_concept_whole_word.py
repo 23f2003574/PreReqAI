@@ -28,3 +28,8 @@ def test_typographic_dashes_and_es_plurals_still_match():
     assert _counts("An actor–critic method, then an actor—critic one.") == {"Actor-Critic": 2}
     assert _counts("Self‑Attention layers.") == {"Self-Attention": 1}
     assert _counts("Markov decision processes.") == {"Markov Decision Process": 1}
+
+
+def test_pdf_ligatures_and_soft_hyphens_do_not_hide_a_concept():
+    assert _counts("Diﬀusion models are trained. A ﬁne Feed­forward network.") == {"Diffusion Model": 1}
+    assert _counts("Self­-Attention and Q-Learning.") == {"Self-Attention": 1, "Q-Learning": 1}

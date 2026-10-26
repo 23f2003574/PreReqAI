@@ -1,4 +1,5 @@
 import re
+import unicodedata
 
 from backend.models import (
     Paper,
@@ -37,6 +38,10 @@ class RuleBasedConceptDetector:
             for paragraph in paper.paragraphs
             if not _BACK_MATTER.match((paragraph.section_title or "").strip())
         ).lower()
+
+        # LaTeX PDFs encode "ff", "fi", "fl"... as ligature characters ("Di\ufb00usion") and may hold soft hyphens;
+        # NFKC turns the ligatures (and full-width letters) into plain text.
+        full_text = unicodedata.normalize("NFKC", full_text).replace("\u00ad", "")
 
         # Typeset papers use en/em dashes and non-breaking hyphens where the registry has a plain hyphen.
         full_text = re.sub("[\u2010\u2011\u2012\u2013\u2014]", "-", full_text)
