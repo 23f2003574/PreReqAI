@@ -7,6 +7,7 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from backend.api.workflow_result import (
     failure_response,
@@ -65,6 +66,18 @@ def _field(location) -> str:
     """("body", "mode") -> "mode": the request field a client actually sent."""
     parts = [str(part) for part in location if part not in ("body", "query", "path")]
     return ".".join(parts) or "request body"
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_error(request: Request, exc: StarletteHTTPException):
+    """An unknown path (404) or a wrong method (405) gets the failure envelope too, so a caller can always read
+    `status`, `detail` and `hint` instead of FastAPI's bare {"detail": ...}. `detail` and the headers (Allow) are unchanged."""
+    response = failure_response(
+        exc.status_code, "routing", str(exc.detail),
+        hint="Check the path and HTTP method; see /docs for the endpoints this service offers.",
+    )
+    response.headers.update(exc.headers or {})
+    return response
 
 
 @app.exception_handler(RequestValidationError)
