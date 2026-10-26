@@ -38,6 +38,8 @@ class SessionManager:
 
         self._last_purge = float("-inf")
 
+        self._summaries = {}  # saved-only session path -> ((mtime_ns, size), summary), so a listing re-reads only changed files
+
         self._last_used = {}  # session_id -> time of the latest create/get, so eviction drops the idlest session
 
     @staticmethod
@@ -308,3 +310,60 @@ class SessionManager:
 
         # sessions saved by older versions lack created_at
         return sorted(found.values(), key=lambda session: getattr(session, "created_at", 0.0), reverse=True)
+
+    @staticmethod
+    def _summary(session: LearningSession) -> dict:
+
+        return {
+            "session_id": session.session_id,
+            "paper_title": session.paper_title,
+            "created_at": getattr(session, "created_at", None),
+            "readiness": (session.report.get("readiness") or {}).get("status"),
+        }
+
+    def summaries(self) -> "list[dict]":
+        """What GET /api/session shows for every known session, newest first (the same sessions as `list`). A saved-only
+        session is unpickled once and remembered while its file is unchanged: unpickling a whole paper per listing
+        made the listing cost grow with every saved file's size."""
+
+        directory = SessionManager._directory()
+
+        found = {session_id: self._summary(session) for session_id, session in self.sessions.items()}
+
+        if directory and Path(directory).is_dir():
+
+            for path in Path(directory).glob("*.session"):
+
+                if path.stem in found or self._path(path.stem) is None or self._expired(path):
+
+                    continue
+
+                try:
+
+                    info = path.stat()
+
+                except OSError:
+
+                    continue
+
+                stamp = (info.st_mtime_ns, info.st_size)
+
+                cached = self._summaries.get(path)
+
+                if cached is None or cached[0] != stamp:
+
+                    saved = self._read(path)
+
+                    cached = (stamp, self._summary(saved) if saved is not None else None)
+
+                    self._summaries[path] = cached
+
+                if cached[1] is not None:
+
+                    found[path.stem] = cached[1]
+
+        for path in [path for path in self._summaries if not path.exists()]:  # deleted or purged files do not linger
+
+            del self._summaries[path]
+
+        return sorted(found.values(), key=lambda item: item["created_at"] or 0.0, reverse=True)

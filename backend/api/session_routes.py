@@ -50,13 +50,7 @@ def list_sessions():
     return {
         "status": "success",
         "sessions": [
-            {
-                "session_id": session.session_id,
-                "paper_title": session.paper_title,
-                "created_at": getattr(session, "created_at", None),
-                "readiness": (session.report.get("readiness") or {}).get("status"),
-            }
-            for session in session_manager.list()
+            *session_manager.summaries()
         ],
     }
 
