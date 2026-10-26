@@ -108,10 +108,8 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
             hint="Check the paper path: it must name an existing PDF file (relative paths start from the current directory).",
         )
     if _caused_by(exc, (requests.exceptions.RequestException,)):  # the arXiv/DOI download failed; the paper was never read
-        return failure_body(
-            "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
-            hint="The paper could not be downloaded: check the network connection and the arXiv or DOI link, or download the PDF and pass its path.",
-        )
+        detail, hint = _download_failure(exc)
+        return failure_body("analysis", detail, error=exc, hint=hint)
     if isinstance(exc, ValueError) and str(exc).startswith("Unsupported research source"):  # e.g. a .txt file or a directory
         return failure_body(
             "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
@@ -126,6 +124,26 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
         "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
         hint="Upload a text-based PDF research paper.",
     )
+
+
+def _download_failure(exc: BaseException) -> tuple:
+    """(detail, hint) for a failed arXiv/DOI download: what the server said, or that it could not be reached, instead of the
+    HTTP library's connection-pool dump (still available in the failure's `error`)."""
+    seen = set()
+    while exc is not None and id(exc) not in seen:
+        seen.add(id(exc))
+        response = getattr(exc, "response", None)
+        status = getattr(response, "status_code", None)
+        if isinstance(exc, requests.exceptions.HTTPError) and status:
+            if status in (404, 410):
+                return (f"No paper was found at that arXiv link or DOI (the server answered HTTP {status}).",
+                        "Check the arXiv ID or DOI for typos, or download the PDF and pass its path.")
+            return (f"The server refused to provide the paper (HTTP {status}).",
+                    "Try again in a few minutes, or download the PDF and pass its path.")
+        wrapped = exc.args[0] if exc.args and isinstance(exc.args[0], BaseException) else None
+        exc = exc.__cause__ or wrapped
+    return ("Could not download the paper: the arXiv or DOI server could not be reached.",
+            "The paper could not be downloaded: check the network connection and the arXiv or DOI link, or download the PDF and pass its path.")
 
 
 def _concept_label(name: str) -> str:
