@@ -11,6 +11,7 @@ from backend.session import (
     ResearchWorkspaceConsumerProjectionBudgetSnapshot,
     ResearchWorkspaceConsumerProjectionBudgetSummary,
     ResearchWorkspaceConsumerProjectionBudgetSummarySummarizer,
+    ResearchWorkspaceConsumerProjectionDiagnosticStageKind,
     ResearchWorkspaceConsumerProjectionDiagnosticsCollector,
     ResearchWorkspaceConsumerProjectionDiagnosticReport,
     ResearchWorkspaceConsumerProjectionDiagnosticsStatus,
@@ -271,7 +272,7 @@ class TestDiagnosticsSummarizer:
             stages=[
                 ResearchWorkspaceConsumerProjectionStageDiagnostic(
                     name="stage1",
-                    kind=ResearchWorkspaceConsumerProjectionDiagnosticsStageHelper.get_stage_kind("resolution"),
+                    kind=ResearchWorkspaceConsumerProjectionDiagnosticStageKind.INPUT_RESOLUTION,
                     status=ResearchWorkspaceConsumerProjectionDiagnosticsStatus.SUCCEEDED,
                     duration_ms=10.0,
                     reason_code=None,
@@ -294,7 +295,7 @@ class TestDiagnosticsSummarizer:
             stages=[
                 ResearchWorkspaceConsumerProjectionStageDiagnostic(
                     name=f"stage{i}",
-                    kind=ResearchWorkspaceConsumerProjectionDiagnosticsStageHelper.get_stage_kind("resolution"),
+                    kind=ResearchWorkspaceConsumerProjectionDiagnosticStageKind.INPUT_RESOLUTION,
                     status=(
                         ResearchWorkspaceConsumerProjectionDiagnosticsStatus.DEGRADED
                         if i == 0
@@ -369,7 +370,7 @@ class TestFreshnessSummarizer:
                     freshness=ResearchWorkspaceConsumerProjectionFreshnessEvaluation(
                         source_name=f"input{i}",
                         status=ResearchWorkspaceConsumerProjectionFreshnessStatus.FRESH,
-                        reason=ResearchWorkspaceConsumerProjectionFreshnessReason.WITHIN_THRESHOLD,
+                        reason=ResearchWorkspaceConsumerProjectionFreshnessReason.WITHIN_FRESH_WINDOW,
                         source_timestamp=datetime.now(timezone.utc),
                         evaluated_at=datetime.now(timezone.utc),
                         age_ms=1000.0,
@@ -403,7 +404,7 @@ class TestFreshnessSummarizer:
                     freshness=ResearchWorkspaceConsumerProjectionFreshnessEvaluation(
                         source_name="input1",
                         status=ResearchWorkspaceConsumerProjectionFreshnessStatus.STALE,
-                        reason=ResearchWorkspaceConsumerProjectionFreshnessReason.EXCEEDED_THRESHOLD,
+                        reason=ResearchWorkspaceConsumerProjectionFreshnessReason.OUTSIDE_FRESH_WINDOW,
                         source_timestamp=datetime.now(timezone.utc),
                         evaluated_at=datetime.now(timezone.utc),
                         age_ms=6000.0,
@@ -436,7 +437,7 @@ class TestFreshnessSummarizer:
                     freshness=ResearchWorkspaceConsumerProjectionFreshnessEvaluation(
                         source_name="input1",
                         status=ResearchWorkspaceConsumerProjectionFreshnessStatus.UNUSABLE,
-                        reason=ResearchWorkspaceConsumerProjectionFreshnessReason.EXCEEDED_USABLE_THRESHOLD,
+                        reason=ResearchWorkspaceConsumerProjectionFreshnessReason.OUTSIDE_USABLE_WINDOW,
                         source_timestamp=datetime.now(timezone.utc),
                         evaluated_at=datetime.now(timezone.utc),
                         age_ms=15000.0,
