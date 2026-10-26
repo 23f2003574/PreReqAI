@@ -6,6 +6,7 @@ The platform is imported when the command runs, keeping other commands fast."""
 import argparse
 import json
 import math
+import os
 import signal
 import sys
 import threading
@@ -128,6 +129,19 @@ def _plan_file_problem(path):
     if not target.resolve().parent.is_dir():
         return f"the folder {target.resolve().parent} does not exist"
     return None
+
+
+def _save_plan(path, text):
+    """Write the plan beside its target and swap it in, so a failure while saving never truncates the plan on disk:
+    `--resume plan.md --plan-file plan.md` reads the same file whose ticked concepts are the learner's saved progress."""
+    target = Path(path)
+    temp = target.with_name(f".{target.name}.tmp")
+    try:
+        temp.write_text(text, encoding="utf-8")
+        os.replace(temp, target)
+    except BaseException:
+        temp.unlink(missing_ok=True)
+        raise
 
 
 def _apply_resume(args):
@@ -257,8 +271,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             print("  statistics: " + ", ".join(f"{key}={value}" for key, value in info["statistics"].items()))
     if args.plan_file and not failed:  # also with --json, where stdout stays the JSON envelope only
         try:
-            with open(args.plan_file, "w", encoding="utf-8") as handle:
-                handle.write(plan_markdown(outcome["report"]))
+            _save_plan(args.plan_file, plan_markdown(outcome["report"]))
             if not args.as_json:
                 print(f"  plan saved: {args.plan_file}")
         except OSError as exc:
