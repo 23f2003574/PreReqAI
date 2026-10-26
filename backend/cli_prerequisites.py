@@ -102,7 +102,7 @@ def add_prerequisites_ask_parser(commands):
                "No tutoring model is configured in this release: answers are built-in definitions, prerequisite reasons and study-plan figures. "
                "Exit codes: 0 success; 1 analysis or answer failed; 2 usage error.",
     )
-    ask.add_argument("paper", help="Path to the paper PDF")
+    ask.add_argument("paper", help="Path to the paper PDF, or an arXiv link / arXiv:ID, or a DOI (downloaded for you)")
     ask.add_argument("question", help="The question to ask about the paper")
     ask.add_argument("--known", action="append", default=[], metavar="CONCEPT",
                      help="A concept you already know; it is left out of the study plan (repeat for several)")

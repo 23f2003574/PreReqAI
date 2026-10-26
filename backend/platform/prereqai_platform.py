@@ -106,6 +106,11 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
             "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
             hint="Check the paper path: it must name an existing PDF file (relative paths start from the current directory).",
         )
+    if _caused_by(exc, (requests.exceptions.RequestException,)):  # the arXiv/DOI download failed; the paper was never read
+        return failure_body(
+            "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
+            hint="The paper could not be downloaded: check the network connection and the arXiv or DOI link, or download the PDF and pass its path.",
+        )
     if isinstance(exc, ValueError) and str(exc).startswith("Unsupported research source"):  # e.g. a .txt file or a directory
         return failure_body(
             "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
