@@ -109,7 +109,7 @@ Evidence at this commit: release checks (PreReqAI, endpoint, API generation, gen
 | Release blocker | Run a real published paper end to end (CLI and HTTP) and fix what it exposes. |
 | Required before January | Tutoring model (placeholder is disclosed; a model-backed tutor needs a provider decision). |
 | Required before January | The 44 workspace/projection test failures (scoped in the triage above). |
-| Required before January | Python versions: 3.11 verified (quickstart + 303 PreReqAI tests, 2026-10-11); 3.12 and 3.10 not yet run. Older interpreters are refused with a clear message; all sources parse under the 3.10 grammar. |
+| Required before January | Python versions: 3.11 verified (quickstart + 303 PreReqAI tests, 2026-10-11); 3.12 verified (fresh venv from requirements-dev.txt on Python 3.12.3: the README quickstart analysis, then `pytest -m prereqai` = 534 passed, 11747 deselected, 0 failed, 2026-10-27); 3.10 not yet run (no 3.10 interpreter in the sandbox). Older interpreters are refused with a clear message; all sources parse under the 3.10 grammar. |
 | Optional | unnumbered-heading detection, unmark a studied concept, OCR, multi-line authors, concepts outside the registry. |
 
 ## Calculus prerequisite (2026-10-12)
@@ -228,3 +228,7 @@ Still open for the next session:
 | Required before January | Detector coverage: only 7 prerequisite concepts and 8 curated resources; e.g. diffusion papers get no variational-inference or KL-divergence prerequisites. |
 | Optional | CLI keeps no state between runs (progress is re-sent with `--studied`); `python -m backend.cli` only works from the repository root. |
 | Optional | The resource library has one entry per concept and no alternatives or difficulty levels. |
+
+## Python 3.12 verification (2026-10-27)
+
+Fresh `python3.12 -m venv`, `pip install -r requirements-dev.txt`, README quickstart (`python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf`, exit 0, 5 concepts, 4 missing), then `python -m pytest backend/tests -m prereqai`: **534 passed, 11747 deselected, 0 failed** in 350 s. Not run: the full suite on 3.12, and any run on 3.10. Remaining version blocker: Python 3.10.
