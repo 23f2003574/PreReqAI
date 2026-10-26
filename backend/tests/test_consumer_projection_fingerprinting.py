@@ -262,8 +262,8 @@ class TestFingerprintGeneration:
                     }
                 ),
                 'normalize_section': (
-                    lambda self, section_name, val: (
-                        val
+                    lambda self, section_name, value: (
+                        value
                     )
                 ),
             },
@@ -385,7 +385,7 @@ class TestFingerprintGeneration:
                     }
                 ),
                 'normalize_section': (
-                    lambda self, section_name, val: val
+                    lambda self, section_name, value: value
                 ),
             },
         )()
@@ -423,8 +423,8 @@ class TestChangeDetection:
                     lambda self, proj: value
                 ),
                 'normalize_section': (
-                    lambda self, section_name, val: (
-                        val
+                    lambda self, section_name, value: (
+                        value
                     )
                 ),
             },
@@ -562,7 +562,7 @@ class TestChangeDetection:
                     lambda self, proj: {"data": 1}
                 ),
                 'normalize_section': (
-                    lambda self, section_name, val: val
+                    lambda self, section_name, value: value
                 ),
             },
         )()
@@ -578,7 +578,7 @@ class TestChangeDetection:
                     lambda self, proj: {"data": 1}
                 ),
                 'normalize_section': (
-                    lambda self, section_name, val: val
+                    lambda self, section_name, value: value
                 ),
             },
         )()
