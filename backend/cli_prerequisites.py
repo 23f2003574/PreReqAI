@@ -12,7 +12,7 @@ import sys
 import threading
 from pathlib import Path
 
-from backend.study_plan_markdown import known_from_plan, plan_markdown, studied_from_plan
+from backend.study_plan_markdown import PLAN_HEADING, known_from_plan, plan_markdown, studied_from_plan
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
@@ -128,6 +128,14 @@ def _plan_file_problem(path):
         return "it is a directory"
     if not target.resolve().parent.is_dir():
         return f"the folder {target.resolve().parent} does not exist"
+    if target.is_file() and target.stat().st_size:  # a mistyped path must not destroy the paper (or any other file)
+        try:
+            with open(target, "rb") as handle:
+                head = handle.read(len(PLAN_HEADING))
+        except OSError:
+            return None  # unreadable: saving reports the real error
+        if head != PLAN_HEADING.encode():
+            return "it is an existing file that is not a saved study plan, and it would be overwritten"
     return None
 
 
@@ -151,7 +159,7 @@ def _apply_resume(args):
     try:
         with open(args.resume, encoding="utf-8") as handle:
             text = handle.read()
-        if not text.lstrip().startswith("# Study plan:"):  # any other file would silently restore no progress at all
+        if not text.lstrip().startswith(PLAN_HEADING):  # any other file would silently restore no progress at all
             print(f"error: {args.resume} is not a study plan saved with --plan-file (it does not start with '# Study plan:')", file=sys.stderr)
             print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
             return False

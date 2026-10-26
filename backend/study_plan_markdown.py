@@ -3,6 +3,9 @@
 import re
 
 
+PLAN_HEADING = "# Study plan:"  # how every saved plan starts; --plan-file only overwrites files that start with it
+
+
 def _one_line(text):
     """PDF metadata can hold line breaks; one in a title would start a fake line (even a ticked checklist item)."""
     return " ".join(str(text).split())
@@ -12,7 +15,7 @@ def plan_markdown(report):
     done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
     links = {item["concept"]: item for item in report.get("learning_resources", [])}
     reasons = {item["concept"]: item["justification"] for item in report.get("prerequisite_justifications", [])}
-    lines = [f"# Study plan: {_one_line(report['paper']['title'])}", ""]
+    lines = [f"{PLAN_HEADING} {_one_line(report['paper']['title'])}", ""]
     steps = report["learning_plan"]
     if steps:
         left = sum(step["estimated_hours"] for step in steps if step["concept"] not in done)
