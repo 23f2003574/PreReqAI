@@ -22,3 +22,9 @@ def test_plural_names_still_count():
 
 def test_longer_concept_not_double_counted_and_standalone_counts():
     assert _counts("Self-Attention helps. Attention is all.") == {"Self-Attention": 1, "Attention": 1}
+
+
+def test_typographic_dashes_and_es_plurals_still_match():
+    assert _counts("An actor–critic method, then an actor—critic one.") == {"Actor-Critic": 2}
+    assert _counts("Self‑Attention layers.") == {"Self-Attention": 1}
+    assert _counts("Markov decision processes.") == {"Markov Decision Process": 1}

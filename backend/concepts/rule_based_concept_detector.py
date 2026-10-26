@@ -38,6 +38,9 @@ class RuleBasedConceptDetector:
             if not _BACK_MATTER.match((paragraph.section_title or "").strip())
         ).lower()
 
+        # Typeset papers use en/em dashes and non-breaking hyphens where the registry has a plain hyphen.
+        full_text = re.sub("[\u2010\u2011\u2012\u2013\u2014]", "-", full_text)
+
         concepts = self.registry.all()
 
         # PDF text is hard-wrapped: "policy\ngradient" and "multi-\nhead" must still match their concept.
@@ -66,7 +69,7 @@ class RuleBasedConceptDetector:
                 needle = term.lower()
                 # Most registry terms are absent from a given paper, and a plain substring search rejects them far
                 # faster than a regex scan of the whole text; a term that is not a substring cannot match the pattern.
-                counts[key] = len(re.findall(rf"\b{re.escape(needle)}{'s?' if plural else ''}\b", full_text)) if needle in full_text else 0
+                counts[key] = len(re.findall(rf"\b{re.escape(needle)}{('(?:es)?' if needle.endswith('ss') else 's?') if plural else ''}\b", full_text)) if needle in full_text else 0
             return counts[key]
 
         def mentions(concept):
