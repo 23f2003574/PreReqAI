@@ -7,18 +7,18 @@ from pathlib import Path
 # Each pattern must match the whole (stripped) input: a reference inside other
 # text is ambiguous and rejected rather than guessed. The arXiv identifier keeps
 # its version (v5), since a versioned link asks for that exact version.
+# New-style ("1706.03762") and old-style ("hep-th/9901001", "math.GT/0309136") identifiers, each with an optional version.
+_ARXIV_ID = r"(?:[0-9]+\.[0-9]+|[a-z]+(?:-[a-z]+)*(?:\.[a-z]{2})?/[0-9]{7})(?:v[0-9]+)?"
 ARXIV_PATTERN = re.compile(
-    r"(?:https?://)?(?:www\.)?arxiv\.org/(?:abs|pdf)/([0-9]+\.[0-9]+(?:v[0-9]+)?)(?:\.pdf)?/?",
+    rf"(?:https?://)?(?:www\.|export\.)?arxiv\.org/(?:abs|pdf)/({_ARXIV_ID})(?:\.pdf)?/?(?:[?#]\S*)?",
     re.IGNORECASE,
 )
-
 # How a paper is usually cited: "arXiv:1706.03762". The explicit prefix is required: a bare number such as
 # 1706.03762 is rejected as ambiguous (it could be a mistyped file name).
 ARXIV_ID_PATTERN = re.compile(
-    r"arxiv:\s*([0-9]+\.[0-9]+(?:v[0-9]+)?)",
+    rf"arxiv:\s*({_ARXIV_ID})",
     re.IGNORECASE,
 )
-
 DOI_PATTERN = re.compile(
     r"(?:doi:\s*|https?://(?:www\.|dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
     re.IGNORECASE,

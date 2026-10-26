@@ -44,7 +44,7 @@ class ArxivResolver(BaseSourceResolver):
 
         pdf_path = (
             self.CACHE_DIRECTORY /
-            f"{source.identifier}.pdf"
+            f"{source.identifier.replace('/', '_')}.pdf"  # an old-style id ("hep-th/9901001") has a slash
         )
 
         if pdf_path.exists():
