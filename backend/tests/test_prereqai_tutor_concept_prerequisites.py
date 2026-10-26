@@ -50,3 +50,23 @@ def test_a_prerequisite_that_is_only_a_registry_concept_still_gets_its_definitio
                          cwd=ROOT, capture_output=True, text=True, timeout=120)
     assert run.returncode == 0
     assert run.stdout.startswith("Attention: A mechanism that allows a model to focus on the most relevant parts of an input sequence. Why it is needed here:")
+
+
+def _equation_paper(count):
+    from types import SimpleNamespace
+
+    return SimpleNamespace(equations=[SimpleNamespace(equation_id=i, expression=f"y_{i} =\n softmax(x)", section="Method") for i in range(1, count + 1)])
+
+
+def test_equation_question_lists_extracted_equations():
+    from backend.tutor.rule_based_tutor import RuleBasedTutor
+
+    answer = RuleBasedTutor._study_plan_answer(_equation_paper(7), "Which equations are in the paper?")
+    assert answer == ("The paper has 7 extracted equations: (1) y_1 = softmax(x) [Method]; (2) y_2 = softmax(x) [Method]; "
+                      "(3) y_3 = softmax(x) [Method]; (4) y_4 = softmax(x) [Method]; (5) y_5 = softmax(x) [Method] and 2 more.")
+    assert RuleBasedTutor._study_plan_answer(_equation_paper(1), "show me the formula").startswith("The paper has 1 extracted equation: (1)")
+    assert RuleBasedTutor._study_plan_answer(_equation_paper(0), "What equations does it use?") == "No equations were extracted from this paper."
+
+
+def test_equation_question_through_the_cli_on_a_paper_without_equations():
+    assert _ask("Which equations are in the paper?") == "No equations were extracted from this paper."

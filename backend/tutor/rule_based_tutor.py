@@ -259,6 +259,14 @@ class RuleBasedTutor(BaseTutor):
             finished = f" Already studied: {', '.join(c for c in (s.concept for s in steps) if c in done)}." if done else ""
             return f"Study these in order before the paper: {listed}.{finished}"
 
+        if re.search(r"\b(equations?|formulas?|formulae)\b", text):
+            equations = getattr(paper, "equations", [])
+            if not equations:
+                return "No equations were extracted from this paper."
+            shown = "; ".join(f"({item.equation_id}) {' '.join(item.expression.split())} [{item.section}]" for item in equations[:5])
+            more = f" and {len(equations) - 5} more" if len(equations) > 5 else ""
+            return f"The paper has {len(equations)} extracted equation{'s' if len(equations) != 1 else ''}: {shown}{more}."
+
         if re.search(r"\b(progress|how (much|many)\b.*\b(completed?|done|finished|studied))\b", text):
             readiness = getattr(paper, "readiness", None)
             if readiness is None:
