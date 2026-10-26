@@ -72,6 +72,7 @@ class RuleBasedTutor(BaseTutor):
 
         answer = (
             self._resources_answer(paper, question)
+            or self._concept_prerequisites_answer(paper, question)
             or self._built_in_answer(paper, context, question)
             or self._study_plan_answer(paper, question)
         )
@@ -144,6 +145,35 @@ class RuleBasedTutor(BaseTutor):
                 parts.append(f"Why it is needed here: {reasons[name]}")
 
         return " ".join(parts)
+
+    @staticmethod
+    def _concept_prerequisites_answer(paper, question):
+        """'Which prerequisites does Softmax need?' -> what that paper concept builds on (the same rules as the
+        prerequisite tree), with the ones the learner has already studied or knows marked."""
+        from backend.prerequisites.prerequisite_detector import PrerequisiteDetector
+
+        text = _normalise(question)
+
+        if not re.search(r"\b(prerequisites?|prereqs?|depends?|requires?|builds? on|does .* needs?|needs? to (know|understand))\b", text):
+            return ""
+
+        rules = PrerequisiteDetector.PREREQUISITE_RULES
+        detected = {concept.name for concept in getattr(paper, "concepts", [])}
+        # Longest names first and each match removed, as in _built_in_answer: "self-attention" is not "attention".
+        named = []
+        for name in sorted((n for n in detected if rules.get(n)), key=len, reverse=True):
+            pattern = rf"(?<![a-z0-9]){re.escape(_normalise(name))}s?(?![a-z0-9])"
+            if re.search(pattern, text):
+                named.append(name)
+                text = re.sub(pattern, " ", text)
+
+        done = RuleBasedTutor._studied(paper)
+        known = {item.concept for item in getattr(paper, "missing_prerequisites", []) if item.satisfied}
+
+        def label(prerequisite):
+            return f"{prerequisite} (studied)" if prerequisite in done else f"{prerequisite} (known or covered)" if prerequisite in known else prerequisite
+
+        return " ".join(f"{name} builds on {', '.join(label(p) for p in rules[name])}." for name in named)
 
     @staticmethod
     def _resources_answer(paper, question):
