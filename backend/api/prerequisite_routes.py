@@ -1,3 +1,5 @@
+import math
+import os
 import tempfile
 from pathlib import Path
 
@@ -65,6 +67,20 @@ def _hide_server_path(outcome: dict, temp_path: str, name: str) -> dict:
     return outcome
 
 
+def _server_limits():
+    """The AnalysisLimits PREREQAI_MAX_ANALYSIS_SECONDS asks for, so one pathological paper cannot hold an HTTP worker
+    forever (the CLI has --max-seconds); None, the default, when it is unset, blank, not a positive number or not finite."""
+    try:
+        seconds = float(os.environ.get("PREREQAI_MAX_ANALYSIS_SECONDS", "").strip())
+    except ValueError:
+        return None
+    if not math.isfinite(seconds) or seconds <= 0:
+        return None
+    from backend.platform import AnalysisLimits
+
+    return AnalysisLimits(max_seconds=seconds)
+
+
 def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], diagnostics: bool = False) -> dict:
     """Blocking work (copy the upload, run the analysis): called off the event loop."""
 
@@ -99,6 +115,7 @@ def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], dia
 
         outcome = platform.analyze(
             temp_path,
+            **({'limits': limits} if (limits := _server_limits()) else {}),
             **({'diagnostics': True} if diagnostics else {}),
             **({'known': known} if known else {}),
             **({'studied': studied} if studied else {}),
@@ -135,6 +152,7 @@ def _analyze_source(source: str, known: list[str], studied: list[str], diagnosti
 
     outcome = platform.analyze(
         detected.original_input,
+        **({'limits': limits} if (limits := _server_limits()) else {}),
         **({'diagnostics': True} if diagnostics else {}),
         **({'known': known} if known else {}),
         **({'studied': studied} if studied else {}),
