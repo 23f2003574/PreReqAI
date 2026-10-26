@@ -194,7 +194,7 @@ async def analyze_prerequisites(
 
         try:
 
-            text = (await resume.read(_MAX_PLAN_BYTES + 1)).decode("utf-8")
+            text = (await resume.read(_MAX_PLAN_BYTES + 1)).decode("utf-8-sig")  # an editor may have added a BOM
 
         except UnicodeDecodeError:
 

@@ -131,7 +131,7 @@ def _plan_file_problem(path):
     if target.is_file() and target.stat().st_size:  # a mistyped path must not destroy the paper (or any other file)
         try:
             with open(target, "rb") as handle:
-                head = handle.read(len(PLAN_HEADING))
+                head = handle.read(len(PLAN_HEADING) + 3).removeprefix(b"\xef\xbb\xbf")[:len(PLAN_HEADING)]  # an editor may add a BOM
         except OSError:
             return None  # unreadable: saving reports the real error
         if head != PLAN_HEADING.encode():
@@ -157,7 +157,7 @@ def _apply_resume(args):
     if not getattr(args, "resume", None):
         return True
     try:
-        with open(args.resume, encoding="utf-8") as handle:
+        with open(args.resume, encoding="utf-8-sig") as handle:  # Notepad and others save a plan with a BOM
             text = handle.read()
         if not text.lstrip().startswith(PLAN_HEADING):  # any other file would silently restore no progress at all
             print(f"error: {args.resume} is not a study plan saved with --plan-file (it does not start with '# Study plan:')", file=sys.stderr)
