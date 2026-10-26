@@ -12,7 +12,7 @@ import sys
 import threading
 from pathlib import Path
 
-from backend.study_plan_markdown import plan_markdown, studied_from_plan
+from backend.study_plan_markdown import known_from_plan, plan_markdown, studied_from_plan
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
@@ -156,6 +156,7 @@ def _apply_resume(args):
             print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
             return False
         args.studied = list(args.studied) + studied_from_plan(text)
+        args.known = list(args.known) + known_from_plan(text)
     except (OSError, UnicodeDecodeError) as exc:
         print(f"error: cannot read the saved plan {args.resume}: {getattr(exc, 'strerror', None) or exc}", file=sys.stderr)
         print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)

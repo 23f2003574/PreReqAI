@@ -18,6 +18,11 @@ def plan_markdown(report):
         left = sum(step["estimated_hours"] for step in steps if step["concept"] not in done)
         ticked = sum(step["concept"] in done for step in steps)
         lines += [f"{ticked} of {len(steps)} studied, about {left}h left.", ""]
+    from backend.platform.prereqai_platform import KNOWN_REASON
+
+    known = [item["concept"] for item in report.get("missing_prerequisites", []) if item.get("reason") == KNOWN_REASON]
+    if known:  # kept in the file so `--resume` does not put concepts the learner already knows back into the plan
+        lines += [f"Already known: {'; '.join(_one_line(name) for name in known)}", ""]
     for step in steps:
         concept = step["concept"]
         line = f"- [{'x' if concept in done else ' '}] {step['step']}. {_one_line(concept)} (~{step['estimated_hours']}h)"
@@ -37,3 +42,12 @@ _TICKED = re.compile(r"^- \[[xX]\] \d+\. (.+?) \(~\d+h\)", re.MULTILINE)
 def studied_from_plan(text):
     """The concepts ticked in a checklist written by plan_markdown, so a saved plan can restore progress."""
     return [match.group(1) for match in _TICKED.finditer(text)]
+
+
+_KNOWN = re.compile(r"^Already known: (.+)$", re.MULTILINE)
+
+
+def known_from_plan(text):
+    """The concepts a plan written by plan_markdown records as already known to the learner."""
+    match = _KNOWN.search(text)
+    return [name.strip() for name in match.group(1).split(";") if name.strip()] if match else []
