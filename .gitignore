@@ -29,3 +29,6 @@ cache/
 
 # Local PreReqAI research persistence
 .prereqai/
+
+# Claude Code worktrees are local checkouts, never part of the repository
+.claude/worktrees/
