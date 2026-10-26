@@ -37,3 +37,16 @@ def test_concepts_question_lists_detected_concepts_most_mentioned_first():
     assert _ask("Which concepts does this paper cover?") == (
         "The paper discusses these concepts, most mentioned first: Attention (4x), Softmax (3x), "
         "Gradient Descent (2x), Transformer (1x), Backpropagation (1x).")
+
+
+def test_a_prerequisite_that_is_only_a_registry_concept_still_gets_its_definition(tmp_path):
+    import pymupdf
+
+    document = pymupdf.open()
+    document.new_page().insert_text((72, 72), "We use a graph attention network over node features.", fontsize=10)
+    path = tmp_path / "gat.pdf"
+    document.save(str(path))
+    run = subprocess.run([sys.executable, "-m", "backend.cli", "prerequisites", "ask", str(path), "Why do I need attention?"],
+                         cwd=ROOT, capture_output=True, text=True, timeout=120)
+    assert run.returncode == 0
+    assert run.stdout.startswith("Attention: A mechanism that allows a model to focus on the most relevant parts of an input sequence. Why it is needed here:")

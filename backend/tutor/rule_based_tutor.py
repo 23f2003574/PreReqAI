@@ -1,5 +1,7 @@
 import re
 
+from backend.concepts.concept_explanation_engine import ConceptExplanationEngine
+
 from .base_tutor import (
     BaseTutor,
 )
@@ -113,8 +115,12 @@ class RuleBasedTutor(BaseTutor):
         }
 
         # a prerequisite the paper never names (Probability, Calculus...) has no paper-concept explanation
+        # (and a prerequisite that is itself a registry concept, such as Attention behind a graph attention paper,
+        # is explained from the same built-in definitions the paper's own concepts use)
         definitions = {
-            name: PREREQUISITE_DEFINITIONS[name] for name in reasons if name in PREREQUISITE_DEFINITIONS
+            name: PREREQUISITE_DEFINITIONS[name] if name in PREREQUISITE_DEFINITIONS else ConceptExplanationEngine.EXPLANATIONS[name][0]
+            for name in reasons
+            if name in PREREQUISITE_DEFINITIONS or name in ConceptExplanationEngine.EXPLANATIONS
         }
 
         definitions.update({
