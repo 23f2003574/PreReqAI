@@ -57,7 +57,19 @@ class DocumentMetadataExtractor:
                 if text:
                     lines.append((max(span["size"] for span in line["spans"]), text))
         head = lines[:5]
-        return max(head, key=lambda item: item[0])[1][:200] if head else ""
+        if not head:
+            return ""
+        size, text = max(head, key=lambda item: item[0])
+        if size - min(item[0] for item in head) < 1:  # one font size throughout: nothing marks a title, keep the first line
+            return text[:200]
+        # A long title wraps onto several lines of the same (largest) size: join the run that follows the first of them.
+        start = next(index for index, item in enumerate(head) if item[0] == size)
+        run = []
+        for line_size, line_text in head[start:]:
+            if abs(line_size - size) >= 0.5:
+                break
+            run.append(line_text)
+        return " ".join(run)[:200]
 
     _NAME = re.compile(r"^[A-Z][\w.'\-]*(?: [A-Z][\w.'\-]*){1,3}$")
     _NOT_AUTHORS = re.compile(r"universit|institute|laborator|research|google|microsoft|department|school|abstract|@|\d|arxiv", re.I)
