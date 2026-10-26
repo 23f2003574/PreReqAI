@@ -253,6 +253,22 @@ class RuleBasedTutor(BaseTutor):
             finished = f" Already studied: {', '.join(c for c in (s.concept for s in steps) if c in done)}." if done else ""
             return f"Study these in order before the paper: {listed}.{finished}"
 
+        if re.search(r"\b(progress|how (much|many)\b.*\b(completed?|done|finished|studied))\b", text):
+            readiness = getattr(paper, "readiness", None)
+            if readiness is None:
+                return ""
+            done = [step.concept for step in sorted(getattr(paper, "learning_plan", []), key=lambda step: step.order)
+                    if step.concept in RuleBasedTutor._studied(paper)]
+            listed = f" Studied: {', '.join(done)}." if done else ""
+            return f"You have studied {readiness.completed_concepts} of {readiness.total_concepts} planned prerequisites ({readiness.progress_percent}%).{listed}"
+
+        if re.search(r"\b(concepts|topics)\b", text) and re.search(r"\b(cover|covers|covered|discuss|discusses|mention|mentions|contain|contains|about|main|key|detected|find|found)\b", text):
+            concepts = sorted(getattr(paper, "concepts", []), key=lambda item: -item.occurrences)
+            if not concepts:
+                return ""
+            listed = ", ".join(f"{item.name} ({item.occurrences}x)" for item in concepts)
+            return f"The paper discusses these concepts, most mentioned first: {listed}."
+
         if re.search(r"\b(ready|readiness)\b", text):
             readiness = getattr(paper, "readiness", None)
             if readiness is None:

@@ -25,3 +25,15 @@ def test_studied_prerequisites_are_marked():
 
 def test_a_why_question_still_gets_the_definition():
     assert _ask("What is softmax?").startswith("Softmax: ")
+
+
+def test_progress_question_reports_studied_count_and_names():
+    assert _ask("How much have I completed?", "--studied", "Probability,Calculus") == \
+        "You have studied 2 of 4 planned prerequisites (50%). Studied: Probability, Calculus."
+    assert _ask("What is my progress?") == "You have studied 0 of 4 planned prerequisites (0%)."
+
+
+def test_concepts_question_lists_detected_concepts_most_mentioned_first():
+    assert _ask("Which concepts does this paper cover?") == (
+        "The paper discusses these concepts, most mentioned first: Attention (4x), Softmax (3x), "
+        "Gradient Descent (2x), Transformer (1x), Backpropagation (1x).")
