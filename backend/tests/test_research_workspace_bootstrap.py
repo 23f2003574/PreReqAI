@@ -926,7 +926,7 @@ def test_serialization_is_fully_consumer_friendly():
     ):
 
         assert isinstance(
-            capability["name"],
+            capability["capability"],
             str,
         )
 

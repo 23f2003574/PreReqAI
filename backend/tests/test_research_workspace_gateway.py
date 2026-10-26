@@ -122,7 +122,7 @@ def test_workspace_gateway_exposes_expected_capabilities():
 
     names = {
 
-        capability.name
+        capability.capability.value
 
         for capability
 

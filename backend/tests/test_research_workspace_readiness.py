@@ -1,3 +1,4 @@
+import dataclasses
 from backend.session import (
     ResearchIntegrityReport,
     ResearchWorkspaceCapabilities,
@@ -189,9 +190,11 @@ def test_disabled_capability_is_not_treated_as_broken():
         ResearchWorkspaceCapabilities()
     )
 
-    capabilities.get_capability(
-        "change_feed"
-    ).enabled = False
+    # descriptors are frozen: replace the registered one with a disabled copy
+    capabilities._capabilities["change_feed"] = dataclasses.replace(
+        capabilities.get_capability("change_feed"),
+        enabled=False,
+    )
 
     assessor = create_assessor(
         capability_registry=capabilities,

@@ -232,3 +232,7 @@ Still open for the next session:
 ## Python 3.12 verification (2026-10-27)
 
 Fresh `python3.12 -m venv`, `pip install -r requirements-dev.txt`, README quickstart (`python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf`, exit 0, 5 concepts, 4 missing), then `python -m pytest backend/tests -m prereqai`: **534 passed, 11747 deselected, 0 failed** in 350 s. Not run: the full suite on 3.12, and any run on 3.10. Remaining version blocker: Python 3.10.
+
+## Workspace/projection test failures resolved (2026-10-27)
+
+`pytest backend/tests -k "research_workspace or consumer_projection"`: **4112 passed, 0 failed** (from 31 failed at the start of the day). One product defect (the workspace action projector read `descriptor.name`, which capability descriptors do not have, so capability gating crashed) and one formatting mismatch (receipt fingerprints are shortened to 8 characters like the comparator) were fixed in code; the rest were stale test doubles (renamed enum members, a nonexistent stage helper, a keyword name, `name`/`enabled` assumptions about frozen capability descriptors). The "44 workspace failures" item above is therefore closed. Still open: the two network tests (`test_arxiv_download`, the metadata resolver), the real-paper blocker, the tutor model, Python 3.10. Not run: the complete suite after these fixes.

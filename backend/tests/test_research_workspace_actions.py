@@ -1,3 +1,4 @@
+import dataclasses
 from backend.session import (
     ResearchWorkspaceAction,
     ResearchWorkspaceActionCatalog,
@@ -417,9 +418,11 @@ def test_unsupported_capability_blocks_associated_action():
         .research_workspace_capabilities
     )
 
-    capabilities.get_capability(
-        "lineage"
-    ).enabled = False
+    # descriptors are frozen: replace the registered one with a disabled copy
+    capabilities._capabilities["lineage"] = dataclasses.replace(
+        capabilities.get_capability("lineage"),
+        enabled=False,
+    )
 
     projector = (
 
