@@ -26,11 +26,17 @@ class SessionManager:
     # oldest are dropped from memory (saved ones can still be restored from PREREQAI_SESSION_DIR on request).
     MAX_SESSIONS_IN_MEMORY = 500
 
+    # Creating a session sweeps expired files from the session directory, which lists and stats every saved file;
+    # the sweep runs at most this often, as an expired file is already skipped or removed whenever it is read or listed.
+    PURGE_INTERVAL_SECONDS = 60
+
     def __init__(self):
 
         self.sessions = {}
 
         self.last_save_ok = True
+
+        self._last_purge = float("-inf")
 
         self._last_used = {}  # session_id -> time of the latest create/get, so eviction drops the idlest session
 
@@ -168,7 +174,11 @@ class SessionManager:
 
         self._last_used[session.session_id] = time.time()
 
-        self.purge_expired()
+        if time.time() - self._last_purge >= self.PURGE_INTERVAL_SECONDS:
+
+            self._last_purge = time.time()
+
+            self.purge_expired()
 
         self.save(session)
 

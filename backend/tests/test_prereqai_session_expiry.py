@@ -18,6 +18,8 @@ def test_creating_a_session_purges_expired_files_but_keeps_recent_ones(tmp_path,
     (tmp_path / "leftover.tmp").write_bytes(b"x")
     _age(tmp_path / "leftover.tmp", 40)
 
+    monkeypatch.setattr(session_manager, "_last_purge", float("-inf"))  # the sweep is throttled; this create is the first after the interval
+
     session_manager.create("new")
 
     names = {p.name for p in tmp_path.iterdir()}
@@ -51,3 +53,21 @@ def test_max_age_is_configurable_zero_keeps_forever_and_bad_values_use_the_defau
     assert session_manager.purge_expired() == 0 and path.exists()
     monkeypatch.setenv("PREREQAI_SESSION_MAX_AGE_DAYS", "7")
     assert session_manager.purge_expired() == 1 and not path.exists()
+
+
+def test_creating_sessions_sweeps_the_directory_at_most_once_per_interval(tmp_path, monkeypatch):
+    monkeypatch.setenv("PREREQAI_SESSION_DIR", str(tmp_path))
+    monkeypatch.setattr(session_manager, "_last_purge", float("-inf"))
+    sweeps = []
+    real = session_manager.purge_expired
+    monkeypatch.setattr(session_manager, "purge_expired", lambda: sweeps.append(1) or real())
+
+    first, second = session_manager.create("a"), session_manager.create("b")
+    assert len(sweeps) == 1
+    _age(tmp_path / f"{first.session_id}.session", 45)
+    session_manager.sessions.clear()
+    assert session_manager.get(first.session_id) is None  # still never served once expired, swept or not
+
+    monkeypatch.setattr(session_manager, "_last_purge", time.time() - session_manager.PURGE_INTERVAL_SECONDS)
+    session_manager.create("c")
+    assert len(sweeps) == 2 and second.session_id
