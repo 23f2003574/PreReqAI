@@ -1,5 +1,6 @@
 import difflib
 import os
+import re
 from copy import deepcopy
 from time import perf_counter
 
@@ -139,13 +140,15 @@ def _split_names(values) -> list:
 
 
 def _concept_key(name: str) -> str:
-    return _concept_label(name).casefold()
+    """How concept names are compared everywhere (--known/--studied, the session endpoints): case, whitespace, hyphens
+    and underscores are ignored, as the tutor already does for names in questions ("linear-algebra" is "Linear Algebra")."""
+    return re.sub(r"[\s\-_]+", " ", name).strip().casefold()
 
 
 def _did_you_mean(name, concept_names):
     """' (did you mean 'Probability'?)' for a near-miss spelling of a prerequisite, else nothing."""
-    by_folded = {concept.casefold(): concept for concept in concept_names}
-    folded = " ".join(str(name).split()).casefold()
+    by_folded = {_concept_key(concept): concept for concept in concept_names}
+    folded = _concept_key(str(name))
     if folded in by_folded:  # spelled right: it is simply not in the plan (e.g. already known)
         return ""
     close = difflib.get_close_matches(folded, by_folded, n=1, cutoff=0.7)
@@ -269,7 +272,7 @@ class PreReqAIPlatform:
                 error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
             ), result.timings)
         concept_names = [item["concept"] for item in result.report.get("missing_prerequisites", [])]
-        in_plan = {step.concept.casefold() for step in result.paper.learning_plan}
+        in_plan = {_concept_key(step.concept) for step in result.paper.learning_plan}
         not_studied = []
         if known:  # the studied concepts are completed inside the one rebuild, not in a second pass
             unmatched = self._personalize(result, known, studied, not_studied)
@@ -321,7 +324,7 @@ class PreReqAIPlatform:
         session = session_manager.get(session_id)
         if session is None or session.paper is None:
             return None
-        planned = {item.concept.casefold(): item.concept for item in session.paper.study_progress}
+        planned = {_concept_key(item.concept): item.concept for item in session.paper.study_progress}
         if _concept_key(concept) not in planned:  # matched like --studied and question topics: case-insensitively
             raise ValueError(f"'{concept}' is not a concept in this session's study plan ({', '.join(planned.values()) or 'it is empty'})")
         concept = planned[_concept_key(concept)]
@@ -350,9 +353,9 @@ class PreReqAIPlatform:
         session = session_manager.get(session_id)
         if session is None or session.paper is None:
             return None
-        planned = {item.concept.casefold(): item.concept for item in session.paper.learning_plan}
+        planned = {_concept_key(item.concept): item.concept for item in session.paper.learning_plan}
         if _concept_key(concept) not in planned and any(
-            item.concept.casefold() == _concept_key(concept) and item.reason == KNOWN_REASON
+            _concept_key(item.concept) == _concept_key(concept) and item.reason == KNOWN_REASON
             for item in session.paper.missing_prerequisites
         ):  # already marked known: repeating the request (a retry, a double click) changes nothing
             return session.report
@@ -378,7 +381,7 @@ class PreReqAIPlatform:
         if session is None or session.paper is None:
             return None
         paper, pipeline = session.paper, self.analysis
-        known = {item.concept.casefold(): item.concept for item in paper.missing_prerequisites if item.reason == KNOWN_REASON}
+        known = {_concept_key(item.concept): item.concept for item in paper.missing_prerequisites if item.reason == KNOWN_REASON}
         if _concept_key(concept) not in known:
             raise ValueError(f"'{concept}' is not marked as known in this session ({', '.join(known.values()) or 'nothing is marked known'})")
         remaining = [name for key, name in known.items() if key != _concept_key(concept)]
@@ -400,14 +403,14 @@ class PreReqAIPlatform:
         are no longer reported as missing prerequisites."""
         wanted = {_concept_key(name) for name in known if name and name.strip()}
         paper, pipeline = result.paper, self.analysis
-        planned = {step.concept.casefold() for step in paper.learning_plan}
+        planned = {_concept_key(step.concept) for step in paper.learning_plan}
         unmatched = sorted(_concept_label(name) for name in known if name and name.strip() and _concept_key(name) not in planned)
-        paper.learning_plan = [step for step in paper.learning_plan if step.concept.casefold() not in wanted]
+        paper.learning_plan = [step for step in paper.learning_plan if _concept_key(step.concept) not in wanted]
         for order, step in enumerate(paper.learning_plan, start=1):  # numbering restarts after the skipped steps
             step.order = order
-        paper.learning_resources = [item for item in paper.learning_resources if item.concept.casefold() not in wanted]
+        paper.learning_resources = [item for item in paper.learning_resources if _concept_key(item.concept) not in wanted]
         for prerequisite in paper.missing_prerequisites:  # a known concept is no longer missing
-            if prerequisite.concept.casefold() in wanted and not prerequisite.satisfied:
+            if _concept_key(prerequisite.concept) in wanted and not prerequisite.satisfied:
                 prerequisite.satisfied, prerequisite.reason = True, KNOWN_REASON
         pipeline.difficulty_engine.assess(paper)  # the paper is easier once known concepts are not missing
         pipeline.study_time_estimator.estimate(paper)
@@ -424,7 +427,7 @@ class PreReqAIPlatform:
 
     def _complete_studied(self, paper, studied) -> list:
         """Mark these planned concepts completed (no readiness or report refresh); returns the names that are not in the plan."""
-        planned = {item.concept.casefold(): item.concept for item in paper.study_progress}
+        planned = {_concept_key(item.concept): item.concept for item in paper.study_progress}
         names = [_concept_label(name) for name in studied if name and name.strip()]
         for name in names:
             if _concept_key(name) in planned:
