@@ -10,6 +10,7 @@ from fastapi import (
     Form,
 )
 
+from backend.study_plan_markdown import PLAN_HEADING, known_from_plan, studied_from_plan
 from starlette.concurrency import run_in_threadpool
 
 from fastapi.responses import (
@@ -49,6 +50,7 @@ pipeline = platform.analysis
 MAX_UPLOAD_BYTES = 100 * 1024 * 1024
 
 _CHUNK_BYTES = 1024 * 1024
+_MAX_PLAN_BYTES = 1024 * 1024  # a saved plan is a few KB of Markdown
 
 
 def _hide_server_path(outcome: dict, temp_path: str, name: str) -> dict:
@@ -173,8 +175,11 @@ async def analyze_prerequisites(
     known: list[str] = Form(default=[]),
     studied: list[str] = Form(default=[]),
     diagnostics: bool = Form(default=False),
+    resume: UploadFile | None = File(default=None),
 ):
-    """Analyse an uploaded PDF (`paper`) or, instead, an arXiv link or DOI (`source`)."""
+    """Analyse an uploaded PDF (`paper`) or, instead, an arXiv link or DOI (`source`). `resume` is a plan saved earlier
+    (the Markdown from GET /api/session/{id}/plan): its ticked concepts are added to `studied` and its "Already known"
+    line to `known`, as `analyze --resume` does."""
 
     if (paper is None) == (source is None):
 
@@ -184,6 +189,28 @@ async def analyze_prerequisites(
             "Invalid request: paper: Field required (send exactly one of `paper`, a PDF upload, or `source`, an arXiv link or DOI).",
             hint="Upload the PDF as `paper`, or pass `source` such as https://arxiv.org/abs/1706.03762 or 10.1145/3292500.3330701.",
         )
+
+    if resume is not None:
+
+        try:
+
+            text = (await resume.read(_MAX_PLAN_BYTES + 1)).decode("utf-8")
+
+        except UnicodeDecodeError:
+
+            text = ""
+
+        if len(text) > _MAX_PLAN_BYTES or not text.lstrip().startswith(PLAN_HEADING):  # any other file would restore no progress, silently
+
+            return failure_response(
+                422,
+                "input",
+                "`resume` is not a study plan saved from PreReqAI (it must be the Markdown from GET /api/session/{id}/plan).",
+                hint="Upload the plan file saved earlier; nothing was analysed.",
+            )
+
+        known = [*known, *known_from_plan(text)]
+        studied = [*studied, *studied_from_plan(text)]
 
     if source is not None:
 
