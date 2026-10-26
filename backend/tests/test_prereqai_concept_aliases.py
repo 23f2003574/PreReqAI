@@ -42,3 +42,20 @@ def test_a_longer_concept_is_not_also_counted_as_the_shorter_concept_it_contains
 
     found = _detect("Self-Attention builds on attention. Attention is softmax over scores; attention again.")
     assert found["Attention"] == 3 and found["Self-Attention"] == 1
+
+
+def test_unhyphenated_and_british_spellings_count_for_their_concept():
+    from types import SimpleNamespace
+    from backend.concepts import RuleBasedConceptDetector
+
+    text = "Cross attention feeds a UNet. Multihead attention follows layer normalisation and batch normalisation."
+    paper = SimpleNamespace(concepts=[], paragraphs=[SimpleNamespace(content=text, section_title="Method")])
+    RuleBasedConceptDetector().detect(paper)
+
+    assert {c.name: c.occurrences for c in paper.concepts} == {
+        "Cross-Attention": 1,
+        "U-Net": 1,
+        "Multi-Head Attention": 1,
+        "Layer Normalization": 1,
+        "Batch Normalization": 1,
+    }

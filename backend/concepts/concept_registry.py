@@ -28,10 +28,10 @@ class ConceptRegistry:
             Concept("Transformer", "transformers"),
             Concept("Attention", "transformers"),
             Concept("Self-Attention", "transformers", aliases=('self attention',)),
-            Concept("Cross-Attention", "transformers"),
-            Concept("Multi-Head Attention", "transformers", aliases=('MHA', 'multi head attention')),
+            Concept("Cross-Attention", "transformers", aliases=('cross attention',)),
+            Concept("Multi-Head Attention", "transformers", aliases=('MHA', 'multi head attention', 'multihead attention')),
             Concept("Positional Encoding", "transformers", aliases=('position encoding', 'positional embedding')),
-            Concept("Layer Normalization", "transformers", aliases=('LayerNorm', 'layer norm')),
+            Concept("Layer Normalization", "transformers", aliases=('LayerNorm', 'layer norm', 'layer normalisation')),
             Concept("Residual Connection", "transformers", aliases=('skip connection', 'residual link')),
             Concept("Feed Forward Network", "transformers", aliases=('FFN', 'feed-forward network')),
             Concept("Softmax", "transformers"),
@@ -41,7 +41,7 @@ class ConceptRegistry:
             Concept("Gradient Descent", "deep_learning", aliases=('SGD', 'stochastic gradient descent')),
             Concept("Backpropagation", "deep_learning", aliases=('backprop', 'back-propagation')),
             Concept("Convolutional Neural Network", "deep_learning", aliases=('CNN', 'CNNs', 'convolutional network')),
-            Concept("Batch Normalization", "deep_learning", aliases=('BatchNorm', 'batch norm')),
+            Concept("Batch Normalization", "deep_learning", aliases=('BatchNorm', 'batch norm', 'batch normalisation')),
             Concept("Dropout", "deep_learning"),
 
             # Diffusion
@@ -51,7 +51,7 @@ class ConceptRegistry:
             Concept("Reverse Process", "diffusion"),
             Concept("Noise Schedule", "diffusion"),
             Concept("Score Matching", "diffusion"),
-            Concept("U-Net", "diffusion"),
+            Concept("U-Net", "diffusion", aliases=('UNet',)),
 
             # Reinforcement Learning
 
