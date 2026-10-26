@@ -1,7861 +1,2062 @@
-from .tutor_mode import (
-    TutorMode,
-)
-
-from .learning_intent import (
-    LearningIntent,
-)
-
-from .workflow_type import (
-    WorkflowType,
-)
-
-from .workflow_memory import (
-    WorkflowMemory,
-    WorkflowRecord,
-)
-
-from .learning_gap import (
-    LearningGap,
-)
-
-from .learning_recommendation import (
-    LearningRecommendation,
-)
-
-from .learning_session import (
-    LearningSession,
-)
-
-from .session_manager import (
-    SessionManager,
-)
-
-from .learning_question import (
-    LearningQuestion,
-)
-
-from .question_manager import (
-    QuestionManager,
-)
-
-from .context_retriever import (
-    RetrievedContext,
-    ContextRetriever,
-)
-
-from .context_manager import (
-    ContextManager,
-)
-
-from .research_session_snapshot import (
-    ResearchSessionSnapshot,
-)
-
-from .research_session_serializer import (
-    ResearchSessionSerializer,
-)
-
-from .research_session_store import (
-    ResearchSessionStore,
-)
-
-from .in_memory_research_session_store import (
-    InMemoryResearchSessionStore,
-)
-
-from .research_session_manager import (
-    ResearchSessionManager,
-)
-
-from .research_runtime_registry import (
-    ResearchRuntimeRegistry,
-)
-
-from .research_runtime_resolver import (
-    ResearchRuntimeResolver,
-)
-
-from .research_session_restoration_result import (
-    ResearchSessionRestorationResult,
-)
-
-from .research_session_restorer import (
-    ResearchSessionRestorer,
-)
-
-from .research_artifact_type import (
-    ResearchArtifactType,
-)
-
-from .research_artifact import (
-    ResearchArtifact,
-)
-
-from .research_artifact_store import (
-    ResearchArtifactStore,
-)
-
-from .in_memory_research_artifact_store import (
-    InMemoryResearchArtifactStore,
-)
-
-from .research_artifact_manager import (
-    ResearchArtifactManager,
-)
-
-from .research_artifact_type_mapper import (
-    ResearchArtifactTypeMapper,
-)
-
-from .interaction_artifact_link import (
-    InteractionArtifactLink,
-)
-
-from .interaction_artifact_link_store import (
-    InteractionArtifactLinkStore,
-)
-
-from .in_memory_interaction_artifact_link_store import (
-    InMemoryInteractionArtifactLinkStore,
-)
-
-from .interaction_artifact_correlation_manager import (
-    InteractionArtifactCorrelationManager,
-)
-
-from .artifact_restoration_result import (
-    ArtifactRestorationResult,
-)
-
-from .research_artifact_restorer import (
-    ResearchArtifactRestorer,
-)
-
-from .research_checkpoint_reason import (
-    ResearchCheckpointReason,
-)
-
-from .research_checkpoint import (
-    ResearchCheckpoint,
-)
-
-from .research_checkpoint_policy import (
-    ResearchCheckpointPolicy,
-)
-
-from .research_checkpoint_manager import (
-    ResearchCheckpointManager,
-)
-
-from .json_research_session_store import (
-    JsonResearchSessionStore,
-)
-
-from .json_research_artifact_store import (
-    JsonResearchArtifactStore,
-)
-
-from .json_interaction_artifact_link_store import (
-    JsonInteractionArtifactLinkStore,
-)
-
-from .research_persistence_config import (
-    ResearchPersistenceConfig,
-)
-
-from .research_persistence_factory import (
-    ResearchPersistenceFactory,
-)
-
-from .research_checkpoint_store import (
-    ResearchCheckpointStore,
-)
-
-from .in_memory_research_checkpoint_store import (
-    InMemoryResearchCheckpointStore,
-)
-
-from .json_research_checkpoint_store import (
-    JsonResearchCheckpointStore,
-)
-
-from .research_session_version import (
-    ResearchSessionVersion,
-)
-
-from .research_session_version_store import (
-    ResearchSessionVersionStore,
-)
-
-from .in_memory_research_session_version_store import (
-    InMemoryResearchSessionVersionStore,
-)
-
-from .json_research_session_version_store import (
-    JsonResearchSessionVersionStore,
-)
-
-from .research_session_version_manager import (
-    ResearchSessionVersionManager,
-)
-
-from .research_recovery_result import (
-    ResearchRecoveryResult,
-)
-
-from .research_checkpoint_recovery_manager import (
-    ResearchCheckpointRecoveryManager,
-)
-
-from .research_state_change_type import (
-    ResearchStateChangeType,
-)
-
-from .research_state_change import (
-    ResearchStateChange,
-)
-
-from .research_session_comparison import (
-    ResearchSessionComparison,
-)
-
-from .research_session_comparator import (
-    ResearchSessionComparator,
-)
-
-from .research_recovery_preview import (
-    ResearchRecoveryPreview,
-)
-
-from .research_recovery_preview_manager import (
-    ResearchRecoveryPreviewManager,
-)
-
-from .unset import (
-    UNSET,
-)
-
-from .research_checkpoint_annotation import (
-    ResearchCheckpointAnnotation,
-)
-
-from .research_checkpoint_annotation_store import (
-    ResearchCheckpointAnnotationStore,
-)
-
-from .in_memory_research_checkpoint_annotation_store import (
-    InMemoryResearchCheckpointAnnotationStore,
-)
-
-from .json_research_checkpoint_annotation_store import (
-    JsonResearchCheckpointAnnotationStore,
-)
-
-from .research_checkpoint_annotation_manager import (
-    ResearchCheckpointAnnotationManager,
-)
-
-from .annotated_research_checkpoint import (
-    AnnotatedResearchCheckpoint,
-)
-
-from .research_history_sort_order import (
-    ResearchHistorySortOrder,
-)
-
-from .research_history_query import (
-    ResearchHistoryQuery,
-)
-
-from .research_history_timeline_item import (
-    ResearchHistoryTimelineItem,
-)
-
-from .research_history_page import (
-    ResearchHistoryPage,
-)
-
-from .research_history_query_service import (
-    ResearchHistoryQueryService,
-)
-
-from .research_session_branch import (
-    ResearchSessionBranch,
-)
-
-from .research_session_branch_store import (
-    ResearchSessionBranchStore,
-)
-
-from .in_memory_research_session_branch_store import (
-    InMemoryResearchSessionBranchStore,
-)
-
-from .json_research_session_branch_store import (
-    JsonResearchSessionBranchStore,
-)
-
-from .research_session_branch_manager import (
-    ResearchSessionBranchManager,
-)
-
-from .research_session_lineage_node import (
-    ResearchSessionLineageNode,
-)
-
-from .research_session_lineage_path import (
-    ResearchSessionLineagePath,
-)
-
-from .research_session_lineage_service import (
-    ResearchSessionLineageService,
-)
-
-from .research_session_lineage_summary import (
-    ResearchSessionLineageSummary,
-)
-
-from .research_session_status import (
-    ResearchSessionStatus,
-)
-
-from .research_session_profile import (
-    ResearchSessionProfile,
-)
-
-from .research_session_profile_store import (
-    ResearchSessionProfileStore,
-)
-
-from .in_memory_research_session_profile_store import (
-    InMemoryResearchSessionProfileStore,
-)
-
-from .json_research_session_profile_store import (
-    JsonResearchSessionProfileStore,
-)
-
-from .research_session_profile_manager import (
-    ResearchSessionProfileManager,
-)
-
-from .research_session_kind import (
-    ResearchSessionKind,
-)
-
-from .research_session_list_item import (
-    ResearchSessionListItem,
-)
-
-from .research_session_page import (
-    ResearchSessionPage,
-)
-
-from .research_session_query import (
-    ResearchSessionQuery,
-)
-
-from .research_session_query_service import (
-    ResearchSessionQueryService,
-)
-
-from .research_session_sort_order import (
-    ResearchSessionSortOrder,
-)
-
-from .research_session_relationship import (
-    ResearchSessionRelationship,
-)
-
-from .research_session_state_difference import (
-    ResearchSessionStateDifference,
-)
-
-from .research_session_collection_difference import (
-    ResearchSessionCollectionDifference,
-)
-
-from .research_session_divergence import (
-    ResearchSessionDivergence,
-)
-
-from .research_session_lineage_comparison import (
-    ResearchSessionLineageComparison,
-)
-
-from .research_session_lineage_comparison_service import (
-    ResearchSessionLineageComparisonService,
-)
-
-from .research_tag_normalizer import (
-    normalize_research_tag_name,
-)
-
-from .research_tag import (
-    ResearchTag,
-)
-
-from .research_session_tag_assignment import (
-    ResearchSessionTagAssignment,
-)
-
-from .research_tag_store import (
-    ResearchTagStore,
-)
-
-from .in_memory_research_tag_store import (
-    InMemoryResearchTagStore,
-)
-
-from .json_research_tag_store import (
-    JsonResearchTagStore,
-)
-
-from .research_collection import (
-    ResearchCollection,
-)
-
-from .research_collection_membership import (
-    ResearchCollectionMembership,
-)
-
-from .research_collection_store import (
-    ResearchCollectionStore,
-)
-
-from .in_memory_research_collection_store import (
-    InMemoryResearchCollectionStore,
-)
-
-from .json_research_collection_store import (
-    JsonResearchCollectionStore,
-)
-
-from .research_workspace_organization_service import (
-    ResearchWorkspaceOrganizationService,
-)
-
-from .research_activity_type import (
-    ResearchActivityType,
-)
-
-from .research_activity_actor_type import (
-    ResearchActivityActorType,
-)
-
-from .research_activity_event import (
-    ResearchActivityEvent,
-)
-
-from .research_activity_store import (
-    ResearchActivityStore,
-)
-
-from .in_memory_research_activity_store import (
-    InMemoryResearchActivityStore,
-)
-
-from .json_research_activity_store import (
-    JsonResearchActivityStore,
-)
-
-from .research_activity_recorder import (
-    ResearchActivityRecorder,
-)
-
-from .research_activity_query import (
-    ResearchActivityQuery,
-)
-
-from .research_activity_page import (
-    ResearchActivityPage,
-)
-
-from .research_activity_service import (
-    ResearchActivityService,
-)
-
-from .research_workspace_overview import (
-    ResearchWorkspaceOverview,
-)
-
-from .research_lifecycle_statistics import (
-    ResearchLifecycleStatistics,
-)
-
-from .research_lineage_statistics import (
-    ResearchLineageStatistics,
-)
-
-from .research_tag_statistic import (
-    ResearchTagStatistic,
-)
-
-from .research_collection_statistic import (
-    ResearchCollectionStatistic,
-)
-
-from .research_activity_statistics import (
-    ResearchActivityStatistics,
-)
-
-from .research_session_activity_summary import (
-    ResearchSessionActivitySummary,
-)
-
-from .research_workspace_insights import (
-    ResearchWorkspaceInsights,
-)
-
-from .research_workspace_insights_service import (
-    ResearchWorkspaceInsightsService,
-)
-
-from .research_snapshot_scope import (
-    ResearchSnapshotScope,
-)
-
-from .research_snapshot_manifest import (
-    ResearchSnapshotManifest,
-)
-
-from .research_snapshot import (
-    ResearchSnapshot,
-)
-
-from .research_snapshot_validation_issue import (
-    ResearchSnapshotValidationIssue,
-)
-
-from .research_snapshot_validation_result import (
-    ResearchSnapshotValidationResult,
-)
-
-from .research_snapshot_validator import (
-    ResearchSnapshotValidator,
-)
-
-from .research_snapshot_service import (
-    ResearchSnapshotService,
-)
-
-from .research_snapshot_serializer import (
-    ResearchSnapshotSerializer,
-)
-
-from .research_snapshot_import_strategy import (
-    ResearchSnapshotImportStrategy,
-)
-
-from .research_snapshot_import_conflict import (
-    ResearchSnapshotImportConflict,
-)
-
-from .research_snapshot_identity_map import (
-    ResearchSnapshotIdentityMap,
-)
-
-from .research_snapshot_import_plan import (
-    ResearchSnapshotImportPlan,
-)
-
-from .research_snapshot_import_result import (
-    ResearchSnapshotImportResult,
-)
-
-from .research_snapshot_import_planner import (
-    ResearchSnapshotImportPlanner,
-)
-
-from .research_snapshot_import_transaction import (
-    ResearchSnapshotImportTransaction,
-)
-
-from .research_snapshot_import_service import (
-    ResearchSnapshotImportService,
-)
-
-from .research_integrity_severity import (
-    ResearchIntegritySeverity,
-)
-
-from .research_integrity_finding import (
-    ResearchIntegrityFinding,
-)
-
-from .research_integrity_report import (
-    ResearchIntegrityReport,
-)
-
-from .research_repair_risk import (
-    ResearchRepairRisk,
-)
-
-from .research_repair_action import (
-    ResearchRepairAction,
-)
-
-from .research_repair_plan import (
-    ResearchRepairPlan,
-)
-
-from .research_workspace_integrity_auditor import (
-    ResearchWorkspaceIntegrityAuditor,
-)
-
-from .research_workspace_repair_planner import (
-    ResearchWorkspaceRepairPlanner,
-)
-
-from .research_workspace_change_operation import (
-    ResearchWorkspaceChangeOperation,
-)
-
-from .research_workspace_change_event import (
-    ResearchWorkspaceChangeEvent,
-)
-
-from .research_workspace_subscription import (
-    ResearchWorkspaceSubscription,
-)
-
-from .research_workspace_event_bus import (
-    ResearchWorkspaceEventBus,
-)
-
-from .research_workspace_change_page import (
-    ResearchWorkspaceChangePage,
-)
-
-from .research_workspace_change_feed import (
-    ResearchWorkspaceChangeFeed,
-)
-
-from .research_workspace_capability import (
-    ResearchWorkspaceCapability,
-)
-
-from .research_workspace_capability_descriptor import (
-    ResearchWorkspaceCapabilityDescriptor,
-)
-
-from .research_workspace_capabilities import (
-    ResearchWorkspaceCapabilities,
-)
-
-from .research_workspace_readiness_check_status import (
-    ResearchWorkspaceReadinessCheckStatus,
-)
-
-from .research_workspace_readiness_status import (
-    ResearchWorkspaceReadinessStatus,
-)
-
-from .research_workspace_readiness_check import (
-    ResearchWorkspaceReadinessCheck,
-)
-
-from .research_workspace_readiness_assessment import (
-    ResearchWorkspaceReadinessAssessment,
-)
-
-from .research_workspace_readiness_assessor import (
-    ResearchWorkspaceReadinessAssessor,
-)
-
-from .research_workspace_attention_severity import (
-    ResearchWorkspaceAttentionSeverity,
-)
-
-from .research_workspace_attention_category import (
-    ResearchWorkspaceAttentionCategory,
-)
-
-from .research_workspace_attention_item import (
-    ResearchWorkspaceAttentionItem,
-)
-
-from .research_workspace_attention_projection import (
-    ResearchWorkspaceAttentionProjection,
-)
-
-from .research_workspace_attention_summary import (
-    ResearchWorkspaceAttentionSummary,
-)
-
-from .research_workspace_attention_projector import (
-    ResearchWorkspaceAttentionProjector,
-)
-
-from .research_workspace_consumer_contract_id import (
-    ResearchWorkspaceConsumerContractId,
-)
-
-from .research_workspace_consumer_contract_scope import (
-    ResearchWorkspaceConsumerContractScope,
-)
-
-from .research_workspace_consumer_contract_stability import (
-    ResearchWorkspaceConsumerContractStability,
-)
-
-from .research_workspace_consumer_contract_version import (
-    ResearchWorkspaceConsumerContractVersion,
-)
-
-from .research_workspace_consumer_contract_parameter_type import (
-    ResearchWorkspaceConsumerContractParameterType,
-)
-
-from .research_workspace_consumer_contract_parameter import (
-    ResearchWorkspaceConsumerContractParameter,
-)
-
-from .research_workspace_consumer_contract_descriptor import (
-    ResearchWorkspaceConsumerContractDescriptor,
-)
-
-from .research_workspace_consumer_contract_compatibility import (
-    ResearchWorkspaceConsumerContractCompatibility,
-)
-
-from .research_workspace_consumer_contract_registry import (
-    DEFAULT_RESEARCH_WORKSPACE_CONTRACTS,
-    ResearchWorkspaceConsumerContractRegistry,
-)
-
-from .research_workspace_consumer_contract_manifest import (
-    ResearchWorkspaceConsumerContractManifest,
-)
-
-from .research_workspace_consumer_contract_manifest_provider import (
-    ResearchWorkspaceConsumerContractManifestProvider,
-)
-
-from .research_workspace_monotonic_clock import (
-    ResearchWorkspaceMonotonicClock,
-)
-
-from .research_workspace_consumer_projection_diagnostic_status import (
-    ResearchWorkspaceConsumerProjectionDiagnosticStatus,
-)
-
-# The plural spelling matches the sibling Diagnostics* names (collector,
-# summary, summarizer) that consumers import alongside it; same class.
-ResearchWorkspaceConsumerProjectionDiagnosticsStatus = ResearchWorkspaceConsumerProjectionDiagnosticStatus
-
-from .research_workspace_consumer_projection_diagnostic_stage_kind import (
-    ResearchWorkspaceConsumerProjectionDiagnosticStageKind,
-)
-
-from .research_workspace_consumer_projection_diagnostic_failure import (
-    ResearchWorkspaceConsumerProjectionDiagnosticFailure,
-)
-
-from .research_workspace_consumer_projection_input_diagnostic import (
-    ResearchWorkspaceConsumerProjectionInputDiagnostic,
-)
-
-from .research_workspace_consumer_projection_stage_diagnostic import (
-    ResearchWorkspaceConsumerProjectionStageDiagnostic,
-)
-
-from .research_workspace_consumer_projection_diagnostic_report import (
-    ResearchWorkspaceConsumerProjectionDiagnosticReport,
-)
-
-from .research_workspace_consumer_projection_stage_requirement import (
-    ResearchWorkspaceConsumerProjectionStageRequirement,
-)
-
-from .research_workspace_consumer_projection_budget_decision import (
-    ResearchWorkspaceConsumerProjectionBudgetDecision,
-)
-
-from .research_workspace_consumer_projection_budget_decision_reason import (
-    ResearchWorkspaceConsumerProjectionBudgetDecisionReason,
-)
-
-from .research_workspace_consumer_projection_stage_budget_policy import (
-    ResearchWorkspaceConsumerProjectionStageBudgetPolicy,
-)
-
-from .research_workspace_consumer_projection_execution_policy import (
-    ResearchWorkspaceConsumerProjectionExecutionPolicy,
-)
-
-from .research_workspace_consumer_projection_execution_policy_registry import (
-    DEFAULT_CONSUMER_PROJECTION_POLICIES,
-    ResearchWorkspaceConsumerProjectionExecutionPolicyRegistry,
-)
-
-from .research_workspace_consumer_projection_budget_snapshot import (
-    ResearchWorkspaceConsumerProjectionBudgetSnapshot,
-)
-
-from .research_workspace_consumer_projection_budget_admission import (
-    ResearchWorkspaceConsumerProjectionBudgetAdmission,
-)
-
-from .research_workspace_consumer_projection_execution_budget import (
-    ResearchWorkspaceConsumerProjectionExecutionBudget,
-)
-
-from .research_workspace_consumer_projection_execution_budget_factory import (
-    ResearchWorkspaceConsumerProjectionExecutionBudgetFactory,
-)
-
-from .research_workspace_consumer_projection_execution_coordinator import (
-    ResearchWorkspaceConsumerProjectionExecutionCoordinator,
-)
-
-from .research_workspace_consumer_projection_diagnostics_stage_helper import (
-    stage_or_noop,
-)
-
-from .research_workspace_consumer_projection_diagnostics_collector import (
-    ResearchWorkspaceConsumerProjectionDiagnosticsCollector,
-)
-
-from .research_workspace_consumer_projection_diagnostics_factory import (
-    ResearchWorkspaceConsumerProjectionDiagnosticsFactory,
-)
-
-from .research_workspace_consumer_projection_execution_result import (
-    ResearchWorkspaceConsumerProjectionExecutionResult,
-)
-
-from .research_workspace_utc_clock import (
-    ResearchWorkspaceUtcClock,
-)
-
-from .research_workspace_consumer_projection_freshness_status import (
-    ResearchWorkspaceConsumerProjectionFreshnessStatus,
-)
-
-from .research_workspace_consumer_projection_freshness_reason import (
-    ResearchWorkspaceConsumerProjectionFreshnessReason,
-)
-
-from .research_workspace_consumer_projection_freshness_policy import (
-    ResearchWorkspaceConsumerProjectionFreshnessPolicy,
-)
-
-from .research_workspace_consumer_projection_freshness_policy_registry import (
-    DEFAULT_CONSUMER_PROJECTION_FRESHNESS_POLICIES,
-    ResearchWorkspaceConsumerProjectionFreshnessPolicyRegistry,
-)
-
-from .research_workspace_consumer_projection_freshness_evaluation import (
-    ResearchWorkspaceConsumerProjectionFreshnessEvaluation,
-)
-
-from .research_workspace_consumer_projection_freshness_policy_not_found_error import (
-    ResearchWorkspaceConsumerProjectionFreshnessPolicyNotFoundError,
-)
-
-from .research_workspace_consumer_projection_unusable_freshness_error import (
-    ResearchWorkspaceConsumerProjectionUnusableFreshnessError,
-)
-
-from .research_workspace_consumer_projection_freshness_evaluator import (
-    ResearchWorkspaceConsumerProjectionFreshnessEvaluator,
-)
-
-from .research_workspace_consumer_projection_provenance_node_kind import (
-    ResearchWorkspaceConsumerProjectionProvenanceNodeKind,
-)
-
-from .research_workspace_consumer_projection_source_provenance import (
-    ResearchWorkspaceConsumerProjectionSourceProvenance,
-)
-
-from .research_workspace_consumer_projection_derivation_provenance import (
-    ResearchWorkspaceConsumerProjectionDerivationProvenance,
-)
-
-from .research_workspace_consumer_projection_output_provenance import (
-    ResearchWorkspaceConsumerProjectionOutputProvenance,
-)
-
-from .research_workspace_consumer_projection_provenance_edge import (
-    ResearchWorkspaceConsumerProjectionProvenanceEdge,
-)
-
-from .research_workspace_consumer_projection_provenance_report import (
-    ResearchWorkspaceConsumerProjectionProvenanceReport,
-)
-
-from .research_workspace_consumer_projection_provenance_collector import (
-    ResearchWorkspaceConsumerProjectionProvenanceCollector,
-)
-
-from .research_workspace_consumer_projection_provenance_collector_factory import (
-    ResearchWorkspaceConsumerProjectionProvenanceCollectorFactory,
-)
-
-from .research_workspace_projection_context import (
-    ResearchWorkspaceProjectionContext,
-)
-
-from .research_workspace_projection_context_factory import (
-    ResearchWorkspaceProjectionContextFactory,
-)
-
-from .research_workspace_action import (
-    ResearchWorkspaceAction,
-)
-
-from .research_workspace_action_scope import (
-    ResearchWorkspaceActionScope,
-)
-
-from .research_workspace_action_descriptor import (
-    ResearchWorkspaceActionDescriptor,
-)
-
-from .research_workspace_action_availability import (
-    ResearchWorkspaceActionAvailability,
-)
-
-from .research_workspace_action_projection import (
-    ResearchWorkspaceActionProjection,
-)
-
-from .research_workspace_action_catalog import (
-    ResearchWorkspaceActionCatalog,
-)
-
-from .research_workspace_action_projector import (
-    ResearchWorkspaceActionProjector,
-)
-
-from .research_workspace_bootstrap_projection import (
-    ResearchWorkspaceBootstrapProjection,
-)
-
-from .research_workspace_bootstrap_projector import (
-    ResearchWorkspaceBootstrapProjector,
-)
-
-from .research_workspace_gateway import (
-    ResearchWorkspaceGateway,
-)
-
-from .research_workspace_consumer_projection_fingerprint_algorithm import (
-    ResearchWorkspaceConsumerProjectionFingerprintAlgorithm,
-)
-
-from .research_workspace_consumer_projection_fingerprint import (
-    ResearchWorkspaceConsumerProjectionFingerprint,
-)
-
-from .research_workspace_consumer_projection_section_fingerprint import (
-    ResearchWorkspaceConsumerProjectionSectionFingerprint,
-)
-
-from .research_workspace_consumer_projection_fingerprint_snapshot import (
-    ResearchWorkspaceConsumerProjectionFingerprintSnapshot,
-)
-
-from .research_workspace_consumer_projection_change_status import (
-    ResearchWorkspaceConsumerProjectionChangeStatus,
-)
-
-from .research_workspace_consumer_projection_section_change_status import (
-    ResearchWorkspaceConsumerProjectionSectionChangeStatus,
-)
-
-from .research_workspace_consumer_projection_section_change import (
-    ResearchWorkspaceConsumerProjectionSectionChange,
-)
-
-from .research_workspace_consumer_projection_change_report import (
-    ResearchWorkspaceConsumerProjectionChangeReport,
-)
-
-from .research_workspace_consumer_projection_fingerprint_errors import (
-    ResearchWorkspaceConsumerProjectionFingerprintError,
-    ResearchWorkspaceUnsupportedCanonicalValueError,
-    ResearchWorkspaceNaiveDatetimeCanonicalizationError,
-    ResearchWorkspaceProjectionFingerprintPolicyNotFoundError,
-    ResearchWorkspaceIncomparableProjectionSnapshotsError,
-)
-
-from .research_workspace_consumer_projection_fingerprint_policy import (
-    ResearchWorkspaceConsumerProjectionFingerprintPolicy,
-)
-
-from .research_workspace_consumer_projection_canonicalizer import (
-    ResearchWorkspaceConsumerProjectionCanonicalizer,
-)
-
-from .research_workspace_consumer_projection_fingerprint_service import (
-    ResearchWorkspaceConsumerProjectionFingerprintService,
-)
-
-from .research_workspace_consumer_projection_change_detector import (
-    ResearchWorkspaceConsumerProjectionChangeDetector,
-)
-
-from .research_workspace_consumer_projection_fingerprint_policy_registry import (
-    ResearchWorkspaceConsumerProjectionFingerprintPolicyRegistry,
-)
-
-from .research_workspace_bootstrap_fingerprint_policy import (
-    ResearchWorkspaceBootstrapFingerprintPolicy,
-)
-
-from .research_workspace_attention_fingerprint_policy import (
-    ResearchWorkspaceAttentionFingerprintPolicy,
-)
-
-from .research_workspace_action_fingerprint_policy import (
-    ResearchWorkspaceActionFingerprintPolicy,
-)
-
-from .research_workspace_readiness_fingerprint_policy import (
-    ResearchWorkspaceReadinessFingerprintPolicy,
-)
-
-from .research_workspace_consumer_projection_execution_status import (
-    ResearchWorkspaceConsumerProjectionExecutionStatus,
-)
-
-from .research_workspace_consumer_projection_identity import (
-    ResearchWorkspaceConsumerProjectionIdentity,
-)
-
-from .research_workspace_consumer_projection_diagnostics_summary import (
-    ResearchWorkspaceConsumerProjectionDiagnosticsSummary,
-)
-
-from .research_workspace_consumer_projection_freshness_summary import (
-    ResearchWorkspaceConsumerProjectionFreshnessSummary,
-)
-
-from .research_workspace_consumer_projection_budget_summary import (
-    ResearchWorkspaceConsumerProjectionBudgetSummary,
-)
-
-from .research_workspace_consumer_projection_provenance_summary import (
-    ResearchWorkspaceConsumerProjectionProvenanceSummary,
-)
-
-from .research_workspace_consumer_projection_execution_receipt import (
-    ResearchWorkspaceConsumerProjectionExecutionReceipt,
-)
-
-from .research_workspace_consumer_projection_receipt_verification_status import (
-    ResearchWorkspaceConsumerProjectionReceiptVerificationStatus,
-)
-
-from .research_workspace_consumer_projection_receipt_verification_issue_code import (
-    ResearchWorkspaceConsumerProjectionReceiptVerificationIssueCode,
-)
-
-from .research_workspace_consumer_projection_receipt_verification_issue import (
-    ResearchWorkspaceConsumerProjectionReceiptVerificationIssue,
-)
-
-from .research_workspace_consumer_projection_receipt_verification_report import (
-    ResearchWorkspaceConsumerProjectionReceiptVerificationReport,
-)
-
-from .research_workspace_consumer_projection_diagnostics_summarizer import (
-    ResearchWorkspaceConsumerProjectionDiagnosticsSummarizer,
-)
-
-from .research_workspace_consumer_projection_freshness_summarizer import (
-    ResearchWorkspaceConsumerProjectionFreshnessSummarizer,
-)
-
-from .research_workspace_consumer_projection_budget_summarizer import (
-    ResearchWorkspaceConsumerProjectionBudgetSummarySummarizer,
-)
-
-from .research_workspace_consumer_projection_provenance_summarizer import (
-    ResearchWorkspaceConsumerProjectionProvenanceSummarizer,
-)
-
-from .research_workspace_consumer_projection_execution_outcome_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionOutcomeResolver,
-)
-
-from .research_workspace_consumer_projection_execution_receipt_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionReceiptBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_receipt_verifier import (
-    ResearchWorkspaceConsumerProjectionExecutionReceiptVerifier,
-)
-
-from .research_workspace_consumer_projection_execution_receipt_formatter import (
-    ResearchWorkspaceConsumerProjectionExecutionReceiptFormatter,
-)
-
-from .research_workspace_consumer_projection_receipt_change_kind import (
-    ResearchWorkspaceConsumerProjectionReceiptChangeKind,
-)
-
-from .research_workspace_consumer_projection_receipt_field_change import (
-    ResearchWorkspaceConsumerProjectionReceiptFieldChange,
-)
-
-from .research_workspace_consumer_projection_execution_receipt_comparison import (
-    ResearchWorkspaceConsumerProjectionExecutionReceiptComparison,
-)
-
-from .research_workspace_consumer_projection_receipt_comparison_error import (
-    ResearchWorkspaceConsumerProjectionReceiptComparisonError,
-)
-
-from .research_workspace_consumer_projection_execution_receipt_comparator import (
-    ResearchWorkspaceConsumerProjectionExecutionReceiptComparator,
-)
-
-from .research_workspace_consumer_projection_quality_signal_code import (
-    ResearchWorkspaceConsumerProjectionQualitySignalCode,
-)
-
-from .research_workspace_consumer_projection_quality_signal_severity import (
-    ResearchWorkspaceConsumerProjectionQualitySignalSeverity,
-)
-
-from .research_workspace_consumer_projection_quality_signal import (
-    ResearchWorkspaceConsumerProjectionQualitySignal,
-)
-
-from .research_workspace_consumer_projection_quality_signal_report import (
-    ResearchWorkspaceConsumerProjectionQualitySignalReport,
-)
-
-from .research_workspace_consumer_projection_quality_signal_extractor import (
-    ResearchWorkspaceConsumerProjectionQualitySignalExtractor,
-)
-
-from .research_workspace_consumer_projection_execution_health import (
-    ResearchWorkspaceConsumerProjectionExecutionHealth,
-)
-
-from .research_workspace_consumer_projection_execution_health_summary import (
-    ResearchWorkspaceConsumerProjectionExecutionHealthSummary,
-)
-
-from .research_workspace_consumer_projection_execution_health_summarizer import (
-    ResearchWorkspaceConsumerProjectionExecutionHealthSummarizer,
-)
-
-from .research_workspace_consumer_projection_execution_health_analyzer import (
-    ResearchWorkspaceConsumerProjectionExecutionHealthAnalyzer,
-)
-
-from .research_workspace_consumer_projection_health_transition_kind import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionKind,
-)
-
-from .research_workspace_consumer_projection_health_transition_error import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionError,
-)
-
-from .research_workspace_consumer_projection_execution_health_transition import (
-    ResearchWorkspaceConsumerProjectionExecutionHealthTransition,
-)
-
-from .research_workspace_consumer_projection_execution_health_transition_analyzer import (
-    ResearchWorkspaceConsumerProjectionExecutionHealthTransitionAnalyzer,
-)
-
-from .research_workspace_consumer_projection_execution_health_transition_evaluator import (
-    ResearchWorkspaceConsumerProjectionExecutionHealthTransitionEvaluator,
-)
-
-from .research_workspace_consumer_projection_health_signal_change import (
-    ResearchWorkspaceConsumerProjectionHealthSignalChange,
-)
-
-from .research_workspace_consumer_projection_health_transition_explanation import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionExplanation,
-)
-
-from .research_workspace_consumer_projection_health_transition_explanation_error import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionExplanationError,
-)
-
-from .research_workspace_consumer_projection_health_transition_explainer import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionExplainer,
-)
-
-from .research_workspace_consumer_projection_health_transition_impact import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionImpact,
-)
-
-from .research_workspace_consumer_projection_health_transition_impact_summary import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionImpactSummary,
-)
-
-from .research_workspace_consumer_projection_health_transition_impact_summarizer import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionImpactSummarizer,
-)
-
-from .research_workspace_consumer_projection_health_transition_assessment_kind import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentKind,
-)
-
-from .research_workspace_consumer_projection_health_transition_assessment import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionAssessment,
-)
-
-from .research_workspace_consumer_projection_health_transition_assessment_error import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentError,
-)
-
-from .research_workspace_consumer_projection_health_transition_assessor import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionAssessor,
-)
-
-from .research_workspace_consumer_projection_health_transition_recommendation_kind import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationKind,
-)
-
-from .research_workspace_consumer_projection_health_transition_recommendation import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionRecommendation,
-)
-
-from .research_workspace_consumer_projection_health_transition_recommendation_resolver import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationResolver,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_priority import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriority,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_priority_result import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriorityResult,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_priority_resolver import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriorityResolver,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_directive import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirective,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_directive_error import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirectiveError,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_directive_builder import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirectiveBuilder,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_planner import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanner,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_reason import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponseReason,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_rationale import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponseRationale,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_rationale_error import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponseRationaleError,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_rationale_builder import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponseRationaleBuilder,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_package import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackage,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_package_error import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackageError,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_package_builder import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackageBuilder,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_plan_snapshot import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanSnapshot,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_plan_snapshot_error import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanSnapshotError,
-)
-
-from .research_workspace_consumer_projection_health_transition_response_plan_snapshot_builder import (
-    ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanSnapshotBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_plan_dependency import (
-    ResearchWorkspaceConsumerProjectionExecutionPlanDependency,
-)
-
-from .research_workspace_consumer_projection_execution_plan_source import (
-    ResearchWorkspaceConsumerProjectionExecutionPlanSource,
-)
-
-from .research_workspace_consumer_projection_execution_plan_stage import (
-    ResearchWorkspaceConsumerProjectionExecutionPlanStage,
-)
-
-from .research_workspace_consumer_projection_execution_plan import (
-    ResearchWorkspaceConsumerProjectionExecutionPlan,
-)
-
-from .research_workspace_consumer_projection_readiness import (
-    ResearchWorkspaceConsumerProjectionReadiness,
-)
-
-from .research_workspace_consumer_projection_readiness_issue import (
-    ResearchWorkspaceConsumerProjectionReadinessIssue,
-)
-
-from .research_workspace_consumer_projection_readiness_reason import (
-    ResearchWorkspaceConsumerProjectionReadinessReason,
-)
-
-from .research_workspace_consumer_projection_readiness_report import (
-    ResearchWorkspaceConsumerProjectionReadinessReport,
-)
-
-from .research_workspace_consumer_projection_readiness_evaluator import (
-    ResearchWorkspaceConsumerProjectionReadinessEvaluator,
-)
-
-from .research_workspace_consumer_projection_readiness_summary import (
-    ResearchWorkspaceConsumerProjectionReadinessSummary,
-)
-
-from .research_workspace_consumer_projection_readiness_summarizer import (
-    ResearchWorkspaceConsumerProjectionReadinessSummarizer,
-)
-
-from .research_workspace_consumer_projection_readiness_transition import (
-    ResearchWorkspaceConsumerProjectionReadinessTransition,
-)
-
-from .research_workspace_consumer_projection_readiness_transition_error import (
-    ResearchWorkspaceConsumerProjectionReadinessTransitionError,
-)
-
-from .research_workspace_consumer_projection_readiness_transition_report import (
-    ResearchWorkspaceConsumerProjectionReadinessTransitionReport,
-)
-
-from .research_workspace_consumer_projection_readiness_transition_analyzer import (
-    ResearchWorkspaceConsumerProjectionReadinessTransitionAnalyzer,
-)
-
-from .research_workspace_consumer_projection_readiness_issue_change import (
-    ResearchWorkspaceConsumerProjectionReadinessIssueChange,
-)
-
-from .research_workspace_consumer_projection_readiness_explanation_error import (
-    ResearchWorkspaceConsumerProjectionReadinessExplanationError,
-)
-
-from .research_workspace_consumer_projection_readiness_transition_explanation import (
-    ResearchWorkspaceConsumerProjectionReadinessTransitionExplanation,
-)
-
-from .research_workspace_consumer_projection_readiness_transition_explainer import (
-    ResearchWorkspaceConsumerProjectionReadinessTransitionExplainer,
-)
-
-from .research_workspace_consumer_projection_readiness_impact import (
-    ResearchWorkspaceConsumerProjectionReadinessImpact,
-)
-
-from .research_workspace_consumer_projection_readiness_impact_summary import (
-    ResearchWorkspaceConsumerProjectionReadinessImpactSummary,
-)
-
-from .research_workspace_consumer_projection_readiness_impact_summarizer import (
-    ResearchWorkspaceConsumerProjectionReadinessImpactSummarizer,
-)
-
-from .research_workspace_consumer_projection_readiness_assessment import (
-    ResearchWorkspaceConsumerProjectionReadinessAssessment,
-)
-
-from .research_workspace_consumer_projection_readiness_assessment_error import (
-    ResearchWorkspaceConsumerProjectionReadinessAssessmentError,
-)
-
-from .research_workspace_consumer_projection_readiness_assessment_report import (
-    ResearchWorkspaceConsumerProjectionReadinessAssessmentReport,
-)
-
-from .research_workspace_consumer_projection_readiness_assessor import (
-    ResearchWorkspaceConsumerProjectionReadinessAssessor,
-)
-
-from .research_workspace_consumer_projection_readiness_recommendation import (
-    ResearchWorkspaceConsumerProjectionReadinessRecommendation,
-)
-
-from .research_workspace_consumer_projection_readiness_recommendation_report import (
-    ResearchWorkspaceConsumerProjectionReadinessRecommendationReport,
-)
-
-from .research_workspace_consumer_projection_readiness_recommendation_resolver import (
-    ResearchWorkspaceConsumerProjectionReadinessRecommendationResolver,
-)
-
-from .research_workspace_consumer_projection_readiness_priority import (
-    ResearchWorkspaceConsumerProjectionReadinessPriority,
-)
-
-from .research_workspace_consumer_projection_readiness_priority_report import (
-    ResearchWorkspaceConsumerProjectionReadinessPriorityReport,
-)
-
-from .research_workspace_consumer_projection_readiness_priority_resolver import (
-    ResearchWorkspaceConsumerProjectionReadinessPriorityResolver,
-)
-
-from .research_workspace_consumer_projection_readiness_directive import (
-    ResearchWorkspaceConsumerProjectionReadinessDirective,
-)
-
-from .research_workspace_consumer_projection_readiness_directive_error import (
-    ResearchWorkspaceConsumerProjectionReadinessDirectiveError,
-)
-
-from .research_workspace_consumer_projection_readiness_directive_builder import (
-    ResearchWorkspaceConsumerProjectionReadinessDirectiveBuilder,
-)
-
-from .research_workspace_consumer_projection_readiness_reason_code import (
-    ResearchWorkspaceConsumerProjectionReadinessReasonCode,
-)
-
-from .research_workspace_consumer_projection_readiness_rationale import (
-    ResearchWorkspaceConsumerProjectionReadinessRationale,
-)
-
-from .research_workspace_consumer_projection_readiness_rationale_builder import (
-    ResearchWorkspaceConsumerProjectionReadinessRationaleBuilder,
-)
-
-from .research_workspace_consumer_projection_readiness_response_package import (
-    ResearchWorkspaceConsumerProjectionReadinessResponsePackage,
-)
-
-from .research_workspace_consumer_projection_readiness_response_package_error import (
-    ResearchWorkspaceConsumerProjectionReadinessResponsePackageError,
-)
-
-from .research_workspace_consumer_projection_readiness_response_package_builder import (
-    ResearchWorkspaceConsumerProjectionReadinessResponsePackageBuilder,
-)
-
-from .research_workspace_consumer_projection_readiness_decision_snapshot import (
-    ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshot,
-)
-
-from .research_workspace_consumer_projection_readiness_decision_snapshot_error import (
-    ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshotError,
-)
-
-from .research_workspace_consumer_projection_readiness_decision_snapshot_builder import (
-    ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshotBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_eligibility import (
-    ResearchWorkspaceConsumerProjectionExecutionEligibility,
-)
-
-from .research_workspace_consumer_projection_execution_eligibility_reason import (
-    ResearchWorkspaceConsumerProjectionExecutionEligibilityReason,
-)
-
-from .research_workspace_consumer_projection_execution_eligibility_report import (
-    ResearchWorkspaceConsumerProjectionExecutionEligibilityReport,
-)
-
-from .research_workspace_consumer_projection_execution_eligibility_evaluator import (
-    ResearchWorkspaceConsumerProjectionExecutionEligibilityEvaluator,
-)
-
-from .research_workspace_consumer_projection_execution_decision import (
-    ResearchWorkspaceConsumerProjectionExecutionDecision,
-)
-
-from .research_workspace_consumer_projection_execution_decision_reason import (
-    ResearchWorkspaceConsumerProjectionExecutionDecisionReason,
-)
-
-from .research_workspace_consumer_projection_execution_decision_report import (
-    ResearchWorkspaceConsumerProjectionExecutionDecisionReport,
-)
-
-from .research_workspace_consumer_projection_execution_decision_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionDecisionResolver,
-)
-
-from .research_workspace_consumer_projection_execution_gate_status import (
-    ResearchWorkspaceConsumerProjectionExecutionGateStatus,
-)
-
-from .research_workspace_consumer_projection_execution_gate_reason import (
-    ResearchWorkspaceConsumerProjectionExecutionGateReason,
-)
-
-from .research_workspace_consumer_projection_execution_gate_report import (
-    ResearchWorkspaceConsumerProjectionExecutionGateReport,
-)
-
-from .research_workspace_consumer_projection_execution_gate_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionGateResolver,
-)
-
-from .research_workspace_consumer_projection_execution_authorization import (
-    ResearchWorkspaceConsumerProjectionExecutionAuthorization,
-)
-
-from .research_workspace_consumer_projection_execution_authorization_reason import (
-    ResearchWorkspaceConsumerProjectionExecutionAuthorizationReason,
-)
-
-from .research_workspace_consumer_projection_execution_authorization_report import (
-    ResearchWorkspaceConsumerProjectionExecutionAuthorizationReport,
-)
-
-from .research_workspace_consumer_projection_execution_authorization_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionAuthorizationResolver,
-)
-
-from .research_workspace_consumer_projection_execution_verdict import (
-    ResearchWorkspaceConsumerProjectionExecutionVerdict,
-)
-
-from .research_workspace_consumer_projection_execution_verdict_reason import (
-    ResearchWorkspaceConsumerProjectionExecutionVerdictReason,
-)
-
-from .research_workspace_consumer_projection_execution_verdict_report import (
-    ResearchWorkspaceConsumerProjectionExecutionVerdictReport,
-)
-
-from .research_workspace_consumer_projection_execution_verdict_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionVerdictResolver,
-)
-
-from .research_workspace_consumer_projection_execution_outcome import (
-    ResearchWorkspaceConsumerProjectionExecutionOutcome,
-)
-
-from .research_workspace_consumer_projection_execution_outcome_reason import (
-    ResearchWorkspaceConsumerProjectionExecutionOutcomeReason,
-)
-
-from .research_workspace_consumer_projection_execution_outcome_report import (
-    ResearchWorkspaceConsumerProjectionExecutionOutcomeReport,
-)
-
-from .research_workspace_consumer_projection_verdict_outcome_resolver import (
-    ResearchWorkspaceConsumerProjectionVerdictOutcomeResolver,
-)
-
-from .research_workspace_consumer_projection_execution_summary import (
-    ResearchWorkspaceConsumerProjectionExecutionSummary,
-)
-
-from .research_workspace_consumer_projection_execution_summary_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionSummaryBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionSnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_snapshot_error import (
-    ResearchWorkspaceConsumerProjectionExecutionSnapshotError,
-)
-
-from .research_workspace_consumer_projection_execution_snapshot_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionSnapshotBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_audit_record import (
-    ResearchWorkspaceConsumerProjectionExecutionAuditRecord,
-)
-
-from .research_workspace_consumer_projection_execution_audit_record_error import (
-    ResearchWorkspaceConsumerProjectionExecutionAuditRecordError,
-)
-
-from .research_workspace_consumer_projection_execution_audit_record_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionAuditRecordBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_lifecycle_state import (
-    ResearchWorkspaceConsumerProjectionExecutionLifecycleState,
-)
-
-from .research_workspace_consumer_projection_execution_lifecycle_reason import (
-    ResearchWorkspaceConsumerProjectionExecutionLifecycleReason,
-)
-
-from .research_workspace_consumer_projection_execution_lifecycle_report import (
-    ResearchWorkspaceConsumerProjectionExecutionLifecycleReport,
-)
-
-from .research_workspace_consumer_projection_execution_lifecycle_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionLifecycleResolver,
-)
-
-from .research_workspace_consumer_projection_execution_readiness_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_readiness_snapshot_error import (
-    ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshotError,
-)
-
-from .research_workspace_consumer_projection_execution_readiness_snapshot_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshotBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_consumer_response import (
-    ResearchWorkspaceConsumerProjectionExecutionConsumerResponse,
-)
-
-from .research_workspace_consumer_projection_execution_consumer_response_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionConsumerResponseBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_decision_package import (
-    ResearchWorkspaceConsumerProjectionExecutionDecisionPackage,
-)
-
-from .research_workspace_consumer_projection_execution_decision_package_error import (
-    ResearchWorkspaceConsumerProjectionExecutionDecisionPackageError,
-)
-
-from .research_workspace_consumer_projection_execution_decision_package_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionDecisionPackageBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability import (
-    ResearchWorkspaceConsumerProjectionExecutionCapability,
-)
-
-from .research_workspace_consumer_projection_execution_capability_reason import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityReason,
-)
-
-from .research_workspace_consumer_projection_execution_capability_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_summary import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilitySummary,
-)
-
-from .research_workspace_consumer_projection_execution_capability_summary_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilitySummaryBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_snapshot_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_snapshot_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_package import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityPackage,
-)
-
-from .research_workspace_consumer_projection_execution_capability_package_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityPackageError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_package_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityPackageBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_profile import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityProfile,
-)
-
-from .research_workspace_consumer_projection_execution_capability_profile_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityProfileBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_classification import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityClassification,
-)
-
-from .research_workspace_consumer_projection_execution_capability_classification_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityClassificationReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_classification_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityClassificationResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_descriptor import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDescriptor,
-)
-
-from .research_workspace_consumer_projection_execution_capability_descriptor_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDescriptorBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_snapshot_package import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackage,
-)
-
-from .research_workspace_consumer_projection_execution_capability_snapshot_package_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackageError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_snapshot_package_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackageBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecision,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_reason import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionReason,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_summary import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSummary,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_summary_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSummaryBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_snapshot_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSnapshotError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_snapshot_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSnapshotBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_consumer_response import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityConsumerResponse,
-)
-
-from .research_workspace_consumer_projection_execution_capability_consumer_response_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityConsumerResponseBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_package import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionPackage,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_package_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionPackageError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_decision_package_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionPackageBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistrySnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_snapshot_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistrySnapshotError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_snapshot_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistrySnapshotBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_query_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryQueryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_query_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryQueryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_export import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_export_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExportError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_exporter import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExporter,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_validation_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidationReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_validation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_health_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryHealthReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_health_analysis_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryHealthAnalysisError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_health_analyzer import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryHealthAnalyzer,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_diff import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryDiff,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_diff_engine import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryDiffEngine,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_merge_plan import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergePlan,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_merge_planner import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergePlanner,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_merge_validation_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidationReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_merge_validation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_merge_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_merge_execution_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeExecutionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_merge_executor import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeExecutor,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_transaction_operation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionOperation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_transaction_entry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionEntry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_transaction import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransaction,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_transaction_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_transaction_executor import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionExecutor,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_transaction_validation_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidationReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_transaction_validation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_transaction_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_transaction_coordinator_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionCoordinatorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_transaction_coordinator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionCoordinator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publisher_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublisherError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publisher import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublisher,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscriber_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriberError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscriber import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriber,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_dispatcher_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatcherError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_dispatcher import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatcher,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_dispatch_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_dispatch_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_dispatch_result_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResultBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_result_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationResultBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_session_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSessionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_session import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSession,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_session_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSessionBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_cursor_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCursorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_cursor import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCursor,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_cursor_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCursorBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_reader_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryReaderError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_read_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryReadResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_reader import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryReader,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_navigator_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryNavigatorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_navigator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryNavigator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_bookmark_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBookmarkError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_bookmark import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBookmark,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_bookmark_factory import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBookmarkFactory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_checkpoint_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCheckpointError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_checkpoint import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCheckpoint,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_publication_history_checkpoint_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCheckpointBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscription,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_registry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionRegistryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_registry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionRegistry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolver_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolverError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolution,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_session_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionSessionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_session import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionSession,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_session_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionSessionBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_cursor_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCursorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_cursor import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCursor,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_cursor_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCursorBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_reader_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryReaderError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_read_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryReadResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_reader import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryReader,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_navigator_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryNavigatorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_navigator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryNavigator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_bookmark_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBookmarkError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_bookmark import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBookmark,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_bookmark_factory import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBookmarkFactory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_checkpoint_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCheckpointError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_checkpoint import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCheckpoint,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_checkpoint_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCheckpointBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindow,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window_session_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowSessionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window_session import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowSession,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window_session_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowSessionBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_state import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleState,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycle,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicy,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_validation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyValidationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransition,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_request_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationRequestError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_request_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationRequestBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_result_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationResultBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluator_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluatorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_entry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryEntryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_entry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryEntry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_entry_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryEntryBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_cursor_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCursorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_cursor import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCursor,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_cursor_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCursorBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_read_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryReadResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_reader_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryReaderError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_reader import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryReader,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_navigator_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryNavigatorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_navigator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryNavigator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_bookmark_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBookmarkError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_bookmark import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBookmark,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_bookmark_factory import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBookmarkFactory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_checkpoint_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCheckpointError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_checkpoint import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCheckpoint,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_checkpoint_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCheckpointBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_window_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryWindowError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_window import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryWindow,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_window_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryWindowBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_validation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionValidationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_executor_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_executor import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutor,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_result_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionResultBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_entry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryEntryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_entry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryEntry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_entry_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryEntryBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_cursor_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCursorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_cursor import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCursor,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_cursor_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCursorBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_reader_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryReaderError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_read_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryReadResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_reader import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryReader,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_navigator_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryNavigatorError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_navigator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryNavigator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_bookmark_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBookmarkError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_bookmark import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBookmark,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_bookmark_factory import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBookmarkFactory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_checkpoint_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCheckpointError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_checkpoint import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCheckpoint,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_checkpoint_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCheckpointBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_window_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryWindowError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_window import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryWindow,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_window_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryWindowBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_metadata_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogMetadataError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_metadata import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogMetadata,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalog,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_export_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogExportError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_export import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogExport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_exporter import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogExporter,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_import_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogImportError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_import_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogImportResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_importer import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogImporter,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_synchronization_strategy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizationStrategy,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_synchronization_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_synchronization_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_synchronizer import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizer,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_version_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_version import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersion,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_version_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_version_manager import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersionManager,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_search_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_search_criteria import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchCriteria,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_search_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_search_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_statistics_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatisticsError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_statistics import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatistics,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_statistics_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatisticsReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_statistics_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatisticsService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_change_type import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeType,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_change_tracking_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeTrackingError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_change import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChange,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_change_set import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeSet,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_change_tracker import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeTracker,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_audit_operation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditOperation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_audit_trail_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditTrailError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_audit_entry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditEntry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_audit_trail import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditTrail,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_audit_trail_builder import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditTrailBuilder,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_snapshot_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshotError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_snapshot_collection import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshotCollection,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_snapshot_manager import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshotManager,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_archive_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchiveError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_archive import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchive,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_archive_collection import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchiveCollection,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_archive_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchiveService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_backup_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBackupError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_backup import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBackup,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_recovery_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogRecoveryResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_backup_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBackupService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_lifecycle_state import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleState,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_lifecycle_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_lifecycle import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycle,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_lifecycle_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_lifecycle_manager import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleManager,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplate,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_collection import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCollection,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_version_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_version import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersion,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_version_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersionHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_version_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_validation_violation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateValidationViolation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_validation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateValidationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_registry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_registry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_registry_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistrySnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_registry_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_resolution_source import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolutionSource,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_resolution_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolutionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_resolver_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolverError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_instantiation_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_instantiation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_instantiation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_instantiation_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_parameter import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameter,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_parameter_set import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterSet,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_parameter_values import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterValues,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_parameterization_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterizationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_parameterization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_compatibility_rule import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityRule,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_compatibility_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_compatibility_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_compatibility_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_migration_plan import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationPlan,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_migration_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_migration_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_migration_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_history_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentHistoryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_rollback_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_rollback_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_rollback_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_rollback_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_release_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_release import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRelease,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_release_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_release_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_release_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfile,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_collection import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCollection,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_version_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_version import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersion,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_version_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersionHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_version_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_validation_violation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileValidationViolation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_validation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileValidationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_registry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_registry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_registry_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistrySnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_registry_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_resolution_source import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolutionSource,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_resolution_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolutionResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_resolution_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolutionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_resolver_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolverError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_instance import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstance,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_instantiation_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_instantiation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_instantiation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_instantiation_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_parameter import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameter,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_parameter_set import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterSet,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_parameter_values import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterValues,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_parameterization_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterizationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_parameterization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_compatibility_severity import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilitySeverity,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_compatibility_rule import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityRule,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_compatibility_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_compatibility_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_compatibility_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_migration_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_migration_plan import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationPlan,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_migration_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_migration_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_history_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentHistoryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_rollback_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_rollback_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_rollback_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_rollback_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_release_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_release import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRelease,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_release_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_release_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_release_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignment,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_registry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_registry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_registry_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistrySnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_registry_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_resolution_source import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolutionSource,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_resolution_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolutionResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_resolution_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolutionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_resolver_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolverError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_validation_violation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentValidationViolation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_validation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentValidationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_inheritance import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritance,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_inheritance_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritanceResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_inheritance_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritanceError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_inheritance_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritanceService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_override import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverride,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_override_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverrideResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_override_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverrideError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_override_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverrideService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_condition import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentCondition,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_condition_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentConditionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_condition_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentConditionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_condition_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentConditionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_scope import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentScope,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_scoped_assignment import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileScopedAssignment,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_scope_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentScopeError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_scope_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentScopeService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_sync_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSyncError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_sync_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSyncRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_sync_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSyncResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_synchronization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSynchronizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_serialization_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSerializationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_export import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentExport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_import_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentImportResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_serialization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSerializationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_audit_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_audit_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_audit_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_audit_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_rollback_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_rollback_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_rollback_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_rollback_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_release_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_release_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_release import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRelease,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_release_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_release_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBinding,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_collection import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCollection,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_registry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_registry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_registry_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistrySnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_registry_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_resolution_source import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolutionSource,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_resolution_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolutionResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_resolution_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolutionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_resolver_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolverError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_validation_violation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingValidationViolation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_validation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingValidationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_compatibility_severity import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilitySeverity,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_compatibility_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_compatibility_rule import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityRule,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_compatibility_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_compatibility_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_version_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_version import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersion,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_version_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_version_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_state import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingState,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_activation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingActivationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_activation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingActivationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_activation_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingActivationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_priority_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriorityError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_priority import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriority,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_priority_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriorityResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_priority_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriorityService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_constraint_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraintError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_constraint import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraint,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_constraint_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraintResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_constraint_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraintService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_history_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentHistoryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_rollback_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_rollback_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_rollback_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_rollback_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_release_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_release_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_release import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRelease,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_release_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_release_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroup,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_collection import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCollection,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_registry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_registry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_registry_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistrySnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_registry_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_resolution_source import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolutionSource,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_resolution_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolutionResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_resolution_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolutionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_resolver_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolverError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_validation_violation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupValidationViolation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_validation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupValidationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_compatibility_severity import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilitySeverity,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_compatibility_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_compatibility_rule import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityRule,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_compatibility_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_compatibility_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_version_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_version import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersion,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_version_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersionHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_version_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_history_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentHistoryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_rollback_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_rollback_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_rollback_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_rollback_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_release_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_release_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_release import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRelease,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_release_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_release_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_sync_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSyncError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_sync_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSyncRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_sync_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSyncResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_synchronization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSynchronizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_serialization_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSerializationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_export import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupExport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_import_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupImportResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_serialization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSerializationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_audit_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_audit_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_audit_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_audit_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplate,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_collection import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCollection,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_registry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_registry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_registry_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistrySnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_registry_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_resolution_source import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolutionSource,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_resolution_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolutionResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_resolution_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolutionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_resolver_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolverError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_validation_violation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateValidationViolation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_validation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateValidationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_parameter import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameter,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_parameter_values import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameterValues,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_parameterization_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameterizationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_parameterization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameterizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_version_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_version import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersion,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_version_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersionHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_version_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_compatibility_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_compatibility_severity import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilitySeverity,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_compatibility_rule import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityRule,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_compatibility_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_compatibility_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_history_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentHistoryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_rollback_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_rollback_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_rollback_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_rollback_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_release_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_release_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_release import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRelease,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_release_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_release_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_sync_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSyncError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_sync_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSyncRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_sync_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSyncResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_synchronization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSynchronizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_audit_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_audit_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_audit_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_audit_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPreset,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_collection import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCollection,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_registry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_registry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_registry_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistrySnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_registry_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_resolution_source import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolutionSource,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_resolution_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolutionResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_resolution_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolutionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_resolver_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolverError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_validation_violation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetValidationViolation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_validation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetValidationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_parameter import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameter,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_parameter_values import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameterValues,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_parameterization_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameterizationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_parameterization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameterizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_version_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_version import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersion,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_version_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersionHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_version_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_compatibility_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_compatibility_severity import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilitySeverity,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_compatibility_rule import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityRule,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_compatibility_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_compatibility_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_history_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentHistoryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_rollback_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_rollback_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_rollback_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_rollback_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_release_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_release_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_release import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRelease,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_release_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_release_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_sync_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSyncError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_sync_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSyncRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_sync_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSyncResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_synchronization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSynchronizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_audit_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_audit_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_audit_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_audit_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspace,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_registry_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_registry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_registry_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistrySnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_registry_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resolution_source import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolutionSource,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resolution_result_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolutionResultError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resolution_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolutionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resolver_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolverError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resolver import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolver,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_validation_violation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceValidationViolation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_validation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceValidationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_validator import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceValidator,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_parameter import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameter,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_parameter_values import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameterValues,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_parameterization_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameterizationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_parameterization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameterizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_version_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_version import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersion,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_version_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersionHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_version_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_compatibility_severity import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilitySeverity,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_compatibility_rule import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityRule,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_compatibility_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_compatibility_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_compatibility_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_history_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentHistoryError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_history_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentHistoryService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rollback_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rollback_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rollback_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rollback_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_release_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_release_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_release import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRelease,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_release_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_release_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_sync_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSyncError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_sync_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSyncRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_sync_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSyncResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_synchronization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSynchronizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_audit_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_audit_record import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditRecord,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_audit_history import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditHistory,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_audit_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_operation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeOperation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSet,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_preview import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetPreview,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_review_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReviewError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_review_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReviewStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_review import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReview,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_approval_policy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetApprovalPolicy,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_review_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReviewService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_conflict_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_conflict_resolution_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictResolutionStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_conflict import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeConflict,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_conflict_resolution import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictResolution,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_conflict_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_merge_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceMergeError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_merge import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetMerge,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_merge_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceMergeResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_merge_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceMergeService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rebase_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRebaseError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_rebase_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetRebaseStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_rebase import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetRebase,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rebase_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRebaseResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rebase_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRebaseService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranch,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_protection_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtectionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_protection import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtection,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_protection_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtectionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_protection_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtectionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_sync_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSyncError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_sync_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSyncStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_sync import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSync,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_sync_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSyncResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_synchronization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSynchronizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_comparison_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchComparisonError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_difference import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchDifference,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_comparison import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchComparison,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_comparison_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchComparisonService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_metrics_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchMetricsError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_health_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchHealthStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_metrics import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchMetrics,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_health_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchHealthReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_metrics_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchMetricsService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_archive_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchArchiveError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_archive import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchArchive,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_recovery_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchRecoveryResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_archive_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchArchiveService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_template_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplateError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_template import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplate,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_template_assignment import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplateAssignment,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_template_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplateService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_audit_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchAuditError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_audit_event import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchAuditEvent,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_timeline import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTimeline,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_audit_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchAuditService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_stage import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineStage,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipeline,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_gate_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGateError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_gate_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGateStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_condition import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineCondition,
-    evaluate_condition_expression,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_gate import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGate,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_gate_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGateService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_timeout_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineTimeoutError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_timeout_policy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineTimeoutPolicy,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_cancellation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineCancellationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_timeout_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineTimeoutService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_event_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEventError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_event import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEvent,
-    VALID_PIPELINE_EVENT_TYPES,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_event_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEventResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_event_bus import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEventBus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_queue_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_queue_item_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueItemStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_queue_item import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueItem,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_queue_statistics import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueStatistics,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_queue_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_lock_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceLockError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resource_lock import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResourceLock,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_lock_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceLockResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_lock_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceLockService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_context_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionContextError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_context import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionContext,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_context_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineContextSnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_context_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineContextService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_plugin_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePluginError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_plugin import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePlugin,
-    VALID_PLUGIN_STAGE_TYPES,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_plugin_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePluginResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_plugin_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePluginService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_scheduler_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineSchedulerError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_schedule import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineSchedule,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_schedule_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineScheduleResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_scheduler_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineSchedulerService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_quota_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQuotaError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_resource_budget import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineResourceBudget,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_quota_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQuotaResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_quota_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQuotaService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_observability_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineObservabilityError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_trace import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionTrace,
-    VALID_TRACE_STATUSES,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_diagnostic_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDiagnosticReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_observability_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineObservabilityService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_policy_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionPolicyError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_policy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionPolicy,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_policy_assignment import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePolicyAssignment,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_policy_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionPolicyService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_dashboard_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_dashboard_summary import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardSummary,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_dashboard_entry import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardEntry,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_dashboard_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSession,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_checkpoint_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCheckpointError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_checkpoint import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCheckpoint,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_restore_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRestoreResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_checkpoint_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCheckpointService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_variable_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariableError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_variable import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariable,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_variable_snapshot import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariableSnapshot,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_variable_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariableService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_attachment_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachmentError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_attachment import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachment,
-    VALID_SESSION_ATTACHMENT_TYPES,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_attachment_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachmentResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_attachment_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachmentService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_reservation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_reservation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_reservation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_reservation_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_heartbeat_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeatError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_heartbeat import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeat,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_heartbeat_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeatStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_heartbeat_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeatService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_ownership_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionOwnershipError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_owner import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionOwner,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_transfer_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionTransferResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_ownership_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionOwnershipService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lease_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLeaseError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lease import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLease,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lease_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLeaseResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lease_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLeaseService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_label_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabelError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_label import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabel,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_label_index import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabelIndex,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_label_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabelService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_collection_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollectionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_collection import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollection,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_collection_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollectionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_collection_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollectionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_cleanup_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_cleanup_policy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupPolicy,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_cleanup_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_cleanup_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lifecycle_hook_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLifecycleHookError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lifecycle_hook import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLifecycleHook,
-    VALID_SESSION_LIFECYCLE_HOOK_EVENTS,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_hook_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHookResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lifecycle_hook_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLifecycleHookService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_audit_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuditError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_audit_event import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuditEvent,
-    VALID_SESSION_AUDIT_EVENT_TYPES,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_timeline import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionTimeline,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_audit_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuditService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_policy_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicyError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_policy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicy,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_policy_assignment import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicyAssignment,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_policy_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicyService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_admission_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_admission_request import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionRequest,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_admission_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_admission_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_authorization_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuthorizationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_permission import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPermission,
-    VALID_SESSION_OPERATIONS,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_authorization_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuthorizationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_authorization_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuthorizationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_rate_limit_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimitError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_rate_limit import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimit,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_rate_limit_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimitResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_rate_limit_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimitService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_isolation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_isolation_policy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationPolicy,
-    VALID_SESSION_ISOLATION_LEVELS,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_isolation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_isolation_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_resource_governance_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourceGovernanceError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_resource_policy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourcePolicy,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_resource_usage import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourceUsage,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_resource_governance_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourceGovernanceService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_compliance_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_compliance_rule import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceRule,
-    VALID_SESSION_COMPLIANCE_SEVERITIES,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_compliance_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_compliance_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_exception_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyExceptionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_exception import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyException,
-    VALID_SESSION_POLICY_EXCEPTION_SCOPES,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_exception_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyExceptionResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_exception_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyExceptionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_inheritance_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyInheritanceError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_inheritance import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyInheritance,
-    VALID_SESSION_POLICY_INHERITANCE_FIELDS,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_effective_policy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionEffectivePolicy,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_inheritance_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyInheritanceService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_version_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyVersionError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_version import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyVersion,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_resolution import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyResolution,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_version_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyVersionService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_rollout_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRolloutError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_rollout import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRollout,
-    VALID_SESSION_POLICY_ROLLOUT_STRATEGIES,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_rollout_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRolloutResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_rollout_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRolloutService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_simulation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_simulation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_simulation_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulationResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_simulation_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_audit_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyAuditError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_audit_event import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyAuditEvent,
-    VALID_SESSION_POLICY_AUDIT_EVENT_TYPES,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_drift_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyDriftResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_audit_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyAuditService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedule,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduler_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulerService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_dependency_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleDependencyError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_dependency import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleDependency,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_dependency_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionDependencyResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_dependency_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleDependencyService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_window_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingWindowError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_window import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingWindow,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_window_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionWindowResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_window_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingWindowService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_priority_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriorityError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_priority import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriority,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_priority_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriorityResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_priority_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriorityService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_calendar_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingCalendarError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_calendar import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingCalendar,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_calendar_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCalendarResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_calendar_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingCalendarService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_constraint_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingConstraintError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_constraint import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingConstraint,
-    VALID_SESSION_SCHEDULING_CONSTRAINT_TYPES,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_constraint_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionConstraintResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_constraint_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingConstraintService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_reservation_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleReservationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_reservation import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleReservation,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_reservation_status import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationStatus,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_reservation_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleReservationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_balancer_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingBalancerError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_strategy import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingStrategy,
-    VALID_SESSION_SCHEDULING_BALANCER_ALGORITHMS,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_assignment import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAssignment,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_balancer_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingBalancerService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_failover_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingFailoverError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_failover_plan import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionFailoverPlan,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_failover_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionFailoverResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_failover_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingFailoverService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_maintenance_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_maintenance_window import (
-    GLOBAL_MAINTENANCE_SCOPE,
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceWindow,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_maintenance_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_maintenance_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_metrics_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetricsError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_metric import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetric,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_metrics_report import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetricsReport,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_metrics_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetricsService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_notification_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingNotificationError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_notification import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleNotification,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_notification_delivery import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionNotificationDelivery,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_notification_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingNotificationService,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_audit_error import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAuditError,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_audit_event import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAuditEvent,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_replay_result import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingReplayResult,
-)
-
-from .research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_audit_service import (
-    ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAuditService,
-)
-
-from .execution_artifact_error import (
-    ExecutionArtifactError,
-)
-
-from .execution_artifact import (
-    ExecutionArtifact,
-)
-
-from .execution_artifact_service import (
-    ExecutionArtifactService,
-)
-
-from .execution_artifact_metadata_error import (
-    ExecutionArtifactMetadataError,
-)
-
-from .execution_artifact_metadata import (
-    ExecutionArtifactMetadata,
-)
-
-from .execution_artifact_tag import (
-    ExecutionArtifactTag,
-)
-
-from .execution_artifact_metadata_service import (
-    ExecutionArtifactMetadataService,
-)
-
-from .execution_artifact_version_error import (
-    ExecutionArtifactVersionError,
-)
-
-from .execution_artifact_version import (
-    ExecutionArtifactVersion,
-)
-
-from .execution_artifact_version_service import (
-    ExecutionArtifactVersionService,
-)
-
-from .execution_artifact_integrity_error import (
-    ExecutionArtifactIntegrityError,
-)
-
-from .execution_artifact_integrity import (
-    ExecutionArtifactIntegrity,
-)
-
-from .execution_artifact_integrity_service import (
-    ExecutionArtifactIntegrityService,
-)
-
-from .execution_artifact_retention_error import (
-    ExecutionArtifactRetentionError,
-)
-
-from .execution_artifact_retention_policy import (
-    ExecutionArtifactRetentionPolicy,
-)
-
-from .execution_artifact_retention_result import (
-    ExecutionArtifactRetentionResult,
-)
-
-from .execution_artifact_retention_service import (
-    ExecutionArtifactRetentionService,
-)
-
-from .execution_artifact_promotion_error import (
-    ExecutionArtifactPromotionError,
-)
-
-from .artifact_promotion import (
-    ArtifactPromotion,
-)
-
-from .execution_artifact_promotion_service import (
-    ExecutionArtifactPromotionService,
-)
-
-from .execution_artifact_access_error import (
-    ExecutionArtifactAccessError,
-)
-
-from .artifact_permission import (
-    ArtifactPermission,
-)
-
-from .artifact_access_result import (
-    ArtifactAccessResult,
-)
-
-from .execution_artifact_access_service import (
-    ExecutionArtifactAccessService,
-)
-
-from .execution_artifact_dependency_error import (
-    ExecutionArtifactDependencyError,
-)
-
-from .artifact_dependency import (
-    ArtifactDependency,
-)
-
-from .artifact_dependency_result import (
-    ArtifactDependencyResult,
-)
-
-from .execution_artifact_dependency_service import (
-    ExecutionArtifactDependencyService,
-)
-
-from .execution_artifact_lineage_error import (
-    ExecutionArtifactLineageError,
-)
-
-from .artifact_lineage import (
-    ArtifactLineage,
-)
-
-from .execution_artifact_lineage_service import (
-    ExecutionArtifactLineageService,
-)
-
-from .execution_artifact_bundle_error import (
-    ExecutionArtifactBundleError,
-)
-
-from .artifact_bundle import (
-    ArtifactBundle,
-)
-
-from .artifact_bundle_result import (
-    ArtifactBundleResult,
-)
-
-from .execution_artifact_bundle_service import (
-    ExecutionArtifactBundleService,
-)
-
-from .execution_artifact_bundle_promotion_error import (
-    ExecutionArtifactBundlePromotionError,
-)
-
-from .artifact_bundle_promotion import (
-    ArtifactBundlePromotion,
-)
-
-from .execution_artifact_bundle_promotion_service import (
-    ExecutionArtifactBundlePromotionService,
-)
-
-from .execution_artifact_bundle_integrity_error import (
-    ExecutionArtifactBundleIntegrityError,
-)
-
-from .artifact_bundle_integrity import (
-    ArtifactBundleIntegrity,
-)
-
-from .execution_artifact_bundle_integrity_service import (
-    ExecutionArtifactBundleIntegrityService,
-)
-
-from .execution_artifact_bundle_manifest_error import (
-    ExecutionArtifactBundleManifestError,
-)
-
-from .artifact_bundle_manifest_entry import (
-    ArtifactBundleManifestEntry,
-)
-
-from .artifact_bundle_manifest import (
-    ArtifactBundleManifest,
-)
-
-from .execution_artifact_bundle_manifest_service import (
-    ExecutionArtifactBundleManifestService,
-)
-
-from .execution_artifact_distribution_error import (
-    ExecutionArtifactDistributionError,
-)
-
-from .execution_artifact_distribution_channel import (
-    ExecutionArtifactDistributionChannel,
-)
-
-from .artifact_publication import (
-    ArtifactPublication,
-)
-
-from .execution_artifact_distribution_service import (
-    ExecutionArtifactDistributionService,
-)
-
-from .execution_artifact_distribution_routing_error import (
-    ExecutionArtifactDistributionRoutingError,
-)
-
-from .artifact_distribution_route import (
-    ArtifactDistributionRoute,
-)
-
-from .execution_artifact_distribution_routing_service import (
-    ExecutionArtifactDistributionRoutingService,
-)
-
-from .execution_artifact_distribution_delivery_error import (
-    ExecutionArtifactDistributionDeliveryError,
-)
-
-from .artifact_distribution_delivery import (
-    ArtifactDistributionDelivery,
-)
-
-from .execution_artifact_distribution_delivery_service import (
-    ExecutionArtifactDistributionDeliveryService,
-)
-
-from .execution_artifact_distribution_retry_error import (
-    ExecutionArtifactDistributionRetryError,
-)
-
-from .distribution_retry_policy import (
-    DistributionRetryPolicy,
-)
-
-from .execution_artifact_distribution_retry_service import (
-    ExecutionArtifactDistributionRetryService,
-)
-
-from .execution_artifact_distribution_access_error import (
-    ExecutionArtifactDistributionAccessError,
-)
-
-from .artifact_distribution_permission import (
-    ArtifactDistributionPermission,
-)
-
-from .execution_artifact_distribution_access_service import (
-    ExecutionArtifactDistributionAccessService,
-)
-
-from .execution_artifact_encryption_error import (
-    ExecutionArtifactEncryptionError,
-)
-
-from .execution_artifact_encryption import (
-    ExecutionArtifactEncryption,
-)
-
-from .execution_artifact_encryption_service import (
-    ExecutionArtifactEncryptionService,
-)
-
-from .execution_artifact_compression_error import (
-    ExecutionArtifactCompressionError,
-)
-
-from .execution_artifact_compression import (
-    ExecutionArtifactCompression,
-)
-
-from .execution_artifact_compression_service import (
-    ExecutionArtifactCompressionService,
-)
-
-from .execution_artifact_signing_error import (
-    ExecutionArtifactSigningError,
-)
-
-from .execution_artifact_signature import (
-    ExecutionArtifactSignature,
-)
-
-from .execution_artifact_signing_service import (
-    ExecutionArtifactSigningService,
-)
-
-from .execution_artifact_distribution_receipt_error import (
-    ExecutionArtifactDistributionReceiptError,
-)
-
-from .execution_artifact_distribution_receipt import (
-    ExecutionArtifactDistributionReceipt,
-)
-
-from .execution_artifact_distribution_receipt_service import (
-    ExecutionArtifactDistributionReceiptService,
-)
-
-from .execution_artifact_distribution_webhook_error import (
-    ExecutionArtifactDistributionWebhookError,
-)
-
-from .execution_artifact_distribution_webhook import (
-    ExecutionArtifactDistributionWebhook,
-)
-
-from .execution_artifact_distribution_webhook_service import (
-    ExecutionArtifactDistributionWebhookService,
-)
-
-from .execution_artifact_distribution_policy_error import (
-    ExecutionArtifactDistributionPolicyError,
-)
-
-from .execution_artifact_distribution_policy import (
-    ExecutionArtifactDistributionPolicy,
-)
-
-from .execution_artifact_distribution_policy_assignment import (
-    ExecutionArtifactDistributionPolicyAssignment,
-)
-
-from .execution_artifact_distribution_policy_service import (
-    ExecutionArtifactDistributionPolicyService,
-)
-
-from .execution_artifact_discovery_error import (
-    ExecutionArtifactDiscoveryError,
-)
-
-from .execution_artifact_query import (
-    ExecutionArtifactQuery,
-)
-
-from .execution_artifact_search_result import (
-    ExecutionArtifactSearchResult,
-)
-
-from .execution_artifact_discovery_service import (
-    ExecutionArtifactDiscoveryService,
-)
-
-from .execution_artifact_retrieval_error import (
-    ExecutionArtifactRetrievalError,
-)
-
-from .execution_artifact_retrieval_request import (
-    ExecutionArtifactRetrievalRequest,
-)
-
-from .execution_artifact_retrieval_result import (
-    ExecutionArtifactRetrievalResult,
-)
-
-from .execution_artifact_retrieval_service import (
-    ExecutionArtifactRetrievalService,
-)
-
-from .execution_artifact_mount_error import (
-    ExecutionArtifactMountError,
-)
-
-from .execution_artifact_mount import (
-    ExecutionArtifactMount,
-)
-
-from .execution_artifact_mount_service import (
-    ExecutionArtifactMountService,
-)
-
-from .execution_artifact_cache_error import (
-    ExecutionArtifactCacheError,
-)
-
-from .execution_artifact_cache_entry import (
-    ExecutionArtifactCacheEntry,
-)
-
-from .execution_artifact_cache_service import (
-    ExecutionArtifactCacheService,
-)
-
-from .execution_artifact_prefetch_error import (
-    ExecutionArtifactPrefetchError,
-)
-
-from .execution_artifact_prefetch import (
-    ExecutionArtifactPrefetch,
-)
-
-from .execution_artifact_prefetch_service import (
-    ExecutionArtifactPrefetchService,
-)
-
-from .execution_artifact_consumption_error import (
-    ExecutionArtifactConsumptionError,
-)
-
-from .execution_artifact_consumption_session import (
-    ExecutionArtifactConsumptionSession,
-)
-
-from .execution_artifact_consumption_service import (
-    ExecutionArtifactConsumptionService,
-)
-
-from .execution_artifact_consumption_lease_error import (
-    ExecutionArtifactConsumptionLeaseError,
-)
-
-from .execution_artifact_consumption_lease import (
-    ExecutionArtifactConsumptionLease,
-)
-
-from .execution_artifact_consumption_lease_service import (
-    ExecutionArtifactConsumptionLeaseService,
-)
-
-from .execution_artifact_consumption_snapshot_error import (
-    ExecutionArtifactConsumptionSnapshotError,
-)
-
-from .execution_artifact_consumption_snapshot import (
-    ExecutionArtifactConsumptionSnapshot,
-)
-
-from .execution_artifact_consumption_snapshot_service import (
-    ExecutionArtifactConsumptionSnapshotService,
-)
-
-from .execution_artifact_consumption_validation_error import (
-    ExecutionArtifactConsumptionValidationError,
-)
-
-from .execution_artifact_consumption_validation import (
-    ExecutionArtifactConsumptionValidation,
-)
-
-from .execution_artifact_consumption_validation_service import (
-    ExecutionArtifactConsumptionValidationService,
-)
-
-from .execution_artifact_consumption_reconciliation_error import (
-    ExecutionArtifactConsumptionReconciliationError,
-)
-
-from .execution_artifact_consumption_diff import (
-    ExecutionArtifactConsumptionDiff,
-)
-
-from .execution_artifact_consumption_reconciliation_service import (
-    ExecutionArtifactConsumptionReconciliationService,
-)
-
-from .execution_artifact_consumption_provenance_error import (
-    ExecutionArtifactConsumptionProvenanceError,
-)
-
-from .execution_artifact_consumption_provenance import (
-    ExecutionArtifactConsumptionProvenance,
-)
-
-from .execution_artifact_consumption_provenance_service import (
-    ExecutionArtifactConsumptionProvenanceService,
-)
-
-from .execution_artifact_consumption_health_error import (
-    ExecutionArtifactConsumptionHealthError,
-)
-
-from .execution_artifact_consumption_health import (
-    ExecutionArtifactConsumptionHealth,
-)
-
-from .execution_artifact_consumption_health_service import (
-    ExecutionArtifactConsumptionHealthService,
-)
-
-from .execution_artifact_consumption_audit_error import (
-    ExecutionArtifactConsumptionAuditError,
-)
-
-from .execution_artifact_consumption_audit_event import (
-    ExecutionArtifactConsumptionAuditEvent,
-)
-
-from .execution_artifact_consumption_audit_service import (
-    ExecutionArtifactConsumptionAuditService,
-)
-
-from .execution_observation_event_error import (
-    ExecutionObservationEventError,
-)
-
-from .execution_observation_event import (
-    ExecutionObservationEvent,
-)
-
-from .execution_observation_event_service import (
-    ExecutionObservationEventService,
-)
-
-from .execution_observation_metric_error import (
-    ExecutionObservationMetricError,
-)
-
-from .execution_observation_metric import (
-    ExecutionObservationMetric,
-)
-
-from .execution_observation_metric_service import (
-    ExecutionObservationMetricService,
-)
-
-from .execution_observation_trace_error import (
-    ExecutionObservationTraceError,
-)
-
-from .execution_observation_trace import (
-    ExecutionObservationTrace,
-)
-
-from .execution_observation_trace_service import (
-    ExecutionObservationTraceService,
-)
-
-from .execution_observation_error_error import (
-    ExecutionObservationErrorError,
-)
-
-from .execution_observation_error import (
-    ExecutionObservationError,
-)
-
-from .execution_observation_error_service import (
-    ExecutionObservationErrorService,
-)
-
-from .execution_observation_alert_error import (
-    ExecutionObservationAlertError,
-)
-
-from .execution_observation_alert import (
-    ExecutionObservationAlert,
-)
-
-from .execution_observation_alert_service import (
-    ExecutionObservationAlertService,
-)
-
-from .execution_observation_dashboard_error import (
-    ExecutionObservationDashboardError,
-)
-
-from .execution_observation_dashboard import (
-    ExecutionObservationDashboard,
-)
-
-from .execution_observation_dashboard_service import (
-    ExecutionObservationDashboardService,
-)
-
-from .execution_observation_health_error import (
-    ExecutionObservationHealthError,
-)
-
-from .execution_observation_health import (
-    ExecutionObservationHealth,
-)
-
-from .execution_observation_health_service import (
-    ExecutionObservationHealthService,
-)
-
-from .execution_observation_health_transition_error import (
-    ExecutionObservationHealthTransitionError,
-)
-
-from .execution_observation_health_transition import (
-    ExecutionObservationHealthTransition,
-)
-
-from .execution_observation_health_history_service import (
-    ExecutionObservationHealthHistoryService,
-)
-
-from .execution_observation_incident_error import (
-    ExecutionObservationIncidentError,
-)
-
-from .execution_observation_incident import (
-    ExecutionObservationIncident,
-)
-
-from .execution_observation_incident_service import (
-    ExecutionObservationIncidentService,
-)
-
-from .execution_observation_correlation_rule_error import (
-    ExecutionObservationCorrelationRuleError,
-)
-
-from .execution_observation_correlation_rule import (
-    ExecutionObservationCorrelationRule,
-)
-
-from .execution_observation_incident_correlation_service import (
-    ExecutionObservationIncidentCorrelationService,
-)
-
-from .execution_observation_incident_transition_error import (
-    ExecutionObservationIncidentTransitionError,
-)
-
-from .execution_observation_incident_transition import (
-    ExecutionObservationIncidentTransition,
-)
-
-from .execution_observation_incident_lifecycle_service import (
-    ExecutionObservationIncidentLifecycleService,
-)
-
-from .execution_observation_escalation_policy_error import (
-    ExecutionObservationEscalationPolicyError,
-)
-
-from .execution_observation_escalation_policy import (
-    ExecutionObservationEscalationPolicy,
-)
-
-from .execution_observation_incident_escalation_service import (
-    ExecutionObservationIncidentEscalationService,
-)
-
-from .execution_observation_incident_report_error import (
-    ExecutionObservationIncidentReportError,
-)
-
-from .execution_observation_incident_report import (
-    ExecutionObservationIncidentReport,
-)
-
-from .execution_observation_incident_report_service import (
-    ExecutionObservationIncidentReportService,
-)
-
-from .execution_recovery_checkpoint_error import (
-    ExecutionRecoveryCheckpointError,
-)
-
-from .execution_recovery_checkpoint import (
-    ExecutionRecoveryCheckpoint,
-)
-
-from .execution_recovery_checkpoint_service import (
-    ExecutionRecoveryCheckpointService,
-)
-
-from .execution_recovery_validation_error import (
-    ExecutionRecoveryValidationError,
-)
-
-from .execution_recovery_validation import (
-    ExecutionRecoveryValidation,
-)
-
-from .execution_recovery_validation_service import (
-    ExecutionRecoveryValidationService,
-)
-
-from .execution_recovery_state_error import (
-    ExecutionRecoveryStateError,
-)
-
-from .execution_recovery_state import (
-    ExecutionRecoveryState,
-)
-
-from .execution_recovery_state_service import (
-    ExecutionRecoveryStateService,
-)
-
-from .execution_recovery_resume_plan_error import (
-    ExecutionRecoveryResumePlanError,
-)
-
-from .execution_recovery_resume_plan import (
-    ExecutionRecoveryResumePlan,
-)
-
-from .execution_recovery_resume_plan_service import (
-    ExecutionRecoveryResumePlanService,
-)
-
-from .execution_recovery_attempt_error import (
-    ExecutionRecoveryAttemptError,
-)
-
-from .execution_recovery_attempt import (
-    ExecutionRecoveryAttempt,
-)
-
-from .execution_recovery_retry_service import (
-    ExecutionRecoveryRetryService,
-)
-
-from .execution_recovery_failover_error import (
-    ExecutionRecoveryFailoverError,
-)
-
-from .execution_recovery_failover import (
-    ExecutionRecoveryFailover,
-)
-
-from .execution_recovery_failover_service import (
-    ExecutionRecoveryFailoverService,
-)
-
-from .execution_recovery_conflict_error import (
-    ExecutionRecoveryConflictError,
-)
-
-from .execution_recovery_conflict import (
-    ExecutionRecoveryConflict,
-)
-
-from .execution_recovery_conflict_service import (
-    ExecutionRecoveryConflictService,
-)
-
-from .execution_recovery_conflict_policy_error import (
-    ExecutionRecoveryConflictPolicyError,
-)
-
-from .execution_recovery_conflict_policy import (
-    ExecutionRecoveryConflictPolicy,
-)
-
-from .execution_recovery_conflict_policy_service import (
-    ExecutionRecoveryConflictPolicyService,
-)
-
-from .execution_recovery_gate_error import (
-    ExecutionRecoveryGateError,
-)
-
-from .execution_recovery_gate import (
-    ExecutionRecoveryGate,
-)
-
-from .execution_recovery_gate_service import (
-    ExecutionRecoveryGateService,
-)
-
-from .execution_recovery_rollback_error import (
-    ExecutionRecoveryRollbackError,
-)
-
-from .execution_recovery_rollback import (
-    ExecutionRecoveryRollback,
-)
-
-from .execution_recovery_rollback_service import (
-    ExecutionRecoveryRollbackService,
-)
-
-from .execution_recovery_journal_entry_error import (
-    ExecutionRecoveryJournalEntryError,
-)
-
-from .execution_recovery_journal_entry import (
-    ExecutionRecoveryJournalEntry,
-)
-
-from .execution_recovery_journal_service import (
-    ExecutionRecoveryJournalService,
-)
-
-from .execution_recovery_replay_error import (
-    ExecutionRecoveryReplayError,
-)
-
-from .execution_recovery_replay import (
-    ExecutionRecoveryReplay,
-)
-
-from .execution_recovery_replay_service import (
-    ExecutionRecoveryReplayService,
-)
-
-from .execution_recovery_result_error import (
-    ExecutionRecoveryResultError,
-)
-
-from .execution_recovery_result import (
-    ExecutionRecoveryResult,
-)
-
-from .execution_recovery_completion_service import (
-    ExecutionRecoveryCompletionService,
-)
-
-from .execution_secret_error import (
-    ExecutionSecretError,
-)
-
-from .execution_secret import (
-    ExecutionSecret,
-)
-
-from .execution_secret_service import (
-    ExecutionSecretService,
-)
-
-from .execution_secret_access_error import (
-    ExecutionSecretAccessError,
-)
-
-from .execution_secret_operation import (
-    ExecutionSecretOperation,
-)
-
-from .execution_secret_policy import (
-    ExecutionSecretPolicy,
-)
-
-from .execution_secret_access_service import (
-    ExecutionSecretAccessService,
-)
-
-from .execution_secret_rotation_error import (
-    ExecutionSecretRotationError,
-)
-
-from .execution_secret_rotation import (
-    ExecutionSecretRotation,
-)
-
-from .execution_secret_rotation_service import (
-    ExecutionSecretRotationService,
-)
-
-from .execution_secret_lease_error import (
-    ExecutionSecretLeaseError,
-)
-
-from .execution_secret_lease import (
-    ExecutionSecretLease,
-)
-
-from .execution_secret_lease_service import (
-    ExecutionSecretLeaseService,
-)
-
-from .execution_secret_revocation_error import (
-    ExecutionSecretRevocationError,
-)
-
-from .execution_secret_revocation import (
-    ExecutionSecretRevocation,
-)
-
-from .execution_secret_revocation_service import (
-    ExecutionSecretRevocationService,
-)
-
-from .execution_secret_audit_error import (
-    ExecutionSecretAuditError,
-)
-
-from .execution_secret_audit_operation import (
-    ExecutionSecretAuditOperation,
-)
-
-from .execution_secret_audit_event import (
-    ExecutionSecretAuditEvent,
-)
-
-from .execution_secret_audit_service import (
-    ExecutionSecretAuditService,
-)
-
-from .execution_secret_anomaly_error import (
-    ExecutionSecretAnomalyError,
-)
-
-from .execution_secret_anomaly_type import (
-    ExecutionSecretAnomalyType,
-)
-
-from .execution_secret_anomaly import (
-    ExecutionSecretAnomaly,
-)
-
-from .execution_secret_anomaly_service import (
-    ExecutionSecretAnomalyService,
-)
-
-from .execution_secret_trust_error import (
-    ExecutionSecretTrustError,
-)
-
-from .execution_secret_trust_level import (
-    ExecutionSecretTrustLevel,
-)
-
-from .execution_secret_trust_policy import (
-    ExecutionSecretTrustPolicy,
-)
-
-from .execution_secret_trust_service import (
-    ExecutionSecretTrustService,
-)
-
-from .execution_secret_token_error import (
-    ExecutionSecretTokenError,
-)
-
-from .execution_secret_access_token import (
-    ExecutionSecretAccessToken,
-)
-
-from .execution_secret_token_service import (
-    ExecutionSecretTokenService,
-)
-
-from .execution_secret_token_rotation_error import (
-    ExecutionSecretTokenRotationError,
-)
-
-from .execution_secret_token_rotation import (
-    ExecutionSecretTokenRotation,
-)
-
-from .execution_secret_token_rotation_service import (
-    ExecutionSecretTokenRotationService,
-)
-
-from .execution_secret_posture_error import (
-    ExecutionSecretPostureError,
-)
-
-from .execution_secret_posture_level import (
-    ExecutionSecretPostureLevel,
-)
-
-from .execution_secret_security_posture import (
-    ExecutionSecretSecurityPosture,
-)
-
-from .execution_secret_security_posture_service import (
-    ExecutionSecretSecurityPostureService,
-)
-
-from .execution_secret_security_policy_error import (
-    ExecutionSecretSecurityPolicyError,
-)
-
-from .execution_secret_security_policy import (
-    ExecutionSecretSecurityPolicy,
-)
-
-from .execution_secret_security_policy_service import (
-    ExecutionSecretSecurityPolicyService,
-)
-
-from .execution_secret_report_error import (
-    ExecutionSecretReportError,
-)
-
-from .execution_secret_security_report import (
-    ExecutionSecretSecurityReport,
-)
-
-from .execution_secret_security_report_service import (
-    ExecutionSecretSecurityReportService,
-)
-
-from .execution_policy_error import (
-    ExecutionPolicyError,
-)
-
-from .execution_policy import (
-    ExecutionPolicy,
-)
-
-from .execution_policy_service import (
-    ExecutionPolicyService,
-)
-
-from .execution_policy_evaluation_error import (
-    ExecutionPolicyEvaluationError,
-)
-
-from .execution_policy_evaluation import (
-    ExecutionPolicyEvaluation,
-)
-
-from .execution_policy_evaluation_service import (
-    ExecutionPolicyEvaluationService,
-)
-
-from .execution_policy_assignment_error import (
-    ExecutionPolicyAssignmentError,
-)
-
-from .execution_policy_assignment import (
-    ExecutionPolicyAssignment,
-)
-
-from .execution_policy_assignment_service import (
-    ExecutionPolicyAssignmentService,
-)
-
-from .execution_policy_precedence_error import (
-    ExecutionPolicyPrecedenceError,
-)
-
-from .execution_policy_precedence import (
-    ExecutionPolicyPrecedence,
-)
-
-from .execution_policy_precedence_service import (
-    ExecutionPolicyPrecedenceService,
-)
-
-from .execution_policy_conflict_error import (
-    ExecutionPolicyConflictError,
-)
-
-from .execution_policy_conflict import (
-    ExecutionPolicyConflict,
-)
-
-from .execution_policy_conflict_service import (
-    ExecutionPolicyConflictService,
-)
-
-from .execution_policy_exception_error import (
-    ExecutionPolicyExceptionError,
-)
-
-from .execution_policy_exception import (
-    ExecutionPolicyException,
-)
-
-from .execution_policy_exception_service import (
-    ExecutionPolicyExceptionService,
-)
-
-from .execution_policy_enforcement_error import (
-    ExecutionPolicyEnforcementError,
-)
-
-from .execution_policy_decision import (
-    ExecutionPolicyDecision,
-)
-
-from .execution_policy_enforcement_service import (
-    ExecutionPolicyEnforcementService,
-)
-
-from .execution_policy_simulation_error import (
-    ExecutionPolicySimulationError,
-)
-
-from .execution_policy_simulation import (
-    ExecutionPolicySimulation,
-)
-
-from .execution_policy_simulation_service import (
-    ExecutionPolicySimulationService,
-)
-
-from .execution_policy_audit_error import (
-    ExecutionPolicyAuditError,
-)
-
-from .execution_policy_audit_event import (
-    ExecutionPolicyAuditEvent,
-)
-
-from .execution_policy_audit_service import (
-    ExecutionPolicyAuditService,
-)
-
-from .execution_policy_risk_error import (
-    ExecutionPolicyRiskError,
-)
-
-from .execution_policy_risk_score import (
-    ExecutionPolicyRiskScore,
-)
-
-from .execution_policy_risk_service import (
-    ExecutionPolicyRiskService,
-)
-
-from .execution_policy_risk_threshold_error import (
-    ExecutionPolicyRiskThresholdError,
-)
-
-from .execution_policy_risk_threshold import (
-    ExecutionPolicyRiskThreshold,
-)
-
-from .execution_policy_risk_threshold_service import (
-    ExecutionPolicyRiskThresholdService,
-)
-
-from .execution_policy_risk_override_error import (
-    ExecutionPolicyRiskOverrideError,
-)
-
-from .execution_policy_risk_override import (
-    ExecutionPolicyRiskOverride,
-)
-
-from .execution_policy_risk_override_service import (
-    ExecutionPolicyRiskOverrideService,
-)
-
-from .execution_policy_risk_report_error import (
-    ExecutionPolicyRiskReportError,
-)
-
-from .execution_policy_risk_report import (
-    ExecutionPolicyRiskReport,
-)
-
-from .execution_policy_risk_report_service import (
-    ExecutionPolicyRiskReportService,
-)
-
-from .execution_approval_error import (
-    ExecutionApprovalError,
-)
-
-from .execution_approval_request import (
-    ExecutionApprovalRequest,
-)
-
-from .execution_approval_service import (
-    ExecutionApprovalService,
-)
-
-from .execution_approval_delegation_error import (
-    ExecutionApprovalDelegationError,
-)
-
-from .execution_approval_delegation import (
-    ExecutionApprovalDelegation,
-)
-
-from .execution_approval_delegation_service import (
-    ExecutionApprovalDelegationService,
-)
-
-from .execution_approval_quorum_error import (
-    ExecutionApprovalQuorumError,
-)
-
-from .execution_approval_quorum import (
-    ExecutionApprovalQuorum,
-)
-
-from .execution_approval_quorum_service import (
-    ExecutionApprovalQuorumService,
-)
-
-from .execution_change_request_error import (
-    ExecutionChangeRequestError,
-)
-
-from .execution_change_request import (
-    ExecutionChangeRequest,
-)
-
-from .execution_change_request_service import (
-    ExecutionChangeRequestService,
-)
-
-from .execution_change_validation_error import (
-    ExecutionChangeValidationError,
-)
-
-from .execution_change_validation import (
-    ExecutionChangeValidation,
-)
-
-from .execution_change_validation_service import (
-    ExecutionChangeValidationService,
-)
-
-from .execution_compliance_error import (
-    ExecutionComplianceError,
-)
-
-from .execution_compliance_rule import (
-    ExecutionComplianceRule,
-)
-
-from .execution_compliance_service import (
-    ExecutionComplianceService,
-)
-
-from .execution_compliance_exception_error import (
-    ExecutionComplianceExceptionError,
-)
-
-from .execution_compliance_exception import (
-    ExecutionComplianceException,
-)
-
-from .execution_compliance_exception_service import (
-    ExecutionComplianceExceptionService,
-)
-
-from .execution_compliance_evidence_error import (
-    ExecutionComplianceEvidenceError,
-)
-
-from .execution_compliance_evidence import (
-    ExecutionComplianceEvidence,
-)
-
-from .execution_compliance_evidence_service import (
-    ExecutionComplianceEvidenceService,
-)
-
-from .execution_compliance_attestation_error import (
-    ExecutionComplianceAttestationError,
-)
-
-from .execution_compliance_attestation import (
-    ExecutionComplianceAttestation,
-)
-
-from .execution_compliance_attestation_service import (
-    ExecutionComplianceAttestationService,
-)
-
-from .execution_compliance_certification_error import (
-    ExecutionComplianceCertificationError,
-)
-
-from .execution_compliance_certification import (
-    ExecutionComplianceCertification,
-)
-
-from .execution_compliance_certification_service import (
-    ExecutionComplianceCertificationService,
-)
-
-from .execution_certification_validity_error import (
-    ExecutionCertificationValidityError,
-)
-
-from .execution_certification_validity import (
-    ExecutionCertificationValidity,
-)
-
-from .execution_certification_validity_service import (
-    ExecutionCertificationValidityService,
-)
-
-from .execution_compliance_renewal_error import (
-    ExecutionComplianceRenewalError,
-)
-
-from .execution_compliance_renewal import (
-    ExecutionComplianceRenewal,
-)
-
-from .execution_compliance_renewal_service import (
-    ExecutionComplianceRenewalService,
-)
-
-from .execution_governance_report_error import (
-    ExecutionGovernanceReportError,
-)
-
-from .execution_governance_report import (
-    ExecutionGovernanceReport,
-)
-
-from .execution_governance_report_service import (
-    ExecutionGovernanceReportService,
-)
-
-from .execution_job_error import (
-    ExecutionJobError,
-)
-
-from .execution_job import (
-    ExecutionJob,
-)
-
-from .execution_job_queue_service import (
-    ExecutionJobQueueService,
-)
-
-from .execution_job_priority_error import (
-    ExecutionJobPriorityError,
-)
-
-from .execution_job_priority import (
-    ExecutionJobPriority,
-)
-
-from .execution_job_priority_service import (
-    ExecutionJobPriorityService,
-)
-
-from .execution_job_dependency_error import (
-    ExecutionJobDependencyError,
-)
-
-from .execution_job_dependency import (
-    ExecutionJobDependency,
-)
-
-from .execution_job_dependency_service import (
-    ExecutionJobDependencyService,
-)
-
-from .execution_concurrency_error import (
-    ExecutionConcurrencyError,
-)
-
-from .execution_concurrency_limit import (
-    ExecutionConcurrencyLimit,
-)
-
-from .execution_concurrency_service import (
-    ExecutionConcurrencyService,
-)
-
-from .execution_resource_reservation_error import (
-    ExecutionResourceReservationError,
-)
-
-from .execution_resource_reservation import (
-    ExecutionResourceReservation,
-)
-
-from .execution_resource_reservation_service import (
-    ExecutionResourceReservationService,
-)
-
-from .execution_fair_scheduling_error import (
-    ExecutionFairSchedulingError,
-)
-
-from .execution_scheduling_credit import (
-    ExecutionSchedulingCredit,
-)
-
-from .execution_fair_scheduling_service import (
-    ExecutionFairSchedulingService,
-)
-
-from .execution_scheduling_window_error import (
-    ExecutionSchedulingWindowError,
-)
-
-from .execution_scheduling_window import (
-    ExecutionSchedulingWindow,
-)
-
-from .execution_scheduling_window_service import (
-    ExecutionSchedulingWindowService,
-)
-
-from .execution_backpressure_error import (
-    ExecutionBackpressureError,
-)
-
-from .execution_backpressure_state import (
-    ExecutionBackpressureState,
-)
-
-from .execution_backpressure_service import (
-    ExecutionBackpressureService,
-)
-
-from .execution_dead_letter_error import (
-    ExecutionDeadLetterError,
-)
-
-from .execution_dead_letter_job import (
-    ExecutionDeadLetterJob,
-)
-
-from .execution_dead_letter_service import (
-    ExecutionDeadLetterService,
-)
-
-from .execution_scheduling_retry_error import (
-    ExecutionSchedulingRetryError,
-)
-
-from .execution_scheduling_retry_policy import (
-    ExecutionSchedulingRetryPolicy,
-)
-
-from .execution_scheduling_retry_service import (
-    ExecutionSchedulingRetryService,
-)
-
-from .execution_scheduling_reservation_error import (
-    ExecutionSchedulingReservationError,
-)
-
-from .execution_scheduling_reservation import (
-    ExecutionSchedulingReservation,
-)
-
-from .execution_scheduling_reservation_service import (
-    ExecutionSchedulingReservationService,
-)
-
-from .execution_scheduler_failover_error import (
-    ExecutionSchedulerFailoverError,
-)
-
-from .execution_scheduler_failover import (
-    ExecutionSchedulerFailover,
-)
-
-from .execution_scheduler_failover_service import (
-    ExecutionSchedulerFailoverService,
-)
-
-from .execution_scheduler_error import (
-    ExecutionSchedulerError,
-)
-
-from .execution_schedule_decision import (
-    ExecutionScheduleDecision,
-)
-
-from .execution_scheduler_service import (
-    ExecutionSchedulerService,
-)
-
-from .execution_runtime_dispatch_error import (
-    ExecutionRuntimeDispatchError,
-)
-
-from .execution_runtime_dispatch import (
-    ExecutionRuntimeDispatch,
-)
-
-from .execution_runtime_dispatch_service import (
-    ExecutionRuntimeDispatchService,
-)
-
-from .execution_runtime_startup_error import (
-    ExecutionRuntimeStartupError,
-)
-
-from .execution_runtime import (
-    ExecutionRuntime,
-)
-
-from .execution_runtime_startup_service import (
-    ExecutionRuntimeStartupService,
-)
-
-from .execution_runtime_heartbeat_error import (
-    ExecutionRuntimeHeartbeatError,
-)
-
-from .execution_runtime_heartbeat import (
-    ExecutionRuntimeHeartbeat,
-)
-
-from .execution_runtime_heartbeat_service import (
-    ExecutionRuntimeHeartbeatService,
-)
-
-from .execution_runtime_state_error import (
-    ExecutionRuntimeStateError,
-)
-
-from .execution_runtime_state import (
-    ExecutionRuntimeState,
-)
-
-from .execution_runtime_state_service import (
-    ExecutionRuntimeStateService,
-)
-
-from .execution_runtime_pause_error import (
-    ExecutionRuntimePauseError,
-)
-
-from .execution_runtime_pause import (
-    ExecutionRuntimePause,
-)
-
-from .execution_runtime_pause_service import (
-    ExecutionRuntimePauseService,
-)
-
-from .execution_runtime_cancellation_error import (
-    ExecutionRuntimeCancellationError,
-)
-
-from .execution_runtime_cancellation import (
-    ExecutionRuntimeCancellation,
-)
-
-from .execution_runtime_cancellation_service import (
-    ExecutionRuntimeCancellationService,
-)
-
-from .execution_runtime_timeout_error import (
-    ExecutionRuntimeTimeoutError,
-)
-
-from .execution_runtime_timeout import (
-    ExecutionRuntimeTimeout,
-)
-
-from .execution_runtime_timeout_service import (
-    ExecutionRuntimeTimeoutService,
-)
-
-from .execution_runtime_shutdown_error import (
-    ExecutionRuntimeShutdownError,
-)
-
-from .execution_runtime_shutdown import (
-    ExecutionRuntimeShutdown,
-)
-
-from .execution_runtime_shutdown_service import (
-    ExecutionRuntimeShutdownService,
-)
-
-from .execution_runtime_finalization_error import (
-    ExecutionRuntimeFinalizationError,
-)
-
-from .execution_runtime_result import (
-    ExecutionRuntimeResult,
-)
-
-from .execution_runtime_finalization_service import (
-    ExecutionRuntimeFinalizationService,
-)
-
-from .execution_runtime_handoff_error import (
-    ExecutionRuntimeHandoffError,
-)
-
-from .execution_runtime_handoff import (
-    ExecutionRuntimeHandoff,
-)
-
-from .execution_runtime_handoff_service import (
-    ExecutionRuntimeHandoffService,
-)
-
-from .execution_runtime_resource_error import (
-    ExecutionRuntimeResourceError,
-)
-
-from .execution_runtime_resource import (
-    ExecutionRuntimeResource,
-)
-
-from .execution_runtime_resource_service import (
-    ExecutionRuntimeResourceService,
-)
-
-from .execution_runtime_health_error import (
-    ExecutionRuntimeHealthError,
-)
-
-from .execution_runtime_health import (
-    ExecutionRuntimeHealth,
-)
-
-from .execution_runtime_health_service import (
-    ExecutionRuntimeHealthService,
-)
-
-from .execution_runtime_completion_error import (
-    ExecutionRuntimeCompletionError,
-)
-
-from .execution_runtime_completion import (
-    ExecutionRuntimeCompletion,
-)
-
-from .execution_runtime_completion_service import (
-    ExecutionRuntimeCompletionService,
-)
-
-from .execution_network_endpoint_error import (
-    ExecutionNetworkEndpointError,
-)
-
-from .execution_network_endpoint import (
-    ExecutionNetworkEndpoint,
-)
-
-from .execution_network_endpoint_service import (
-    ExecutionNetworkEndpointService,
-)
-
-from .execution_network_endpoint_health_error import (
-    ExecutionNetworkEndpointHealthError,
-)
-
-from .execution_network_endpoint_health import (
-    ExecutionNetworkEndpointHealth,
-)
-
-from .execution_network_endpoint_health_service import (
-    ExecutionNetworkEndpointHealthService,
-)
-
-from .execution_network_route_error import (
-    ExecutionNetworkRouteError,
-)
-
-from .execution_network_route import (
-    ExecutionNetworkRoute,
-)
-
-from .execution_network_routing_service import (
-    ExecutionNetworkRoutingService,
-)
-
-from .execution_network_connection_error import (
-    ExecutionNetworkConnectionError,
-)
-
-from .execution_network_connection import (
-    ExecutionNetworkConnection,
-)
-
-from .execution_network_connection_service import (
-    ExecutionNetworkConnectionService,
-)
-
-from .execution_network_traffic_policy_error import (
-    ExecutionNetworkTrafficPolicyError,
-)
-
-from .execution_network_traffic_policy import (
-    ExecutionNetworkTrafficPolicy,
-)
-
-from .execution_network_traffic_policy_service import (
-    ExecutionNetworkTrafficPolicyService,
-)
-
-from .execution_network_quota_error import (
-    ExecutionNetworkQuotaError,
-)
-
-from .execution_network_quota import (
-    ExecutionNetworkQuota,
-)
-
-from .execution_network_quota_service import (
-    ExecutionNetworkQuotaService,
-)
-
-from .execution_network_connection_limit_error import (
-    ExecutionNetworkConnectionLimitError,
-)
-
-from .execution_network_connection_limit import (
-    ExecutionNetworkConnectionLimit,
-)
-
-from .execution_network_connection_limit_service import (
-    ExecutionNetworkConnectionLimitService,
-)
-
-from .execution_network_connection_pool_error import (
-    ExecutionNetworkConnectionPoolError,
-)
-
-from .execution_network_connection_pool import (
-    ExecutionNetworkConnectionPool,
-)
-
-from .execution_network_connection_pool_service import (
-    ExecutionNetworkConnectionPoolService,
-)
-
-from .execution_network_circuit_error import (
-    ExecutionNetworkCircuitError,
-)
-
-from .execution_network_circuit import (
-    ExecutionNetworkCircuit,
-)
-
-from .execution_network_circuit_breaker_service import (
-    ExecutionNetworkCircuitBreakerService,
-)
-
-from .execution_network_failover_error import (
-    ExecutionNetworkFailoverError,
-)
-
-from .execution_network_failover import (
-    ExecutionNetworkFailover,
-)
-
-from .execution_network_failover_service import (
-    ExecutionNetworkFailoverService,
-)
-
-from .execution_network_traffic_shaper_error import (
-    ExecutionNetworkTrafficShaperError,
-)
-
-from .execution_network_traffic_shaper import (
-    ExecutionNetworkTrafficShaper,
-)
-
-from .execution_network_traffic_shaping_service import (
-    ExecutionNetworkTrafficShapingService,
-)
-
-from .execution_network_failover_policy_error import (
-    ExecutionNetworkFailoverPolicyError,
-)
-
-from .execution_network_failover_policy import (
-    ExecutionNetworkFailoverPolicy,
-)
-
-from .execution_network_failover_policy_service import (
-    ExecutionNetworkFailoverPolicyService,
-)
-
-from .execution_network_decision_error import (
-    ExecutionNetworkDecisionError,
-)
-
-from .execution_network_decision import (
-    ExecutionNetworkDecision,
-)
-
-from .execution_network_orchestration_service import (
-    ExecutionNetworkOrchestrationService,
-)
-
-from .execution_storage_volume_error import (
-    ExecutionStorageVolumeError,
-)
-
-from .execution_storage_volume import (
-    ExecutionStorageVolume,
-)
-
-from .execution_storage_volume_service import (
-    ExecutionStorageVolumeService,
-)
-
-from .execution_storage_quota_error import (
-    ExecutionStorageQuotaError,
-)
-
-from .execution_storage_quota import (
-    ExecutionStorageQuota,
-)
-
-from .execution_storage_quota_service import (
-    ExecutionStorageQuotaService,
-)
-
-from .execution_storage_snapshot_error import (
-    ExecutionStorageSnapshotError,
-)
-
-from .execution_storage_snapshot import (
-    ExecutionStorageSnapshot,
-)
-
-from .execution_storage_snapshot_service import (
-    ExecutionStorageSnapshotService,
-)
-
-from .execution_storage_mount_error import (
-    ExecutionStorageMountError,
-)
-
-from .execution_storage_mount import (
-    ExecutionStorageMount,
-)
-
-from .execution_storage_mount_service import (
-    ExecutionStorageMountService,
-)
-
-from .execution_storage_replica_error import (
-    ExecutionStorageReplicaError,
-)
-
-from .execution_storage_replica import (
-    ExecutionStorageReplica,
-)
-
-from .execution_storage_replication_service import (
-    ExecutionStorageReplicationService,
-)
-
-from .execution_storage_integrity_check_error import (
-    ExecutionStorageIntegrityCheckError,
-)
-
-from .execution_storage_integrity_check import (
-    ExecutionStorageIntegrityCheck,
-)
-
-from .execution_storage_integrity_service import (
-    ExecutionStorageIntegrityService,
-)
-
-from .execution_storage_garbage_record_error import (
-    ExecutionStorageGarbageRecordError,
-)
-
-from .execution_storage_garbage_record import (
-    ExecutionStorageGarbageRecord,
-)
-
-from .execution_storage_garbage_collection_service import (
-    ExecutionStorageGarbageCollectionService,
-)
-
-from .execution_storage_retention_policy_error import (
-    ExecutionStorageRetentionPolicyError,
-)
-
-from .execution_storage_retention_policy import (
-    ExecutionStorageRetentionPolicy,
-)
-
-from .execution_storage_retention_service import (
-    ExecutionStorageRetentionService,
-)
-
-from .execution_storage_failover_error import (
-    ExecutionStorageFailoverError,
-)
-
-from .execution_storage_failover import (
-    ExecutionStorageFailover,
-)
-
-from .execution_storage_failover_service import (
-    ExecutionStorageFailoverService,
-)
-
-from .execution_storage_migration_error import (
-    ExecutionStorageMigrationError,
-)
-
-from .execution_storage_migration import (
-    ExecutionStorageMigration,
-)
-
-from .execution_storage_migration_service import (
-    ExecutionStorageMigrationService,
-)
-
-from .execution_storage_tier_error import (
-    ExecutionStorageTierError,
-)
-
-from .execution_storage_tier import (
-    ExecutionStorageTier,
-)
-
-from .execution_storage_tiering_service import (
-    ExecutionStorageTieringService,
-)
-
-from .execution_storage_cost_profile_error import (
-    ExecutionStorageCostProfileError,
-)
-
-from .execution_storage_cost_profile import (
-    ExecutionStorageCostProfile,
-)
-
-from .execution_storage_cost_service import (
-    ExecutionStorageCostService,
-)
-
-from .execution_storage_decision_error import (
-    ExecutionStorageDecisionError,
-)
-
-from .execution_storage_decision import (
-    ExecutionStorageDecision,
-)
-
-from .execution_storage_orchestration_service import (
-    ExecutionStorageOrchestrationService,
-)
-
-from .workspace_execution_artifact_error import (
-    WorkspaceExecutionArtifactError,
-)
-
-from .workspace_execution_artifact import (
-    ARTIFACT_TYPE_FILE,
-    ARTIFACT_TYPE_DIRECTORY,
-    ARTIFACT_TYPE_MODEL,
-    ARTIFACT_TYPE_DATASET,
-    ARTIFACT_TYPES,
-    STATUS_ACTIVE,
-    STATUS_REMOVED,
-    WorkspaceExecutionArtifact,
-)
-
-from .execution_artifact_registry_service import (
-    ExecutionArtifactRegistryService,
-)
-
-from .workspace_execution_artifact_metadata_error import (
-    WorkspaceExecutionArtifactMetadataError,
-)
-
-from .workspace_execution_artifact_metadata import (
-    WorkspaceExecutionArtifactMetadata,
-)
-
-from .workspace_execution_artifact_metadata_service import (
-    WorkspaceExecutionArtifactMetadataService,
-)
-
-from .workspace_execution_artifact_version_error import (
-    WorkspaceExecutionArtifactVersionError,
-)
-
-from .workspace_execution_artifact_version import (
-    WorkspaceExecutionArtifactVersion,
-)
-
-from .workspace_execution_artifact_version_service import (
-    WorkspaceExecutionArtifactVersionService,
-)
-
-from .execution_artifact_manifest_error import (
-    ExecutionArtifactManifestError,
-)
-
-from .execution_artifact_manifest import (
-    ExecutionArtifactManifest,
-)
-
-from .execution_artifact_manifest_service import (
-    ExecutionArtifactManifestService,
-)
-
-from .workspace_execution_artifact_lineage_error import (
-    WorkspaceExecutionArtifactLineageError,
-)
-
-from .workspace_execution_artifact_lineage import (
-    WorkspaceExecutionArtifactLineage,
-)
-
-from .workspace_execution_artifact_lineage_service import (
-    WorkspaceExecutionArtifactLineageService,
-)
-
-from .workspace_execution_artifact_integrity_error import (
-    WorkspaceExecutionArtifactIntegrityError,
-)
-
-from .workspace_execution_artifact_integrity import (
-    STATUS_CORRUPT as ARTIFACT_INTEGRITY_STATUS_CORRUPT,
-    STATUS_VERIFIED as ARTIFACT_INTEGRITY_STATUS_VERIFIED,
-    WorkspaceExecutionArtifactIntegrity,
-)
-
-from .workspace_execution_artifact_integrity_service import (
-    WorkspaceExecutionArtifactIntegrityService,
-)
-
-from .workspace_execution_artifact_promotion_error import (
-    WorkspaceExecutionArtifactPromotionError,
-)
-
-from .workspace_execution_artifact_promotion import (
-    STAGE_DEV,
-    STAGE_PRODUCTION,
-    STAGE_STAGING,
-    STAGES as ARTIFACT_PROMOTION_STAGES,
-    WorkspaceExecutionArtifactPromotion,
-)
-
-from .workspace_execution_artifact_promotion_service import (
-    WorkspaceExecutionArtifactPromotionService,
-)
-
-from .workspace_execution_artifact_retention_error import (
-    WorkspaceExecutionArtifactRetentionError,
-)
-
-from .workspace_execution_artifact_retention_policy import (
-    WorkspaceExecutionArtifactRetentionPolicy,
-)
-
-from .workspace_execution_artifact_retention_service import (
-    WorkspaceExecutionArtifactRetentionService,
-)
-
-from .execution_artifact_garbage_collection_error import (
-    ExecutionArtifactGarbageCollectionError,
-)
-
-from .execution_artifact_garbage_record import (
-    REASON_RETENTION_EXPIRED as ARTIFACT_GARBAGE_REASON_RETENTION_EXPIRED,
-    ExecutionArtifactGarbageRecord,
-)
-
-from .execution_artifact_garbage_collection_service import (
-    ExecutionArtifactGarbageCollectionService,
-)
-
-from .workspace_execution_artifact_distribution_error import (
-    WorkspaceExecutionArtifactDistributionError,
-)
-
-from .workspace_execution_artifact_distribution import (
-    STATUS_FAILED as ARTIFACT_DISTRIBUTION_STATUS_FAILED,
-    STATUS_PUBLISHED as ARTIFACT_DISTRIBUTION_STATUS_PUBLISHED,
-    STATUS_REMOVED as ARTIFACT_DISTRIBUTION_STATUS_REMOVED,
-    WorkspaceExecutionArtifactDistribution,
-)
-
-from .workspace_execution_artifact_distribution_service import (
-    WorkspaceExecutionArtifactDistributionService,
-)
-
-from .execution_artifact_distribution_failover_error import (
-    ExecutionArtifactDistributionFailoverError,
-)
-
-from .execution_artifact_distribution_failover import (
-    STATUS_FAILED as ARTIFACT_DISTRIBUTION_FAILOVER_STATUS_FAILED,
-    STATUS_REGISTERED as ARTIFACT_DISTRIBUTION_FAILOVER_STATUS_REGISTERED,
-    STATUS_SUCCEEDED as ARTIFACT_DISTRIBUTION_FAILOVER_STATUS_SUCCEEDED,
-    ExecutionArtifactDistributionFailover,
-)
-
-from .execution_artifact_distribution_failover_service import (
-    ExecutionArtifactDistributionFailoverService,
-)
-
-from .execution_artifact_release_channel_error import (
-    ExecutionArtifactReleaseChannelError,
-)
-
-from .execution_artifact_release_channel import (
-    CHANNEL_CANARY,
-    CHANNEL_LTS,
-    CHANNEL_STABLE,
-    CHANNELS as ARTIFACT_RELEASE_CHANNELS,
-    ExecutionArtifactReleaseChannel,
-)
-
-from .execution_artifact_release_channel_service import (
-    ExecutionArtifactReleaseChannelService,
-)
-
-from .execution_artifact_decision_error import (
-    ExecutionArtifactDecisionError,
-)
-
-from .execution_artifact_decision import (
-    ACTION_DISTRIBUTE as ARTIFACT_DECISION_ACTION_DISTRIBUTE,
-    ACTION_PROMOTE as ARTIFACT_DECISION_ACTION_PROMOTE,
-    ACTION_PUBLISH as ARTIFACT_DECISION_ACTION_PUBLISH,
-    ACTION_RELEASE as ARTIFACT_DECISION_ACTION_RELEASE,
-    ACTION_RETIRE as ARTIFACT_DECISION_ACTION_RETIRE,
-    ACTIONS as ARTIFACT_DECISION_ACTIONS,
-    ExecutionArtifactDecision,
-)
-
-from .execution_artifact_orchestration_service import (
-    ExecutionArtifactOrchestrationService,
-)
-
-from .execution_metric_error import (
-    ExecutionMetricError,
-)
-
-from .execution_metric import (
-    ExecutionMetric,
-)
-
-from .execution_metrics_service import (
-    ExecutionMetricsService,
-)
-
-from .execution_observability_event_error import (
-    ExecutionObservabilityEventError,
-)
-
-from .execution_observability_event import (
-    SEVERITIES as EXECUTION_EVENT_SEVERITIES,
-    SEVERITY_DEBUG as EXECUTION_EVENT_SEVERITY_DEBUG,
-    SEVERITY_ERROR as EXECUTION_EVENT_SEVERITY_ERROR,
-    SEVERITY_INFO as EXECUTION_EVENT_SEVERITY_INFO,
-    SEVERITY_WARNING as EXECUTION_EVENT_SEVERITY_WARNING,
-    ExecutionObservabilityEvent,
-)
-
-from .execution_event_service import (
-    ExecutionEventService,
-)
-
-from .execution_trace_error import (
-    ExecutionTraceError,
-)
-
-from .execution_trace import (
-    STATUSES as EXECUTION_TRACE_STATUSES,
-    STATUS_ACTIVE as EXECUTION_TRACE_STATUS_ACTIVE,
-    STATUS_CANCELLED as EXECUTION_TRACE_STATUS_CANCELLED,
-    STATUS_COMPLETED as EXECUTION_TRACE_STATUS_COMPLETED,
-    STATUS_FAILED as EXECUTION_TRACE_STATUS_FAILED,
-    TERMINAL_STATUSES as EXECUTION_TRACE_TERMINAL_STATUSES,
-    ExecutionTrace,
-)
-
-from .execution_trace_service import (
-    ExecutionTraceService,
-)
-
-from .execution_observability_summary_error import (
-    ExecutionObservabilitySummaryError,
-)
-
-from .execution_observability_summary import (
-    ExecutionObservabilitySummary,
-)
-
-from .execution_observability_aggregation_service import (
-    ExecutionObservabilityAggregationService,
-)
-
-from .execution_observability_alert_rule_error import (
-    ExecutionObservabilityAlertRuleError,
-)
-
-from .execution_observability_alert_rule import (
-    OPERATOR_EQ as ALERT_RULE_OPERATOR_EQ,
-    OPERATOR_GT as ALERT_RULE_OPERATOR_GT,
-    OPERATOR_GTE as ALERT_RULE_OPERATOR_GTE,
-    OPERATOR_LT as ALERT_RULE_OPERATOR_LT,
-    OPERATOR_LTE as ALERT_RULE_OPERATOR_LTE,
-    OPERATORS as ALERT_RULE_OPERATORS,
-    ExecutionObservabilityAlertRule,
-)
-
-from .execution_alert_rule_service import (
-    ExecutionAlertRuleService,
-)
-
-from .execution_observability_alert_error import (
-    ExecutionObservabilityAlertError,
-)
-
-from .execution_observability_alert import (
-    STATUS_OPEN as EXECUTION_ALERT_STATUS_OPEN,
-    STATUS_RESOLVED as EXECUTION_ALERT_STATUS_RESOLVED,
-    STATUSES as EXECUTION_ALERT_STATUSES,
-    ExecutionObservabilityAlert,
-)
-
-from .execution_alert_service import (
-    ExecutionAlertService,
-)
-
-from .execution_observability_escalation_error import (
-    ExecutionObservabilityEscalationError,
-)
-
-from .execution_observability_escalation import (
-    LEVEL_CRITICAL as EXECUTION_ESCALATION_LEVEL_CRITICAL,
-    LEVEL_URGENT as EXECUTION_ESCALATION_LEVEL_URGENT,
-    LEVEL_WARNING as EXECUTION_ESCALATION_LEVEL_WARNING,
-    LEVELS as EXECUTION_ESCALATION_LEVELS,
-    STATUS_ACTIVE as EXECUTION_ESCALATION_STATUS_ACTIVE,
-    STATUS_RESOLVED as EXECUTION_ESCALATION_STATUS_RESOLVED,
-    STATUSES as EXECUTION_ESCALATION_STATUSES,
-    ExecutionObservabilityEscalation,
-)
-
-from .execution_alert_escalation_service import (
-    ExecutionAlertEscalationService,
-)
-
-from .execution_observability_alert_suppression_error import (
-    ExecutionObservabilityAlertSuppressionError,
-)
-
-from .execution_observability_alert_suppression import (
-    ExecutionObservabilityAlertSuppression,
-)
-
-from .execution_alert_suppression_service import (
-    ExecutionAlertSuppressionService,
-)
-
-from .execution_observability_alert_route_error import (
-    ExecutionObservabilityAlertRouteError,
-)
-
-from .execution_observability_alert_route import (
-    ROUTE_SEVERITIES as EXECUTION_ALERT_ROUTE_SEVERITIES,
-    SEVERITY_ANY as EXECUTION_ALERT_ROUTE_SEVERITY_ANY,
-    ExecutionObservabilityAlertRoute,
-)
-
-from .execution_alert_routing_service import (
-    ExecutionAlertRoutingService,
-)
-
-from .execution_observability_alert_fingerprint_error import (
-    ExecutionObservabilityAlertFingerprintError,
-)
-
-from .execution_observability_alert_fingerprint import (
-    ExecutionObservabilityAlertFingerprint,
-)
-
-from .execution_alert_deduplication_service import (
-    ExecutionAlertDeduplicationService,
-)
-
-from .execution_observability_alert_correlation_error import (
-    ExecutionObservabilityAlertCorrelationError,
-)
-
-from .execution_observability_alert_correlation import (
-    STATUS_ACTIVE as EXECUTION_ALERT_CORRELATION_STATUS_ACTIVE,
-    STATUS_RESOLVED as EXECUTION_ALERT_CORRELATION_STATUS_RESOLVED,
-    STATUSES as EXECUTION_ALERT_CORRELATION_STATUSES,
-    ExecutionObservabilityAlertCorrelation,
-)
-
-from .execution_alert_correlation_service import (
-    ExecutionAlertCorrelationService,
-)
-
-from .execution_alert_analytics_error import (
-    ExecutionAlertAnalyticsError,
-)
-
-from .execution_alert_analytics import (
-    ExecutionAlertAnalytics,
-)
-
-from .execution_alert_analytics_service import (
-    ExecutionAlertAnalyticsService,
-)
-
-from .execution_observability_decision_error import (
-    ExecutionObservabilityDecisionError,
-)
-
-from .execution_observability_decision import (
-    STATUS_CRITICAL as EXECUTION_DECISION_STATUS_CRITICAL,
-    STATUS_HEALTHY as EXECUTION_DECISION_STATUS_HEALTHY,
-    STATUS_WARNING as EXECUTION_DECISION_STATUS_WARNING,
-    STATUSES as EXECUTION_DECISION_STATUSES,
-    ExecutionObservabilityDecision,
-)
-
-from .execution_observability_orchestration_service import (
-    ExecutionObservabilityOrchestrationService,
-)
+"""The learning-session package.
+
+Its ~2000 exported names live in ~2000 submodules; importing them all eagerly cost about 1.6 s on every CLI run and server
+start, though PreReqAI itself only needs `session_manager`. Names are therefore imported on first use (PEP 562), so
+`from backend.session import X` and `backend.session.X` keep working unchanged.
+"""
+from importlib import import_module
+
+from .learning_session import LearningSession
+from .session_manager import SessionManager
 
 session_manager = SessionManager()
+
+# exported name -> (submodule, name inside it)
+_EXPORTS = {
+    'TutorMode': ('tutor_mode', 'TutorMode'),
+    'LearningIntent': ('learning_intent', 'LearningIntent'),
+    'WorkflowType': ('workflow_type', 'WorkflowType'),
+    'WorkflowMemory': ('workflow_memory', 'WorkflowMemory'),
+    'WorkflowRecord': ('workflow_memory', 'WorkflowRecord'),
+    'LearningGap': ('learning_gap', 'LearningGap'),
+    'LearningRecommendation': ('learning_recommendation', 'LearningRecommendation'),
+    'LearningQuestion': ('learning_question', 'LearningQuestion'),
+    'QuestionManager': ('question_manager', 'QuestionManager'),
+    'RetrievedContext': ('context_retriever', 'RetrievedContext'),
+    'ContextRetriever': ('context_retriever', 'ContextRetriever'),
+    'ContextManager': ('context_manager', 'ContextManager'),
+    'ResearchSessionSnapshot': ('research_session_snapshot', 'ResearchSessionSnapshot'),
+    'ResearchSessionSerializer': ('research_session_serializer', 'ResearchSessionSerializer'),
+    'ResearchSessionStore': ('research_session_store', 'ResearchSessionStore'),
+    'InMemoryResearchSessionStore': ('in_memory_research_session_store', 'InMemoryResearchSessionStore'),
+    'ResearchSessionManager': ('research_session_manager', 'ResearchSessionManager'),
+    'ResearchRuntimeRegistry': ('research_runtime_registry', 'ResearchRuntimeRegistry'),
+    'ResearchRuntimeResolver': ('research_runtime_resolver', 'ResearchRuntimeResolver'),
+    'ResearchSessionRestorationResult': ('research_session_restoration_result', 'ResearchSessionRestorationResult'),
+    'ResearchSessionRestorer': ('research_session_restorer', 'ResearchSessionRestorer'),
+    'ResearchArtifactType': ('research_artifact_type', 'ResearchArtifactType'),
+    'ResearchArtifact': ('research_artifact', 'ResearchArtifact'),
+    'ResearchArtifactStore': ('research_artifact_store', 'ResearchArtifactStore'),
+    'InMemoryResearchArtifactStore': ('in_memory_research_artifact_store', 'InMemoryResearchArtifactStore'),
+    'ResearchArtifactManager': ('research_artifact_manager', 'ResearchArtifactManager'),
+    'ResearchArtifactTypeMapper': ('research_artifact_type_mapper', 'ResearchArtifactTypeMapper'),
+    'InteractionArtifactLink': ('interaction_artifact_link', 'InteractionArtifactLink'),
+    'InteractionArtifactLinkStore': ('interaction_artifact_link_store', 'InteractionArtifactLinkStore'),
+    'InMemoryInteractionArtifactLinkStore': ('in_memory_interaction_artifact_link_store', 'InMemoryInteractionArtifactLinkStore'),
+    'InteractionArtifactCorrelationManager': ('interaction_artifact_correlation_manager', 'InteractionArtifactCorrelationManager'),
+    'ArtifactRestorationResult': ('artifact_restoration_result', 'ArtifactRestorationResult'),
+    'ResearchArtifactRestorer': ('research_artifact_restorer', 'ResearchArtifactRestorer'),
+    'ResearchCheckpointReason': ('research_checkpoint_reason', 'ResearchCheckpointReason'),
+    'ResearchCheckpoint': ('research_checkpoint', 'ResearchCheckpoint'),
+    'ResearchCheckpointPolicy': ('research_checkpoint_policy', 'ResearchCheckpointPolicy'),
+    'ResearchCheckpointManager': ('research_checkpoint_manager', 'ResearchCheckpointManager'),
+    'JsonResearchSessionStore': ('json_research_session_store', 'JsonResearchSessionStore'),
+    'JsonResearchArtifactStore': ('json_research_artifact_store', 'JsonResearchArtifactStore'),
+    'JsonInteractionArtifactLinkStore': ('json_interaction_artifact_link_store', 'JsonInteractionArtifactLinkStore'),
+    'ResearchPersistenceConfig': ('research_persistence_config', 'ResearchPersistenceConfig'),
+    'ResearchPersistenceFactory': ('research_persistence_factory', 'ResearchPersistenceFactory'),
+    'ResearchCheckpointStore': ('research_checkpoint_store', 'ResearchCheckpointStore'),
+    'InMemoryResearchCheckpointStore': ('in_memory_research_checkpoint_store', 'InMemoryResearchCheckpointStore'),
+    'JsonResearchCheckpointStore': ('json_research_checkpoint_store', 'JsonResearchCheckpointStore'),
+    'ResearchSessionVersion': ('research_session_version', 'ResearchSessionVersion'),
+    'ResearchSessionVersionStore': ('research_session_version_store', 'ResearchSessionVersionStore'),
+    'InMemoryResearchSessionVersionStore': ('in_memory_research_session_version_store', 'InMemoryResearchSessionVersionStore'),
+    'JsonResearchSessionVersionStore': ('json_research_session_version_store', 'JsonResearchSessionVersionStore'),
+    'ResearchSessionVersionManager': ('research_session_version_manager', 'ResearchSessionVersionManager'),
+    'ResearchRecoveryResult': ('research_recovery_result', 'ResearchRecoveryResult'),
+    'ResearchCheckpointRecoveryManager': ('research_checkpoint_recovery_manager', 'ResearchCheckpointRecoveryManager'),
+    'ResearchStateChangeType': ('research_state_change_type', 'ResearchStateChangeType'),
+    'ResearchStateChange': ('research_state_change', 'ResearchStateChange'),
+    'ResearchSessionComparison': ('research_session_comparison', 'ResearchSessionComparison'),
+    'ResearchSessionComparator': ('research_session_comparator', 'ResearchSessionComparator'),
+    'ResearchRecoveryPreview': ('research_recovery_preview', 'ResearchRecoveryPreview'),
+    'ResearchRecoveryPreviewManager': ('research_recovery_preview_manager', 'ResearchRecoveryPreviewManager'),
+    'UNSET': ('unset', 'UNSET'),
+    'ResearchCheckpointAnnotation': ('research_checkpoint_annotation', 'ResearchCheckpointAnnotation'),
+    'ResearchCheckpointAnnotationStore': ('research_checkpoint_annotation_store', 'ResearchCheckpointAnnotationStore'),
+    'InMemoryResearchCheckpointAnnotationStore': ('in_memory_research_checkpoint_annotation_store', 'InMemoryResearchCheckpointAnnotationStore'),
+    'JsonResearchCheckpointAnnotationStore': ('json_research_checkpoint_annotation_store', 'JsonResearchCheckpointAnnotationStore'),
+    'ResearchCheckpointAnnotationManager': ('research_checkpoint_annotation_manager', 'ResearchCheckpointAnnotationManager'),
+    'AnnotatedResearchCheckpoint': ('annotated_research_checkpoint', 'AnnotatedResearchCheckpoint'),
+    'ResearchHistorySortOrder': ('research_history_sort_order', 'ResearchHistorySortOrder'),
+    'ResearchHistoryQuery': ('research_history_query', 'ResearchHistoryQuery'),
+    'ResearchHistoryTimelineItem': ('research_history_timeline_item', 'ResearchHistoryTimelineItem'),
+    'ResearchHistoryPage': ('research_history_page', 'ResearchHistoryPage'),
+    'ResearchHistoryQueryService': ('research_history_query_service', 'ResearchHistoryQueryService'),
+    'ResearchSessionBranch': ('research_session_branch', 'ResearchSessionBranch'),
+    'ResearchSessionBranchStore': ('research_session_branch_store', 'ResearchSessionBranchStore'),
+    'InMemoryResearchSessionBranchStore': ('in_memory_research_session_branch_store', 'InMemoryResearchSessionBranchStore'),
+    'JsonResearchSessionBranchStore': ('json_research_session_branch_store', 'JsonResearchSessionBranchStore'),
+    'ResearchSessionBranchManager': ('research_session_branch_manager', 'ResearchSessionBranchManager'),
+    'ResearchSessionLineageNode': ('research_session_lineage_node', 'ResearchSessionLineageNode'),
+    'ResearchSessionLineagePath': ('research_session_lineage_path', 'ResearchSessionLineagePath'),
+    'ResearchSessionLineageService': ('research_session_lineage_service', 'ResearchSessionLineageService'),
+    'ResearchSessionLineageSummary': ('research_session_lineage_summary', 'ResearchSessionLineageSummary'),
+    'ResearchSessionStatus': ('research_session_status', 'ResearchSessionStatus'),
+    'ResearchSessionProfile': ('research_session_profile', 'ResearchSessionProfile'),
+    'ResearchSessionProfileStore': ('research_session_profile_store', 'ResearchSessionProfileStore'),
+    'InMemoryResearchSessionProfileStore': ('in_memory_research_session_profile_store', 'InMemoryResearchSessionProfileStore'),
+    'JsonResearchSessionProfileStore': ('json_research_session_profile_store', 'JsonResearchSessionProfileStore'),
+    'ResearchSessionProfileManager': ('research_session_profile_manager', 'ResearchSessionProfileManager'),
+    'ResearchSessionKind': ('research_session_kind', 'ResearchSessionKind'),
+    'ResearchSessionListItem': ('research_session_list_item', 'ResearchSessionListItem'),
+    'ResearchSessionPage': ('research_session_page', 'ResearchSessionPage'),
+    'ResearchSessionQuery': ('research_session_query', 'ResearchSessionQuery'),
+    'ResearchSessionQueryService': ('research_session_query_service', 'ResearchSessionQueryService'),
+    'ResearchSessionSortOrder': ('research_session_sort_order', 'ResearchSessionSortOrder'),
+    'ResearchSessionRelationship': ('research_session_relationship', 'ResearchSessionRelationship'),
+    'ResearchSessionStateDifference': ('research_session_state_difference', 'ResearchSessionStateDifference'),
+    'ResearchSessionCollectionDifference': ('research_session_collection_difference', 'ResearchSessionCollectionDifference'),
+    'ResearchSessionDivergence': ('research_session_divergence', 'ResearchSessionDivergence'),
+    'ResearchSessionLineageComparison': ('research_session_lineage_comparison', 'ResearchSessionLineageComparison'),
+    'ResearchSessionLineageComparisonService': ('research_session_lineage_comparison_service', 'ResearchSessionLineageComparisonService'),
+    'normalize_research_tag_name': ('research_tag_normalizer', 'normalize_research_tag_name'),
+    'ResearchTag': ('research_tag', 'ResearchTag'),
+    'ResearchSessionTagAssignment': ('research_session_tag_assignment', 'ResearchSessionTagAssignment'),
+    'ResearchTagStore': ('research_tag_store', 'ResearchTagStore'),
+    'InMemoryResearchTagStore': ('in_memory_research_tag_store', 'InMemoryResearchTagStore'),
+    'JsonResearchTagStore': ('json_research_tag_store', 'JsonResearchTagStore'),
+    'ResearchCollection': ('research_collection', 'ResearchCollection'),
+    'ResearchCollectionMembership': ('research_collection_membership', 'ResearchCollectionMembership'),
+    'ResearchCollectionStore': ('research_collection_store', 'ResearchCollectionStore'),
+    'InMemoryResearchCollectionStore': ('in_memory_research_collection_store', 'InMemoryResearchCollectionStore'),
+    'JsonResearchCollectionStore': ('json_research_collection_store', 'JsonResearchCollectionStore'),
+    'ResearchWorkspaceOrganizationService': ('research_workspace_organization_service', 'ResearchWorkspaceOrganizationService'),
+    'ResearchActivityType': ('research_activity_type', 'ResearchActivityType'),
+    'ResearchActivityActorType': ('research_activity_actor_type', 'ResearchActivityActorType'),
+    'ResearchActivityEvent': ('research_activity_event', 'ResearchActivityEvent'),
+    'ResearchActivityStore': ('research_activity_store', 'ResearchActivityStore'),
+    'InMemoryResearchActivityStore': ('in_memory_research_activity_store', 'InMemoryResearchActivityStore'),
+    'JsonResearchActivityStore': ('json_research_activity_store', 'JsonResearchActivityStore'),
+    'ResearchActivityRecorder': ('research_activity_recorder', 'ResearchActivityRecorder'),
+    'ResearchActivityQuery': ('research_activity_query', 'ResearchActivityQuery'),
+    'ResearchActivityPage': ('research_activity_page', 'ResearchActivityPage'),
+    'ResearchActivityService': ('research_activity_service', 'ResearchActivityService'),
+    'ResearchWorkspaceOverview': ('research_workspace_overview', 'ResearchWorkspaceOverview'),
+    'ResearchLifecycleStatistics': ('research_lifecycle_statistics', 'ResearchLifecycleStatistics'),
+    'ResearchLineageStatistics': ('research_lineage_statistics', 'ResearchLineageStatistics'),
+    'ResearchTagStatistic': ('research_tag_statistic', 'ResearchTagStatistic'),
+    'ResearchCollectionStatistic': ('research_collection_statistic', 'ResearchCollectionStatistic'),
+    'ResearchActivityStatistics': ('research_activity_statistics', 'ResearchActivityStatistics'),
+    'ResearchSessionActivitySummary': ('research_session_activity_summary', 'ResearchSessionActivitySummary'),
+    'ResearchWorkspaceInsights': ('research_workspace_insights', 'ResearchWorkspaceInsights'),
+    'ResearchWorkspaceInsightsService': ('research_workspace_insights_service', 'ResearchWorkspaceInsightsService'),
+    'ResearchSnapshotScope': ('research_snapshot_scope', 'ResearchSnapshotScope'),
+    'ResearchSnapshotManifest': ('research_snapshot_manifest', 'ResearchSnapshotManifest'),
+    'ResearchSnapshot': ('research_snapshot', 'ResearchSnapshot'),
+    'ResearchSnapshotValidationIssue': ('research_snapshot_validation_issue', 'ResearchSnapshotValidationIssue'),
+    'ResearchSnapshotValidationResult': ('research_snapshot_validation_result', 'ResearchSnapshotValidationResult'),
+    'ResearchSnapshotValidator': ('research_snapshot_validator', 'ResearchSnapshotValidator'),
+    'ResearchSnapshotService': ('research_snapshot_service', 'ResearchSnapshotService'),
+    'ResearchSnapshotSerializer': ('research_snapshot_serializer', 'ResearchSnapshotSerializer'),
+    'ResearchSnapshotImportStrategy': ('research_snapshot_import_strategy', 'ResearchSnapshotImportStrategy'),
+    'ResearchSnapshotImportConflict': ('research_snapshot_import_conflict', 'ResearchSnapshotImportConflict'),
+    'ResearchSnapshotIdentityMap': ('research_snapshot_identity_map', 'ResearchSnapshotIdentityMap'),
+    'ResearchSnapshotImportPlan': ('research_snapshot_import_plan', 'ResearchSnapshotImportPlan'),
+    'ResearchSnapshotImportResult': ('research_snapshot_import_result', 'ResearchSnapshotImportResult'),
+    'ResearchSnapshotImportPlanner': ('research_snapshot_import_planner', 'ResearchSnapshotImportPlanner'),
+    'ResearchSnapshotImportTransaction': ('research_snapshot_import_transaction', 'ResearchSnapshotImportTransaction'),
+    'ResearchSnapshotImportService': ('research_snapshot_import_service', 'ResearchSnapshotImportService'),
+    'ResearchIntegritySeverity': ('research_integrity_severity', 'ResearchIntegritySeverity'),
+    'ResearchIntegrityFinding': ('research_integrity_finding', 'ResearchIntegrityFinding'),
+    'ResearchIntegrityReport': ('research_integrity_report', 'ResearchIntegrityReport'),
+    'ResearchRepairRisk': ('research_repair_risk', 'ResearchRepairRisk'),
+    'ResearchRepairAction': ('research_repair_action', 'ResearchRepairAction'),
+    'ResearchRepairPlan': ('research_repair_plan', 'ResearchRepairPlan'),
+    'ResearchWorkspaceIntegrityAuditor': ('research_workspace_integrity_auditor', 'ResearchWorkspaceIntegrityAuditor'),
+    'ResearchWorkspaceRepairPlanner': ('research_workspace_repair_planner', 'ResearchWorkspaceRepairPlanner'),
+    'ResearchWorkspaceChangeOperation': ('research_workspace_change_operation', 'ResearchWorkspaceChangeOperation'),
+    'ResearchWorkspaceChangeEvent': ('research_workspace_change_event', 'ResearchWorkspaceChangeEvent'),
+    'ResearchWorkspaceSubscription': ('research_workspace_subscription', 'ResearchWorkspaceSubscription'),
+    'ResearchWorkspaceEventBus': ('research_workspace_event_bus', 'ResearchWorkspaceEventBus'),
+    'ResearchWorkspaceChangePage': ('research_workspace_change_page', 'ResearchWorkspaceChangePage'),
+    'ResearchWorkspaceChangeFeed': ('research_workspace_change_feed', 'ResearchWorkspaceChangeFeed'),
+    'ResearchWorkspaceCapability': ('research_workspace_capability', 'ResearchWorkspaceCapability'),
+    'ResearchWorkspaceCapabilityDescriptor': ('research_workspace_capability_descriptor', 'ResearchWorkspaceCapabilityDescriptor'),
+    'ResearchWorkspaceCapabilities': ('research_workspace_capabilities', 'ResearchWorkspaceCapabilities'),
+    'ResearchWorkspaceReadinessCheckStatus': ('research_workspace_readiness_check_status', 'ResearchWorkspaceReadinessCheckStatus'),
+    'ResearchWorkspaceReadinessStatus': ('research_workspace_readiness_status', 'ResearchWorkspaceReadinessStatus'),
+    'ResearchWorkspaceReadinessCheck': ('research_workspace_readiness_check', 'ResearchWorkspaceReadinessCheck'),
+    'ResearchWorkspaceReadinessAssessment': ('research_workspace_readiness_assessment', 'ResearchWorkspaceReadinessAssessment'),
+    'ResearchWorkspaceReadinessAssessor': ('research_workspace_readiness_assessor', 'ResearchWorkspaceReadinessAssessor'),
+    'ResearchWorkspaceAttentionSeverity': ('research_workspace_attention_severity', 'ResearchWorkspaceAttentionSeverity'),
+    'ResearchWorkspaceAttentionCategory': ('research_workspace_attention_category', 'ResearchWorkspaceAttentionCategory'),
+    'ResearchWorkspaceAttentionItem': ('research_workspace_attention_item', 'ResearchWorkspaceAttentionItem'),
+    'ResearchWorkspaceAttentionProjection': ('research_workspace_attention_projection', 'ResearchWorkspaceAttentionProjection'),
+    'ResearchWorkspaceAttentionSummary': ('research_workspace_attention_summary', 'ResearchWorkspaceAttentionSummary'),
+    'ResearchWorkspaceAttentionProjector': ('research_workspace_attention_projector', 'ResearchWorkspaceAttentionProjector'),
+    'ResearchWorkspaceConsumerContractId': ('research_workspace_consumer_contract_id', 'ResearchWorkspaceConsumerContractId'),
+    'ResearchWorkspaceConsumerContractScope': ('research_workspace_consumer_contract_scope', 'ResearchWorkspaceConsumerContractScope'),
+    'ResearchWorkspaceConsumerContractStability': ('research_workspace_consumer_contract_stability', 'ResearchWorkspaceConsumerContractStability'),
+    'ResearchWorkspaceConsumerContractVersion': ('research_workspace_consumer_contract_version', 'ResearchWorkspaceConsumerContractVersion'),
+    'ResearchWorkspaceConsumerContractParameterType': ('research_workspace_consumer_contract_parameter_type', 'ResearchWorkspaceConsumerContractParameterType'),
+    'ResearchWorkspaceConsumerContractParameter': ('research_workspace_consumer_contract_parameter', 'ResearchWorkspaceConsumerContractParameter'),
+    'ResearchWorkspaceConsumerContractDescriptor': ('research_workspace_consumer_contract_descriptor', 'ResearchWorkspaceConsumerContractDescriptor'),
+    'ResearchWorkspaceConsumerContractCompatibility': ('research_workspace_consumer_contract_compatibility', 'ResearchWorkspaceConsumerContractCompatibility'),
+    'DEFAULT_RESEARCH_WORKSPACE_CONTRACTS': ('research_workspace_consumer_contract_registry', 'DEFAULT_RESEARCH_WORKSPACE_CONTRACTS'),
+    'ResearchWorkspaceConsumerContractRegistry': ('research_workspace_consumer_contract_registry', 'ResearchWorkspaceConsumerContractRegistry'),
+    'ResearchWorkspaceConsumerContractManifest': ('research_workspace_consumer_contract_manifest', 'ResearchWorkspaceConsumerContractManifest'),
+    'ResearchWorkspaceConsumerContractManifestProvider': ('research_workspace_consumer_contract_manifest_provider', 'ResearchWorkspaceConsumerContractManifestProvider'),
+    'ResearchWorkspaceMonotonicClock': ('research_workspace_monotonic_clock', 'ResearchWorkspaceMonotonicClock'),
+    'ResearchWorkspaceConsumerProjectionDiagnosticStatus': ('research_workspace_consumer_projection_diagnostic_status', 'ResearchWorkspaceConsumerProjectionDiagnosticStatus'),
+    'ResearchWorkspaceConsumerProjectionDiagnosticStageKind': ('research_workspace_consumer_projection_diagnostic_stage_kind', 'ResearchWorkspaceConsumerProjectionDiagnosticStageKind'),
+    'ResearchWorkspaceConsumerProjectionDiagnosticFailure': ('research_workspace_consumer_projection_diagnostic_failure', 'ResearchWorkspaceConsumerProjectionDiagnosticFailure'),
+    'ResearchWorkspaceConsumerProjectionInputDiagnostic': ('research_workspace_consumer_projection_input_diagnostic', 'ResearchWorkspaceConsumerProjectionInputDiagnostic'),
+    'ResearchWorkspaceConsumerProjectionStageDiagnostic': ('research_workspace_consumer_projection_stage_diagnostic', 'ResearchWorkspaceConsumerProjectionStageDiagnostic'),
+    'ResearchWorkspaceConsumerProjectionDiagnosticReport': ('research_workspace_consumer_projection_diagnostic_report', 'ResearchWorkspaceConsumerProjectionDiagnosticReport'),
+    'ResearchWorkspaceConsumerProjectionStageRequirement': ('research_workspace_consumer_projection_stage_requirement', 'ResearchWorkspaceConsumerProjectionStageRequirement'),
+    'ResearchWorkspaceConsumerProjectionBudgetDecision': ('research_workspace_consumer_projection_budget_decision', 'ResearchWorkspaceConsumerProjectionBudgetDecision'),
+    'ResearchWorkspaceConsumerProjectionBudgetDecisionReason': ('research_workspace_consumer_projection_budget_decision_reason', 'ResearchWorkspaceConsumerProjectionBudgetDecisionReason'),
+    'ResearchWorkspaceConsumerProjectionStageBudgetPolicy': ('research_workspace_consumer_projection_stage_budget_policy', 'ResearchWorkspaceConsumerProjectionStageBudgetPolicy'),
+    'ResearchWorkspaceConsumerProjectionExecutionPolicy': ('research_workspace_consumer_projection_execution_policy', 'ResearchWorkspaceConsumerProjectionExecutionPolicy'),
+    'DEFAULT_CONSUMER_PROJECTION_POLICIES': ('research_workspace_consumer_projection_execution_policy_registry', 'DEFAULT_CONSUMER_PROJECTION_POLICIES'),
+    'ResearchWorkspaceConsumerProjectionExecutionPolicyRegistry': ('research_workspace_consumer_projection_execution_policy_registry', 'ResearchWorkspaceConsumerProjectionExecutionPolicyRegistry'),
+    'ResearchWorkspaceConsumerProjectionBudgetSnapshot': ('research_workspace_consumer_projection_budget_snapshot', 'ResearchWorkspaceConsumerProjectionBudgetSnapshot'),
+    'ResearchWorkspaceConsumerProjectionBudgetAdmission': ('research_workspace_consumer_projection_budget_admission', 'ResearchWorkspaceConsumerProjectionBudgetAdmission'),
+    'ResearchWorkspaceConsumerProjectionExecutionBudget': ('research_workspace_consumer_projection_execution_budget', 'ResearchWorkspaceConsumerProjectionExecutionBudget'),
+    'ResearchWorkspaceConsumerProjectionExecutionBudgetFactory': ('research_workspace_consumer_projection_execution_budget_factory', 'ResearchWorkspaceConsumerProjectionExecutionBudgetFactory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCoordinator': ('research_workspace_consumer_projection_execution_coordinator', 'ResearchWorkspaceConsumerProjectionExecutionCoordinator'),
+    'stage_or_noop': ('research_workspace_consumer_projection_diagnostics_stage_helper', 'stage_or_noop'),
+    'ResearchWorkspaceConsumerProjectionDiagnosticsCollector': ('research_workspace_consumer_projection_diagnostics_collector', 'ResearchWorkspaceConsumerProjectionDiagnosticsCollector'),
+    'ResearchWorkspaceConsumerProjectionDiagnosticsFactory': ('research_workspace_consumer_projection_diagnostics_factory', 'ResearchWorkspaceConsumerProjectionDiagnosticsFactory'),
+    'ResearchWorkspaceConsumerProjectionExecutionResult': ('research_workspace_consumer_projection_execution_result', 'ResearchWorkspaceConsumerProjectionExecutionResult'),
+    'ResearchWorkspaceUtcClock': ('research_workspace_utc_clock', 'ResearchWorkspaceUtcClock'),
+    'ResearchWorkspaceConsumerProjectionFreshnessStatus': ('research_workspace_consumer_projection_freshness_status', 'ResearchWorkspaceConsumerProjectionFreshnessStatus'),
+    'ResearchWorkspaceConsumerProjectionFreshnessReason': ('research_workspace_consumer_projection_freshness_reason', 'ResearchWorkspaceConsumerProjectionFreshnessReason'),
+    'ResearchWorkspaceConsumerProjectionFreshnessPolicy': ('research_workspace_consumer_projection_freshness_policy', 'ResearchWorkspaceConsumerProjectionFreshnessPolicy'),
+    'DEFAULT_CONSUMER_PROJECTION_FRESHNESS_POLICIES': ('research_workspace_consumer_projection_freshness_policy_registry', 'DEFAULT_CONSUMER_PROJECTION_FRESHNESS_POLICIES'),
+    'ResearchWorkspaceConsumerProjectionFreshnessPolicyRegistry': ('research_workspace_consumer_projection_freshness_policy_registry', 'ResearchWorkspaceConsumerProjectionFreshnessPolicyRegistry'),
+    'ResearchWorkspaceConsumerProjectionFreshnessEvaluation': ('research_workspace_consumer_projection_freshness_evaluation', 'ResearchWorkspaceConsumerProjectionFreshnessEvaluation'),
+    'ResearchWorkspaceConsumerProjectionFreshnessPolicyNotFoundError': ('research_workspace_consumer_projection_freshness_policy_not_found_error', 'ResearchWorkspaceConsumerProjectionFreshnessPolicyNotFoundError'),
+    'ResearchWorkspaceConsumerProjectionUnusableFreshnessError': ('research_workspace_consumer_projection_unusable_freshness_error', 'ResearchWorkspaceConsumerProjectionUnusableFreshnessError'),
+    'ResearchWorkspaceConsumerProjectionFreshnessEvaluator': ('research_workspace_consumer_projection_freshness_evaluator', 'ResearchWorkspaceConsumerProjectionFreshnessEvaluator'),
+    'ResearchWorkspaceConsumerProjectionProvenanceNodeKind': ('research_workspace_consumer_projection_provenance_node_kind', 'ResearchWorkspaceConsumerProjectionProvenanceNodeKind'),
+    'ResearchWorkspaceConsumerProjectionSourceProvenance': ('research_workspace_consumer_projection_source_provenance', 'ResearchWorkspaceConsumerProjectionSourceProvenance'),
+    'ResearchWorkspaceConsumerProjectionDerivationProvenance': ('research_workspace_consumer_projection_derivation_provenance', 'ResearchWorkspaceConsumerProjectionDerivationProvenance'),
+    'ResearchWorkspaceConsumerProjectionOutputProvenance': ('research_workspace_consumer_projection_output_provenance', 'ResearchWorkspaceConsumerProjectionOutputProvenance'),
+    'ResearchWorkspaceConsumerProjectionProvenanceEdge': ('research_workspace_consumer_projection_provenance_edge', 'ResearchWorkspaceConsumerProjectionProvenanceEdge'),
+    'ResearchWorkspaceConsumerProjectionProvenanceReport': ('research_workspace_consumer_projection_provenance_report', 'ResearchWorkspaceConsumerProjectionProvenanceReport'),
+    'ResearchWorkspaceConsumerProjectionProvenanceCollector': ('research_workspace_consumer_projection_provenance_collector', 'ResearchWorkspaceConsumerProjectionProvenanceCollector'),
+    'ResearchWorkspaceConsumerProjectionProvenanceCollectorFactory': ('research_workspace_consumer_projection_provenance_collector_factory', 'ResearchWorkspaceConsumerProjectionProvenanceCollectorFactory'),
+    'ResearchWorkspaceProjectionContext': ('research_workspace_projection_context', 'ResearchWorkspaceProjectionContext'),
+    'ResearchWorkspaceProjectionContextFactory': ('research_workspace_projection_context_factory', 'ResearchWorkspaceProjectionContextFactory'),
+    'ResearchWorkspaceAction': ('research_workspace_action', 'ResearchWorkspaceAction'),
+    'ResearchWorkspaceActionScope': ('research_workspace_action_scope', 'ResearchWorkspaceActionScope'),
+    'ResearchWorkspaceActionDescriptor': ('research_workspace_action_descriptor', 'ResearchWorkspaceActionDescriptor'),
+    'ResearchWorkspaceActionAvailability': ('research_workspace_action_availability', 'ResearchWorkspaceActionAvailability'),
+    'ResearchWorkspaceActionProjection': ('research_workspace_action_projection', 'ResearchWorkspaceActionProjection'),
+    'ResearchWorkspaceActionCatalog': ('research_workspace_action_catalog', 'ResearchWorkspaceActionCatalog'),
+    'ResearchWorkspaceActionProjector': ('research_workspace_action_projector', 'ResearchWorkspaceActionProjector'),
+    'ResearchWorkspaceBootstrapProjection': ('research_workspace_bootstrap_projection', 'ResearchWorkspaceBootstrapProjection'),
+    'ResearchWorkspaceBootstrapProjector': ('research_workspace_bootstrap_projector', 'ResearchWorkspaceBootstrapProjector'),
+    'ResearchWorkspaceGateway': ('research_workspace_gateway', 'ResearchWorkspaceGateway'),
+    'ResearchWorkspaceConsumerProjectionFingerprintAlgorithm': ('research_workspace_consumer_projection_fingerprint_algorithm', 'ResearchWorkspaceConsumerProjectionFingerprintAlgorithm'),
+    'ResearchWorkspaceConsumerProjectionFingerprint': ('research_workspace_consumer_projection_fingerprint', 'ResearchWorkspaceConsumerProjectionFingerprint'),
+    'ResearchWorkspaceConsumerProjectionSectionFingerprint': ('research_workspace_consumer_projection_section_fingerprint', 'ResearchWorkspaceConsumerProjectionSectionFingerprint'),
+    'ResearchWorkspaceConsumerProjectionFingerprintSnapshot': ('research_workspace_consumer_projection_fingerprint_snapshot', 'ResearchWorkspaceConsumerProjectionFingerprintSnapshot'),
+    'ResearchWorkspaceConsumerProjectionChangeStatus': ('research_workspace_consumer_projection_change_status', 'ResearchWorkspaceConsumerProjectionChangeStatus'),
+    'ResearchWorkspaceConsumerProjectionSectionChangeStatus': ('research_workspace_consumer_projection_section_change_status', 'ResearchWorkspaceConsumerProjectionSectionChangeStatus'),
+    'ResearchWorkspaceConsumerProjectionSectionChange': ('research_workspace_consumer_projection_section_change', 'ResearchWorkspaceConsumerProjectionSectionChange'),
+    'ResearchWorkspaceConsumerProjectionChangeReport': ('research_workspace_consumer_projection_change_report', 'ResearchWorkspaceConsumerProjectionChangeReport'),
+    'ResearchWorkspaceConsumerProjectionFingerprintError': ('research_workspace_consumer_projection_fingerprint_errors', 'ResearchWorkspaceConsumerProjectionFingerprintError'),
+    'ResearchWorkspaceUnsupportedCanonicalValueError': ('research_workspace_consumer_projection_fingerprint_errors', 'ResearchWorkspaceUnsupportedCanonicalValueError'),
+    'ResearchWorkspaceNaiveDatetimeCanonicalizationError': ('research_workspace_consumer_projection_fingerprint_errors', 'ResearchWorkspaceNaiveDatetimeCanonicalizationError'),
+    'ResearchWorkspaceProjectionFingerprintPolicyNotFoundError': ('research_workspace_consumer_projection_fingerprint_errors', 'ResearchWorkspaceProjectionFingerprintPolicyNotFoundError'),
+    'ResearchWorkspaceIncomparableProjectionSnapshotsError': ('research_workspace_consumer_projection_fingerprint_errors', 'ResearchWorkspaceIncomparableProjectionSnapshotsError'),
+    'ResearchWorkspaceConsumerProjectionFingerprintPolicy': ('research_workspace_consumer_projection_fingerprint_policy', 'ResearchWorkspaceConsumerProjectionFingerprintPolicy'),
+    'ResearchWorkspaceConsumerProjectionCanonicalizer': ('research_workspace_consumer_projection_canonicalizer', 'ResearchWorkspaceConsumerProjectionCanonicalizer'),
+    'ResearchWorkspaceConsumerProjectionFingerprintService': ('research_workspace_consumer_projection_fingerprint_service', 'ResearchWorkspaceConsumerProjectionFingerprintService'),
+    'ResearchWorkspaceConsumerProjectionChangeDetector': ('research_workspace_consumer_projection_change_detector', 'ResearchWorkspaceConsumerProjectionChangeDetector'),
+    'ResearchWorkspaceConsumerProjectionFingerprintPolicyRegistry': ('research_workspace_consumer_projection_fingerprint_policy_registry', 'ResearchWorkspaceConsumerProjectionFingerprintPolicyRegistry'),
+    'ResearchWorkspaceBootstrapFingerprintPolicy': ('research_workspace_bootstrap_fingerprint_policy', 'ResearchWorkspaceBootstrapFingerprintPolicy'),
+    'ResearchWorkspaceAttentionFingerprintPolicy': ('research_workspace_attention_fingerprint_policy', 'ResearchWorkspaceAttentionFingerprintPolicy'),
+    'ResearchWorkspaceActionFingerprintPolicy': ('research_workspace_action_fingerprint_policy', 'ResearchWorkspaceActionFingerprintPolicy'),
+    'ResearchWorkspaceReadinessFingerprintPolicy': ('research_workspace_readiness_fingerprint_policy', 'ResearchWorkspaceReadinessFingerprintPolicy'),
+    'ResearchWorkspaceConsumerProjectionExecutionStatus': ('research_workspace_consumer_projection_execution_status', 'ResearchWorkspaceConsumerProjectionExecutionStatus'),
+    'ResearchWorkspaceConsumerProjectionIdentity': ('research_workspace_consumer_projection_identity', 'ResearchWorkspaceConsumerProjectionIdentity'),
+    'ResearchWorkspaceConsumerProjectionDiagnosticsSummary': ('research_workspace_consumer_projection_diagnostics_summary', 'ResearchWorkspaceConsumerProjectionDiagnosticsSummary'),
+    'ResearchWorkspaceConsumerProjectionFreshnessSummary': ('research_workspace_consumer_projection_freshness_summary', 'ResearchWorkspaceConsumerProjectionFreshnessSummary'),
+    'ResearchWorkspaceConsumerProjectionBudgetSummary': ('research_workspace_consumer_projection_budget_summary', 'ResearchWorkspaceConsumerProjectionBudgetSummary'),
+    'ResearchWorkspaceConsumerProjectionProvenanceSummary': ('research_workspace_consumer_projection_provenance_summary', 'ResearchWorkspaceConsumerProjectionProvenanceSummary'),
+    'ResearchWorkspaceConsumerProjectionExecutionReceipt': ('research_workspace_consumer_projection_execution_receipt', 'ResearchWorkspaceConsumerProjectionExecutionReceipt'),
+    'ResearchWorkspaceConsumerProjectionReceiptVerificationStatus': ('research_workspace_consumer_projection_receipt_verification_status', 'ResearchWorkspaceConsumerProjectionReceiptVerificationStatus'),
+    'ResearchWorkspaceConsumerProjectionReceiptVerificationIssueCode': ('research_workspace_consumer_projection_receipt_verification_issue_code', 'ResearchWorkspaceConsumerProjectionReceiptVerificationIssueCode'),
+    'ResearchWorkspaceConsumerProjectionReceiptVerificationIssue': ('research_workspace_consumer_projection_receipt_verification_issue', 'ResearchWorkspaceConsumerProjectionReceiptVerificationIssue'),
+    'ResearchWorkspaceConsumerProjectionReceiptVerificationReport': ('research_workspace_consumer_projection_receipt_verification_report', 'ResearchWorkspaceConsumerProjectionReceiptVerificationReport'),
+    'ResearchWorkspaceConsumerProjectionDiagnosticsSummarizer': ('research_workspace_consumer_projection_diagnostics_summarizer', 'ResearchWorkspaceConsumerProjectionDiagnosticsSummarizer'),
+    'ResearchWorkspaceConsumerProjectionFreshnessSummarizer': ('research_workspace_consumer_projection_freshness_summarizer', 'ResearchWorkspaceConsumerProjectionFreshnessSummarizer'),
+    'ResearchWorkspaceConsumerProjectionBudgetSummarySummarizer': ('research_workspace_consumer_projection_budget_summarizer', 'ResearchWorkspaceConsumerProjectionBudgetSummarySummarizer'),
+    'ResearchWorkspaceConsumerProjectionProvenanceSummarizer': ('research_workspace_consumer_projection_provenance_summarizer', 'ResearchWorkspaceConsumerProjectionProvenanceSummarizer'),
+    'ResearchWorkspaceConsumerProjectionExecutionOutcomeResolver': ('research_workspace_consumer_projection_execution_outcome_resolver', 'ResearchWorkspaceConsumerProjectionExecutionOutcomeResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionReceiptBuilder': ('research_workspace_consumer_projection_execution_receipt_builder', 'ResearchWorkspaceConsumerProjectionExecutionReceiptBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionReceiptVerifier': ('research_workspace_consumer_projection_execution_receipt_verifier', 'ResearchWorkspaceConsumerProjectionExecutionReceiptVerifier'),
+    'ResearchWorkspaceConsumerProjectionExecutionReceiptFormatter': ('research_workspace_consumer_projection_execution_receipt_formatter', 'ResearchWorkspaceConsumerProjectionExecutionReceiptFormatter'),
+    'ResearchWorkspaceConsumerProjectionReceiptChangeKind': ('research_workspace_consumer_projection_receipt_change_kind', 'ResearchWorkspaceConsumerProjectionReceiptChangeKind'),
+    'ResearchWorkspaceConsumerProjectionReceiptFieldChange': ('research_workspace_consumer_projection_receipt_field_change', 'ResearchWorkspaceConsumerProjectionReceiptFieldChange'),
+    'ResearchWorkspaceConsumerProjectionExecutionReceiptComparison': ('research_workspace_consumer_projection_execution_receipt_comparison', 'ResearchWorkspaceConsumerProjectionExecutionReceiptComparison'),
+    'ResearchWorkspaceConsumerProjectionReceiptComparisonError': ('research_workspace_consumer_projection_receipt_comparison_error', 'ResearchWorkspaceConsumerProjectionReceiptComparisonError'),
+    'ResearchWorkspaceConsumerProjectionExecutionReceiptComparator': ('research_workspace_consumer_projection_execution_receipt_comparator', 'ResearchWorkspaceConsumerProjectionExecutionReceiptComparator'),
+    'ResearchWorkspaceConsumerProjectionQualitySignalCode': ('research_workspace_consumer_projection_quality_signal_code', 'ResearchWorkspaceConsumerProjectionQualitySignalCode'),
+    'ResearchWorkspaceConsumerProjectionQualitySignalSeverity': ('research_workspace_consumer_projection_quality_signal_severity', 'ResearchWorkspaceConsumerProjectionQualitySignalSeverity'),
+    'ResearchWorkspaceConsumerProjectionQualitySignal': ('research_workspace_consumer_projection_quality_signal', 'ResearchWorkspaceConsumerProjectionQualitySignal'),
+    'ResearchWorkspaceConsumerProjectionQualitySignalReport': ('research_workspace_consumer_projection_quality_signal_report', 'ResearchWorkspaceConsumerProjectionQualitySignalReport'),
+    'ResearchWorkspaceConsumerProjectionQualitySignalExtractor': ('research_workspace_consumer_projection_quality_signal_extractor', 'ResearchWorkspaceConsumerProjectionQualitySignalExtractor'),
+    'ResearchWorkspaceConsumerProjectionExecutionHealth': ('research_workspace_consumer_projection_execution_health', 'ResearchWorkspaceConsumerProjectionExecutionHealth'),
+    'ResearchWorkspaceConsumerProjectionExecutionHealthSummary': ('research_workspace_consumer_projection_execution_health_summary', 'ResearchWorkspaceConsumerProjectionExecutionHealthSummary'),
+    'ResearchWorkspaceConsumerProjectionExecutionHealthSummarizer': ('research_workspace_consumer_projection_execution_health_summarizer', 'ResearchWorkspaceConsumerProjectionExecutionHealthSummarizer'),
+    'ResearchWorkspaceConsumerProjectionExecutionHealthAnalyzer': ('research_workspace_consumer_projection_execution_health_analyzer', 'ResearchWorkspaceConsumerProjectionExecutionHealthAnalyzer'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionKind': ('research_workspace_consumer_projection_health_transition_kind', 'ResearchWorkspaceConsumerProjectionHealthTransitionKind'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionError': ('research_workspace_consumer_projection_health_transition_error', 'ResearchWorkspaceConsumerProjectionHealthTransitionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionHealthTransition': ('research_workspace_consumer_projection_execution_health_transition', 'ResearchWorkspaceConsumerProjectionExecutionHealthTransition'),
+    'ResearchWorkspaceConsumerProjectionExecutionHealthTransitionAnalyzer': ('research_workspace_consumer_projection_execution_health_transition_analyzer', 'ResearchWorkspaceConsumerProjectionExecutionHealthTransitionAnalyzer'),
+    'ResearchWorkspaceConsumerProjectionExecutionHealthTransitionEvaluator': ('research_workspace_consumer_projection_execution_health_transition_evaluator', 'ResearchWorkspaceConsumerProjectionExecutionHealthTransitionEvaluator'),
+    'ResearchWorkspaceConsumerProjectionHealthSignalChange': ('research_workspace_consumer_projection_health_signal_change', 'ResearchWorkspaceConsumerProjectionHealthSignalChange'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionExplanation': ('research_workspace_consumer_projection_health_transition_explanation', 'ResearchWorkspaceConsumerProjectionHealthTransitionExplanation'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionExplanationError': ('research_workspace_consumer_projection_health_transition_explanation_error', 'ResearchWorkspaceConsumerProjectionHealthTransitionExplanationError'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionExplainer': ('research_workspace_consumer_projection_health_transition_explainer', 'ResearchWorkspaceConsumerProjectionHealthTransitionExplainer'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionImpact': ('research_workspace_consumer_projection_health_transition_impact', 'ResearchWorkspaceConsumerProjectionHealthTransitionImpact'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionImpactSummary': ('research_workspace_consumer_projection_health_transition_impact_summary', 'ResearchWorkspaceConsumerProjectionHealthTransitionImpactSummary'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionImpactSummarizer': ('research_workspace_consumer_projection_health_transition_impact_summarizer', 'ResearchWorkspaceConsumerProjectionHealthTransitionImpactSummarizer'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentKind': ('research_workspace_consumer_projection_health_transition_assessment_kind', 'ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentKind'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionAssessment': ('research_workspace_consumer_projection_health_transition_assessment', 'ResearchWorkspaceConsumerProjectionHealthTransitionAssessment'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentError': ('research_workspace_consumer_projection_health_transition_assessment_error', 'ResearchWorkspaceConsumerProjectionHealthTransitionAssessmentError'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionAssessor': ('research_workspace_consumer_projection_health_transition_assessor', 'ResearchWorkspaceConsumerProjectionHealthTransitionAssessor'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationKind': ('research_workspace_consumer_projection_health_transition_recommendation_kind', 'ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationKind'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionRecommendation': ('research_workspace_consumer_projection_health_transition_recommendation', 'ResearchWorkspaceConsumerProjectionHealthTransitionRecommendation'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationResolver': ('research_workspace_consumer_projection_health_transition_recommendation_resolver', 'ResearchWorkspaceConsumerProjectionHealthTransitionRecommendationResolver'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriority': ('research_workspace_consumer_projection_health_transition_response_priority', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriority'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriorityResult': ('research_workspace_consumer_projection_health_transition_response_priority_result', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriorityResult'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriorityResolver': ('research_workspace_consumer_projection_health_transition_response_priority_resolver', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePriorityResolver'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirective': ('research_workspace_consumer_projection_health_transition_response_directive', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirective'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirectiveError': ('research_workspace_consumer_projection_health_transition_response_directive_error', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirectiveError'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirectiveBuilder': ('research_workspace_consumer_projection_health_transition_response_directive_builder', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponseDirectiveBuilder'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanner': ('research_workspace_consumer_projection_health_transition_response_planner', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanner'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponseReason': ('research_workspace_consumer_projection_health_transition_response_reason', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponseReason'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponseRationale': ('research_workspace_consumer_projection_health_transition_response_rationale', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponseRationale'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponseRationaleError': ('research_workspace_consumer_projection_health_transition_response_rationale_error', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponseRationaleError'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponseRationaleBuilder': ('research_workspace_consumer_projection_health_transition_response_rationale_builder', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponseRationaleBuilder'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackage': ('research_workspace_consumer_projection_health_transition_response_package', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackage'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackageError': ('research_workspace_consumer_projection_health_transition_response_package_error', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackageError'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackageBuilder': ('research_workspace_consumer_projection_health_transition_response_package_builder', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePackageBuilder'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanSnapshot': ('research_workspace_consumer_projection_health_transition_response_plan_snapshot', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanSnapshot'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanSnapshotError': ('research_workspace_consumer_projection_health_transition_response_plan_snapshot_error', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanSnapshotError'),
+    'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanSnapshotBuilder': ('research_workspace_consumer_projection_health_transition_response_plan_snapshot_builder', 'ResearchWorkspaceConsumerProjectionHealthTransitionResponsePlanSnapshotBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionPlanDependency': ('research_workspace_consumer_projection_execution_plan_dependency', 'ResearchWorkspaceConsumerProjectionExecutionPlanDependency'),
+    'ResearchWorkspaceConsumerProjectionExecutionPlanSource': ('research_workspace_consumer_projection_execution_plan_source', 'ResearchWorkspaceConsumerProjectionExecutionPlanSource'),
+    'ResearchWorkspaceConsumerProjectionExecutionPlanStage': ('research_workspace_consumer_projection_execution_plan_stage', 'ResearchWorkspaceConsumerProjectionExecutionPlanStage'),
+    'ResearchWorkspaceConsumerProjectionExecutionPlan': ('research_workspace_consumer_projection_execution_plan', 'ResearchWorkspaceConsumerProjectionExecutionPlan'),
+    'ResearchWorkspaceConsumerProjectionReadiness': ('research_workspace_consumer_projection_readiness', 'ResearchWorkspaceConsumerProjectionReadiness'),
+    'ResearchWorkspaceConsumerProjectionReadinessIssue': ('research_workspace_consumer_projection_readiness_issue', 'ResearchWorkspaceConsumerProjectionReadinessIssue'),
+    'ResearchWorkspaceConsumerProjectionReadinessReason': ('research_workspace_consumer_projection_readiness_reason', 'ResearchWorkspaceConsumerProjectionReadinessReason'),
+    'ResearchWorkspaceConsumerProjectionReadinessReport': ('research_workspace_consumer_projection_readiness_report', 'ResearchWorkspaceConsumerProjectionReadinessReport'),
+    'ResearchWorkspaceConsumerProjectionReadinessEvaluator': ('research_workspace_consumer_projection_readiness_evaluator', 'ResearchWorkspaceConsumerProjectionReadinessEvaluator'),
+    'ResearchWorkspaceConsumerProjectionReadinessSummary': ('research_workspace_consumer_projection_readiness_summary', 'ResearchWorkspaceConsumerProjectionReadinessSummary'),
+    'ResearchWorkspaceConsumerProjectionReadinessSummarizer': ('research_workspace_consumer_projection_readiness_summarizer', 'ResearchWorkspaceConsumerProjectionReadinessSummarizer'),
+    'ResearchWorkspaceConsumerProjectionReadinessTransition': ('research_workspace_consumer_projection_readiness_transition', 'ResearchWorkspaceConsumerProjectionReadinessTransition'),
+    'ResearchWorkspaceConsumerProjectionReadinessTransitionError': ('research_workspace_consumer_projection_readiness_transition_error', 'ResearchWorkspaceConsumerProjectionReadinessTransitionError'),
+    'ResearchWorkspaceConsumerProjectionReadinessTransitionReport': ('research_workspace_consumer_projection_readiness_transition_report', 'ResearchWorkspaceConsumerProjectionReadinessTransitionReport'),
+    'ResearchWorkspaceConsumerProjectionReadinessTransitionAnalyzer': ('research_workspace_consumer_projection_readiness_transition_analyzer', 'ResearchWorkspaceConsumerProjectionReadinessTransitionAnalyzer'),
+    'ResearchWorkspaceConsumerProjectionReadinessIssueChange': ('research_workspace_consumer_projection_readiness_issue_change', 'ResearchWorkspaceConsumerProjectionReadinessIssueChange'),
+    'ResearchWorkspaceConsumerProjectionReadinessExplanationError': ('research_workspace_consumer_projection_readiness_explanation_error', 'ResearchWorkspaceConsumerProjectionReadinessExplanationError'),
+    'ResearchWorkspaceConsumerProjectionReadinessTransitionExplanation': ('research_workspace_consumer_projection_readiness_transition_explanation', 'ResearchWorkspaceConsumerProjectionReadinessTransitionExplanation'),
+    'ResearchWorkspaceConsumerProjectionReadinessTransitionExplainer': ('research_workspace_consumer_projection_readiness_transition_explainer', 'ResearchWorkspaceConsumerProjectionReadinessTransitionExplainer'),
+    'ResearchWorkspaceConsumerProjectionReadinessImpact': ('research_workspace_consumer_projection_readiness_impact', 'ResearchWorkspaceConsumerProjectionReadinessImpact'),
+    'ResearchWorkspaceConsumerProjectionReadinessImpactSummary': ('research_workspace_consumer_projection_readiness_impact_summary', 'ResearchWorkspaceConsumerProjectionReadinessImpactSummary'),
+    'ResearchWorkspaceConsumerProjectionReadinessImpactSummarizer': ('research_workspace_consumer_projection_readiness_impact_summarizer', 'ResearchWorkspaceConsumerProjectionReadinessImpactSummarizer'),
+    'ResearchWorkspaceConsumerProjectionReadinessAssessment': ('research_workspace_consumer_projection_readiness_assessment', 'ResearchWorkspaceConsumerProjectionReadinessAssessment'),
+    'ResearchWorkspaceConsumerProjectionReadinessAssessmentError': ('research_workspace_consumer_projection_readiness_assessment_error', 'ResearchWorkspaceConsumerProjectionReadinessAssessmentError'),
+    'ResearchWorkspaceConsumerProjectionReadinessAssessmentReport': ('research_workspace_consumer_projection_readiness_assessment_report', 'ResearchWorkspaceConsumerProjectionReadinessAssessmentReport'),
+    'ResearchWorkspaceConsumerProjectionReadinessAssessor': ('research_workspace_consumer_projection_readiness_assessor', 'ResearchWorkspaceConsumerProjectionReadinessAssessor'),
+    'ResearchWorkspaceConsumerProjectionReadinessRecommendation': ('research_workspace_consumer_projection_readiness_recommendation', 'ResearchWorkspaceConsumerProjectionReadinessRecommendation'),
+    'ResearchWorkspaceConsumerProjectionReadinessRecommendationReport': ('research_workspace_consumer_projection_readiness_recommendation_report', 'ResearchWorkspaceConsumerProjectionReadinessRecommendationReport'),
+    'ResearchWorkspaceConsumerProjectionReadinessRecommendationResolver': ('research_workspace_consumer_projection_readiness_recommendation_resolver', 'ResearchWorkspaceConsumerProjectionReadinessRecommendationResolver'),
+    'ResearchWorkspaceConsumerProjectionReadinessPriority': ('research_workspace_consumer_projection_readiness_priority', 'ResearchWorkspaceConsumerProjectionReadinessPriority'),
+    'ResearchWorkspaceConsumerProjectionReadinessPriorityReport': ('research_workspace_consumer_projection_readiness_priority_report', 'ResearchWorkspaceConsumerProjectionReadinessPriorityReport'),
+    'ResearchWorkspaceConsumerProjectionReadinessPriorityResolver': ('research_workspace_consumer_projection_readiness_priority_resolver', 'ResearchWorkspaceConsumerProjectionReadinessPriorityResolver'),
+    'ResearchWorkspaceConsumerProjectionReadinessDirective': ('research_workspace_consumer_projection_readiness_directive', 'ResearchWorkspaceConsumerProjectionReadinessDirective'),
+    'ResearchWorkspaceConsumerProjectionReadinessDirectiveError': ('research_workspace_consumer_projection_readiness_directive_error', 'ResearchWorkspaceConsumerProjectionReadinessDirectiveError'),
+    'ResearchWorkspaceConsumerProjectionReadinessDirectiveBuilder': ('research_workspace_consumer_projection_readiness_directive_builder', 'ResearchWorkspaceConsumerProjectionReadinessDirectiveBuilder'),
+    'ResearchWorkspaceConsumerProjectionReadinessReasonCode': ('research_workspace_consumer_projection_readiness_reason_code', 'ResearchWorkspaceConsumerProjectionReadinessReasonCode'),
+    'ResearchWorkspaceConsumerProjectionReadinessRationale': ('research_workspace_consumer_projection_readiness_rationale', 'ResearchWorkspaceConsumerProjectionReadinessRationale'),
+    'ResearchWorkspaceConsumerProjectionReadinessRationaleBuilder': ('research_workspace_consumer_projection_readiness_rationale_builder', 'ResearchWorkspaceConsumerProjectionReadinessRationaleBuilder'),
+    'ResearchWorkspaceConsumerProjectionReadinessResponsePackage': ('research_workspace_consumer_projection_readiness_response_package', 'ResearchWorkspaceConsumerProjectionReadinessResponsePackage'),
+    'ResearchWorkspaceConsumerProjectionReadinessResponsePackageError': ('research_workspace_consumer_projection_readiness_response_package_error', 'ResearchWorkspaceConsumerProjectionReadinessResponsePackageError'),
+    'ResearchWorkspaceConsumerProjectionReadinessResponsePackageBuilder': ('research_workspace_consumer_projection_readiness_response_package_builder', 'ResearchWorkspaceConsumerProjectionReadinessResponsePackageBuilder'),
+    'ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshot': ('research_workspace_consumer_projection_readiness_decision_snapshot', 'ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshot'),
+    'ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshotError': ('research_workspace_consumer_projection_readiness_decision_snapshot_error', 'ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshotError'),
+    'ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshotBuilder': ('research_workspace_consumer_projection_readiness_decision_snapshot_builder', 'ResearchWorkspaceConsumerProjectionReadinessDecisionSnapshotBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionEligibility': ('research_workspace_consumer_projection_execution_eligibility', 'ResearchWorkspaceConsumerProjectionExecutionEligibility'),
+    'ResearchWorkspaceConsumerProjectionExecutionEligibilityReason': ('research_workspace_consumer_projection_execution_eligibility_reason', 'ResearchWorkspaceConsumerProjectionExecutionEligibilityReason'),
+    'ResearchWorkspaceConsumerProjectionExecutionEligibilityReport': ('research_workspace_consumer_projection_execution_eligibility_report', 'ResearchWorkspaceConsumerProjectionExecutionEligibilityReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionEligibilityEvaluator': ('research_workspace_consumer_projection_execution_eligibility_evaluator', 'ResearchWorkspaceConsumerProjectionExecutionEligibilityEvaluator'),
+    'ResearchWorkspaceConsumerProjectionExecutionDecision': ('research_workspace_consumer_projection_execution_decision', 'ResearchWorkspaceConsumerProjectionExecutionDecision'),
+    'ResearchWorkspaceConsumerProjectionExecutionDecisionReason': ('research_workspace_consumer_projection_execution_decision_reason', 'ResearchWorkspaceConsumerProjectionExecutionDecisionReason'),
+    'ResearchWorkspaceConsumerProjectionExecutionDecisionReport': ('research_workspace_consumer_projection_execution_decision_report', 'ResearchWorkspaceConsumerProjectionExecutionDecisionReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionDecisionResolver': ('research_workspace_consumer_projection_execution_decision_resolver', 'ResearchWorkspaceConsumerProjectionExecutionDecisionResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionGateStatus': ('research_workspace_consumer_projection_execution_gate_status', 'ResearchWorkspaceConsumerProjectionExecutionGateStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionGateReason': ('research_workspace_consumer_projection_execution_gate_reason', 'ResearchWorkspaceConsumerProjectionExecutionGateReason'),
+    'ResearchWorkspaceConsumerProjectionExecutionGateReport': ('research_workspace_consumer_projection_execution_gate_report', 'ResearchWorkspaceConsumerProjectionExecutionGateReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionGateResolver': ('research_workspace_consumer_projection_execution_gate_resolver', 'ResearchWorkspaceConsumerProjectionExecutionGateResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionAuthorization': ('research_workspace_consumer_projection_execution_authorization', 'ResearchWorkspaceConsumerProjectionExecutionAuthorization'),
+    'ResearchWorkspaceConsumerProjectionExecutionAuthorizationReason': ('research_workspace_consumer_projection_execution_authorization_reason', 'ResearchWorkspaceConsumerProjectionExecutionAuthorizationReason'),
+    'ResearchWorkspaceConsumerProjectionExecutionAuthorizationReport': ('research_workspace_consumer_projection_execution_authorization_report', 'ResearchWorkspaceConsumerProjectionExecutionAuthorizationReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionAuthorizationResolver': ('research_workspace_consumer_projection_execution_authorization_resolver', 'ResearchWorkspaceConsumerProjectionExecutionAuthorizationResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionVerdict': ('research_workspace_consumer_projection_execution_verdict', 'ResearchWorkspaceConsumerProjectionExecutionVerdict'),
+    'ResearchWorkspaceConsumerProjectionExecutionVerdictReason': ('research_workspace_consumer_projection_execution_verdict_reason', 'ResearchWorkspaceConsumerProjectionExecutionVerdictReason'),
+    'ResearchWorkspaceConsumerProjectionExecutionVerdictReport': ('research_workspace_consumer_projection_execution_verdict_report', 'ResearchWorkspaceConsumerProjectionExecutionVerdictReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionVerdictResolver': ('research_workspace_consumer_projection_execution_verdict_resolver', 'ResearchWorkspaceConsumerProjectionExecutionVerdictResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionOutcome': ('research_workspace_consumer_projection_execution_outcome', 'ResearchWorkspaceConsumerProjectionExecutionOutcome'),
+    'ResearchWorkspaceConsumerProjectionExecutionOutcomeReason': ('research_workspace_consumer_projection_execution_outcome_reason', 'ResearchWorkspaceConsumerProjectionExecutionOutcomeReason'),
+    'ResearchWorkspaceConsumerProjectionExecutionOutcomeReport': ('research_workspace_consumer_projection_execution_outcome_report', 'ResearchWorkspaceConsumerProjectionExecutionOutcomeReport'),
+    'ResearchWorkspaceConsumerProjectionVerdictOutcomeResolver': ('research_workspace_consumer_projection_verdict_outcome_resolver', 'ResearchWorkspaceConsumerProjectionVerdictOutcomeResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionSummary': ('research_workspace_consumer_projection_execution_summary', 'ResearchWorkspaceConsumerProjectionExecutionSummary'),
+    'ResearchWorkspaceConsumerProjectionExecutionSummaryBuilder': ('research_workspace_consumer_projection_execution_summary_builder', 'ResearchWorkspaceConsumerProjectionExecutionSummaryBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionSnapshot': ('research_workspace_consumer_projection_execution_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionSnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionSnapshotError': ('research_workspace_consumer_projection_execution_snapshot_error', 'ResearchWorkspaceConsumerProjectionExecutionSnapshotError'),
+    'ResearchWorkspaceConsumerProjectionExecutionSnapshotBuilder': ('research_workspace_consumer_projection_execution_snapshot_builder', 'ResearchWorkspaceConsumerProjectionExecutionSnapshotBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionAuditRecord': ('research_workspace_consumer_projection_execution_audit_record', 'ResearchWorkspaceConsumerProjectionExecutionAuditRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionAuditRecordError': ('research_workspace_consumer_projection_execution_audit_record_error', 'ResearchWorkspaceConsumerProjectionExecutionAuditRecordError'),
+    'ResearchWorkspaceConsumerProjectionExecutionAuditRecordBuilder': ('research_workspace_consumer_projection_execution_audit_record_builder', 'ResearchWorkspaceConsumerProjectionExecutionAuditRecordBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionLifecycleState': ('research_workspace_consumer_projection_execution_lifecycle_state', 'ResearchWorkspaceConsumerProjectionExecutionLifecycleState'),
+    'ResearchWorkspaceConsumerProjectionExecutionLifecycleReason': ('research_workspace_consumer_projection_execution_lifecycle_reason', 'ResearchWorkspaceConsumerProjectionExecutionLifecycleReason'),
+    'ResearchWorkspaceConsumerProjectionExecutionLifecycleReport': ('research_workspace_consumer_projection_execution_lifecycle_report', 'ResearchWorkspaceConsumerProjectionExecutionLifecycleReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionLifecycleResolver': ('research_workspace_consumer_projection_execution_lifecycle_resolver', 'ResearchWorkspaceConsumerProjectionExecutionLifecycleResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshot': ('research_workspace_consumer_projection_execution_readiness_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshotError': ('research_workspace_consumer_projection_execution_readiness_snapshot_error', 'ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshotError'),
+    'ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshotBuilder': ('research_workspace_consumer_projection_execution_readiness_snapshot_builder', 'ResearchWorkspaceConsumerProjectionExecutionReadinessSnapshotBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionConsumerResponse': ('research_workspace_consumer_projection_execution_consumer_response', 'ResearchWorkspaceConsumerProjectionExecutionConsumerResponse'),
+    'ResearchWorkspaceConsumerProjectionExecutionConsumerResponseBuilder': ('research_workspace_consumer_projection_execution_consumer_response_builder', 'ResearchWorkspaceConsumerProjectionExecutionConsumerResponseBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionDecisionPackage': ('research_workspace_consumer_projection_execution_decision_package', 'ResearchWorkspaceConsumerProjectionExecutionDecisionPackage'),
+    'ResearchWorkspaceConsumerProjectionExecutionDecisionPackageError': ('research_workspace_consumer_projection_execution_decision_package_error', 'ResearchWorkspaceConsumerProjectionExecutionDecisionPackageError'),
+    'ResearchWorkspaceConsumerProjectionExecutionDecisionPackageBuilder': ('research_workspace_consumer_projection_execution_decision_package_builder', 'ResearchWorkspaceConsumerProjectionExecutionDecisionPackageBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapability': ('research_workspace_consumer_projection_execution_capability', 'ResearchWorkspaceConsumerProjectionExecutionCapability'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityReason': ('research_workspace_consumer_projection_execution_capability_reason', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityReason'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityReport': ('research_workspace_consumer_projection_execution_capability_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityResolver': ('research_workspace_consumer_projection_execution_capability_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilitySummary': ('research_workspace_consumer_projection_execution_capability_summary', 'ResearchWorkspaceConsumerProjectionExecutionCapabilitySummary'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilitySummaryBuilder': ('research_workspace_consumer_projection_execution_capability_summary_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilitySummaryBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshot': ('research_workspace_consumer_projection_execution_capability_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotError': ('research_workspace_consumer_projection_execution_capability_snapshot_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotBuilder': ('research_workspace_consumer_projection_execution_capability_snapshot_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityPackage': ('research_workspace_consumer_projection_execution_capability_package', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityPackage'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityPackageError': ('research_workspace_consumer_projection_execution_capability_package_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityPackageError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityPackageBuilder': ('research_workspace_consumer_projection_execution_capability_package_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityPackageBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityProfile': ('research_workspace_consumer_projection_execution_capability_profile', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityProfile'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityProfileBuilder': ('research_workspace_consumer_projection_execution_capability_profile_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityProfileBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityClassification': ('research_workspace_consumer_projection_execution_capability_classification', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityClassification'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityClassificationReport': ('research_workspace_consumer_projection_execution_capability_classification_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityClassificationReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityClassificationResolver': ('research_workspace_consumer_projection_execution_capability_classification_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityClassificationResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDescriptor': ('research_workspace_consumer_projection_execution_capability_descriptor', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDescriptor'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDescriptorBuilder': ('research_workspace_consumer_projection_execution_capability_descriptor_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDescriptorBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackage': ('research_workspace_consumer_projection_execution_capability_snapshot_package', 'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackage'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackageError': ('research_workspace_consumer_projection_execution_capability_snapshot_package_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackageError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackageBuilder': ('research_workspace_consumer_projection_execution_capability_snapshot_package_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilitySnapshotPackageBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecision': ('research_workspace_consumer_projection_execution_capability_decision', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecision'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionReason': ('research_workspace_consumer_projection_execution_capability_decision_reason', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionReason'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionReport': ('research_workspace_consumer_projection_execution_capability_decision_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionResolver': ('research_workspace_consumer_projection_execution_capability_decision_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSummary': ('research_workspace_consumer_projection_execution_capability_decision_summary', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSummary'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSummaryBuilder': ('research_workspace_consumer_projection_execution_capability_decision_summary_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSummaryBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSnapshot': ('research_workspace_consumer_projection_execution_capability_decision_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSnapshotError': ('research_workspace_consumer_projection_execution_capability_decision_snapshot_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSnapshotError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSnapshotBuilder': ('research_workspace_consumer_projection_execution_capability_decision_snapshot_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionSnapshotBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityConsumerResponse': ('research_workspace_consumer_projection_execution_capability_consumer_response', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityConsumerResponse'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityConsumerResponseBuilder': ('research_workspace_consumer_projection_execution_capability_consumer_response_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityConsumerResponseBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionPackage': ('research_workspace_consumer_projection_execution_capability_decision_package', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionPackage'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionPackageError': ('research_workspace_consumer_projection_execution_capability_decision_package_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionPackageError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionPackageBuilder': ('research_workspace_consumer_projection_execution_capability_decision_package_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityDecisionPackageBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryError': ('research_workspace_consumer_projection_execution_capability_registry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistry': ('research_workspace_consumer_projection_execution_capability_registry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistrySnapshot': ('research_workspace_consumer_projection_execution_capability_registry_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistrySnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistrySnapshotError': ('research_workspace_consumer_projection_execution_capability_registry_snapshot_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistrySnapshotError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistrySnapshotBuilder': ('research_workspace_consumer_projection_execution_capability_registry_snapshot_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistrySnapshotBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryQueryError': ('research_workspace_consumer_projection_execution_capability_registry_query_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryQueryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryQueryService': ('research_workspace_consumer_projection_execution_capability_registry_query_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryQueryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExport': ('research_workspace_consumer_projection_execution_capability_registry_export', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExportError': ('research_workspace_consumer_projection_execution_capability_registry_export_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExportError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExporter': ('research_workspace_consumer_projection_execution_capability_registry_exporter', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryExporter'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidationReport': ('research_workspace_consumer_projection_execution_capability_registry_validation_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidationReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidationError': ('research_workspace_consumer_projection_execution_capability_registry_validation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidator': ('research_workspace_consumer_projection_execution_capability_registry_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryHealthReport': ('research_workspace_consumer_projection_execution_capability_registry_health_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryHealthReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryHealthAnalysisError': ('research_workspace_consumer_projection_execution_capability_registry_health_analysis_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryHealthAnalysisError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryHealthAnalyzer': ('research_workspace_consumer_projection_execution_capability_registry_health_analyzer', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryHealthAnalyzer'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryDiff': ('research_workspace_consumer_projection_execution_capability_registry_diff', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryDiff'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryDiffEngine': ('research_workspace_consumer_projection_execution_capability_registry_diff_engine', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryDiffEngine'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergePlan': ('research_workspace_consumer_projection_execution_capability_registry_merge_plan', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergePlan'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergePlanner': ('research_workspace_consumer_projection_execution_capability_registry_merge_planner', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergePlanner'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidationReport': ('research_workspace_consumer_projection_execution_capability_registry_merge_validation_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidationReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidationError': ('research_workspace_consumer_projection_execution_capability_registry_merge_validation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidator': ('research_workspace_consumer_projection_execution_capability_registry_merge_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeExecutionError': ('research_workspace_consumer_projection_execution_capability_registry_merge_execution_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeExecutionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeExecutor': ('research_workspace_consumer_projection_execution_capability_registry_merge_executor', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryMergeExecutor'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionOperation': ('research_workspace_consumer_projection_execution_capability_registry_transaction_operation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionOperation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionEntry': ('research_workspace_consumer_projection_execution_capability_registry_transaction_entry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionEntry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransaction': ('research_workspace_consumer_projection_execution_capability_registry_transaction', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransaction'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionError': ('research_workspace_consumer_projection_execution_capability_registry_transaction_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionExecutor': ('research_workspace_consumer_projection_execution_capability_registry_transaction_executor', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionExecutor'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidationReport': ('research_workspace_consumer_projection_execution_capability_registry_transaction_validation_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidationReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidationError': ('research_workspace_consumer_projection_execution_capability_registry_transaction_validation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidator': ('research_workspace_consumer_projection_execution_capability_registry_transaction_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionCoordinatorError': ('research_workspace_consumer_projection_execution_capability_registry_transaction_coordinator_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionCoordinatorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionCoordinator': ('research_workspace_consumer_projection_execution_capability_registry_transaction_coordinator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryTransactionCoordinator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublisherError': ('research_workspace_consumer_projection_execution_capability_registry_event_publisher_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublisherError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublisher': ('research_workspace_consumer_projection_execution_capability_registry_event_publisher', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublisher'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriberError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscriber_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriberError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriber': ('research_workspace_consumer_projection_execution_capability_registry_event_subscriber', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriber'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatcherError': ('research_workspace_consumer_projection_execution_capability_registry_event_dispatcher_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatcherError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatcher': ('research_workspace_consumer_projection_execution_capability_registry_event_dispatcher', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatcher'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_dispatch_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResult': ('research_workspace_consumer_projection_execution_capability_registry_event_dispatch_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResultBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_dispatch_result_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventDispatchResultBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationResultBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_result_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationResultBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSessionError': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_session_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSessionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSession': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_session', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSession'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSessionBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_session_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationSessionBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCursorError': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_cursor_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCursorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCursor': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_cursor', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCursor'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCursorBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_cursor_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCursorBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryReaderError': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_reader_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryReaderError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryReadResult': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_read_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryReadResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryReader': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_reader', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryReader'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryNavigatorError': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_navigator_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryNavigatorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryNavigator': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_navigator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryNavigator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBookmarkError': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_bookmark_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBookmarkError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBookmark': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_bookmark', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBookmark'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBookmarkFactory': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_bookmark_factory', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryBookmarkFactory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCheckpointError': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_checkpoint_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCheckpointError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCheckpoint': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_checkpoint', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCheckpoint'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCheckpointBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_publication_history_checkpoint_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventPublicationHistoryCheckpointBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscription': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscription'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionRegistryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_registry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionRegistryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionRegistry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_registry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionRegistry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolverError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolver_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolverError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolver': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolution': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolution'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionSessionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_session_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionSessionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionSession': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_session', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionSession'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionSessionBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_session_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionSessionBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCursorError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_cursor_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCursorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCursor': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_cursor', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCursor'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCursorBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_cursor_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCursorBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryReaderError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_reader_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryReaderError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryReadResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_read_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryReadResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryReader': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_reader', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryReader'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryNavigatorError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_navigator_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryNavigatorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryNavigator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_navigator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryNavigator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBookmarkError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_bookmark_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBookmarkError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBookmark': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_bookmark', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBookmark'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBookmarkFactory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_bookmark_factory', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryBookmarkFactory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCheckpointError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_checkpoint_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCheckpointError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCheckpoint': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_checkpoint', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCheckpoint'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCheckpointBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_checkpoint_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryCheckpointBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindow': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindow'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowSessionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window_session_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowSessionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowSession': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window_session', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowSession'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowSessionBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_resolution_history_window_session_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionResolutionHistoryWindowSessionBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleState': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_state', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleState'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycle': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycle'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicy'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyValidationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_validation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyValidationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyValidator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransition': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransition'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationRequestError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_request_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationRequestError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationRequestBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_request_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationRequestBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationResultBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_result_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationResultBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluatorError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluator_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluatorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryEntryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_entry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryEntryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryEntry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_entry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryEntry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryEntryBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_entry_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryEntryBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCursorError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_cursor_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCursorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCursor': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_cursor', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCursor'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCursorBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_cursor_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCursorBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryReadResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_read_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryReadResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryReaderError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_reader_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryReaderError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryReader': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_reader', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryReader'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryNavigatorError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_navigator_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryNavigatorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryNavigator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_navigator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryNavigator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBookmarkError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_bookmark_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBookmarkError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBookmark': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_bookmark', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBookmark'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBookmarkFactory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_bookmark_factory', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryBookmarkFactory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCheckpointError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_checkpoint_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCheckpointError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCheckpoint': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_checkpoint', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCheckpoint'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCheckpointBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_checkpoint_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryCheckpointBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryWindowError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_window_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryWindowError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryWindow': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_window', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryWindow'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryWindowBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_evaluation_history_window_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyEvaluationHistoryWindowBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionValidationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_validation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionValidationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionValidator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutorError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_executor_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutor': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_executor', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutor'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionResultBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_result_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionResultBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryEntryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_entry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryEntryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryEntry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_entry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryEntry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryEntryBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_entry_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryEntryBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCursorError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_cursor_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCursorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCursor': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_cursor', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCursor'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCursorBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_cursor_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCursorBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryReaderError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_reader_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryReaderError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryReadResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_read_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryReadResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryReader': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_reader', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryReader'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryNavigatorError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_navigator_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryNavigatorError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryNavigator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_navigator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryNavigator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBookmarkError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_bookmark_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBookmarkError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBookmark': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_bookmark', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBookmark'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBookmarkFactory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_bookmark_factory', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryBookmarkFactory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCheckpointError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_checkpoint_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCheckpointError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCheckpoint': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_checkpoint', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCheckpoint'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCheckpointBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_checkpoint_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryCheckpointBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryWindowError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_window_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryWindowError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryWindow': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_window', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryWindow'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryWindowBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_transition_execution_history_window_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecycleTransitionExecutionHistoryWindowBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogMetadataError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_metadata_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogMetadataError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogMetadata': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_metadata', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogMetadata'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalog': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalog'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogExportError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_export_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogExportError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogExport': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_export', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogExport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogExporter': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_exporter', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogExporter'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogImportError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_import_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogImportError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogImportResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_import_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogImportResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogImporter': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_importer', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogImporter'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizationStrategy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_synchronization_strategy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizationStrategy'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_synchronization_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_synchronization_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizer': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_synchronizer', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSynchronizer'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_version_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersion': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_version', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersion'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_version_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersionManager': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_version_manager', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogVersionManager'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_search_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchCriteria': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_search_criteria', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchCriteria'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_search_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_search_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSearchService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatisticsError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_statistics_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatisticsError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatistics': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_statistics', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatistics'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatisticsReport': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_statistics_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatisticsReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatisticsService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_statistics_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogStatisticsService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeType': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_change_type', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeType'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeTrackingError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_change_tracking_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeTrackingError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChange': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_change', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChange'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeSet': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_change_set', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeSet'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeTracker': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_change_tracker', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogChangeTracker'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditOperation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_audit_operation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditOperation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditTrailError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_audit_trail_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditTrailError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditEntry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_audit_entry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditEntry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditTrail': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_audit_trail', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditTrail'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditTrailBuilder': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_audit_trail_builder', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogAuditTrailBuilder'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshotError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_snapshot_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshotError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshotCollection': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_snapshot_collection', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshotCollection'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshotManager': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_snapshot_manager', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogSnapshotManager'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchiveError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_archive_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchiveError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchive': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_archive', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchive'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchiveCollection': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_archive_collection', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchiveCollection'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchiveService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_archive_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogArchiveService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBackupError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_backup_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBackupError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBackup': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_backup', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBackup'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogRecoveryResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_recovery_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogRecoveryResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBackupService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_backup_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogBackupService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleState': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_lifecycle_state', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleState'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_lifecycle_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycle': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_lifecycle', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycle'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_lifecycle_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleManager': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_catalog_lifecycle_manager', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyCatalogLifecycleManager'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplate': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplate'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCollection': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_collection', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCollection'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_version_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersion': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_version', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersion'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersionHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_version_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersionHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_version_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateVersionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateValidationViolation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_validation_violation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateValidationViolation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateValidationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_validation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateValidationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateValidator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_registry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_registry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistrySnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_registry_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistrySnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_registry_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRegistryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolutionSource': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_resolution_source', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolutionSource'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolutionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_resolution_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolutionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolverError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_resolver_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolverError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolver': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_instantiation_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_instantiation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_instantiation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_instantiation_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateInstantiationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameter': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_parameter', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameter'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterSet': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_parameter_set', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterSet'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterValues': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_parameter_values', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterValues'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterizationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_parameterization_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterizationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_parameterization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateParameterizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityRule': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_compatibility_rule', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityRule'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_compatibility_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_compatibility_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_compatibility_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateCompatibilityService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationPlan': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_migration_plan', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationPlan'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_migration_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_migration_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_migration_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateMigrationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentHistoryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_deployment_history_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateDeploymentHistoryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_rollback_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_rollback_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_rollback_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_rollback_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRollbackService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_release_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRelease': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_release', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateRelease'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_release_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_release_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_template_release_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyTemplateReleaseService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfile': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfile'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCollection': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_collection', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCollection'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_version_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersion': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_version', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersion'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersionHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_version_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersionHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_version_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileVersionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileValidationViolation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_validation_violation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileValidationViolation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileValidationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_validation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileValidationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileValidator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_registry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_registry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistrySnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_registry_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistrySnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_registry_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRegistryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolutionSource': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_resolution_source', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolutionSource'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolutionResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_resolution_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolutionResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolutionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_resolution_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolutionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolverError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_resolver_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolverError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolver': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstance': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_instance', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstance'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_instantiation_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_instantiation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_instantiation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_instantiation_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileInstantiationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameter': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_parameter', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameter'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterSet': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_parameter_set', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterSet'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterValues': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_parameter_values', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterValues'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterizationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_parameterization_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterizationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_parameterization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileParameterizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilitySeverity': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_compatibility_severity', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilitySeverity'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityRule': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_compatibility_rule', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityRule'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_compatibility_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_compatibility_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_compatibility_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileCompatibilityService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_migration_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationPlan': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_migration_plan', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationPlan'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_migration_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_migration_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileMigrationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentHistoryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_deployment_history_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileDeploymentHistoryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_rollback_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_rollback_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_rollback_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_rollback_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRollbackService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_release_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRelease': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_release', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileRelease'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_release_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_release_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_release_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileReleaseService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignment': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignment'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_registry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_registry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistrySnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_registry_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistrySnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_registry_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRegistryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolutionSource': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_resolution_source', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolutionSource'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolutionResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_resolution_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolutionResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolutionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_resolution_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolutionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolverError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_resolver_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolverError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolver': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentValidationViolation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_validation_violation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentValidationViolation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentValidationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_validation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentValidationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentValidator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritance': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_inheritance', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritance'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritanceResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_inheritance_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritanceResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritanceError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_inheritance_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritanceError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritanceService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_inheritance_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentInheritanceService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverride': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_override', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverride'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverrideResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_override_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverrideResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverrideError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_override_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverrideError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverrideService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_override_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentOverrideService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentCondition': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_condition', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentCondition'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentConditionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_condition_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentConditionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentConditionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_condition_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentConditionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentConditionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_condition_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentConditionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentScope': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_scope', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentScope'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileScopedAssignment': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_scoped_assignment', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileScopedAssignment'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentScopeError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_scope_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentScopeError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentScopeService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_scope_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentScopeService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSyncError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_sync_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSyncError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSyncRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_sync_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSyncRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSyncResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_sync_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSyncResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSynchronizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_synchronization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSynchronizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSerializationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_serialization_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSerializationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentExport': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_export', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentExport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentImportResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_import_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentImportResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSerializationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_serialization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentSerializationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_audit_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_audit_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_audit_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_audit_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentAuditService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_rollback_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_rollback_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_rollback_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_rollback_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRollbackService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_release_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_release_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRelease': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_release', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentRelease'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_release_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_assignment_release_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileAssignmentReleaseService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBinding': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBinding'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCollection': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_collection', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCollection'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_registry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_registry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistrySnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_registry_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistrySnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_registry_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRegistryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolutionSource': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_resolution_source', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolutionSource'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolutionResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_resolution_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolutionResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolutionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_resolution_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolutionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolverError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_resolver_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolverError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolver': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingValidationViolation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_validation_violation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingValidationViolation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingValidationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_validation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingValidationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingValidator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilitySeverity': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_compatibility_severity', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilitySeverity'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_compatibility_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityRule': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_compatibility_rule', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityRule'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_compatibility_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_compatibility_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingCompatibilityService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_version_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersion': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_version', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersion'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_version_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_version_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingVersionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingState': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_state', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingState'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingActivationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_activation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingActivationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingActivationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_activation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingActivationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingActivationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_activation_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingActivationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriorityError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_priority_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriorityError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriority': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_priority', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriority'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriorityResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_priority_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriorityResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriorityService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_priority_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPriorityService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraintError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_constraint_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraintError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraint': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_constraint', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraint'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraintResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_constraint_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraintResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraintService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_constraint_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingConstraintService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentHistoryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_deployment_history_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingDeploymentHistoryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_rollback_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_rollback_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_rollback_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_rollback_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRollbackService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_release_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_release_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRelease': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_release', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingRelease'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_release_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_release_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingReleaseService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroup': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroup'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCollection': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_collection', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCollection'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_registry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_registry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistrySnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_registry_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistrySnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_registry_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRegistryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolutionSource': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_resolution_source', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolutionSource'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolutionResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_resolution_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolutionResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolutionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_resolution_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolutionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolverError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_resolver_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolverError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolver': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupValidationViolation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_validation_violation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupValidationViolation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupValidationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_validation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupValidationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupValidator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilitySeverity': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_compatibility_severity', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilitySeverity'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_compatibility_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityRule': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_compatibility_rule', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityRule'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_compatibility_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_compatibility_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupCompatibilityService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_version_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersion': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_version', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersion'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersionHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_version_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersionHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_version_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupVersionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentHistoryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_deployment_history_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupDeploymentHistoryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_rollback_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_rollback_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_rollback_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_rollback_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRollbackService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_release_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_release_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRelease': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_release', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupRelease'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_release_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_release_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupReleaseService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSyncError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_sync_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSyncError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSyncRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_sync_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSyncRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSyncResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_sync_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSyncResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSynchronizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_synchronization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSynchronizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSerializationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_serialization_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSerializationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupExport': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_export', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupExport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupImportResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_import_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupImportResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSerializationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_serialization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupSerializationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_audit_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_audit_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_audit_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_group_audit_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingGroupAuditService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplate': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplate'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCollection': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_collection', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCollection'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_registry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_registry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistrySnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_registry_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistrySnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_registry_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRegistryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolutionSource': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_resolution_source', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolutionSource'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolutionResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_resolution_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolutionResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolutionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_resolution_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolutionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolverError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_resolver_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolverError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolver': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateValidationViolation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_validation_violation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateValidationViolation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateValidationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_validation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateValidationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateValidator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameter': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_parameter', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameter'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameterValues': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_parameter_values', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameterValues'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameterizationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_parameterization_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameterizationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameterizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_parameterization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateParameterizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_version_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersion': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_version', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersion'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersionHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_version_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersionHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_version_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateVersionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_compatibility_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilitySeverity': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_compatibility_severity', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilitySeverity'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityRule': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_compatibility_rule', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityRule'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_compatibility_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_compatibility_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateCompatibilityService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentHistoryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_deployment_history_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateDeploymentHistoryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_rollback_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_rollback_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_rollback_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_rollback_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRollbackService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_release_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_release_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRelease': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_release', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateRelease'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_release_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_release_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateReleaseService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSyncError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_sync_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSyncError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSyncRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_sync_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSyncRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSyncResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_sync_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSyncResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSynchronizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_synchronization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateSynchronizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_audit_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_audit_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_audit_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_template_audit_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingTemplateAuditService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPreset': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPreset'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCollection': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_collection', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCollection'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_registry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_registry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistrySnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_registry_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistrySnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_registry_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRegistryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolutionSource': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_resolution_source', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolutionSource'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolutionResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_resolution_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolutionResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolutionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_resolution_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolutionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolverError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_resolver_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolverError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolver': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetValidationViolation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_validation_violation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetValidationViolation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetValidationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_validation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetValidationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetValidator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameter': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_parameter', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameter'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameterValues': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_parameter_values', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameterValues'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameterizationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_parameterization_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameterizationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameterizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_parameterization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetParameterizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_version_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersion': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_version', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersion'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersionHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_version_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersionHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_version_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetVersionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_compatibility_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilitySeverity': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_compatibility_severity', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilitySeverity'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityRule': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_compatibility_rule', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityRule'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_compatibility_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_compatibility_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetCompatibilityService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentHistoryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_deployment_history_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetDeploymentHistoryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_rollback_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_rollback_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_rollback_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_rollback_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRollbackService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_release_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_release_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRelease': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_release', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetRelease'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_release_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_release_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetReleaseService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSyncError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_sync_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSyncError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSyncRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_sync_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSyncRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSyncResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_sync_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSyncResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSynchronizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_synchronization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetSynchronizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_audit_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_audit_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_audit_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_preset_audit_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingPresetAuditService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspace': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspace'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_registry_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_registry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistrySnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_registry_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistrySnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_registry_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRegistryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolutionSource': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resolution_source', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolutionSource'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolutionResultError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resolution_result_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolutionResultError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolutionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resolution_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolutionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolverError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resolver_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolverError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolver': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resolver', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResolver'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceValidationViolation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_validation_violation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceValidationViolation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceValidationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_validation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceValidationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceValidator': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_validator', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceValidator'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameter': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_parameter', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameter'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameterValues': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_parameter_values', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameterValues'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameterizationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_parameterization_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameterizationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameterizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_parameterization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceParameterizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_version_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersion': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_version', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersion'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersionHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_version_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersionHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_version_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceVersionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilitySeverity': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_compatibility_severity', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilitySeverity'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityRule': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_compatibility_rule', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityRule'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_compatibility_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_compatibility_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_compatibility_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceCompatibilityService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentHistoryError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_history_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentHistoryError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentHistoryService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_deployment_history_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceDeploymentHistoryService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rollback_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rollback_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rollback_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rollback_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRollbackService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_release_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_release_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRelease': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_release', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRelease'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_release_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_release_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceReleaseService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSyncError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_sync_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSyncError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSyncRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_sync_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSyncRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSyncResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_sync_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSyncResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSynchronizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_synchronization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSynchronizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_audit_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditRecord': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_audit_record', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditRecord'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditHistory': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_audit_history', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditHistory'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_audit_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceAuditService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeOperation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_operation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeOperation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSet': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSet'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetPreview': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_preview', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetPreview'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReviewError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_review_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReviewError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReviewStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_review_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReviewStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReview': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_review', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReview'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetApprovalPolicy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_approval_policy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetApprovalPolicy'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReviewService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_review_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetReviewService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_conflict_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictResolutionStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_conflict_resolution_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictResolutionStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeConflict': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_conflict', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeConflict'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictResolution': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_conflict_resolution', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictResolution'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_conflict_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceConflictService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceMergeError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_merge_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceMergeError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetMerge': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_merge', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetMerge'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceMergeResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_merge_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceMergeResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceMergeService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_merge_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceMergeService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRebaseError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rebase_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRebaseError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetRebaseStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_rebase_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetRebaseStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetRebase': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_change_set_rebase', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceChangeSetRebase'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRebaseResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rebase_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRebaseResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRebaseService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_rebase_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceRebaseService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranch': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranch'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtectionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_protection_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtectionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtection': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_protection', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtection'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtectionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_protection_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtectionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtectionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_protection_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchProtectionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSyncError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_sync_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSyncError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSyncStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_sync_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSyncStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSync': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_sync', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSync'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSyncResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_sync_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSyncResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSynchronizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_synchronization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchSynchronizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchComparisonError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_comparison_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchComparisonError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchDifference': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_difference', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchDifference'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchComparison': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_comparison', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchComparison'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchComparisonService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_comparison_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchComparisonService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchMetricsError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_metrics_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchMetricsError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchHealthStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_health_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchHealthStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchMetrics': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_metrics', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchMetrics'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchHealthReport': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_health_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchHealthReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchMetricsService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_metrics_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchMetricsService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchArchiveError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_archive_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchArchiveError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchArchive': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_archive', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchArchive'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchRecoveryResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_recovery_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchRecoveryResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchArchiveService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_archive_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchArchiveService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplateError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_template_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplateError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplate': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_template', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplate'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplateAssignment': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_template_assignment', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplateAssignment'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplateService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_template_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTemplateService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchAuditError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_audit_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchAuditError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchAuditEvent': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_audit_event', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchAuditEvent'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTimeline': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_timeline', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchTimeline'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchAuditService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_branch_audit_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceBranchAuditService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineStage': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_stage', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineStage'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipeline': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipeline'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_pipeline_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionPipelineService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGateError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_gate_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGateError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGateStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_gate_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGateStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineCondition': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_condition', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineCondition'),
+    'evaluate_condition_expression': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_condition', 'evaluate_condition_expression'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGate': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_gate', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGate'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGateService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_gate_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineGateService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineTimeoutError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_timeout_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineTimeoutError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineTimeoutPolicy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_timeout_policy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineTimeoutPolicy'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineCancellationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_cancellation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineCancellationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineTimeoutService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_timeout_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineTimeoutService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEventError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_event_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEventError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEvent': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_event', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEvent'),
+    'VALID_PIPELINE_EVENT_TYPES': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_event', 'VALID_PIPELINE_EVENT_TYPES'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEventResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_event_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEventResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEventBus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_event_bus', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineEventBus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_queue_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueItemStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_queue_item_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueItemStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueItem': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_queue_item', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueItem'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueStatistics': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_queue_statistics', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueStatistics'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_queue_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQueueService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceLockError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_lock_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceLockError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResourceLock': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_resource_lock', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceResourceLock'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceLockResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_lock_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceLockResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceLockService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_lock_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceLockService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionContextError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_context_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionContextError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionContext': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_context', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionContext'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineContextSnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_context_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineContextSnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineContextService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_context_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineContextService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePluginError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_plugin_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePluginError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePlugin': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_plugin', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePlugin'),
+    'VALID_PLUGIN_STAGE_TYPES': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_plugin', 'VALID_PLUGIN_STAGE_TYPES'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePluginResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_plugin_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePluginResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePluginService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_plugin_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePluginService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineSchedulerError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_scheduler_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineSchedulerError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineSchedule': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_schedule', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineSchedule'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineScheduleResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_schedule_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineScheduleResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineSchedulerService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_scheduler_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineSchedulerService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQuotaError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_quota_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQuotaError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineResourceBudget': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_resource_budget', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineResourceBudget'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQuotaResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_quota_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQuotaResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQuotaService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_quota_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineQuotaService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineObservabilityError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_observability_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineObservabilityError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionTrace': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_trace', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionTrace'),
+    'VALID_TRACE_STATUSES': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_trace', 'VALID_TRACE_STATUSES'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDiagnosticReport': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_diagnostic_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDiagnosticReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineObservabilityService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_observability_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineObservabilityService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionPolicyError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_policy_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionPolicyError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionPolicy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_policy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionPolicy'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePolicyAssignment': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_policy_assignment', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelinePolicyAssignment'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionPolicyService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_execution_policy_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineExecutionPolicyService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_dashboard_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardSummary': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_dashboard_summary', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardSummary'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardEntry': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_dashboard_entry', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardEntry'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_pipeline_dashboard_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspacePipelineDashboardService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSession': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSession'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCheckpointError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_checkpoint_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCheckpointError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCheckpoint': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_checkpoint', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCheckpoint'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRestoreResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_restore_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRestoreResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCheckpointService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_checkpoint_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCheckpointService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariableError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_variable_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariableError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariable': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_variable', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariable'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariableSnapshot': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_variable_snapshot', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariableSnapshot'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariableService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_variable_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionVariableService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachmentError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_attachment_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachmentError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachment': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_attachment', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachment'),
+    'VALID_SESSION_ATTACHMENT_TYPES': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_attachment', 'VALID_SESSION_ATTACHMENT_TYPES'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachmentResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_attachment_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachmentResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachmentService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_attachment_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAttachmentService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_reservation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_reservation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_reservation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_reservation_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeatError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_heartbeat_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeatError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeat': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_heartbeat', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeat'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeatStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_heartbeat_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeatStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeatService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_heartbeat_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHeartbeatService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionOwnershipError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_ownership_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionOwnershipError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionOwner': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_owner', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionOwner'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionTransferResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_transfer_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionTransferResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionOwnershipService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_ownership_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionOwnershipService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLeaseError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lease_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLeaseError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLease': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lease', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLease'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLeaseResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lease_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLeaseResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLeaseService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lease_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLeaseService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabelError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_label_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabelError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabel': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_label', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabel'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabelIndex': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_label_index', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabelIndex'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabelService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_label_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLabelService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollectionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_collection_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollectionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollection': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_collection', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollection'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollectionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_collection_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollectionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollectionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_collection_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCollectionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_cleanup_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupPolicy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_cleanup_policy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupPolicy'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_cleanup_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_cleanup_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCleanupService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLifecycleHookError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lifecycle_hook_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLifecycleHookError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLifecycleHook': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lifecycle_hook', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLifecycleHook'),
+    'VALID_SESSION_LIFECYCLE_HOOK_EVENTS': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lifecycle_hook', 'VALID_SESSION_LIFECYCLE_HOOK_EVENTS'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHookResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_hook_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionHookResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLifecycleHookService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_lifecycle_hook_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionLifecycleHookService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuditError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_audit_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuditError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuditEvent': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_audit_event', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuditEvent'),
+    'VALID_SESSION_AUDIT_EVENT_TYPES': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_audit_event', 'VALID_SESSION_AUDIT_EVENT_TYPES'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionTimeline': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_timeline', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionTimeline'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuditService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_audit_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuditService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicyError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_policy_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicyError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_policy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicy'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicyAssignment': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_policy_assignment', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicyAssignment'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicyService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_execution_session_policy_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceExecutionSessionPolicyService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_admission_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionRequest': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_admission_request', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionRequest'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_admission_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_admission_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAdmissionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuthorizationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_authorization_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuthorizationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPermission': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_permission', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPermission'),
+    'VALID_SESSION_OPERATIONS': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_permission', 'VALID_SESSION_OPERATIONS'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuthorizationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_authorization_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuthorizationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuthorizationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_authorization_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionAuthorizationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimitError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_rate_limit_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimitError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimit': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_rate_limit', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimit'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimitResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_rate_limit_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimitResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimitService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_rate_limit_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionRateLimitService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_isolation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationPolicy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_isolation_policy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationPolicy'),
+    'VALID_SESSION_ISOLATION_LEVELS': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_isolation_policy', 'VALID_SESSION_ISOLATION_LEVELS'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_isolation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_isolation_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionIsolationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourceGovernanceError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_resource_governance_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourceGovernanceError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourcePolicy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_resource_policy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourcePolicy'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourceUsage': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_resource_usage', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourceUsage'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourceGovernanceService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_resource_governance_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionResourceGovernanceService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_compliance_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceRule': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_compliance_rule', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceRule'),
+    'VALID_SESSION_COMPLIANCE_SEVERITIES': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_compliance_rule', 'VALID_SESSION_COMPLIANCE_SEVERITIES'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_compliance_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_compliance_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionComplianceService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyExceptionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_exception_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyExceptionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyException': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_exception', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyException'),
+    'VALID_SESSION_POLICY_EXCEPTION_SCOPES': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_exception', 'VALID_SESSION_POLICY_EXCEPTION_SCOPES'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyExceptionResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_exception_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyExceptionResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyExceptionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_exception_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyExceptionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyInheritanceError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_inheritance_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyInheritanceError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyInheritance': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_inheritance', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyInheritance'),
+    'VALID_SESSION_POLICY_INHERITANCE_FIELDS': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_inheritance', 'VALID_SESSION_POLICY_INHERITANCE_FIELDS'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionEffectivePolicy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_effective_policy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionEffectivePolicy'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyInheritanceService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_inheritance_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyInheritanceService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyVersionError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_version_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyVersionError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyVersion': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_version', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyVersion'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyResolution': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_resolution', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyResolution'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyVersionService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_version_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyVersionService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRolloutError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_rollout_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRolloutError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRollout': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_rollout', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRollout'),
+    'VALID_SESSION_POLICY_ROLLOUT_STRATEGIES': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_rollout', 'VALID_SESSION_POLICY_ROLLOUT_STRATEGIES'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRolloutResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_rollout_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRolloutResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRolloutService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_rollout_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyRolloutService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_simulation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_simulation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulationResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_simulation_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulationResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_simulation_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicySimulationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyAuditError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_audit_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyAuditError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyAuditEvent': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_audit_event', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyAuditEvent'),
+    'VALID_SESSION_POLICY_AUDIT_EVENT_TYPES': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_audit_event', 'VALID_SESSION_POLICY_AUDIT_EVENT_TYPES'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyDriftResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_drift_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyDriftResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyAuditService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_policy_audit_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPolicyAuditService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedule': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedule'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulerService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduler_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulerService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleDependencyError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_dependency_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleDependencyError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleDependency': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_dependency', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleDependency'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionDependencyResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_dependency_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionDependencyResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleDependencyService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_dependency_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleDependencyService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingWindowError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_window_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingWindowError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingWindow': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_window', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingWindow'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionWindowResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_window_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionWindowResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingWindowService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_window_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingWindowService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriorityError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_priority_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriorityError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriority': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_priority', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriority'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriorityResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_priority_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriorityResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriorityService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_priority_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionPriorityService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingCalendarError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_calendar_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingCalendarError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingCalendar': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_calendar', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingCalendar'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCalendarResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_calendar_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionCalendarResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingCalendarService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_calendar_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingCalendarService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingConstraintError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_constraint_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingConstraintError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingConstraint': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_constraint', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingConstraint'),
+    'VALID_SESSION_SCHEDULING_CONSTRAINT_TYPES': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_constraint', 'VALID_SESSION_SCHEDULING_CONSTRAINT_TYPES'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionConstraintResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_constraint_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionConstraintResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingConstraintService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_constraint_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingConstraintService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleReservationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_reservation_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleReservationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleReservation': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_reservation', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleReservation'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationStatus': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_reservation_status', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionReservationStatus'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleReservationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_reservation_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleReservationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingBalancerError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_balancer_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingBalancerError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingStrategy': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_strategy', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingStrategy'),
+    'VALID_SESSION_SCHEDULING_BALANCER_ALGORITHMS': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_strategy', 'VALID_SESSION_SCHEDULING_BALANCER_ALGORITHMS'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAssignment': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_assignment', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAssignment'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingBalancerService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_balancer_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingBalancerService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingFailoverError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_failover_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingFailoverError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionFailoverPlan': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_failover_plan', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionFailoverPlan'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionFailoverResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_failover_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionFailoverResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingFailoverService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_failover_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingFailoverService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_maintenance_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceError'),
+    'GLOBAL_MAINTENANCE_SCOPE': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_maintenance_window', 'GLOBAL_MAINTENANCE_SCOPE'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceWindow': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_maintenance_window', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceWindow'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_maintenance_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_maintenance_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionMaintenanceService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetricsError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_metrics_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetricsError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetric': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_metric', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetric'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetricsReport': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_metrics_report', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetricsReport'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetricsService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_metrics_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingMetricsService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingNotificationError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_notification_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingNotificationError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleNotification': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_schedule_notification', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionScheduleNotification'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionNotificationDelivery': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_notification_delivery', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionNotificationDelivery'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingNotificationService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_notification_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingNotificationService'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAuditError': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_audit_error', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAuditError'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAuditEvent': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_audit_event', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAuditEvent'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingReplayResult': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_replay_result', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingReplayResult'),
+    'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAuditService': ('research_workspace_consumer_projection_execution_capability_registry_event_subscription_lifecycle_policy_profile_binding_workspace_session_scheduling_audit_service', 'ResearchWorkspaceConsumerProjectionExecutionCapabilityRegistryEventSubscriptionLifecyclePolicyProfileBindingWorkspaceSessionSchedulingAuditService'),
+    'ExecutionArtifactError': ('execution_artifact_error', 'ExecutionArtifactError'),
+    'ExecutionArtifact': ('execution_artifact', 'ExecutionArtifact'),
+    'ExecutionArtifactService': ('execution_artifact_service', 'ExecutionArtifactService'),
+    'ExecutionArtifactMetadataError': ('execution_artifact_metadata_error', 'ExecutionArtifactMetadataError'),
+    'ExecutionArtifactMetadata': ('execution_artifact_metadata', 'ExecutionArtifactMetadata'),
+    'ExecutionArtifactTag': ('execution_artifact_tag', 'ExecutionArtifactTag'),
+    'ExecutionArtifactMetadataService': ('execution_artifact_metadata_service', 'ExecutionArtifactMetadataService'),
+    'ExecutionArtifactVersionError': ('execution_artifact_version_error', 'ExecutionArtifactVersionError'),
+    'ExecutionArtifactVersion': ('execution_artifact_version', 'ExecutionArtifactVersion'),
+    'ExecutionArtifactVersionService': ('execution_artifact_version_service', 'ExecutionArtifactVersionService'),
+    'ExecutionArtifactIntegrityError': ('execution_artifact_integrity_error', 'ExecutionArtifactIntegrityError'),
+    'ExecutionArtifactIntegrity': ('execution_artifact_integrity', 'ExecutionArtifactIntegrity'),
+    'ExecutionArtifactIntegrityService': ('execution_artifact_integrity_service', 'ExecutionArtifactIntegrityService'),
+    'ExecutionArtifactRetentionError': ('execution_artifact_retention_error', 'ExecutionArtifactRetentionError'),
+    'ExecutionArtifactRetentionPolicy': ('execution_artifact_retention_policy', 'ExecutionArtifactRetentionPolicy'),
+    'ExecutionArtifactRetentionResult': ('execution_artifact_retention_result', 'ExecutionArtifactRetentionResult'),
+    'ExecutionArtifactRetentionService': ('execution_artifact_retention_service', 'ExecutionArtifactRetentionService'),
+    'ExecutionArtifactPromotionError': ('execution_artifact_promotion_error', 'ExecutionArtifactPromotionError'),
+    'ArtifactPromotion': ('artifact_promotion', 'ArtifactPromotion'),
+    'ExecutionArtifactPromotionService': ('execution_artifact_promotion_service', 'ExecutionArtifactPromotionService'),
+    'ExecutionArtifactAccessError': ('execution_artifact_access_error', 'ExecutionArtifactAccessError'),
+    'ArtifactPermission': ('artifact_permission', 'ArtifactPermission'),
+    'ArtifactAccessResult': ('artifact_access_result', 'ArtifactAccessResult'),
+    'ExecutionArtifactAccessService': ('execution_artifact_access_service', 'ExecutionArtifactAccessService'),
+    'ExecutionArtifactDependencyError': ('execution_artifact_dependency_error', 'ExecutionArtifactDependencyError'),
+    'ArtifactDependency': ('artifact_dependency', 'ArtifactDependency'),
+    'ArtifactDependencyResult': ('artifact_dependency_result', 'ArtifactDependencyResult'),
+    'ExecutionArtifactDependencyService': ('execution_artifact_dependency_service', 'ExecutionArtifactDependencyService'),
+    'ExecutionArtifactLineageError': ('execution_artifact_lineage_error', 'ExecutionArtifactLineageError'),
+    'ArtifactLineage': ('artifact_lineage', 'ArtifactLineage'),
+    'ExecutionArtifactLineageService': ('execution_artifact_lineage_service', 'ExecutionArtifactLineageService'),
+    'ExecutionArtifactBundleError': ('execution_artifact_bundle_error', 'ExecutionArtifactBundleError'),
+    'ArtifactBundle': ('artifact_bundle', 'ArtifactBundle'),
+    'ArtifactBundleResult': ('artifact_bundle_result', 'ArtifactBundleResult'),
+    'ExecutionArtifactBundleService': ('execution_artifact_bundle_service', 'ExecutionArtifactBundleService'),
+    'ExecutionArtifactBundlePromotionError': ('execution_artifact_bundle_promotion_error', 'ExecutionArtifactBundlePromotionError'),
+    'ArtifactBundlePromotion': ('artifact_bundle_promotion', 'ArtifactBundlePromotion'),
+    'ExecutionArtifactBundlePromotionService': ('execution_artifact_bundle_promotion_service', 'ExecutionArtifactBundlePromotionService'),
+    'ExecutionArtifactBundleIntegrityError': ('execution_artifact_bundle_integrity_error', 'ExecutionArtifactBundleIntegrityError'),
+    'ArtifactBundleIntegrity': ('artifact_bundle_integrity', 'ArtifactBundleIntegrity'),
+    'ExecutionArtifactBundleIntegrityService': ('execution_artifact_bundle_integrity_service', 'ExecutionArtifactBundleIntegrityService'),
+    'ExecutionArtifactBundleManifestError': ('execution_artifact_bundle_manifest_error', 'ExecutionArtifactBundleManifestError'),
+    'ArtifactBundleManifestEntry': ('artifact_bundle_manifest_entry', 'ArtifactBundleManifestEntry'),
+    'ArtifactBundleManifest': ('artifact_bundle_manifest', 'ArtifactBundleManifest'),
+    'ExecutionArtifactBundleManifestService': ('execution_artifact_bundle_manifest_service', 'ExecutionArtifactBundleManifestService'),
+    'ExecutionArtifactDistributionError': ('execution_artifact_distribution_error', 'ExecutionArtifactDistributionError'),
+    'ExecutionArtifactDistributionChannel': ('execution_artifact_distribution_channel', 'ExecutionArtifactDistributionChannel'),
+    'ArtifactPublication': ('artifact_publication', 'ArtifactPublication'),
+    'ExecutionArtifactDistributionService': ('execution_artifact_distribution_service', 'ExecutionArtifactDistributionService'),
+    'ExecutionArtifactDistributionRoutingError': ('execution_artifact_distribution_routing_error', 'ExecutionArtifactDistributionRoutingError'),
+    'ArtifactDistributionRoute': ('artifact_distribution_route', 'ArtifactDistributionRoute'),
+    'ExecutionArtifactDistributionRoutingService': ('execution_artifact_distribution_routing_service', 'ExecutionArtifactDistributionRoutingService'),
+    'ExecutionArtifactDistributionDeliveryError': ('execution_artifact_distribution_delivery_error', 'ExecutionArtifactDistributionDeliveryError'),
+    'ArtifactDistributionDelivery': ('artifact_distribution_delivery', 'ArtifactDistributionDelivery'),
+    'ExecutionArtifactDistributionDeliveryService': ('execution_artifact_distribution_delivery_service', 'ExecutionArtifactDistributionDeliveryService'),
+    'ExecutionArtifactDistributionRetryError': ('execution_artifact_distribution_retry_error', 'ExecutionArtifactDistributionRetryError'),
+    'DistributionRetryPolicy': ('distribution_retry_policy', 'DistributionRetryPolicy'),
+    'ExecutionArtifactDistributionRetryService': ('execution_artifact_distribution_retry_service', 'ExecutionArtifactDistributionRetryService'),
+    'ExecutionArtifactDistributionAccessError': ('execution_artifact_distribution_access_error', 'ExecutionArtifactDistributionAccessError'),
+    'ArtifactDistributionPermission': ('artifact_distribution_permission', 'ArtifactDistributionPermission'),
+    'ExecutionArtifactDistributionAccessService': ('execution_artifact_distribution_access_service', 'ExecutionArtifactDistributionAccessService'),
+    'ExecutionArtifactEncryptionError': ('execution_artifact_encryption_error', 'ExecutionArtifactEncryptionError'),
+    'ExecutionArtifactEncryption': ('execution_artifact_encryption', 'ExecutionArtifactEncryption'),
+    'ExecutionArtifactEncryptionService': ('execution_artifact_encryption_service', 'ExecutionArtifactEncryptionService'),
+    'ExecutionArtifactCompressionError': ('execution_artifact_compression_error', 'ExecutionArtifactCompressionError'),
+    'ExecutionArtifactCompression': ('execution_artifact_compression', 'ExecutionArtifactCompression'),
+    'ExecutionArtifactCompressionService': ('execution_artifact_compression_service', 'ExecutionArtifactCompressionService'),
+    'ExecutionArtifactSigningError': ('execution_artifact_signing_error', 'ExecutionArtifactSigningError'),
+    'ExecutionArtifactSignature': ('execution_artifact_signature', 'ExecutionArtifactSignature'),
+    'ExecutionArtifactSigningService': ('execution_artifact_signing_service', 'ExecutionArtifactSigningService'),
+    'ExecutionArtifactDistributionReceiptError': ('execution_artifact_distribution_receipt_error', 'ExecutionArtifactDistributionReceiptError'),
+    'ExecutionArtifactDistributionReceipt': ('execution_artifact_distribution_receipt', 'ExecutionArtifactDistributionReceipt'),
+    'ExecutionArtifactDistributionReceiptService': ('execution_artifact_distribution_receipt_service', 'ExecutionArtifactDistributionReceiptService'),
+    'ExecutionArtifactDistributionWebhookError': ('execution_artifact_distribution_webhook_error', 'ExecutionArtifactDistributionWebhookError'),
+    'ExecutionArtifactDistributionWebhook': ('execution_artifact_distribution_webhook', 'ExecutionArtifactDistributionWebhook'),
+    'ExecutionArtifactDistributionWebhookService': ('execution_artifact_distribution_webhook_service', 'ExecutionArtifactDistributionWebhookService'),
+    'ExecutionArtifactDistributionPolicyError': ('execution_artifact_distribution_policy_error', 'ExecutionArtifactDistributionPolicyError'),
+    'ExecutionArtifactDistributionPolicy': ('execution_artifact_distribution_policy', 'ExecutionArtifactDistributionPolicy'),
+    'ExecutionArtifactDistributionPolicyAssignment': ('execution_artifact_distribution_policy_assignment', 'ExecutionArtifactDistributionPolicyAssignment'),
+    'ExecutionArtifactDistributionPolicyService': ('execution_artifact_distribution_policy_service', 'ExecutionArtifactDistributionPolicyService'),
+    'ExecutionArtifactDiscoveryError': ('execution_artifact_discovery_error', 'ExecutionArtifactDiscoveryError'),
+    'ExecutionArtifactQuery': ('execution_artifact_query', 'ExecutionArtifactQuery'),
+    'ExecutionArtifactSearchResult': ('execution_artifact_search_result', 'ExecutionArtifactSearchResult'),
+    'ExecutionArtifactDiscoveryService': ('execution_artifact_discovery_service', 'ExecutionArtifactDiscoveryService'),
+    'ExecutionArtifactRetrievalError': ('execution_artifact_retrieval_error', 'ExecutionArtifactRetrievalError'),
+    'ExecutionArtifactRetrievalRequest': ('execution_artifact_retrieval_request', 'ExecutionArtifactRetrievalRequest'),
+    'ExecutionArtifactRetrievalResult': ('execution_artifact_retrieval_result', 'ExecutionArtifactRetrievalResult'),
+    'ExecutionArtifactRetrievalService': ('execution_artifact_retrieval_service', 'ExecutionArtifactRetrievalService'),
+    'ExecutionArtifactMountError': ('execution_artifact_mount_error', 'ExecutionArtifactMountError'),
+    'ExecutionArtifactMount': ('execution_artifact_mount', 'ExecutionArtifactMount'),
+    'ExecutionArtifactMountService': ('execution_artifact_mount_service', 'ExecutionArtifactMountService'),
+    'ExecutionArtifactCacheError': ('execution_artifact_cache_error', 'ExecutionArtifactCacheError'),
+    'ExecutionArtifactCacheEntry': ('execution_artifact_cache_entry', 'ExecutionArtifactCacheEntry'),
+    'ExecutionArtifactCacheService': ('execution_artifact_cache_service', 'ExecutionArtifactCacheService'),
+    'ExecutionArtifactPrefetchError': ('execution_artifact_prefetch_error', 'ExecutionArtifactPrefetchError'),
+    'ExecutionArtifactPrefetch': ('execution_artifact_prefetch', 'ExecutionArtifactPrefetch'),
+    'ExecutionArtifactPrefetchService': ('execution_artifact_prefetch_service', 'ExecutionArtifactPrefetchService'),
+    'ExecutionArtifactConsumptionError': ('execution_artifact_consumption_error', 'ExecutionArtifactConsumptionError'),
+    'ExecutionArtifactConsumptionSession': ('execution_artifact_consumption_session', 'ExecutionArtifactConsumptionSession'),
+    'ExecutionArtifactConsumptionService': ('execution_artifact_consumption_service', 'ExecutionArtifactConsumptionService'),
+    'ExecutionArtifactConsumptionLeaseError': ('execution_artifact_consumption_lease_error', 'ExecutionArtifactConsumptionLeaseError'),
+    'ExecutionArtifactConsumptionLease': ('execution_artifact_consumption_lease', 'ExecutionArtifactConsumptionLease'),
+    'ExecutionArtifactConsumptionLeaseService': ('execution_artifact_consumption_lease_service', 'ExecutionArtifactConsumptionLeaseService'),
+    'ExecutionArtifactConsumptionSnapshotError': ('execution_artifact_consumption_snapshot_error', 'ExecutionArtifactConsumptionSnapshotError'),
+    'ExecutionArtifactConsumptionSnapshot': ('execution_artifact_consumption_snapshot', 'ExecutionArtifactConsumptionSnapshot'),
+    'ExecutionArtifactConsumptionSnapshotService': ('execution_artifact_consumption_snapshot_service', 'ExecutionArtifactConsumptionSnapshotService'),
+    'ExecutionArtifactConsumptionValidationError': ('execution_artifact_consumption_validation_error', 'ExecutionArtifactConsumptionValidationError'),
+    'ExecutionArtifactConsumptionValidation': ('execution_artifact_consumption_validation', 'ExecutionArtifactConsumptionValidation'),
+    'ExecutionArtifactConsumptionValidationService': ('execution_artifact_consumption_validation_service', 'ExecutionArtifactConsumptionValidationService'),
+    'ExecutionArtifactConsumptionReconciliationError': ('execution_artifact_consumption_reconciliation_error', 'ExecutionArtifactConsumptionReconciliationError'),
+    'ExecutionArtifactConsumptionDiff': ('execution_artifact_consumption_diff', 'ExecutionArtifactConsumptionDiff'),
+    'ExecutionArtifactConsumptionReconciliationService': ('execution_artifact_consumption_reconciliation_service', 'ExecutionArtifactConsumptionReconciliationService'),
+    'ExecutionArtifactConsumptionProvenanceError': ('execution_artifact_consumption_provenance_error', 'ExecutionArtifactConsumptionProvenanceError'),
+    'ExecutionArtifactConsumptionProvenance': ('execution_artifact_consumption_provenance', 'ExecutionArtifactConsumptionProvenance'),
+    'ExecutionArtifactConsumptionProvenanceService': ('execution_artifact_consumption_provenance_service', 'ExecutionArtifactConsumptionProvenanceService'),
+    'ExecutionArtifactConsumptionHealthError': ('execution_artifact_consumption_health_error', 'ExecutionArtifactConsumptionHealthError'),
+    'ExecutionArtifactConsumptionHealth': ('execution_artifact_consumption_health', 'ExecutionArtifactConsumptionHealth'),
+    'ExecutionArtifactConsumptionHealthService': ('execution_artifact_consumption_health_service', 'ExecutionArtifactConsumptionHealthService'),
+    'ExecutionArtifactConsumptionAuditError': ('execution_artifact_consumption_audit_error', 'ExecutionArtifactConsumptionAuditError'),
+    'ExecutionArtifactConsumptionAuditEvent': ('execution_artifact_consumption_audit_event', 'ExecutionArtifactConsumptionAuditEvent'),
+    'ExecutionArtifactConsumptionAuditService': ('execution_artifact_consumption_audit_service', 'ExecutionArtifactConsumptionAuditService'),
+    'ExecutionObservationEventError': ('execution_observation_event_error', 'ExecutionObservationEventError'),
+    'ExecutionObservationEvent': ('execution_observation_event', 'ExecutionObservationEvent'),
+    'ExecutionObservationEventService': ('execution_observation_event_service', 'ExecutionObservationEventService'),
+    'ExecutionObservationMetricError': ('execution_observation_metric_error', 'ExecutionObservationMetricError'),
+    'ExecutionObservationMetric': ('execution_observation_metric', 'ExecutionObservationMetric'),
+    'ExecutionObservationMetricService': ('execution_observation_metric_service', 'ExecutionObservationMetricService'),
+    'ExecutionObservationTraceError': ('execution_observation_trace_error', 'ExecutionObservationTraceError'),
+    'ExecutionObservationTrace': ('execution_observation_trace', 'ExecutionObservationTrace'),
+    'ExecutionObservationTraceService': ('execution_observation_trace_service', 'ExecutionObservationTraceService'),
+    'ExecutionObservationErrorError': ('execution_observation_error_error', 'ExecutionObservationErrorError'),
+    'ExecutionObservationError': ('execution_observation_error', 'ExecutionObservationError'),
+    'ExecutionObservationErrorService': ('execution_observation_error_service', 'ExecutionObservationErrorService'),
+    'ExecutionObservationAlertError': ('execution_observation_alert_error', 'ExecutionObservationAlertError'),
+    'ExecutionObservationAlert': ('execution_observation_alert', 'ExecutionObservationAlert'),
+    'ExecutionObservationAlertService': ('execution_observation_alert_service', 'ExecutionObservationAlertService'),
+    'ExecutionObservationDashboardError': ('execution_observation_dashboard_error', 'ExecutionObservationDashboardError'),
+    'ExecutionObservationDashboard': ('execution_observation_dashboard', 'ExecutionObservationDashboard'),
+    'ExecutionObservationDashboardService': ('execution_observation_dashboard_service', 'ExecutionObservationDashboardService'),
+    'ExecutionObservationHealthError': ('execution_observation_health_error', 'ExecutionObservationHealthError'),
+    'ExecutionObservationHealth': ('execution_observation_health', 'ExecutionObservationHealth'),
+    'ExecutionObservationHealthService': ('execution_observation_health_service', 'ExecutionObservationHealthService'),
+    'ExecutionObservationHealthTransitionError': ('execution_observation_health_transition_error', 'ExecutionObservationHealthTransitionError'),
+    'ExecutionObservationHealthTransition': ('execution_observation_health_transition', 'ExecutionObservationHealthTransition'),
+    'ExecutionObservationHealthHistoryService': ('execution_observation_health_history_service', 'ExecutionObservationHealthHistoryService'),
+    'ExecutionObservationIncidentError': ('execution_observation_incident_error', 'ExecutionObservationIncidentError'),
+    'ExecutionObservationIncident': ('execution_observation_incident', 'ExecutionObservationIncident'),
+    'ExecutionObservationIncidentService': ('execution_observation_incident_service', 'ExecutionObservationIncidentService'),
+    'ExecutionObservationCorrelationRuleError': ('execution_observation_correlation_rule_error', 'ExecutionObservationCorrelationRuleError'),
+    'ExecutionObservationCorrelationRule': ('execution_observation_correlation_rule', 'ExecutionObservationCorrelationRule'),
+    'ExecutionObservationIncidentCorrelationService': ('execution_observation_incident_correlation_service', 'ExecutionObservationIncidentCorrelationService'),
+    'ExecutionObservationIncidentTransitionError': ('execution_observation_incident_transition_error', 'ExecutionObservationIncidentTransitionError'),
+    'ExecutionObservationIncidentTransition': ('execution_observation_incident_transition', 'ExecutionObservationIncidentTransition'),
+    'ExecutionObservationIncidentLifecycleService': ('execution_observation_incident_lifecycle_service', 'ExecutionObservationIncidentLifecycleService'),
+    'ExecutionObservationEscalationPolicyError': ('execution_observation_escalation_policy_error', 'ExecutionObservationEscalationPolicyError'),
+    'ExecutionObservationEscalationPolicy': ('execution_observation_escalation_policy', 'ExecutionObservationEscalationPolicy'),
+    'ExecutionObservationIncidentEscalationService': ('execution_observation_incident_escalation_service', 'ExecutionObservationIncidentEscalationService'),
+    'ExecutionObservationIncidentReportError': ('execution_observation_incident_report_error', 'ExecutionObservationIncidentReportError'),
+    'ExecutionObservationIncidentReport': ('execution_observation_incident_report', 'ExecutionObservationIncidentReport'),
+    'ExecutionObservationIncidentReportService': ('execution_observation_incident_report_service', 'ExecutionObservationIncidentReportService'),
+    'ExecutionRecoveryCheckpointError': ('execution_recovery_checkpoint_error', 'ExecutionRecoveryCheckpointError'),
+    'ExecutionRecoveryCheckpoint': ('execution_recovery_checkpoint', 'ExecutionRecoveryCheckpoint'),
+    'ExecutionRecoveryCheckpointService': ('execution_recovery_checkpoint_service', 'ExecutionRecoveryCheckpointService'),
+    'ExecutionRecoveryValidationError': ('execution_recovery_validation_error', 'ExecutionRecoveryValidationError'),
+    'ExecutionRecoveryValidation': ('execution_recovery_validation', 'ExecutionRecoveryValidation'),
+    'ExecutionRecoveryValidationService': ('execution_recovery_validation_service', 'ExecutionRecoveryValidationService'),
+    'ExecutionRecoveryStateError': ('execution_recovery_state_error', 'ExecutionRecoveryStateError'),
+    'ExecutionRecoveryState': ('execution_recovery_state', 'ExecutionRecoveryState'),
+    'ExecutionRecoveryStateService': ('execution_recovery_state_service', 'ExecutionRecoveryStateService'),
+    'ExecutionRecoveryResumePlanError': ('execution_recovery_resume_plan_error', 'ExecutionRecoveryResumePlanError'),
+    'ExecutionRecoveryResumePlan': ('execution_recovery_resume_plan', 'ExecutionRecoveryResumePlan'),
+    'ExecutionRecoveryResumePlanService': ('execution_recovery_resume_plan_service', 'ExecutionRecoveryResumePlanService'),
+    'ExecutionRecoveryAttemptError': ('execution_recovery_attempt_error', 'ExecutionRecoveryAttemptError'),
+    'ExecutionRecoveryAttempt': ('execution_recovery_attempt', 'ExecutionRecoveryAttempt'),
+    'ExecutionRecoveryRetryService': ('execution_recovery_retry_service', 'ExecutionRecoveryRetryService'),
+    'ExecutionRecoveryFailoverError': ('execution_recovery_failover_error', 'ExecutionRecoveryFailoverError'),
+    'ExecutionRecoveryFailover': ('execution_recovery_failover', 'ExecutionRecoveryFailover'),
+    'ExecutionRecoveryFailoverService': ('execution_recovery_failover_service', 'ExecutionRecoveryFailoverService'),
+    'ExecutionRecoveryConflictError': ('execution_recovery_conflict_error', 'ExecutionRecoveryConflictError'),
+    'ExecutionRecoveryConflict': ('execution_recovery_conflict', 'ExecutionRecoveryConflict'),
+    'ExecutionRecoveryConflictService': ('execution_recovery_conflict_service', 'ExecutionRecoveryConflictService'),
+    'ExecutionRecoveryConflictPolicyError': ('execution_recovery_conflict_policy_error', 'ExecutionRecoveryConflictPolicyError'),
+    'ExecutionRecoveryConflictPolicy': ('execution_recovery_conflict_policy', 'ExecutionRecoveryConflictPolicy'),
+    'ExecutionRecoveryConflictPolicyService': ('execution_recovery_conflict_policy_service', 'ExecutionRecoveryConflictPolicyService'),
+    'ExecutionRecoveryGateError': ('execution_recovery_gate_error', 'ExecutionRecoveryGateError'),
+    'ExecutionRecoveryGate': ('execution_recovery_gate', 'ExecutionRecoveryGate'),
+    'ExecutionRecoveryGateService': ('execution_recovery_gate_service', 'ExecutionRecoveryGateService'),
+    'ExecutionRecoveryRollbackError': ('execution_recovery_rollback_error', 'ExecutionRecoveryRollbackError'),
+    'ExecutionRecoveryRollback': ('execution_recovery_rollback', 'ExecutionRecoveryRollback'),
+    'ExecutionRecoveryRollbackService': ('execution_recovery_rollback_service', 'ExecutionRecoveryRollbackService'),
+    'ExecutionRecoveryJournalEntryError': ('execution_recovery_journal_entry_error', 'ExecutionRecoveryJournalEntryError'),
+    'ExecutionRecoveryJournalEntry': ('execution_recovery_journal_entry', 'ExecutionRecoveryJournalEntry'),
+    'ExecutionRecoveryJournalService': ('execution_recovery_journal_service', 'ExecutionRecoveryJournalService'),
+    'ExecutionRecoveryReplayError': ('execution_recovery_replay_error', 'ExecutionRecoveryReplayError'),
+    'ExecutionRecoveryReplay': ('execution_recovery_replay', 'ExecutionRecoveryReplay'),
+    'ExecutionRecoveryReplayService': ('execution_recovery_replay_service', 'ExecutionRecoveryReplayService'),
+    'ExecutionRecoveryResultError': ('execution_recovery_result_error', 'ExecutionRecoveryResultError'),
+    'ExecutionRecoveryResult': ('execution_recovery_result', 'ExecutionRecoveryResult'),
+    'ExecutionRecoveryCompletionService': ('execution_recovery_completion_service', 'ExecutionRecoveryCompletionService'),
+    'ExecutionSecretError': ('execution_secret_error', 'ExecutionSecretError'),
+    'ExecutionSecret': ('execution_secret', 'ExecutionSecret'),
+    'ExecutionSecretService': ('execution_secret_service', 'ExecutionSecretService'),
+    'ExecutionSecretAccessError': ('execution_secret_access_error', 'ExecutionSecretAccessError'),
+    'ExecutionSecretOperation': ('execution_secret_operation', 'ExecutionSecretOperation'),
+    'ExecutionSecretPolicy': ('execution_secret_policy', 'ExecutionSecretPolicy'),
+    'ExecutionSecretAccessService': ('execution_secret_access_service', 'ExecutionSecretAccessService'),
+    'ExecutionSecretRotationError': ('execution_secret_rotation_error', 'ExecutionSecretRotationError'),
+    'ExecutionSecretRotation': ('execution_secret_rotation', 'ExecutionSecretRotation'),
+    'ExecutionSecretRotationService': ('execution_secret_rotation_service', 'ExecutionSecretRotationService'),
+    'ExecutionSecretLeaseError': ('execution_secret_lease_error', 'ExecutionSecretLeaseError'),
+    'ExecutionSecretLease': ('execution_secret_lease', 'ExecutionSecretLease'),
+    'ExecutionSecretLeaseService': ('execution_secret_lease_service', 'ExecutionSecretLeaseService'),
+    'ExecutionSecretRevocationError': ('execution_secret_revocation_error', 'ExecutionSecretRevocationError'),
+    'ExecutionSecretRevocation': ('execution_secret_revocation', 'ExecutionSecretRevocation'),
+    'ExecutionSecretRevocationService': ('execution_secret_revocation_service', 'ExecutionSecretRevocationService'),
+    'ExecutionSecretAuditError': ('execution_secret_audit_error', 'ExecutionSecretAuditError'),
+    'ExecutionSecretAuditOperation': ('execution_secret_audit_operation', 'ExecutionSecretAuditOperation'),
+    'ExecutionSecretAuditEvent': ('execution_secret_audit_event', 'ExecutionSecretAuditEvent'),
+    'ExecutionSecretAuditService': ('execution_secret_audit_service', 'ExecutionSecretAuditService'),
+    'ExecutionSecretAnomalyError': ('execution_secret_anomaly_error', 'ExecutionSecretAnomalyError'),
+    'ExecutionSecretAnomalyType': ('execution_secret_anomaly_type', 'ExecutionSecretAnomalyType'),
+    'ExecutionSecretAnomaly': ('execution_secret_anomaly', 'ExecutionSecretAnomaly'),
+    'ExecutionSecretAnomalyService': ('execution_secret_anomaly_service', 'ExecutionSecretAnomalyService'),
+    'ExecutionSecretTrustError': ('execution_secret_trust_error', 'ExecutionSecretTrustError'),
+    'ExecutionSecretTrustLevel': ('execution_secret_trust_level', 'ExecutionSecretTrustLevel'),
+    'ExecutionSecretTrustPolicy': ('execution_secret_trust_policy', 'ExecutionSecretTrustPolicy'),
+    'ExecutionSecretTrustService': ('execution_secret_trust_service', 'ExecutionSecretTrustService'),
+    'ExecutionSecretTokenError': ('execution_secret_token_error', 'ExecutionSecretTokenError'),
+    'ExecutionSecretAccessToken': ('execution_secret_access_token', 'ExecutionSecretAccessToken'),
+    'ExecutionSecretTokenService': ('execution_secret_token_service', 'ExecutionSecretTokenService'),
+    'ExecutionSecretTokenRotationError': ('execution_secret_token_rotation_error', 'ExecutionSecretTokenRotationError'),
+    'ExecutionSecretTokenRotation': ('execution_secret_token_rotation', 'ExecutionSecretTokenRotation'),
+    'ExecutionSecretTokenRotationService': ('execution_secret_token_rotation_service', 'ExecutionSecretTokenRotationService'),
+    'ExecutionSecretPostureError': ('execution_secret_posture_error', 'ExecutionSecretPostureError'),
+    'ExecutionSecretPostureLevel': ('execution_secret_posture_level', 'ExecutionSecretPostureLevel'),
+    'ExecutionSecretSecurityPosture': ('execution_secret_security_posture', 'ExecutionSecretSecurityPosture'),
+    'ExecutionSecretSecurityPostureService': ('execution_secret_security_posture_service', 'ExecutionSecretSecurityPostureService'),
+    'ExecutionSecretSecurityPolicyError': ('execution_secret_security_policy_error', 'ExecutionSecretSecurityPolicyError'),
+    'ExecutionSecretSecurityPolicy': ('execution_secret_security_policy', 'ExecutionSecretSecurityPolicy'),
+    'ExecutionSecretSecurityPolicyService': ('execution_secret_security_policy_service', 'ExecutionSecretSecurityPolicyService'),
+    'ExecutionSecretReportError': ('execution_secret_report_error', 'ExecutionSecretReportError'),
+    'ExecutionSecretSecurityReport': ('execution_secret_security_report', 'ExecutionSecretSecurityReport'),
+    'ExecutionSecretSecurityReportService': ('execution_secret_security_report_service', 'ExecutionSecretSecurityReportService'),
+    'ExecutionPolicyError': ('execution_policy_error', 'ExecutionPolicyError'),
+    'ExecutionPolicy': ('execution_policy', 'ExecutionPolicy'),
+    'ExecutionPolicyService': ('execution_policy_service', 'ExecutionPolicyService'),
+    'ExecutionPolicyEvaluationError': ('execution_policy_evaluation_error', 'ExecutionPolicyEvaluationError'),
+    'ExecutionPolicyEvaluation': ('execution_policy_evaluation', 'ExecutionPolicyEvaluation'),
+    'ExecutionPolicyEvaluationService': ('execution_policy_evaluation_service', 'ExecutionPolicyEvaluationService'),
+    'ExecutionPolicyAssignmentError': ('execution_policy_assignment_error', 'ExecutionPolicyAssignmentError'),
+    'ExecutionPolicyAssignment': ('execution_policy_assignment', 'ExecutionPolicyAssignment'),
+    'ExecutionPolicyAssignmentService': ('execution_policy_assignment_service', 'ExecutionPolicyAssignmentService'),
+    'ExecutionPolicyPrecedenceError': ('execution_policy_precedence_error', 'ExecutionPolicyPrecedenceError'),
+    'ExecutionPolicyPrecedence': ('execution_policy_precedence', 'ExecutionPolicyPrecedence'),
+    'ExecutionPolicyPrecedenceService': ('execution_policy_precedence_service', 'ExecutionPolicyPrecedenceService'),
+    'ExecutionPolicyConflictError': ('execution_policy_conflict_error', 'ExecutionPolicyConflictError'),
+    'ExecutionPolicyConflict': ('execution_policy_conflict', 'ExecutionPolicyConflict'),
+    'ExecutionPolicyConflictService': ('execution_policy_conflict_service', 'ExecutionPolicyConflictService'),
+    'ExecutionPolicyExceptionError': ('execution_policy_exception_error', 'ExecutionPolicyExceptionError'),
+    'ExecutionPolicyException': ('execution_policy_exception', 'ExecutionPolicyException'),
+    'ExecutionPolicyExceptionService': ('execution_policy_exception_service', 'ExecutionPolicyExceptionService'),
+    'ExecutionPolicyEnforcementError': ('execution_policy_enforcement_error', 'ExecutionPolicyEnforcementError'),
+    'ExecutionPolicyDecision': ('execution_policy_decision', 'ExecutionPolicyDecision'),
+    'ExecutionPolicyEnforcementService': ('execution_policy_enforcement_service', 'ExecutionPolicyEnforcementService'),
+    'ExecutionPolicySimulationError': ('execution_policy_simulation_error', 'ExecutionPolicySimulationError'),
+    'ExecutionPolicySimulation': ('execution_policy_simulation', 'ExecutionPolicySimulation'),
+    'ExecutionPolicySimulationService': ('execution_policy_simulation_service', 'ExecutionPolicySimulationService'),
+    'ExecutionPolicyAuditError': ('execution_policy_audit_error', 'ExecutionPolicyAuditError'),
+    'ExecutionPolicyAuditEvent': ('execution_policy_audit_event', 'ExecutionPolicyAuditEvent'),
+    'ExecutionPolicyAuditService': ('execution_policy_audit_service', 'ExecutionPolicyAuditService'),
+    'ExecutionPolicyRiskError': ('execution_policy_risk_error', 'ExecutionPolicyRiskError'),
+    'ExecutionPolicyRiskScore': ('execution_policy_risk_score', 'ExecutionPolicyRiskScore'),
+    'ExecutionPolicyRiskService': ('execution_policy_risk_service', 'ExecutionPolicyRiskService'),
+    'ExecutionPolicyRiskThresholdError': ('execution_policy_risk_threshold_error', 'ExecutionPolicyRiskThresholdError'),
+    'ExecutionPolicyRiskThreshold': ('execution_policy_risk_threshold', 'ExecutionPolicyRiskThreshold'),
+    'ExecutionPolicyRiskThresholdService': ('execution_policy_risk_threshold_service', 'ExecutionPolicyRiskThresholdService'),
+    'ExecutionPolicyRiskOverrideError': ('execution_policy_risk_override_error', 'ExecutionPolicyRiskOverrideError'),
+    'ExecutionPolicyRiskOverride': ('execution_policy_risk_override', 'ExecutionPolicyRiskOverride'),
+    'ExecutionPolicyRiskOverrideService': ('execution_policy_risk_override_service', 'ExecutionPolicyRiskOverrideService'),
+    'ExecutionPolicyRiskReportError': ('execution_policy_risk_report_error', 'ExecutionPolicyRiskReportError'),
+    'ExecutionPolicyRiskReport': ('execution_policy_risk_report', 'ExecutionPolicyRiskReport'),
+    'ExecutionPolicyRiskReportService': ('execution_policy_risk_report_service', 'ExecutionPolicyRiskReportService'),
+    'ExecutionApprovalError': ('execution_approval_error', 'ExecutionApprovalError'),
+    'ExecutionApprovalRequest': ('execution_approval_request', 'ExecutionApprovalRequest'),
+    'ExecutionApprovalService': ('execution_approval_service', 'ExecutionApprovalService'),
+    'ExecutionApprovalDelegationError': ('execution_approval_delegation_error', 'ExecutionApprovalDelegationError'),
+    'ExecutionApprovalDelegation': ('execution_approval_delegation', 'ExecutionApprovalDelegation'),
+    'ExecutionApprovalDelegationService': ('execution_approval_delegation_service', 'ExecutionApprovalDelegationService'),
+    'ExecutionApprovalQuorumError': ('execution_approval_quorum_error', 'ExecutionApprovalQuorumError'),
+    'ExecutionApprovalQuorum': ('execution_approval_quorum', 'ExecutionApprovalQuorum'),
+    'ExecutionApprovalQuorumService': ('execution_approval_quorum_service', 'ExecutionApprovalQuorumService'),
+    'ExecutionChangeRequestError': ('execution_change_request_error', 'ExecutionChangeRequestError'),
+    'ExecutionChangeRequest': ('execution_change_request', 'ExecutionChangeRequest'),
+    'ExecutionChangeRequestService': ('execution_change_request_service', 'ExecutionChangeRequestService'),
+    'ExecutionChangeValidationError': ('execution_change_validation_error', 'ExecutionChangeValidationError'),
+    'ExecutionChangeValidation': ('execution_change_validation', 'ExecutionChangeValidation'),
+    'ExecutionChangeValidationService': ('execution_change_validation_service', 'ExecutionChangeValidationService'),
+    'ExecutionComplianceError': ('execution_compliance_error', 'ExecutionComplianceError'),
+    'ExecutionComplianceRule': ('execution_compliance_rule', 'ExecutionComplianceRule'),
+    'ExecutionComplianceService': ('execution_compliance_service', 'ExecutionComplianceService'),
+    'ExecutionComplianceExceptionError': ('execution_compliance_exception_error', 'ExecutionComplianceExceptionError'),
+    'ExecutionComplianceException': ('execution_compliance_exception', 'ExecutionComplianceException'),
+    'ExecutionComplianceExceptionService': ('execution_compliance_exception_service', 'ExecutionComplianceExceptionService'),
+    'ExecutionComplianceEvidenceError': ('execution_compliance_evidence_error', 'ExecutionComplianceEvidenceError'),
+    'ExecutionComplianceEvidence': ('execution_compliance_evidence', 'ExecutionComplianceEvidence'),
+    'ExecutionComplianceEvidenceService': ('execution_compliance_evidence_service', 'ExecutionComplianceEvidenceService'),
+    'ExecutionComplianceAttestationError': ('execution_compliance_attestation_error', 'ExecutionComplianceAttestationError'),
+    'ExecutionComplianceAttestation': ('execution_compliance_attestation', 'ExecutionComplianceAttestation'),
+    'ExecutionComplianceAttestationService': ('execution_compliance_attestation_service', 'ExecutionComplianceAttestationService'),
+    'ExecutionComplianceCertificationError': ('execution_compliance_certification_error', 'ExecutionComplianceCertificationError'),
+    'ExecutionComplianceCertification': ('execution_compliance_certification', 'ExecutionComplianceCertification'),
+    'ExecutionComplianceCertificationService': ('execution_compliance_certification_service', 'ExecutionComplianceCertificationService'),
+    'ExecutionCertificationValidityError': ('execution_certification_validity_error', 'ExecutionCertificationValidityError'),
+    'ExecutionCertificationValidity': ('execution_certification_validity', 'ExecutionCertificationValidity'),
+    'ExecutionCertificationValidityService': ('execution_certification_validity_service', 'ExecutionCertificationValidityService'),
+    'ExecutionComplianceRenewalError': ('execution_compliance_renewal_error', 'ExecutionComplianceRenewalError'),
+    'ExecutionComplianceRenewal': ('execution_compliance_renewal', 'ExecutionComplianceRenewal'),
+    'ExecutionComplianceRenewalService': ('execution_compliance_renewal_service', 'ExecutionComplianceRenewalService'),
+    'ExecutionGovernanceReportError': ('execution_governance_report_error', 'ExecutionGovernanceReportError'),
+    'ExecutionGovernanceReport': ('execution_governance_report', 'ExecutionGovernanceReport'),
+    'ExecutionGovernanceReportService': ('execution_governance_report_service', 'ExecutionGovernanceReportService'),
+    'ExecutionJobError': ('execution_job_error', 'ExecutionJobError'),
+    'ExecutionJob': ('execution_job', 'ExecutionJob'),
+    'ExecutionJobQueueService': ('execution_job_queue_service', 'ExecutionJobQueueService'),
+    'ExecutionJobPriorityError': ('execution_job_priority_error', 'ExecutionJobPriorityError'),
+    'ExecutionJobPriority': ('execution_job_priority', 'ExecutionJobPriority'),
+    'ExecutionJobPriorityService': ('execution_job_priority_service', 'ExecutionJobPriorityService'),
+    'ExecutionJobDependencyError': ('execution_job_dependency_error', 'ExecutionJobDependencyError'),
+    'ExecutionJobDependency': ('execution_job_dependency', 'ExecutionJobDependency'),
+    'ExecutionJobDependencyService': ('execution_job_dependency_service', 'ExecutionJobDependencyService'),
+    'ExecutionConcurrencyError': ('execution_concurrency_error', 'ExecutionConcurrencyError'),
+    'ExecutionConcurrencyLimit': ('execution_concurrency_limit', 'ExecutionConcurrencyLimit'),
+    'ExecutionConcurrencyService': ('execution_concurrency_service', 'ExecutionConcurrencyService'),
+    'ExecutionResourceReservationError': ('execution_resource_reservation_error', 'ExecutionResourceReservationError'),
+    'ExecutionResourceReservation': ('execution_resource_reservation', 'ExecutionResourceReservation'),
+    'ExecutionResourceReservationService': ('execution_resource_reservation_service', 'ExecutionResourceReservationService'),
+    'ExecutionFairSchedulingError': ('execution_fair_scheduling_error', 'ExecutionFairSchedulingError'),
+    'ExecutionSchedulingCredit': ('execution_scheduling_credit', 'ExecutionSchedulingCredit'),
+    'ExecutionFairSchedulingService': ('execution_fair_scheduling_service', 'ExecutionFairSchedulingService'),
+    'ExecutionSchedulingWindowError': ('execution_scheduling_window_error', 'ExecutionSchedulingWindowError'),
+    'ExecutionSchedulingWindow': ('execution_scheduling_window', 'ExecutionSchedulingWindow'),
+    'ExecutionSchedulingWindowService': ('execution_scheduling_window_service', 'ExecutionSchedulingWindowService'),
+    'ExecutionBackpressureError': ('execution_backpressure_error', 'ExecutionBackpressureError'),
+    'ExecutionBackpressureState': ('execution_backpressure_state', 'ExecutionBackpressureState'),
+    'ExecutionBackpressureService': ('execution_backpressure_service', 'ExecutionBackpressureService'),
+    'ExecutionDeadLetterError': ('execution_dead_letter_error', 'ExecutionDeadLetterError'),
+    'ExecutionDeadLetterJob': ('execution_dead_letter_job', 'ExecutionDeadLetterJob'),
+    'ExecutionDeadLetterService': ('execution_dead_letter_service', 'ExecutionDeadLetterService'),
+    'ExecutionSchedulingRetryError': ('execution_scheduling_retry_error', 'ExecutionSchedulingRetryError'),
+    'ExecutionSchedulingRetryPolicy': ('execution_scheduling_retry_policy', 'ExecutionSchedulingRetryPolicy'),
+    'ExecutionSchedulingRetryService': ('execution_scheduling_retry_service', 'ExecutionSchedulingRetryService'),
+    'ExecutionSchedulingReservationError': ('execution_scheduling_reservation_error', 'ExecutionSchedulingReservationError'),
+    'ExecutionSchedulingReservation': ('execution_scheduling_reservation', 'ExecutionSchedulingReservation'),
+    'ExecutionSchedulingReservationService': ('execution_scheduling_reservation_service', 'ExecutionSchedulingReservationService'),
+    'ExecutionSchedulerFailoverError': ('execution_scheduler_failover_error', 'ExecutionSchedulerFailoverError'),
+    'ExecutionSchedulerFailover': ('execution_scheduler_failover', 'ExecutionSchedulerFailover'),
+    'ExecutionSchedulerFailoverService': ('execution_scheduler_failover_service', 'ExecutionSchedulerFailoverService'),
+    'ExecutionSchedulerError': ('execution_scheduler_error', 'ExecutionSchedulerError'),
+    'ExecutionScheduleDecision': ('execution_schedule_decision', 'ExecutionScheduleDecision'),
+    'ExecutionSchedulerService': ('execution_scheduler_service', 'ExecutionSchedulerService'),
+    'ExecutionRuntimeDispatchError': ('execution_runtime_dispatch_error', 'ExecutionRuntimeDispatchError'),
+    'ExecutionRuntimeDispatch': ('execution_runtime_dispatch', 'ExecutionRuntimeDispatch'),
+    'ExecutionRuntimeDispatchService': ('execution_runtime_dispatch_service', 'ExecutionRuntimeDispatchService'),
+    'ExecutionRuntimeStartupError': ('execution_runtime_startup_error', 'ExecutionRuntimeStartupError'),
+    'ExecutionRuntime': ('execution_runtime', 'ExecutionRuntime'),
+    'ExecutionRuntimeStartupService': ('execution_runtime_startup_service', 'ExecutionRuntimeStartupService'),
+    'ExecutionRuntimeHeartbeatError': ('execution_runtime_heartbeat_error', 'ExecutionRuntimeHeartbeatError'),
+    'ExecutionRuntimeHeartbeat': ('execution_runtime_heartbeat', 'ExecutionRuntimeHeartbeat'),
+    'ExecutionRuntimeHeartbeatService': ('execution_runtime_heartbeat_service', 'ExecutionRuntimeHeartbeatService'),
+    'ExecutionRuntimeStateError': ('execution_runtime_state_error', 'ExecutionRuntimeStateError'),
+    'ExecutionRuntimeState': ('execution_runtime_state', 'ExecutionRuntimeState'),
+    'ExecutionRuntimeStateService': ('execution_runtime_state_service', 'ExecutionRuntimeStateService'),
+    'ExecutionRuntimePauseError': ('execution_runtime_pause_error', 'ExecutionRuntimePauseError'),
+    'ExecutionRuntimePause': ('execution_runtime_pause', 'ExecutionRuntimePause'),
+    'ExecutionRuntimePauseService': ('execution_runtime_pause_service', 'ExecutionRuntimePauseService'),
+    'ExecutionRuntimeCancellationError': ('execution_runtime_cancellation_error', 'ExecutionRuntimeCancellationError'),
+    'ExecutionRuntimeCancellation': ('execution_runtime_cancellation', 'ExecutionRuntimeCancellation'),
+    'ExecutionRuntimeCancellationService': ('execution_runtime_cancellation_service', 'ExecutionRuntimeCancellationService'),
+    'ExecutionRuntimeTimeoutError': ('execution_runtime_timeout_error', 'ExecutionRuntimeTimeoutError'),
+    'ExecutionRuntimeTimeout': ('execution_runtime_timeout', 'ExecutionRuntimeTimeout'),
+    'ExecutionRuntimeTimeoutService': ('execution_runtime_timeout_service', 'ExecutionRuntimeTimeoutService'),
+    'ExecutionRuntimeShutdownError': ('execution_runtime_shutdown_error', 'ExecutionRuntimeShutdownError'),
+    'ExecutionRuntimeShutdown': ('execution_runtime_shutdown', 'ExecutionRuntimeShutdown'),
+    'ExecutionRuntimeShutdownService': ('execution_runtime_shutdown_service', 'ExecutionRuntimeShutdownService'),
+    'ExecutionRuntimeFinalizationError': ('execution_runtime_finalization_error', 'ExecutionRuntimeFinalizationError'),
+    'ExecutionRuntimeResult': ('execution_runtime_result', 'ExecutionRuntimeResult'),
+    'ExecutionRuntimeFinalizationService': ('execution_runtime_finalization_service', 'ExecutionRuntimeFinalizationService'),
+    'ExecutionRuntimeHandoffError': ('execution_runtime_handoff_error', 'ExecutionRuntimeHandoffError'),
+    'ExecutionRuntimeHandoff': ('execution_runtime_handoff', 'ExecutionRuntimeHandoff'),
+    'ExecutionRuntimeHandoffService': ('execution_runtime_handoff_service', 'ExecutionRuntimeHandoffService'),
+    'ExecutionRuntimeResourceError': ('execution_runtime_resource_error', 'ExecutionRuntimeResourceError'),
+    'ExecutionRuntimeResource': ('execution_runtime_resource', 'ExecutionRuntimeResource'),
+    'ExecutionRuntimeResourceService': ('execution_runtime_resource_service', 'ExecutionRuntimeResourceService'),
+    'ExecutionRuntimeHealthError': ('execution_runtime_health_error', 'ExecutionRuntimeHealthError'),
+    'ExecutionRuntimeHealth': ('execution_runtime_health', 'ExecutionRuntimeHealth'),
+    'ExecutionRuntimeHealthService': ('execution_runtime_health_service', 'ExecutionRuntimeHealthService'),
+    'ExecutionRuntimeCompletionError': ('execution_runtime_completion_error', 'ExecutionRuntimeCompletionError'),
+    'ExecutionRuntimeCompletion': ('execution_runtime_completion', 'ExecutionRuntimeCompletion'),
+    'ExecutionRuntimeCompletionService': ('execution_runtime_completion_service', 'ExecutionRuntimeCompletionService'),
+    'ExecutionNetworkEndpointError': ('execution_network_endpoint_error', 'ExecutionNetworkEndpointError'),
+    'ExecutionNetworkEndpoint': ('execution_network_endpoint', 'ExecutionNetworkEndpoint'),
+    'ExecutionNetworkEndpointService': ('execution_network_endpoint_service', 'ExecutionNetworkEndpointService'),
+    'ExecutionNetworkEndpointHealthError': ('execution_network_endpoint_health_error', 'ExecutionNetworkEndpointHealthError'),
+    'ExecutionNetworkEndpointHealth': ('execution_network_endpoint_health', 'ExecutionNetworkEndpointHealth'),
+    'ExecutionNetworkEndpointHealthService': ('execution_network_endpoint_health_service', 'ExecutionNetworkEndpointHealthService'),
+    'ExecutionNetworkRouteError': ('execution_network_route_error', 'ExecutionNetworkRouteError'),
+    'ExecutionNetworkRoute': ('execution_network_route', 'ExecutionNetworkRoute'),
+    'ExecutionNetworkRoutingService': ('execution_network_routing_service', 'ExecutionNetworkRoutingService'),
+    'ExecutionNetworkConnectionError': ('execution_network_connection_error', 'ExecutionNetworkConnectionError'),
+    'ExecutionNetworkConnection': ('execution_network_connection', 'ExecutionNetworkConnection'),
+    'ExecutionNetworkConnectionService': ('execution_network_connection_service', 'ExecutionNetworkConnectionService'),
+    'ExecutionNetworkTrafficPolicyError': ('execution_network_traffic_policy_error', 'ExecutionNetworkTrafficPolicyError'),
+    'ExecutionNetworkTrafficPolicy': ('execution_network_traffic_policy', 'ExecutionNetworkTrafficPolicy'),
+    'ExecutionNetworkTrafficPolicyService': ('execution_network_traffic_policy_service', 'ExecutionNetworkTrafficPolicyService'),
+    'ExecutionNetworkQuotaError': ('execution_network_quota_error', 'ExecutionNetworkQuotaError'),
+    'ExecutionNetworkQuota': ('execution_network_quota', 'ExecutionNetworkQuota'),
+    'ExecutionNetworkQuotaService': ('execution_network_quota_service', 'ExecutionNetworkQuotaService'),
+    'ExecutionNetworkConnectionLimitError': ('execution_network_connection_limit_error', 'ExecutionNetworkConnectionLimitError'),
+    'ExecutionNetworkConnectionLimit': ('execution_network_connection_limit', 'ExecutionNetworkConnectionLimit'),
+    'ExecutionNetworkConnectionLimitService': ('execution_network_connection_limit_service', 'ExecutionNetworkConnectionLimitService'),
+    'ExecutionNetworkConnectionPoolError': ('execution_network_connection_pool_error', 'ExecutionNetworkConnectionPoolError'),
+    'ExecutionNetworkConnectionPool': ('execution_network_connection_pool', 'ExecutionNetworkConnectionPool'),
+    'ExecutionNetworkConnectionPoolService': ('execution_network_connection_pool_service', 'ExecutionNetworkConnectionPoolService'),
+    'ExecutionNetworkCircuitError': ('execution_network_circuit_error', 'ExecutionNetworkCircuitError'),
+    'ExecutionNetworkCircuit': ('execution_network_circuit', 'ExecutionNetworkCircuit'),
+    'ExecutionNetworkCircuitBreakerService': ('execution_network_circuit_breaker_service', 'ExecutionNetworkCircuitBreakerService'),
+    'ExecutionNetworkFailoverError': ('execution_network_failover_error', 'ExecutionNetworkFailoverError'),
+    'ExecutionNetworkFailover': ('execution_network_failover', 'ExecutionNetworkFailover'),
+    'ExecutionNetworkFailoverService': ('execution_network_failover_service', 'ExecutionNetworkFailoverService'),
+    'ExecutionNetworkTrafficShaperError': ('execution_network_traffic_shaper_error', 'ExecutionNetworkTrafficShaperError'),
+    'ExecutionNetworkTrafficShaper': ('execution_network_traffic_shaper', 'ExecutionNetworkTrafficShaper'),
+    'ExecutionNetworkTrafficShapingService': ('execution_network_traffic_shaping_service', 'ExecutionNetworkTrafficShapingService'),
+    'ExecutionNetworkFailoverPolicyError': ('execution_network_failover_policy_error', 'ExecutionNetworkFailoverPolicyError'),
+    'ExecutionNetworkFailoverPolicy': ('execution_network_failover_policy', 'ExecutionNetworkFailoverPolicy'),
+    'ExecutionNetworkFailoverPolicyService': ('execution_network_failover_policy_service', 'ExecutionNetworkFailoverPolicyService'),
+    'ExecutionNetworkDecisionError': ('execution_network_decision_error', 'ExecutionNetworkDecisionError'),
+    'ExecutionNetworkDecision': ('execution_network_decision', 'ExecutionNetworkDecision'),
+    'ExecutionNetworkOrchestrationService': ('execution_network_orchestration_service', 'ExecutionNetworkOrchestrationService'),
+    'ExecutionStorageVolumeError': ('execution_storage_volume_error', 'ExecutionStorageVolumeError'),
+    'ExecutionStorageVolume': ('execution_storage_volume', 'ExecutionStorageVolume'),
+    'ExecutionStorageVolumeService': ('execution_storage_volume_service', 'ExecutionStorageVolumeService'),
+    'ExecutionStorageQuotaError': ('execution_storage_quota_error', 'ExecutionStorageQuotaError'),
+    'ExecutionStorageQuota': ('execution_storage_quota', 'ExecutionStorageQuota'),
+    'ExecutionStorageQuotaService': ('execution_storage_quota_service', 'ExecutionStorageQuotaService'),
+    'ExecutionStorageSnapshotError': ('execution_storage_snapshot_error', 'ExecutionStorageSnapshotError'),
+    'ExecutionStorageSnapshot': ('execution_storage_snapshot', 'ExecutionStorageSnapshot'),
+    'ExecutionStorageSnapshotService': ('execution_storage_snapshot_service', 'ExecutionStorageSnapshotService'),
+    'ExecutionStorageMountError': ('execution_storage_mount_error', 'ExecutionStorageMountError'),
+    'ExecutionStorageMount': ('execution_storage_mount', 'ExecutionStorageMount'),
+    'ExecutionStorageMountService': ('execution_storage_mount_service', 'ExecutionStorageMountService'),
+    'ExecutionStorageReplicaError': ('execution_storage_replica_error', 'ExecutionStorageReplicaError'),
+    'ExecutionStorageReplica': ('execution_storage_replica', 'ExecutionStorageReplica'),
+    'ExecutionStorageReplicationService': ('execution_storage_replication_service', 'ExecutionStorageReplicationService'),
+    'ExecutionStorageIntegrityCheckError': ('execution_storage_integrity_check_error', 'ExecutionStorageIntegrityCheckError'),
+    'ExecutionStorageIntegrityCheck': ('execution_storage_integrity_check', 'ExecutionStorageIntegrityCheck'),
+    'ExecutionStorageIntegrityService': ('execution_storage_integrity_service', 'ExecutionStorageIntegrityService'),
+    'ExecutionStorageGarbageRecordError': ('execution_storage_garbage_record_error', 'ExecutionStorageGarbageRecordError'),
+    'ExecutionStorageGarbageRecord': ('execution_storage_garbage_record', 'ExecutionStorageGarbageRecord'),
+    'ExecutionStorageGarbageCollectionService': ('execution_storage_garbage_collection_service', 'ExecutionStorageGarbageCollectionService'),
+    'ExecutionStorageRetentionPolicyError': ('execution_storage_retention_policy_error', 'ExecutionStorageRetentionPolicyError'),
+    'ExecutionStorageRetentionPolicy': ('execution_storage_retention_policy', 'ExecutionStorageRetentionPolicy'),
+    'ExecutionStorageRetentionService': ('execution_storage_retention_service', 'ExecutionStorageRetentionService'),
+    'ExecutionStorageFailoverError': ('execution_storage_failover_error', 'ExecutionStorageFailoverError'),
+    'ExecutionStorageFailover': ('execution_storage_failover', 'ExecutionStorageFailover'),
+    'ExecutionStorageFailoverService': ('execution_storage_failover_service', 'ExecutionStorageFailoverService'),
+    'ExecutionStorageMigrationError': ('execution_storage_migration_error', 'ExecutionStorageMigrationError'),
+    'ExecutionStorageMigration': ('execution_storage_migration', 'ExecutionStorageMigration'),
+    'ExecutionStorageMigrationService': ('execution_storage_migration_service', 'ExecutionStorageMigrationService'),
+    'ExecutionStorageTierError': ('execution_storage_tier_error', 'ExecutionStorageTierError'),
+    'ExecutionStorageTier': ('execution_storage_tier', 'ExecutionStorageTier'),
+    'ExecutionStorageTieringService': ('execution_storage_tiering_service', 'ExecutionStorageTieringService'),
+    'ExecutionStorageCostProfileError': ('execution_storage_cost_profile_error', 'ExecutionStorageCostProfileError'),
+    'ExecutionStorageCostProfile': ('execution_storage_cost_profile', 'ExecutionStorageCostProfile'),
+    'ExecutionStorageCostService': ('execution_storage_cost_service', 'ExecutionStorageCostService'),
+    'ExecutionStorageDecisionError': ('execution_storage_decision_error', 'ExecutionStorageDecisionError'),
+    'ExecutionStorageDecision': ('execution_storage_decision', 'ExecutionStorageDecision'),
+    'ExecutionStorageOrchestrationService': ('execution_storage_orchestration_service', 'ExecutionStorageOrchestrationService'),
+    'WorkspaceExecutionArtifactError': ('workspace_execution_artifact_error', 'WorkspaceExecutionArtifactError'),
+    'ARTIFACT_TYPE_FILE': ('workspace_execution_artifact', 'ARTIFACT_TYPE_FILE'),
+    'ARTIFACT_TYPE_DIRECTORY': ('workspace_execution_artifact', 'ARTIFACT_TYPE_DIRECTORY'),
+    'ARTIFACT_TYPE_MODEL': ('workspace_execution_artifact', 'ARTIFACT_TYPE_MODEL'),
+    'ARTIFACT_TYPE_DATASET': ('workspace_execution_artifact', 'ARTIFACT_TYPE_DATASET'),
+    'ARTIFACT_TYPES': ('workspace_execution_artifact', 'ARTIFACT_TYPES'),
+    'STATUS_ACTIVE': ('workspace_execution_artifact', 'STATUS_ACTIVE'),
+    'STATUS_REMOVED': ('workspace_execution_artifact', 'STATUS_REMOVED'),
+    'WorkspaceExecutionArtifact': ('workspace_execution_artifact', 'WorkspaceExecutionArtifact'),
+    'ExecutionArtifactRegistryService': ('execution_artifact_registry_service', 'ExecutionArtifactRegistryService'),
+    'WorkspaceExecutionArtifactMetadataError': ('workspace_execution_artifact_metadata_error', 'WorkspaceExecutionArtifactMetadataError'),
+    'WorkspaceExecutionArtifactMetadata': ('workspace_execution_artifact_metadata', 'WorkspaceExecutionArtifactMetadata'),
+    'WorkspaceExecutionArtifactMetadataService': ('workspace_execution_artifact_metadata_service', 'WorkspaceExecutionArtifactMetadataService'),
+    'WorkspaceExecutionArtifactVersionError': ('workspace_execution_artifact_version_error', 'WorkspaceExecutionArtifactVersionError'),
+    'WorkspaceExecutionArtifactVersion': ('workspace_execution_artifact_version', 'WorkspaceExecutionArtifactVersion'),
+    'WorkspaceExecutionArtifactVersionService': ('workspace_execution_artifact_version_service', 'WorkspaceExecutionArtifactVersionService'),
+    'ExecutionArtifactManifestError': ('execution_artifact_manifest_error', 'ExecutionArtifactManifestError'),
+    'ExecutionArtifactManifest': ('execution_artifact_manifest', 'ExecutionArtifactManifest'),
+    'ExecutionArtifactManifestService': ('execution_artifact_manifest_service', 'ExecutionArtifactManifestService'),
+    'WorkspaceExecutionArtifactLineageError': ('workspace_execution_artifact_lineage_error', 'WorkspaceExecutionArtifactLineageError'),
+    'WorkspaceExecutionArtifactLineage': ('workspace_execution_artifact_lineage', 'WorkspaceExecutionArtifactLineage'),
+    'WorkspaceExecutionArtifactLineageService': ('workspace_execution_artifact_lineage_service', 'WorkspaceExecutionArtifactLineageService'),
+    'WorkspaceExecutionArtifactIntegrityError': ('workspace_execution_artifact_integrity_error', 'WorkspaceExecutionArtifactIntegrityError'),
+    'ARTIFACT_INTEGRITY_STATUS_CORRUPT': ('workspace_execution_artifact_integrity', 'STATUS_CORRUPT'),
+    'ARTIFACT_INTEGRITY_STATUS_VERIFIED': ('workspace_execution_artifact_integrity', 'STATUS_VERIFIED'),
+    'WorkspaceExecutionArtifactIntegrity': ('workspace_execution_artifact_integrity', 'WorkspaceExecutionArtifactIntegrity'),
+    'WorkspaceExecutionArtifactIntegrityService': ('workspace_execution_artifact_integrity_service', 'WorkspaceExecutionArtifactIntegrityService'),
+    'WorkspaceExecutionArtifactPromotionError': ('workspace_execution_artifact_promotion_error', 'WorkspaceExecutionArtifactPromotionError'),
+    'STAGE_DEV': ('workspace_execution_artifact_promotion', 'STAGE_DEV'),
+    'STAGE_PRODUCTION': ('workspace_execution_artifact_promotion', 'STAGE_PRODUCTION'),
+    'STAGE_STAGING': ('workspace_execution_artifact_promotion', 'STAGE_STAGING'),
+    'ARTIFACT_PROMOTION_STAGES': ('workspace_execution_artifact_promotion', 'STAGES'),
+    'WorkspaceExecutionArtifactPromotion': ('workspace_execution_artifact_promotion', 'WorkspaceExecutionArtifactPromotion'),
+    'WorkspaceExecutionArtifactPromotionService': ('workspace_execution_artifact_promotion_service', 'WorkspaceExecutionArtifactPromotionService'),
+    'WorkspaceExecutionArtifactRetentionError': ('workspace_execution_artifact_retention_error', 'WorkspaceExecutionArtifactRetentionError'),
+    'WorkspaceExecutionArtifactRetentionPolicy': ('workspace_execution_artifact_retention_policy', 'WorkspaceExecutionArtifactRetentionPolicy'),
+    'WorkspaceExecutionArtifactRetentionService': ('workspace_execution_artifact_retention_service', 'WorkspaceExecutionArtifactRetentionService'),
+    'ExecutionArtifactGarbageCollectionError': ('execution_artifact_garbage_collection_error', 'ExecutionArtifactGarbageCollectionError'),
+    'ARTIFACT_GARBAGE_REASON_RETENTION_EXPIRED': ('execution_artifact_garbage_record', 'REASON_RETENTION_EXPIRED'),
+    'ExecutionArtifactGarbageRecord': ('execution_artifact_garbage_record', 'ExecutionArtifactGarbageRecord'),
+    'ExecutionArtifactGarbageCollectionService': ('execution_artifact_garbage_collection_service', 'ExecutionArtifactGarbageCollectionService'),
+    'WorkspaceExecutionArtifactDistributionError': ('workspace_execution_artifact_distribution_error', 'WorkspaceExecutionArtifactDistributionError'),
+    'ARTIFACT_DISTRIBUTION_STATUS_FAILED': ('workspace_execution_artifact_distribution', 'STATUS_FAILED'),
+    'ARTIFACT_DISTRIBUTION_STATUS_PUBLISHED': ('workspace_execution_artifact_distribution', 'STATUS_PUBLISHED'),
+    'ARTIFACT_DISTRIBUTION_STATUS_REMOVED': ('workspace_execution_artifact_distribution', 'STATUS_REMOVED'),
+    'WorkspaceExecutionArtifactDistribution': ('workspace_execution_artifact_distribution', 'WorkspaceExecutionArtifactDistribution'),
+    'WorkspaceExecutionArtifactDistributionService': ('workspace_execution_artifact_distribution_service', 'WorkspaceExecutionArtifactDistributionService'),
+    'ExecutionArtifactDistributionFailoverError': ('execution_artifact_distribution_failover_error', 'ExecutionArtifactDistributionFailoverError'),
+    'ARTIFACT_DISTRIBUTION_FAILOVER_STATUS_FAILED': ('execution_artifact_distribution_failover', 'STATUS_FAILED'),
+    'ARTIFACT_DISTRIBUTION_FAILOVER_STATUS_REGISTERED': ('execution_artifact_distribution_failover', 'STATUS_REGISTERED'),
+    'ARTIFACT_DISTRIBUTION_FAILOVER_STATUS_SUCCEEDED': ('execution_artifact_distribution_failover', 'STATUS_SUCCEEDED'),
+    'ExecutionArtifactDistributionFailover': ('execution_artifact_distribution_failover', 'ExecutionArtifactDistributionFailover'),
+    'ExecutionArtifactDistributionFailoverService': ('execution_artifact_distribution_failover_service', 'ExecutionArtifactDistributionFailoverService'),
+    'ExecutionArtifactReleaseChannelError': ('execution_artifact_release_channel_error', 'ExecutionArtifactReleaseChannelError'),
+    'CHANNEL_CANARY': ('execution_artifact_release_channel', 'CHANNEL_CANARY'),
+    'CHANNEL_LTS': ('execution_artifact_release_channel', 'CHANNEL_LTS'),
+    'CHANNEL_STABLE': ('execution_artifact_release_channel', 'CHANNEL_STABLE'),
+    'ARTIFACT_RELEASE_CHANNELS': ('execution_artifact_release_channel', 'CHANNELS'),
+    'ExecutionArtifactReleaseChannel': ('execution_artifact_release_channel', 'ExecutionArtifactReleaseChannel'),
+    'ExecutionArtifactReleaseChannelService': ('execution_artifact_release_channel_service', 'ExecutionArtifactReleaseChannelService'),
+    'ExecutionArtifactDecisionError': ('execution_artifact_decision_error', 'ExecutionArtifactDecisionError'),
+    'ARTIFACT_DECISION_ACTION_DISTRIBUTE': ('execution_artifact_decision', 'ACTION_DISTRIBUTE'),
+    'ARTIFACT_DECISION_ACTION_PROMOTE': ('execution_artifact_decision', 'ACTION_PROMOTE'),
+    'ARTIFACT_DECISION_ACTION_PUBLISH': ('execution_artifact_decision', 'ACTION_PUBLISH'),
+    'ARTIFACT_DECISION_ACTION_RELEASE': ('execution_artifact_decision', 'ACTION_RELEASE'),
+    'ARTIFACT_DECISION_ACTION_RETIRE': ('execution_artifact_decision', 'ACTION_RETIRE'),
+    'ARTIFACT_DECISION_ACTIONS': ('execution_artifact_decision', 'ACTIONS'),
+    'ExecutionArtifactDecision': ('execution_artifact_decision', 'ExecutionArtifactDecision'),
+    'ExecutionArtifactOrchestrationService': ('execution_artifact_orchestration_service', 'ExecutionArtifactOrchestrationService'),
+    'ExecutionMetricError': ('execution_metric_error', 'ExecutionMetricError'),
+    'ExecutionMetric': ('execution_metric', 'ExecutionMetric'),
+    'ExecutionMetricsService': ('execution_metrics_service', 'ExecutionMetricsService'),
+    'ExecutionObservabilityEventError': ('execution_observability_event_error', 'ExecutionObservabilityEventError'),
+    'EXECUTION_EVENT_SEVERITIES': ('execution_observability_event', 'SEVERITIES'),
+    'EXECUTION_EVENT_SEVERITY_DEBUG': ('execution_observability_event', 'SEVERITY_DEBUG'),
+    'EXECUTION_EVENT_SEVERITY_ERROR': ('execution_observability_event', 'SEVERITY_ERROR'),
+    'EXECUTION_EVENT_SEVERITY_INFO': ('execution_observability_event', 'SEVERITY_INFO'),
+    'EXECUTION_EVENT_SEVERITY_WARNING': ('execution_observability_event', 'SEVERITY_WARNING'),
+    'ExecutionObservabilityEvent': ('execution_observability_event', 'ExecutionObservabilityEvent'),
+    'ExecutionEventService': ('execution_event_service', 'ExecutionEventService'),
+    'ExecutionTraceError': ('execution_trace_error', 'ExecutionTraceError'),
+    'EXECUTION_TRACE_STATUSES': ('execution_trace', 'STATUSES'),
+    'EXECUTION_TRACE_STATUS_ACTIVE': ('execution_trace', 'STATUS_ACTIVE'),
+    'EXECUTION_TRACE_STATUS_CANCELLED': ('execution_trace', 'STATUS_CANCELLED'),
+    'EXECUTION_TRACE_STATUS_COMPLETED': ('execution_trace', 'STATUS_COMPLETED'),
+    'EXECUTION_TRACE_STATUS_FAILED': ('execution_trace', 'STATUS_FAILED'),
+    'EXECUTION_TRACE_TERMINAL_STATUSES': ('execution_trace', 'TERMINAL_STATUSES'),
+    'ExecutionTrace': ('execution_trace', 'ExecutionTrace'),
+    'ExecutionTraceService': ('execution_trace_service', 'ExecutionTraceService'),
+    'ExecutionObservabilitySummaryError': ('execution_observability_summary_error', 'ExecutionObservabilitySummaryError'),
+    'ExecutionObservabilitySummary': ('execution_observability_summary', 'ExecutionObservabilitySummary'),
+    'ExecutionObservabilityAggregationService': ('execution_observability_aggregation_service', 'ExecutionObservabilityAggregationService'),
+    'ExecutionObservabilityAlertRuleError': ('execution_observability_alert_rule_error', 'ExecutionObservabilityAlertRuleError'),
+    'ALERT_RULE_OPERATOR_EQ': ('execution_observability_alert_rule', 'OPERATOR_EQ'),
+    'ALERT_RULE_OPERATOR_GT': ('execution_observability_alert_rule', 'OPERATOR_GT'),
+    'ALERT_RULE_OPERATOR_GTE': ('execution_observability_alert_rule', 'OPERATOR_GTE'),
+    'ALERT_RULE_OPERATOR_LT': ('execution_observability_alert_rule', 'OPERATOR_LT'),
+    'ALERT_RULE_OPERATOR_LTE': ('execution_observability_alert_rule', 'OPERATOR_LTE'),
+    'ALERT_RULE_OPERATORS': ('execution_observability_alert_rule', 'OPERATORS'),
+    'ExecutionObservabilityAlertRule': ('execution_observability_alert_rule', 'ExecutionObservabilityAlertRule'),
+    'ExecutionAlertRuleService': ('execution_alert_rule_service', 'ExecutionAlertRuleService'),
+    'ExecutionObservabilityAlertError': ('execution_observability_alert_error', 'ExecutionObservabilityAlertError'),
+    'EXECUTION_ALERT_STATUS_OPEN': ('execution_observability_alert', 'STATUS_OPEN'),
+    'EXECUTION_ALERT_STATUS_RESOLVED': ('execution_observability_alert', 'STATUS_RESOLVED'),
+    'EXECUTION_ALERT_STATUSES': ('execution_observability_alert', 'STATUSES'),
+    'ExecutionObservabilityAlert': ('execution_observability_alert', 'ExecutionObservabilityAlert'),
+    'ExecutionAlertService': ('execution_alert_service', 'ExecutionAlertService'),
+    'ExecutionObservabilityEscalationError': ('execution_observability_escalation_error', 'ExecutionObservabilityEscalationError'),
+    'EXECUTION_ESCALATION_LEVEL_CRITICAL': ('execution_observability_escalation', 'LEVEL_CRITICAL'),
+    'EXECUTION_ESCALATION_LEVEL_URGENT': ('execution_observability_escalation', 'LEVEL_URGENT'),
+    'EXECUTION_ESCALATION_LEVEL_WARNING': ('execution_observability_escalation', 'LEVEL_WARNING'),
+    'EXECUTION_ESCALATION_LEVELS': ('execution_observability_escalation', 'LEVELS'),
+    'EXECUTION_ESCALATION_STATUS_ACTIVE': ('execution_observability_escalation', 'STATUS_ACTIVE'),
+    'EXECUTION_ESCALATION_STATUS_RESOLVED': ('execution_observability_escalation', 'STATUS_RESOLVED'),
+    'EXECUTION_ESCALATION_STATUSES': ('execution_observability_escalation', 'STATUSES'),
+    'ExecutionObservabilityEscalation': ('execution_observability_escalation', 'ExecutionObservabilityEscalation'),
+    'ExecutionAlertEscalationService': ('execution_alert_escalation_service', 'ExecutionAlertEscalationService'),
+    'ExecutionObservabilityAlertSuppressionError': ('execution_observability_alert_suppression_error', 'ExecutionObservabilityAlertSuppressionError'),
+    'ExecutionObservabilityAlertSuppression': ('execution_observability_alert_suppression', 'ExecutionObservabilityAlertSuppression'),
+    'ExecutionAlertSuppressionService': ('execution_alert_suppression_service', 'ExecutionAlertSuppressionService'),
+    'ExecutionObservabilityAlertRouteError': ('execution_observability_alert_route_error', 'ExecutionObservabilityAlertRouteError'),
+    'EXECUTION_ALERT_ROUTE_SEVERITIES': ('execution_observability_alert_route', 'ROUTE_SEVERITIES'),
+    'EXECUTION_ALERT_ROUTE_SEVERITY_ANY': ('execution_observability_alert_route', 'SEVERITY_ANY'),
+    'ExecutionObservabilityAlertRoute': ('execution_observability_alert_route', 'ExecutionObservabilityAlertRoute'),
+    'ExecutionAlertRoutingService': ('execution_alert_routing_service', 'ExecutionAlertRoutingService'),
+    'ExecutionObservabilityAlertFingerprintError': ('execution_observability_alert_fingerprint_error', 'ExecutionObservabilityAlertFingerprintError'),
+    'ExecutionObservabilityAlertFingerprint': ('execution_observability_alert_fingerprint', 'ExecutionObservabilityAlertFingerprint'),
+    'ExecutionAlertDeduplicationService': ('execution_alert_deduplication_service', 'ExecutionAlertDeduplicationService'),
+    'ExecutionObservabilityAlertCorrelationError': ('execution_observability_alert_correlation_error', 'ExecutionObservabilityAlertCorrelationError'),
+    'EXECUTION_ALERT_CORRELATION_STATUS_ACTIVE': ('execution_observability_alert_correlation', 'STATUS_ACTIVE'),
+    'EXECUTION_ALERT_CORRELATION_STATUS_RESOLVED': ('execution_observability_alert_correlation', 'STATUS_RESOLVED'),
+    'EXECUTION_ALERT_CORRELATION_STATUSES': ('execution_observability_alert_correlation', 'STATUSES'),
+    'ExecutionObservabilityAlertCorrelation': ('execution_observability_alert_correlation', 'ExecutionObservabilityAlertCorrelation'),
+    'ExecutionAlertCorrelationService': ('execution_alert_correlation_service', 'ExecutionAlertCorrelationService'),
+    'ExecutionAlertAnalyticsError': ('execution_alert_analytics_error', 'ExecutionAlertAnalyticsError'),
+    'ExecutionAlertAnalytics': ('execution_alert_analytics', 'ExecutionAlertAnalytics'),
+    'ExecutionAlertAnalyticsService': ('execution_alert_analytics_service', 'ExecutionAlertAnalyticsService'),
+    'ExecutionObservabilityDecisionError': ('execution_observability_decision_error', 'ExecutionObservabilityDecisionError'),
+    'EXECUTION_DECISION_STATUS_CRITICAL': ('execution_observability_decision', 'STATUS_CRITICAL'),
+    'EXECUTION_DECISION_STATUS_HEALTHY': ('execution_observability_decision', 'STATUS_HEALTHY'),
+    'EXECUTION_DECISION_STATUS_WARNING': ('execution_observability_decision', 'STATUS_WARNING'),
+    'EXECUTION_DECISION_STATUSES': ('execution_observability_decision', 'STATUSES'),
+    'ExecutionObservabilityDecision': ('execution_observability_decision', 'ExecutionObservabilityDecision'),
+    'ExecutionObservabilityOrchestrationService': ('execution_observability_orchestration_service', 'ExecutionObservabilityOrchestrationService'),
+    'ResearchWorkspaceConsumerProjectionDiagnosticsStatus': ('research_workspace_consumer_projection_diagnostic_status', 'ResearchWorkspaceConsumerProjectionDiagnosticStatus'),
+}
+
+
+def __getattr__(name):
+    try:
+        module, attribute = _EXPORTS[name]
+    except KeyError:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from None
+    value = getattr(import_module(f".{module}", __name__), attribute)
+    globals()[name] = value  # later lookups skip __getattr__
+    return value
+
+
+def __dir__():
+    return sorted({*globals(), *_EXPORTS})
