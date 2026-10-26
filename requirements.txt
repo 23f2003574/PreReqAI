@@ -1,4 +1,4 @@
-PyMuPDF>=1.26.0
+PyMuPDF>=1.26.0,<2  # 2.x pulls in pymupdf-layout and onnxruntime, which print hardware-probe warnings to stderr on some hosts (CI) and need Python 3.11+
 pdfplumber>=0.11.0
 requests>=2.32.0
 fastapi>=0.115.0
