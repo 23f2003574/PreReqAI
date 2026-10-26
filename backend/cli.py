@@ -16,6 +16,7 @@ Usage:
 
 import argparse
 import json
+import contextlib
 import os
 import sys
 
@@ -283,6 +284,14 @@ def main(argv=None, facade=None, health_service=None, readiness_service=None) ->
     result without re-deriving the full service wiring, the same
     fixture-reuse approach this package's own test suites already use."""
     parser = _build_parser()
+    given = list(sys.argv[1:] if argv is None else argv)
+    if not given:  # a first try with no command: show the help (with "start here" and examples), not just an error
+        try:
+            with contextlib.redirect_stdout(sys.stderr):
+                parser.parse_args(["--help"])
+        except SystemExit:
+            pass
+        return EXIT_USAGE
     args = parser.parse_args(argv)
 
     if args.command == "recovery-decision" and args.recovery_decision_command == "evaluate":
