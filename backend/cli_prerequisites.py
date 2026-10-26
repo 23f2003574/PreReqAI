@@ -150,7 +150,12 @@ def _apply_resume(args):
         return True
     try:
         with open(args.resume, encoding="utf-8") as handle:
-            args.studied = list(args.studied) + studied_from_plan(handle.read())
+            text = handle.read()
+        if not text.lstrip().startswith("# Study plan:"):  # any other file would silently restore no progress at all
+            print(f"error: {args.resume} is not a study plan saved with --plan-file (it does not start with '# Study plan:')", file=sys.stderr)
+            print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
+            return False
+        args.studied = list(args.studied) + studied_from_plan(text)
     except (OSError, UnicodeDecodeError) as exc:
         print(f"error: cannot read the saved plan {args.resume}: {getattr(exc, 'strerror', None) or exc}", file=sys.stderr)
         print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
