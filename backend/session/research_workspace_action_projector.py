@@ -497,9 +497,9 @@ class ResearchWorkspaceActionProjector:
 
             if (
 
-                descriptor.name
+                descriptor.capability
 
-                == capability.value
+                == capability
             ):
 
                 return descriptor.enabled
