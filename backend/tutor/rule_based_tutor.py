@@ -73,7 +73,8 @@ class RuleBasedTutor(BaseTutor):
         )
 
         answer = (
-            self._resources_answer(paper, question)
+            self._concept_time_answer(paper, question)
+            or self._resources_answer(paper, question)
             or self._concept_prerequisites_answer(paper, question)
             or self._built_in_answer(paper, context, question)
             or self._study_plan_answer(paper, question)
@@ -180,6 +181,20 @@ class RuleBasedTutor(BaseTutor):
             return f"{prerequisite} (studied)" if prerequisite in done else f"{prerequisite} (known or covered)" if prerequisite in known else prerequisite
 
         return " ".join(f"{name} builds on {', '.join(label(p) for p in rules[name])}." for name in named)
+
+    @staticmethod
+    def _concept_time_answer(paper, question):
+        """'How long will calculus take?' -> the planned hours for that concept (not its definition, nor the whole plan's)."""
+        text = _normalise(question)
+        if not re.search(r"\b(how (long|many hours|many days|much time)|hours?|time (to|will|does|needed))\b", text):
+            return ""
+        plan = sorted(getattr(paper, "learning_plan", []), key=lambda step: -len(step.concept))
+        for step in plan:
+            pattern = rf"(?<![a-z0-9]){re.escape(_normalise(step.concept))}(?![a-z0-9])"
+            if re.search(pattern, text):
+                done = " You have already studied it." if step.concept in RuleBasedTutor._studied(paper) else ""
+                return f"{step.concept}: about {step.estimated_hours} hours of study.{done}"
+        return ""
 
     @staticmethod
     def _resources_answer(paper, question):
