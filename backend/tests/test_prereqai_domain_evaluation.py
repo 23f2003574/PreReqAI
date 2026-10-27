@@ -20,7 +20,7 @@ PAPERS = {
               {"Graph Neural Network", "Message Passing", "Graph Convolution"}, ["Linear Algebra", "Graphs", "Neural Networks"], 35),
     "diffusion": ("Denoising Diffusion",
                   "We train a diffusion model with score matching, a noise schedule and a U-Net over the forward process.",
-                  {"Diffusion Model", "Score Matching"}, ["Probability", "Calculus", "Neural Networks"], 35),
+                  {"Diffusion Model", "Score Matching"}, ["Probability", "Information Theory", "Calculus", "Neural Networks"], 43),
 }
 
 

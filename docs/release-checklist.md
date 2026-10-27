@@ -255,5 +255,5 @@ Still open, in priority order:
 
 1. **Release blocker:** run one real published paper end to end (CLI and HTTP) with network access and fix what it exposes.
 2. **Required before January:** a model-backed tutor (provider decision); the rule-based tutor discloses that it is a placeholder for free-form questions.
-3. **Required before January:** broader detector coverage (few prerequisite concepts and curated resources).
+3. **Required before January:** broader detector coverage. Information Theory (entropy, KL divergence) is now a prerequisite of Diffusion Model, Score Matching and Reverse Process (2026-10-27); other gaps remain (for example variational inference, optimisation beyond gradient descent, sequence models).
 4. **Optional:** OCR for scanned PDFs, author-year bibliographies, concepts outside the registry, a dependency lockfile, Windows and macOS CI.

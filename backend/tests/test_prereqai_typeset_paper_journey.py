@@ -37,7 +37,7 @@ def test_typeset_paper_is_read_as_a_whole(tmp_path, heading):
     assert report["paper"]["author"] == "Jonathan Ho, Ajay Jain"
     assert report["statistics"]["references"] == 2
     assert report["concepts"] == ["Gradient Descent", "Backpropagation", "Diffusion Model", "Reverse Process", "Score Matching"]  # cited titles add none
-    assert [step["concept"] for step in report["learning_plan"]] == ["Linear Algebra", "Probability", "Calculus", "Neural Networks"]
+    assert [step["concept"] for step in report["learning_plan"]] == ["Linear Algebra", "Probability", "Information Theory", "Calculus", "Neural Networks"]
 
     sid = body["session_id"]
     plan = client.get(f"/api/session/{sid}/plan").text

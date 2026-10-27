@@ -52,7 +52,12 @@ class PrerequisiteDetector:
 
         "Diffusion Model": [
             "Probability",
+            "Information Theory",
             "Neural Networks",
+        ],
+
+        "Information Theory": [
+            "Probability",
         ],
 
         "Forward Process": [
@@ -65,6 +70,7 @@ class PrerequisiteDetector:
 
         "Score Matching": [
             "Probability",
+            "Information Theory",
             "Neural Networks",
             "Calculus",
         ],
@@ -123,6 +129,7 @@ class PrerequisiteDetector:
 
         "Reverse Process": [
             "Probability",
+            "Information Theory",
             "Neural Networks",
             "Calculus",
         ],

@@ -14,6 +14,7 @@ class PrerequisiteLearningPlanner:
 
         "Linear Algebra": 1,
         "Probability": 2,
+        "Information Theory": 2.5,
         "Calculus": 3,
         "Graphs": 4,
         "Neural Networks": 5,
@@ -29,6 +30,7 @@ class PrerequisiteLearningPlanner:
 
         "Linear Algebra": 12,
         "Probability": 10,
+        "Information Theory": 8,
         "Calculus": 10,
         "Graphs": 8,
         "Neural Networks": 15,

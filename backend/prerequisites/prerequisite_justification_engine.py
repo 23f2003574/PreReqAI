@@ -21,6 +21,9 @@ class PrerequisiteJustificationEngine:
         "Calculus":
             "Gradients and derivatives underlie policy-gradient updates, score functions and the training of the networks involved.",
 
+        "Information Theory":
+            "Diffusion training objectives are written with entropy and KL divergence, which measure how far one distribution is from another.",
+
         "Graphs":
             "Graph neural networks operate on nodes, edges and adjacency structure, so graph basics are assumed.",
 

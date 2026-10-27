@@ -23,6 +23,7 @@ PREREQUISITE_DEFINITIONS = {
     "Linear Algebra": "The mathematics of vectors, matrices and linear transformations.",
     "Probability": "The mathematics of uncertainty: how likely events are and how to reason about random outcomes.",
     "Calculus": "The mathematics of change: derivatives and gradients, and integrals.",
+    "Information Theory": "The mathematics of information: entropy and KL divergence, which measure uncertainty and the distance between distributions.",
     "Neural Networks": "Models built from layers of simple units whose weights are learned from data by gradient descent.",
     "Graphs": "Structures of nodes connected by edges, used to model relationships between things.",
     "Markov Decision Process": "A framework for sequential decisions where an agent's actions change its state and earn rewards.",

@@ -33,6 +33,13 @@ class LearningResourceRecommender:
             10,
         ),
 
+        "Information Theory": (
+            "Information Theory, Inference and Learning Algorithms",
+            "David MacKay (University of Cambridge)",
+            "https://www.inference.org.uk/mackay/itila/",
+            8,
+        ),
+
         "Neural Networks": (
             "Neural Networks and Deep Learning",
             "Coursera",

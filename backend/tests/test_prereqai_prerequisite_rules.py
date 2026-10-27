@@ -15,7 +15,7 @@ def test_every_registry_concept_has_at_least_one_prerequisite():
 
 
 def test_every_rule_target_is_a_known_concept_or_foundation():
-    foundations = {"Linear Algebra", "Probability", "Neural Networks", "Graphs", "Calculus"}
+    foundations = {"Linear Algebra", "Probability", "Neural Networks", "Graphs", "Calculus", "Information Theory"}
     known = {c.name for c in ConceptRegistry().all()} | foundations | {"Attention"}
     unknown = sorted({t for targets in RULES.values() for t in targets} - known)
     assert not unknown, unknown
