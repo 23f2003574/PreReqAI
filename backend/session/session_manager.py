@@ -136,11 +136,11 @@ class SessionManager:
 
             return True
 
+        temp = path.with_suffix(".tmp")
+
         try:
 
             path.parent.mkdir(parents=True, exist_ok=True)
-
-            temp = path.with_suffix(".tmp")
 
             temp.write_bytes(pickle.dumps(session))
 
@@ -151,6 +151,14 @@ class SessionManager:
         except Exception:
 
             self.last_save_ok = False
+
+            try:  # a half-written temp file (disk full) must not keep eating the space the next attempt needs
+
+                temp.unlink(missing_ok=True)
+
+            except OSError:
+
+                pass
 
         return self.last_save_ok
 
