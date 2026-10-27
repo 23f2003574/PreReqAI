@@ -9,6 +9,10 @@ REFERENCE_PATTERN = re.compile(
 )
 
 
+# The titles ScientificSectionParser accepts for the bibliography, with an optional section number ("7", "7.", "VII.").
+REFERENCES_TITLE = re.compile(r"^(?:\d+(?:\.\d+)*\.?|[IVXivx]+\.)?\s*(?:references|bibliography|works cited)\s*$", re.IGNORECASE)
+
+
 class ReferenceExtractor:
     """
     Extracts bibliography entries from the
@@ -25,7 +29,7 @@ class ReferenceExtractor:
 
         for section in paper.sections:
 
-            if section.title.lower() != "references":
+            if not REFERENCES_TITLE.match(section.title.strip()):
                 continue
 
             matches = REFERENCE_PATTERN.findall(
