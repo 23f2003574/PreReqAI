@@ -218,7 +218,7 @@ async def analyze_prerequisites(
 
         outcome = await run_in_threadpool(_analyze_source, source, known, studied, diagnostics)
 
-        return _with_resume_warning(outcome, plan_text)
+        return _with_request_warnings(outcome, plan_text)
 
     # The analysis is blocking and CPU-bound: run on a worker thread so one
     # upload never stalls every other request the server is handling.
@@ -237,15 +237,30 @@ async def analyze_prerequisites(
             content=outcome,
         )
 
-    return _with_resume_warning(outcome, plan_text)
+    return _with_request_warnings(outcome, plan_text)
 
 
-def _with_resume_warning(outcome, plan_text):
-    """A resumed plan saved for another paper is applied but flagged in `warnings`; failures pass through untouched."""
-    if isinstance(outcome, dict) and plan_text and outcome.get("status") == SUCCESS:
-        warning = resume_mismatch_warning(plan_text, outcome["report"]["paper"]["title"])
-        if warning:
-            outcome["warnings"] = [*(outcome.get("warnings") or []), warning]
+def _limit_misconfiguration():
+    """A warning when PREREQAI_MAX_ANALYSIS_SECONDS is set to something unusable (so no time limit is applied); None when it is
+    unset, blank or valid. Silently running unprotected would hide a typo from whoever configured the limit."""
+    value = os.environ.get("PREREQAI_MAX_ANALYSIS_SECONDS", "")
+    if value.strip() and _server_limits() is None:
+        return (f"PREREQAI_MAX_ANALYSIS_SECONDS={value.strip()!r} is not a positive number of seconds, "
+                "so no time limit was applied to this analysis.")
+    return None
+
+
+def _with_request_warnings(outcome, plan_text):
+    """Warnings about the request itself, added to a successful analysis: a resumed plan saved for another paper (applied
+    anyway) and an unusable server time limit. Failures pass through untouched."""
+    if isinstance(outcome, dict) and outcome.get("status") == SUCCESS:
+        extra = []
+        if plan_text:
+            extra.append(resume_mismatch_warning(plan_text, outcome["report"]["paper"]["title"]))
+        extra.append(_limit_misconfiguration())
+        extra = [warning for warning in extra if warning]
+        if extra:
+            outcome["warnings"] = [*(outcome.get("warnings") or []), *extra]
     return outcome
 
 
