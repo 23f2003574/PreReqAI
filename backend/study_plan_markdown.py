@@ -42,6 +42,12 @@ def plan_markdown(report):
 _TICKED = re.compile(r"^- \[[xX]\] \d+\. (.+?) \(~\d+h\)", re.MULTILINE)
 
 
+def is_saved_plan(text):
+    """Whether `text` is a plan written by plan_markdown (a leading BOM or blank lines from an editor are ignored). The one
+    check behind every resume surface: any other file would restore no progress at all, silently."""
+    return text.lstrip("\ufeff \t\r\n").startswith(PLAN_HEADING)
+
+
 def studied_from_plan(text):
     """The concepts ticked in a checklist written by plan_markdown, so a saved plan can restore progress."""
     return [match.group(1) for match in _TICKED.finditer(text)]
@@ -59,8 +65,8 @@ def known_from_plan(text):
 def resume_mismatch_warning(plan_text, paper_title):
     """A warning when a resumed plan was saved for another paper than the one analysed now (its studied and known concepts
     still apply, but a wrong file should not go unnoticed); None when the titles match."""
-    first = plan_text.lstrip().splitlines()[0] if plan_text.strip() else ""
-    saved = _one_line(first[len(PLAN_HEADING):]) if first.startswith(PLAN_HEADING) else ""
+    first = plan_text.lstrip("\ufeff \t\r\n").splitlines()[0] if is_saved_plan(plan_text) else ""
+    saved = _one_line(first[len(PLAN_HEADING):]) if first else ""
     if saved and saved.casefold() != _one_line(paper_title).casefold():
         return f"The resumed plan was saved for '{saved}', not '{_one_line(paper_title)}'; its studied and known concepts were applied anyway."
     return None

@@ -36,3 +36,10 @@ def test_http_resume_reads_a_plan_with_a_bom(tmp_path):
     assert response.status_code == 200
     progress = {i["concept"]: i["completed"] for i in client.get(f"/api/session/{response.json()['session_id']}").json()["study_progress"]}
     assert progress["Probability"] is True
+
+
+def test_is_saved_plan_is_the_single_check_for_every_resume_surface():
+    from backend.study_plan_markdown import is_saved_plan
+
+    assert is_saved_plan(PLAN) and is_saved_plan("﻿" + PLAN) and is_saved_plan("\n\r\n  " + PLAN)
+    assert not is_saved_plan("") and not is_saved_plan("# Notes\n" + PLAN) and not is_saved_plan("Study plan: X")

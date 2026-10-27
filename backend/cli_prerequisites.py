@@ -12,7 +12,7 @@ import sys
 import threading
 from pathlib import Path
 
-from backend.study_plan_markdown import PLAN_HEADING, known_from_plan, plan_markdown, resume_mismatch_warning, studied_from_plan
+from backend.study_plan_markdown import PLAN_HEADING, is_saved_plan, known_from_plan, plan_markdown, resume_mismatch_warning, studied_from_plan
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
@@ -159,7 +159,7 @@ def _apply_resume(args):
     try:
         with open(args.resume, encoding="utf-8-sig") as handle:  # Notepad and others save a plan with a BOM
             text = handle.read()
-        if not text.lstrip().startswith(PLAN_HEADING):  # any other file would silently restore no progress at all
+        if not is_saved_plan(text):
             print(f"error: {args.resume} is not a study plan saved with --plan-file (it does not start with '# Study plan:')", file=sys.stderr)
             print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
             return False

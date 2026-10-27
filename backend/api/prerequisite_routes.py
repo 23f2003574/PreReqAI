@@ -10,7 +10,7 @@ from fastapi import (
     Form,
 )
 
-from backend.study_plan_markdown import PLAN_HEADING, known_from_plan, resume_mismatch_warning, studied_from_plan
+from backend.study_plan_markdown import is_saved_plan, known_from_plan, resume_mismatch_warning, studied_from_plan
 from starlette.concurrency import run_in_threadpool
 
 from fastapi.responses import (
@@ -200,7 +200,7 @@ async def analyze_prerequisites(
 
             text = ""
 
-        if len(text) > _MAX_PLAN_BYTES or not text.lstrip().startswith(PLAN_HEADING):  # any other file would restore no progress, silently
+        if len(text) > _MAX_PLAN_BYTES or not is_saved_plan(text):
 
             return failure_response(
                 422,
