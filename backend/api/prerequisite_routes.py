@@ -10,7 +10,7 @@ from fastapi import (
     Form,
 )
 
-from backend.study_plan_markdown import PLAN_HEADING, known_from_plan, studied_from_plan
+from backend.study_plan_markdown import PLAN_HEADING, known_from_plan, resume_mismatch_warning, studied_from_plan
 from starlette.concurrency import run_in_threadpool
 
 from fastapi.responses import (
@@ -212,9 +212,13 @@ async def analyze_prerequisites(
         known = [*known, *known_from_plan(text)]
         studied = [*studied, *studied_from_plan(text)]
 
+    plan_text = text if resume is not None else None
+
     if source is not None:
 
-        return await run_in_threadpool(_analyze_source, source, known, studied, diagnostics)
+        outcome = await run_in_threadpool(_analyze_source, source, known, studied, diagnostics)
+
+        return _with_resume_warning(outcome, plan_text)
 
     # The analysis is blocking and CPU-bound: run on a worker thread so one
     # upload never stalls every other request the server is handling.
@@ -233,6 +237,15 @@ async def analyze_prerequisites(
             content=outcome,
         )
 
+    return _with_resume_warning(outcome, plan_text)
+
+
+def _with_resume_warning(outcome, plan_text):
+    """A resumed plan saved for another paper is applied but flagged in `warnings`; failures pass through untouched."""
+    if isinstance(outcome, dict) and plan_text and outcome.get("status") == SUCCESS:
+        warning = resume_mismatch_warning(plan_text, outcome["report"]["paper"]["title"])
+        if warning:
+            outcome["warnings"] = [*(outcome.get("warnings") or []), warning]
     return outcome
 
 

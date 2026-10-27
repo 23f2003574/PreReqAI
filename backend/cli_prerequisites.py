@@ -12,7 +12,7 @@ import sys
 import threading
 from pathlib import Path
 
-from backend.study_plan_markdown import PLAN_HEADING, known_from_plan, plan_markdown, studied_from_plan
+from backend.study_plan_markdown import PLAN_HEADING, known_from_plan, plan_markdown, resume_mismatch_warning, studied_from_plan
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
@@ -163,6 +163,7 @@ def _apply_resume(args):
             print(f"error: {args.resume} is not a study plan saved with --plan-file (it does not start with '# Study plan:')", file=sys.stderr)
             print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
             return False
+        args.resume_text = text
         args.studied = list(args.studied) + studied_from_plan(text)
         args.known = list(args.known) + known_from_plan(text)
     except (OSError, UnicodeDecodeError) as exc:
@@ -170,6 +171,15 @@ def _apply_resume(args):
         print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
         return False
     return True
+
+
+def _note_resume_mismatch(args, outcome):
+    """Add the 'plan saved for another paper' warning to a successful outcome of a --resume run."""
+    text = getattr(args, "resume_text", None)
+    if text and outcome.get("status") == "success":
+        warning = resume_mismatch_warning(text, outcome["report"]["paper"]["title"])
+        if warning:
+            outcome["warnings"] = [*(outcome.get("warnings") or []), warning]
 
 
 def run_prerequisites_analyze(args, platform=None) -> int:
@@ -199,6 +209,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
     finally:
         if previous is not None:
             signal.signal(signal.SIGINT, previous)
+    _note_resume_mismatch(args, outcome)
     was_cancelled = outcome["status"] == "cancelled"
     limit_hit = outcome["status"] == "limit_exceeded"
     timed_out = outcome["status"] == "timeout"
@@ -321,6 +332,7 @@ def run_prerequisites_ask(args, platform=None) -> int:
             print("  hint: run `pip install -r requirements.txt` in this environment", file=sys.stderr)
             return EXIT_FAILURE
     outcome = platform.analyze(args.paper, limits=_limits_from(args), known=args.known, studied=args.studied)
+    _note_resume_mismatch(args, outcome)
     if outcome["status"] in ("limit_exceeded", "timeout"):  # same wording and exit codes as `analyze`
         print(f"error: {'limit exceeded' if outcome['status'] == 'limit_exceeded' else 'timed out'}: {outcome['detail']}", file=sys.stderr)
         print(f"  hint: {outcome['hint']}", file=sys.stderr)

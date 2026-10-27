@@ -54,3 +54,13 @@ def known_from_plan(text):
     """The concepts a plan written by plan_markdown records as already known to the learner."""
     match = _KNOWN.search(text)
     return [name.strip() for name in match.group(1).split(";") if name.strip()] if match else []
+
+
+def resume_mismatch_warning(plan_text, paper_title):
+    """A warning when a resumed plan was saved for another paper than the one analysed now (its studied and known concepts
+    still apply, but a wrong file should not go unnoticed); None when the titles match."""
+    first = plan_text.lstrip().splitlines()[0] if plan_text.strip() else ""
+    saved = _one_line(first[len(PLAN_HEADING):]) if first.startswith(PLAN_HEADING) else ""
+    if saved and saved.casefold() != _one_line(paper_title).casefold():
+        return f"The resumed plan was saved for '{saved}', not '{_one_line(paper_title)}'; its studied and known concepts were applied anyway."
+    return None
