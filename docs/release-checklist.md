@@ -236,3 +236,24 @@ Fresh `python3.12 -m venv`, `pip install -r requirements-dev.txt`, README quicks
 ## Workspace/projection test failures resolved (2026-10-27)
 
 `pytest backend/tests -k "research_workspace or consumer_projection"`: **4112 passed, 0 failed** (from 31 failed at the start of the day). One product defect (the workspace action projector read `descriptor.name`, which capability descriptors do not have, so capability gating crashed) and one formatting mismatch (receipt fingerprints are shortened to 8 characters like the comparator) were fixed in code; the rest were stale test doubles (renamed enum members, a nonexistent stage helper, a keyword name, `name`/`enabled` assumptions about frozen capability descriptors). The "44 workspace failures" item above is therefore closed. Still open: the two network tests (`test_arxiv_download`, the metadata resolver), the real-paper blocker, the tutor model, Python 3.10. Not run: the complete suite after these fixes.
+
+## Release readiness status (2026-10-27)
+
+**Status: still NOT release-ready.** One blocker remains and it is unverified work, not a failing test: PreReqAI has not been run on a real published paper (the sandbox has no route to arXiv; `test_arxiv_download` and `test_crossref_lookup` fail on `ProxyError` here). Passing tests alone do not change that.
+
+Evidence at commit `8413def` (verified):
+
+| Check | Result |
+|---|---|
+| Full suite, `python -m pytest backend/tests` (local, Python 3.13, 2026-10-27) | **12346 passed, 2 skipped, 2 failed** in 292 s; the 2 failures are the two network tests above |
+| `pytest -m prereqai` | 602 passed, 0 failed |
+| GitHub Actions "PreReqAI checks" (`.github/workflows/prereqai.yml`: `pytest -m prereqai` + the README quickstart on **Python 3.10 and 3.13**) | green on every push from 468cbe5 to 8413def (runs 10 to 16); the 3.10 job passed from run 2 on, the first 3.13 failure (PyMuPDF 2.x printing onnxruntime warnings to stderr) is fixed by `PyMuPDF>=1.26.0,<2` |
+
+Changes to the table in "Release readiness decision": the **Python 3.10** item is closed by the CI job above (it installs `requirements-dev.txt` and runs the release checks on a real 3.10 interpreter; 3.11 and 3.12 were verified earlier in fresh environments). The **workspace/projection failures** item is closed (see the 2026-10-27 section above). CI covers Linux only.
+
+Still open, in priority order:
+
+1. **Release blocker:** run one real published paper end to end (CLI and HTTP) with network access and fix what it exposes.
+2. **Required before January:** a model-backed tutor (provider decision); the rule-based tutor discloses that it is a placeholder for free-form questions.
+3. **Required before January:** broader detector coverage (few prerequisite concepts and curated resources).
+4. **Optional:** OCR for scanned PDFs, author-year bibliographies, concepts outside the registry, a dependency lockfile, Windows and macOS CI.
