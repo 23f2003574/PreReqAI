@@ -241,9 +241,12 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         print(f"Analysed '{report['paper']['title']}' (session {outcome['session_id']})")
         # missing_prerequisites lists every prerequisite checked; only unsatisfied ones are missing
         missing = [item["concept"] for item in report["missing_prerequisites"] if not item.get("satisfied")]
-        covered = len(report["missing_prerequisites"]) - len(missing)
+        satisfied = [item for item in report["missing_prerequisites"] if item.get("satisfied")]
+        known = sum(1 for item in satisfied if str(item.get("reason", "")).startswith("Already known"))  # the learner's own --known
+        covered = len(satisfied) - known
+        explained = [text for count, text in ((covered, f"{covered} covered in the paper"), (known, f"{known} marked known") ) if count]
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "
-              f"missing: {len(missing)}" + (f" ({covered} covered in the paper)" if covered else ""))
+              f"missing: {len(missing)}" + (f" ({', '.join(explained)})" if explained else ""))
         done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
         if report["learning_plan"]:  # one line: what to study, in order (the summary stays at most 5 lines)
             print("  study plan: " + " -> ".join(
