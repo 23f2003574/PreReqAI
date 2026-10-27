@@ -276,12 +276,19 @@ class RuleBasedTutor(BaseTutor):
             listed = f" Studied: {', '.join(done)}." if done else ""
             return f"You have studied {readiness.completed_concepts} of {readiness.total_concepts} planned prerequisites ({readiness.progress_percent}%).{listed}"
 
-        if re.search(r"\b(concepts|topics)\b", text) and re.search(r"\b(cover|covers|covered|discuss|discusses|mention|mentions|contain|contains|about|main|key|detected|find|found)\b", text):
+        if re.search(r"\b(concepts|topics)\b", text) and re.search(r"\b(cover|covers|covered|discuss|discusses|mention|mentions|contain|contains|about|main|key|detected|find|found|use|uses|used|include|includes|involve|involves|rely|relies)\b", text):
             concepts = sorted(getattr(paper, "concepts", []), key=lambda item: -item.occurrences)
             if not concepts:
                 return ""
             listed = ", ".join(f"{item.name} ({item.occurrences}x)" for item in concepts)
             return f"The paper discusses these concepts, most mentioned first: {listed}."
+
+        if re.search(r"\b(paper|article)\b.*\babout\b|\babout\b.*\b(paper|article)\b", text):  # "what is the paper about?"
+            concepts = sorted(getattr(paper, "concepts", []), key=lambda item: -item.occurrences)[:3]
+            if not concepts:
+                return ""
+            title = getattr(getattr(paper, "metadata", None), "title", "") or "This paper"
+            return f"{title} is mostly about: {', '.join(item.name for item in concepts)} (the concepts it mentions most)."
 
         if re.search(r"\b(ready|readiness)\b", text):
             readiness = getattr(paper, "readiness", None)
