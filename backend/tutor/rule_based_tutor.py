@@ -208,6 +208,10 @@ class RuleBasedTutor(BaseTutor):
 
         resources = list(getattr(paper, "learning_resources", []))
         named = [r for r in resources if re.search(rf"(?<![a-z0-9]){re.escape(_normalise(r.concept))}(?![a-z0-9])", text)]
+        if not named:  # a prerequisite that needs no study (marked known, or covered by the paper) has no resource: say why
+            for item in sorted(getattr(paper, "missing_prerequisites", []), key=lambda item: -len(item.concept)):
+                if item.satisfied and re.search(rf"(?<![a-z0-9]){re.escape(_normalise(item.concept))}(?![a-z0-9])", text):
+                    return f"{item.concept} is not in your study plan, so there is no resource to suggest for it: {item.reason}."
         if named:
             chosen = named
         else:
