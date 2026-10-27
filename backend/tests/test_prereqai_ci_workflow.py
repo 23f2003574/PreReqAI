@@ -21,3 +21,10 @@ def test_workflow_runs_the_release_checks_and_the_readme_quickstart():
 
 def test_readme_names_the_same_minimum_version():
     assert f"Python {MINIMUM[0]}.{MINIMUM[1]} or newer" in (ROOT / "README.md").read_text(encoding="utf-8")
+
+
+def test_workflow_uses_least_privilege_a_timeout_and_node24_actions():
+    assert re.search(r"^permissions:\s*\n\s+contents: read\b", WORKFLOW, re.MULTILINE)
+    assert "timeout-minutes:" in WORKFLOW
+    # GitHub runs Node 20 actions (checkout@v4, setup-python@v5) on Node 24 with a deprecation warning
+    assert "actions/checkout@v4" not in WORKFLOW and "actions/setup-python@v5" not in WORKFLOW
