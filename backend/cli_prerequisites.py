@@ -284,7 +284,8 @@ def run_prerequisites_analyze(args, platform=None) -> int:
                          if readiness["total_concepts"] else "no concepts left to study")
                 print(f"  readiness: {readiness['status']} ({ready}); "
                   f"difficulty: {report['paper_difficulty']['level']}; "
-                  f"preparation: ~{study_time['total_hours']}h over {study_time['recommended_days']} days"
+                  f"preparation: ~{study_time['total_hours']}h over {study_time['recommended_days']} "
+                  f"{'day' if study_time['recommended_days'] == 1 else 'days'}"
                   + (f" ({left}h left)" if done and (left := sum(step["estimated_hours"] for step in report["learning_plan"]
                                                                if step["concept"] not in done)) != study_time["total_hours"] else ""))
         if args.resources:

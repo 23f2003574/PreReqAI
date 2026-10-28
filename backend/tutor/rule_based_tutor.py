@@ -252,7 +252,7 @@ class RuleBasedTutor(BaseTutor):
                 days = max(1, -(-hours // max(estimate.average_hours_per_day, 1)))
             return (
                 f"Plan about {hours} hours of preparation, roughly "
-                f"{int(days)} days at {estimate.average_hours_per_day:g} hours a day."
+                f"{int(days)} {'day' if int(days) == 1 else 'days'} at {estimate.average_hours_per_day:g} hours a day."
             )
 
         if re.search(r"\b(how (hard|difficult)|difficulty)\b", text):
