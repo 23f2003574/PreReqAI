@@ -65,6 +65,14 @@ class RuleBasedConceptDetector:
         full_text = re.sub(r"(\w+)-[ \t]*\n\s*(\w+)", unwrap, full_text)
         full_text = re.sub(r"\s+", " ", re.sub(r"-\s*\n\s*", "-", full_text))
 
+        # A compound modifier hyphenates a spaced term ("gradient-descent methods" mentions Gradient Descent), unless
+        # the registry already lists the hyphenated spelling as a term of its own.
+        terms = {term.lower() for concept in concepts for term in (concept.name, *concept.aliases)}
+        for term in terms:
+            hyphenated = term.replace(" ", "-")
+            if " " in term and hyphenated not in terms and hyphenated in full_text:
+                full_text = re.sub(rf"\b{re.escape(hyphenated)}\b", term, full_text)
+
         counts = {}
 
         def count(term, plural):
