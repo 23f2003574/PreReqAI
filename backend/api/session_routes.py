@@ -4,7 +4,7 @@ from fastapi import (
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
-from backend.study_plan_markdown import plan_markdown
+from backend.study_plan_markdown import plan_markdown, studied_concepts
 
 from backend.api.workflow_result import (
     failure_response,
@@ -79,7 +79,7 @@ def session_not_found(session_id: str):
 def _next_resources(report):
     """Study links for the planned concepts not yet studied, in study order (same list as `analyze --resources`)."""
 
-    done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
+    done = studied_concepts(report)
     order = {step["concept"]: step["step"] for step in report.get("learning_plan", [])}
 
     return sorted(

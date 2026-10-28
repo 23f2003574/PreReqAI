@@ -11,8 +11,13 @@ def _one_line(text):
     return " ".join(str(text).split())
 
 
+def studied_concepts(report):
+    """The concepts a report's study_progress marks as studied; the one definition the plan, the CLI summary and the API share."""
+    return {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
+
+
 def plan_markdown(report):
-    done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
+    done = studied_concepts(report)
     links = {item["concept"]: item for item in report.get("learning_resources", [])}
     reasons = {item["concept"]: item["justification"] for item in report.get("prerequisite_justifications", [])}
     lines = [f"{PLAN_HEADING} {_one_line(report['paper']['title'])}", ""]

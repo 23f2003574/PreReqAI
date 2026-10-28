@@ -12,7 +12,7 @@ import sys
 import threading
 from pathlib import Path
 
-from backend.study_plan_markdown import PLAN_HEADING, is_saved_plan, known_from_plan, plan_markdown, resume_mismatch_warning, studied_from_plan
+from backend.study_plan_markdown import PLAN_HEADING, is_saved_plan, known_from_plan, plan_markdown, resume_mismatch_warning, studied_concepts, studied_from_plan
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
@@ -271,7 +271,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         explained = [text for count, text in ((covered, f"{covered} covered in the paper"), (known, f"{known} marked known") ) if count]
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "
               f"missing: {len(missing)}" + (f" ({', '.join(explained)})" if explained else ""))
-        done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
+        done = studied_concepts(report)
         if report["learning_plan"]:  # one line: what to study, in order (the summary stays at most 5 lines)
             print("  study plan: " + " -> ".join(
                 f"{step['step']}. {step['concept']} ({step['estimated_hours']}h" + (", studied)" if step["concept"] in done else ")")
