@@ -162,6 +162,30 @@ def delete_session(session_id: str):
     return {"status": "success", "session_id": session_id, "deleted": True}
 
 
+def resolve_topic(session, topic):
+    """(concept name, None) for a topic naming one of the paper's concepts (case-insensitively); (None, None) when no
+    topic is given; (None, hint) when it names no concept. Shared by POST /question and `prerequisites ask --topic`."""
+
+    topic = topic.strip() if topic is not None else None
+
+    if not topic:
+
+        return None, None
+
+    known = {
+        concept.name.casefold(): concept.name
+        for concept in getattr(session.paper, "concepts", None) or []
+    }
+
+    if topic.casefold() not in known:
+
+        return None, ("Use one of this paper's concepts: "
+                      + (", ".join(known.values()) or "none were detected")
+                      + ". Omit `topic` to ask without one.")
+
+    return known[topic.casefold()], None
+
+
 @router.post("/{session_id}/question")
 def ask_question(
 
@@ -194,27 +218,11 @@ def ask_question(
             hint="Ask about one thing at a time with a shorter question.",
         )
 
-    topic = body.topic.strip() if body.topic is not None else None
+    topic, problem = resolve_topic(session, body.topic)
 
-    if topic:  # a topic must name a concept of this paper; it becomes the session's active concept
+    if problem:
 
-        known = {
-            concept.name.casefold(): concept.name
-            for concept in getattr(session.paper, "concepts", None) or []
-        }
-
-        if topic.casefold() not in known:
-
-            return failure_response(
-                422,
-                "question",
-                f"Unknown topic: {body.topic!r}",
-                hint="Use one of this paper's concepts: "
-                     + (", ".join(known.values()) or "none were detected")
-                     + ". Omit `topic` to ask without one.",
-            )
-
-        topic = known[topic.casefold()]
+        return failure_response(422, "question", f"Unknown topic: {body.topic!r}", hint=problem)
 
     try:
 

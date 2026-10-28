@@ -104,6 +104,8 @@ def add_prerequisites_ask_parser(commands):
     )
     ask.add_argument("paper", help="Path to the paper PDF, or an arXiv link / arXiv:ID, or a DOI (downloaded for you)")
     ask.add_argument("question", help="The question to ask about the paper")
+    ask.add_argument("--topic", default=None, metavar="CONCEPT",
+                     help="Focus the answer on one concept detected in the paper (as the API's `topic` field)")
     ask.add_argument("--known", action="append", default=[], metavar="CONCEPT",
                      help="A concept you already know; it is left out of the study plan (repeat for several)")
     ask.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
@@ -359,9 +361,16 @@ def run_prerequisites_ask(args, platform=None) -> int:
     from backend.session import TutorMode, session_manager
 
     session = session_manager.get(outcome["session_id"])
+    from backend.api.session_routes import resolve_topic
+
+    topic, problem = resolve_topic(session, getattr(args, "topic", None))
+    if problem:
+        print(f"error: unknown topic: {args.topic!r}", file=sys.stderr)
+        print(f"  hint: {problem}", file=sys.stderr)
+        return EXIT_USAGE
     try:
         result = platform.learning.answer(session=session, paper=session.paper, question=args.question,
-                                          mode=TutorMode.INTUITION, topic=None)
+                                          mode=TutorMode.INTUITION, topic=topic)
     except Exception as exc:  # same envelope idea as the API: one readable line, never a traceback
         print(f"error: failed to answer the question: {exc}", file=sys.stderr)
         return EXIT_FAILURE
