@@ -43,6 +43,8 @@ class ConceptRegistry:
             Concept("Convolutional Neural Network", "deep_learning", aliases=('CNN', 'CNNs', 'convolutional network')),
             Concept("Batch Normalization", "deep_learning", aliases=('BatchNorm', 'batch norm', 'batch normalisation')),
             Concept("Dropout", "deep_learning"),
+            Concept("Recurrent Neural Network", "deep_learning", aliases=('RNN', 'RNNs', 'LSTM', 'LSTMs', 'GRU', 'long short-term memory', 'recurrent network')),
+            Concept("Adam Optimizer", "deep_learning", aliases=('AdamW', 'Adam optimiser')),
 
             # Diffusion
 

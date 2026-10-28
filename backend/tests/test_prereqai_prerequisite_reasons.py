@@ -10,5 +10,5 @@ def test_shared_prerequisite_reason_names_every_concept_that_needs_it():
 
     assert reasons["Linear Algebra"] == "Required to understand Attention, Gradient Descent"
     assert reasons["Probability"] == "Required to understand Attention, Softmax"
-    assert reasons["Calculus"] == "Required to understand Gradient Descent, Backpropagation"
+    assert reasons["Calculus"] == "Required to understand Gradient Descent, Backpropagation, Recurrent Neural Network"
     assert [p["concept"] for p in report["prerequisites"]].count("Linear Algebra") == 1

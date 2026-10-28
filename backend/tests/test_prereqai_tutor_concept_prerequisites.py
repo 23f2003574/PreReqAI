@@ -36,7 +36,7 @@ def test_progress_question_reports_studied_count_and_names():
 def test_concepts_question_lists_detected_concepts_most_mentioned_first():
     assert _ask("Which concepts does this paper cover?") == (
         "The paper discusses these concepts, most mentioned first: Attention (4x), Softmax (3x), "
-        "Gradient Descent (2x), Transformer (1x), Backpropagation (1x).")
+        "Gradient Descent (2x), Transformer (1x), Backpropagation (1x), Recurrent Neural Network (1x).")
 
 
 def test_a_prerequisite_that_is_only_a_registry_concept_still_gets_its_definition(tmp_path):

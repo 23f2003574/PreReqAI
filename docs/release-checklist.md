@@ -237,6 +237,13 @@ Fresh `python3.12 -m venv`, `pip install -r requirements-dev.txt`, README quicks
 
 `pytest backend/tests -k "research_workspace or consumer_projection"`: **4112 passed, 0 failed** (from 31 failed at the start of the day). One product defect (the workspace action projector read `descriptor.name`, which capability descriptors do not have, so capability gating crashed) and one formatting mismatch (receipt fingerprints are shortened to 8 characters like the comparator) were fixed in code; the rest were stale test doubles (renamed enum members, a nonexistent stage helper, a keyword name, `name`/`enabled` assumptions about frozen capability descriptors). The "44 workspace failures" item above is therefore closed. Still open: the two network tests (`test_arxiv_download`, the metadata resolver), the real-paper blocker, the tutor model, Python 3.10. Not run: the complete suite after these fixes.
 
+## Sequence models and the Adam optimiser (2026-10-28)
+
+Recurrent Neural Network (aliases RNN, LSTM, GRU, long short-term memory) and Adam Optimizer (AdamW; the bare word "Adam" is deliberately not an alias, it is a common surname) are now
+detected, with definitions and prerequisites (Neural Networks, Calculus; Adam also Probability). The bundled sample paper genuinely says "Recurrent neural networks", so its analysis now reports
+6 concepts instead of 5; the study plan is unchanged (4 steps, ~47h). Pinned tests updated accordingly; new tests: `test_prereqai_sequence_models_and_optimisers.py`. Still outside the registry:
+variational inference / VAE, GANs, embeddings, optimisers other than Adam.
+
 ## Release readiness status (2026-10-27)
 
 **Status: still NOT release-ready.** One blocker remains and it is unverified work, not a failing test: PreReqAI has not been run on a real published paper (the sandbox has no route to arXiv; `test_arxiv_download` and `test_crossref_lookup` fail on `ProxyError` here). Passing tests alone do not change that.

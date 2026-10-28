@@ -30,6 +30,7 @@ def test_sample_paper_evidence_is_exactly_what_the_pdf_says():
         ("Gradient Descent", "deep_learning", 2, False),
         ("Transformer", "transformers", 1, True),
         ("Backpropagation", "deep_learning", 1, True),
+        ("Recurrent Neural Network", "deep_learning", 1, True),
     ]
 
 

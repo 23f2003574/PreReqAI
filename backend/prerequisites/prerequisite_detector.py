@@ -127,6 +127,17 @@ class PrerequisiteDetector:
             "Probability",
         ],
 
+        "Recurrent Neural Network": [
+            "Neural Networks",
+            "Calculus",
+        ],
+
+        "Adam Optimizer": [
+            "Calculus",
+            "Probability",
+            "Neural Networks",
+        ],
+
         "Reverse Process": [
             "Probability",
             "Information Theory",

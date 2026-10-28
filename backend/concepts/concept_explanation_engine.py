@@ -162,6 +162,16 @@ class ConceptExplanationEngine:
             "Beginner",
         ),
 
+        "Recurrent Neural Network": (
+            "A neural network that reads a sequence one step at a time and carries a hidden state forward, so each output can depend on what came before (LSTM and GRU are gated variants).",
+            "Intermediate",
+        ),
+
+        "Adam Optimizer": (
+            "A gradient-based optimiser that keeps running averages of each parameter's gradient and squared gradient to adapt its step size per parameter.",
+            "Intermediate",
+        ),
+
         "Graph Attention Network": (
             "A graph neural network that learns attention weights over each node's neighbours instead of treating them equally.",
             "Advanced",

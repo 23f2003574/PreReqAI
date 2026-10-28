@@ -16,7 +16,7 @@ def _post(content, **data):
 def test_diagnostics_are_only_returned_when_asked_for():
     assert "diagnostics" not in _post(SAMPLE.read_bytes())
     asked = _post(SAMPLE.read_bytes(), diagnostics="true")
-    assert asked["status"] == "success" and asked["diagnostics"]["statistics"]["concepts"] == 5
+    assert asked["status"] == "success" and asked["diagnostics"]["statistics"]["concepts"] == 6
     assert asked["diagnostics"]["stage_seconds"] and asked["diagnostics"]["failed_stage"] is None
 
 

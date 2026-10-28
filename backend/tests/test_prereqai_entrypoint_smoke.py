@@ -70,7 +70,7 @@ def test_sample_paper_analysis_result_through_the_http_entrypoint():
     report = body["report"]
 
     assert report["paper"]["title"] == "Attention Is All You Need (PreReqAI sample paper)"
-    assert report["concepts"] == ["Transformer", "Attention", "Softmax", "Gradient Descent", "Backpropagation"]
+    assert report["concepts"] == ["Transformer", "Attention", "Softmax", "Gradient Descent", "Backpropagation", "Recurrent Neural Network"]
     status = {item["concept"]: item["satisfied"] for item in report["missing_prerequisites"]}
     assert status == {"Attention": True, "Neural Networks": False, "Linear Algebra": False, "Probability": False, "Calculus": False}
     assert [(step["concept"], step["estimated_hours"]) for step in report["learning_plan"]] == [
