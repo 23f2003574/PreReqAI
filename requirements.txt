@@ -1,6 +1,7 @@
 PyMuPDF>=1.26.0,<2  # 2.x pulls in pymupdf-layout and onnxruntime, which print hardware-probe warnings to stderr on some hosts (CI) and need Python 3.11+
 pdfplumber>=0.11.0
 requests>=2.32.0
+urllib3>=1.26  # imported directly (timeout classification); also a requests dependency
 fastapi>=0.115.0
 uvicorn>=0.32.0
 python-multipart>=0.0.12
