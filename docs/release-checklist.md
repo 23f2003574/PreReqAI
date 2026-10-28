@@ -257,3 +257,11 @@ Still open, in priority order:
 2. **Required before January:** a model-backed tutor (provider decision); the rule-based tutor discloses that it is a placeholder for free-form questions.
 3. **Required before January:** broader detector coverage. Information Theory (entropy, KL divergence) is now a prerequisite of Diffusion Model, Score Matching and Reverse Process (2026-10-27); other gaps remain (for example variational inference, optimisation beyond gradient descent, sequence models).
 4. **Optional:** OCR for scanned PDFs, author-year bibliographies, concepts outside the registry, a dependency lockfile, Windows and macOS CI.
+
+## CI regression found and fixed (2026-10-28)
+
+GitHub Actions "PreReqAI checks" was red on `261240a`, `2f88ca5` and `1d4f1c0` (runs 25 to 27, both Python 3.10 and 3.13): the blank-paper usage error added in `261240a` contradicted the
+established contract in `test_prereqai_configuration_surface.py` (an empty path is a structured analysis failure, exit 1, the same shape as the API). Those commits were checked locally with a
+`-k` subset that did not select that test; the full `pytest -m prereqai` run found it (1 failed, 628 passed). The blank-paper validation and its test were removed; the contract test passes again.
+Lesson recorded: run the full `pytest -m prereqai` (about 3 minutes) before pushing, not a `-k` subset. Open: remaining-hours semantics are now decided (`study_time.remaining_hours`, added 2026-10-28);
+the real-paper blocker, tutor model provider and the items above are unchanged.

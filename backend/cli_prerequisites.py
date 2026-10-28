@@ -195,18 +195,7 @@ def _note_resume_mismatch(args, outcome):
                 args.plan_file = None
 
 
-def _blank_paper(args):
-    """Whether the paper argument is empty or only whitespace (a usage error, found before anything is analysed)."""
-    if str(args.paper).strip():
-        return False
-    print("error: the paper must not be empty: pass a PDF path, an arXiv link / arXiv:ID, or a DOI", file=sys.stderr)
-    print("  hint: for example `prerequisites analyze paper.pdf`; nothing was analysed", file=sys.stderr)
-    return True
-
-
 def run_prerequisites_analyze(args, platform=None) -> int:
-    if _blank_paper(args):
-        return EXIT_USAGE
     if args.plan_file and (problem := _plan_file_problem(args.plan_file)):
         print(f"error: cannot save the study plan to {args.plan_file}: {problem}", file=sys.stderr)
         print("  hint: choose a file path in an existing folder (for example --plan-file plan.md); nothing was analysed", file=sys.stderr)
@@ -342,8 +331,6 @@ def run_prerequisites_ask(args, platform=None) -> int:
     """Analyse the paper, then answer the question from that session; the same two calls the HTTP API makes."""
     import dataclasses
 
-    if _blank_paper(args):
-        return EXIT_USAGE
     if not args.question.strip():
         print("error: the question must not be empty", file=sys.stderr)
         return EXIT_USAGE
