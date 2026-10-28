@@ -354,6 +354,7 @@ async def mark_concept_known(
         "session_id": session_id,
         "study_progress": report["study_progress"],
         "readiness": report["readiness"],
+        "study_time": report["study_time"],
         "report": report,
     })
 
@@ -388,5 +389,6 @@ async def unmark_concept_known(
         "session_id": session_id,
         "study_progress": report["study_progress"],
         "readiness": report["readiness"],
+        "study_time": report["study_time"],
         "report": report,
     })

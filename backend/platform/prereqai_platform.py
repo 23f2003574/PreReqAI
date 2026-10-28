@@ -350,7 +350,7 @@ class PreReqAIPlatform:
         (tracker.complete if studied else tracker.reset)(session.paper, concept)
         fresh = self._refresh_progress(session.paper, session.report)
         session_manager.save(session)
-        return {"study_progress": fresh["study_progress"], "readiness": fresh["readiness"]}
+        return {"study_progress": fresh["study_progress"], "readiness": fresh["readiness"], "study_time": fresh["study_time"]}
 
     def _refresh_progress(self, paper, report) -> dict:
         """Re-evaluate readiness after the paper's study progress changed and copy the parts of a freshly
