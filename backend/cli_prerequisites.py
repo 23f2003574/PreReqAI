@@ -173,6 +173,13 @@ def _apply_resume(args):
     return True
 
 
+def _same_file(first, second):
+    try:
+        return os.path.samefile(first, second)
+    except OSError:
+        return False
+
+
 def _note_resume_mismatch(args, outcome):
     """Add the 'plan saved for another paper' warning to a successful outcome of a --resume run."""
     text = getattr(args, "resume_text", None)
@@ -180,6 +187,10 @@ def _note_resume_mismatch(args, outcome):
         warning = resume_mismatch_warning(text, outcome["report"]["paper"]["title"])
         if warning:
             outcome["warnings"] = [*(outcome.get("warnings") or []), warning]
+            if getattr(args, "plan_file", None) and _same_file(args.plan_file, args.resume):  # saving would replace the other paper's progress
+                outcome["warnings"].append(f"{args.plan_file} was not overwritten: it holds the plan saved for the other paper; "
+                                           "pass a different --plan-file to keep both")
+                args.plan_file = None
 
 
 def run_prerequisites_analyze(args, platform=None) -> int:
