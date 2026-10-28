@@ -177,7 +177,7 @@ def _did_you_mean(name, concept_names):
 KNOWN_REASON = "Already known (reported by the learner)"
 
 # The report sections that change when the learner studies a concept.
-PROGRESS_REPORT_KEYS = ("study_progress", "readiness", "study_actions", "prerequisite_tree")
+PROGRESS_REPORT_KEYS = ("study_progress", "readiness", "study_actions", "prerequisite_tree", "study_time")
 
 
 class PreReqAIPlatform:

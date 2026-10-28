@@ -227,6 +227,16 @@ class LearningReportGenerator:
 
                     "hours_per_day":
                         paper.study_time.average_hours_per_day,
+
+                    "remaining_hours": sum(
+                        step.estimated_hours
+                        for step in paper.learning_plan
+                        if step.concept not in {
+                            item.concept
+                            for item in paper.study_progress
+                            if item.completed
+                        }
+                    ),
                 }
 
                 if paper.study_time is not None

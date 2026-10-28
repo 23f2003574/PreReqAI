@@ -54,7 +54,7 @@ def test_studied_at_analysis_and_studied_later_give_the_same_progress_sections()
     session_id, _ = _session()
     client.post(f"/api/prerequisites/sessions/{session_id}/studied", params={"concept": "Probability"})
     later = client.get(f"/api/session/{session_id}").json()
-    assert PROGRESS_REPORT_KEYS == ("study_progress", "readiness", "study_actions", "prerequisite_tree")
+    assert PROGRESS_REPORT_KEYS == ("study_progress", "readiness", "study_actions", "prerequisite_tree", "study_time")
     for key in ("study_progress", "readiness"):  # GET /api/session does not expose study_actions
         assert later[key] == upfront[key], key
 
