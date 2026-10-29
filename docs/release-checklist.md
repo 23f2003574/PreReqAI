@@ -278,3 +278,8 @@ the real-paper blocker, tutor model provider and the items above are unchanged.
 Gap (from "Still open" item 3 above, which named variational inference): no concept for it existed, so papers using the ELBO got no definition or prerequisites for it. Added "Variational Inference"
 (aliases ELBO, evidence lower bound, variational lower/bound) with prerequisites Probability, Information Theory and Calculus, and a definition. Test: `test_prereqai_variational_inference.py` (3, incl. an unrelated
 "variational principle" paper that must not match). `pytest -m prereqai`: 631 passed, 0 failed. Still open: other detector gaps (for example VAEs/generative models beyond diffusion), and the items above.
+
+## Plural acronym aliases were not counted (2026-10-29)
+
+Defect: `RuleBasedConceptDetector` matched a plural only for a concept's name, so "GRUs", "DDPMs", "MHAs", "SGDs" and "ELBOs" were missed ("RNNs, GRUs and LSTMs" counted 2 of 3 mentions; "DDPMs" detected nothing). Fix: aliases match a plural too,
+and an alias whose plural is also listed ("RNN"/"RNNs") is deduplicated so it is not double counted. Test: `test_prereqai_plural_aliases.py` (3; 2 fail without the fix). `pytest -m prereqai`: 634 passed, 0 failed.

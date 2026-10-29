@@ -14,6 +14,12 @@ from .concept_registry import ConceptRegistry
 _BACK_MATTER = re.compile(r"^[\dIVXLivxl.]*\s*(references|bibliography|works cited|acknowledge?ments?)\b", re.IGNORECASE)
 
 
+def _aliases(concept):
+    # Aliases match a plural too, so "RNNs" next to "RNN" in the registry would be counted twice: keep the singular only.
+    lowered = {alias.lower() for alias in concept.aliases}
+    return tuple(alias for alias in concept.aliases if not (alias.lower().endswith("s") and alias.lower()[:-1] in lowered))
+
+
 class RuleBasedConceptDetector:
     """
     Detects known concepts using exact,
@@ -54,7 +60,7 @@ class RuleBasedConceptDetector:
         words = {
             word.rstrip("s")
             for concept in concepts
-            for term in (concept.name, *concept.aliases)
+            for term in (concept.name, *_aliases(concept))
             for word in term.lower().split()
         }
 
@@ -67,7 +73,7 @@ class RuleBasedConceptDetector:
 
         # A compound modifier hyphenates a spaced term ("gradient-descent methods" mentions Gradient Descent), unless
         # the registry already lists the hyphenated spelling as a term of its own.
-        terms = {term.lower() for concept in concepts for term in (concept.name, *concept.aliases)}
+        terms = {term.lower() for concept in concepts for term in (concept.name, *_aliases(concept))}
         for term in terms:
             hyphenated = term.replace(" ", "-")
             if " " in term and hyphenated not in terms and hyphenated in full_text:
@@ -76,7 +82,7 @@ class RuleBasedConceptDetector:
         counts = {}
 
         def count(term, plural):
-            # Whole-word match: "attention" is not "inattention", nor "softmax" "softmaxed"; names also match a plural.
+            # Whole-word match: "attention" is not "inattention", nor "softmax" "softmaxed"; names and aliases also match a plural ("GRUs", "ELBOs").
             key = (term, plural)
             if key not in counts:
                 needle = term.lower()
@@ -86,14 +92,14 @@ class RuleBasedConceptDetector:
             return counts[key]
 
         def mentions(concept):
-            total = count(concept.name, True) + sum(count(alias, False) for alias in concept.aliases)
+            total = count(concept.name, True) + sum(count(alias, True) for alias in _aliases(concept))
             # Two of a concept's own terms can overlap ("graph convolutional" inside "graph convolutional network"):
             # one mention is counted once, as the longer term.
-            terms = [alias.lower() for alias in concept.aliases]
+            terms = [alias.lower() for alias in _aliases(concept)]
             for short in terms:
                 for longer in terms:
                     if short != longer and re.search(rf"\b{re.escape(short)}\b", longer):
-                        total -= count(longer, False)
+                        total -= count(longer, True)
             return total
 
         for concept in concepts:
@@ -104,22 +110,22 @@ class RuleBasedConceptDetector:
             # (by name or alias) are not also mentions of the shorter one, only a standalone "attention" is.
             inside_longer = sum(
                 count(other.name, True)
-                + sum(count(alias, False) for alias in other.aliases if name in alias.lower())
+                + sum(count(alias, True) for alias in _aliases(other) if name in alias.lower())
                 for other in concepts
                 if other is not concept and name in other.name.lower()
             )
 
             # The same holds for an alias: "convolutional network" inside "graph convolutional network" belongs to
             # the graph concept, not to Convolutional Neural Network. Whole words only ("gat" is not in "gated").
-            own = [alias.lower() for alias in concept.aliases]
+            own = [alias.lower() for alias in _aliases(concept)]
             counted = {other_term.lower() for other in concepts if other is not concept and name in other.name.lower()
-                       for other_term in (other.name, *other.aliases)}
+                       for other_term in (other.name, *_aliases(other))}
             for other in concepts:
                 if other is concept:
                     continue
-                for term in (other.name, *other.aliases):
+                for term in (other.name, *_aliases(other)):
                     if term.lower() not in counted and any(re.search(rf"\b{re.escape(a)}\b", term.lower()) and a != term.lower() for a in own):
-                        inside_longer += count(term, term == other.name)
+                        inside_longer += count(term, True)
 
             occurrences = mentions(concept) - inside_longer
 
