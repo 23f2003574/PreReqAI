@@ -132,6 +132,18 @@ class PrerequisiteDetector:
             "Calculus",
         ],
 
+        "Variational Autoencoder": [
+            "Neural Networks",
+            "Probability",
+            "Information Theory",
+        ],
+
+        "Generative Adversarial Network": [
+            "Neural Networks",
+            "Probability",
+            "Calculus",
+        ],
+
         "Variational Inference": [
             "Probability",
             "Information Theory",

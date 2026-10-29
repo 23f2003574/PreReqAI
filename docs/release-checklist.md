@@ -339,3 +339,10 @@ Blocker: downloads are cached in `cache/arxiv` / `cache/doi` relative to the cur
 after the paper had been downloaded successfully, so `analyze arXiv:...` failed with a file-system error. The resolvers now fall back to `<tempdir>/prereqai-cache/<arxiv|doi>` and look in both places before downloading. Defaults are unchanged
 when the directory is writable. Reproduced with a cache path under a regular file (a root user is not stopped by chmod, so a real read-only directory was not tried). Test: `test_prereqai_unwritable_cache.py` (2; 1 fails without the fix).
 `pytest -m prereqai`: 669 passed, 0 failed. Not tested: Windows/macOS temp locations.
+
+## Generative-model detector coverage (2026-10-29)
+
+Release status check first: the release blocker "run one real published paper end to end" **could not be attempted in this environment** (`analyze arXiv:1706.03762` fails with "the arXiv or DOI server could not be reached": no outbound network), so it remains open and
+is not claimed. What could be closed from the "Required before January: broader detector coverage" item: variational autoencoders (VAE) and generative adversarial networks (GAN), the models papers on diffusion/generation compare against, were not recognised
+(only the ELBO had been added). Added both concepts with plural handling, definitions and prerequisites (Neural Networks, Probability and Information Theory for VAEs; Neural Networks, Probability and Calculus for GANs). Test:
+`test_prereqai_generative_models.py` (3, including look-alike words that must not match). `pytest -m prereqai`: 672 passed, 0 failed. Still open: the real-paper run, a model-backed tutor, large-language-model/attention variants and the optional items above.

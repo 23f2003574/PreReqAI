@@ -167,6 +167,16 @@ class ConceptExplanationEngine:
             "Intermediate",
         ),
 
+        "Variational Autoencoder": (
+            "A generative model with an encoder that maps data to a distribution over latent variables and a decoder that reconstructs it, trained by maximising the evidence lower bound.",
+            "Advanced",
+        ),
+
+        "Generative Adversarial Network": (
+            "A generative model in which a generator and a discriminator are trained against each other, so the generator learns to produce samples the discriminator cannot tell from real data.",
+            "Advanced",
+        ),
+
         "Variational Inference": (
             "Approximating an intractable posterior distribution with a simpler one by maximising the evidence lower bound (ELBO), which is equivalent to minimising their KL divergence.",
             "Advanced",
