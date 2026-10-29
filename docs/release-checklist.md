@@ -326,3 +326,9 @@ Gap: no test analysed the same paper twice and checked that the sessions are ind
 `test_prereqai_session_isolation.py` (3): studied/known/topic-question changes in one session leave the other's readiness, progress, study time and exported plan untouched; a topic in one session does not scope another's quiz; deleting
 one session leaves the other usable. It passed on first run (no defect found). Honest limit: it guards against shared mutable state in general; a mutation that removed the report `deepcopy` in the platform did not fail it, because each analysis builds
 its own report. `pytest -m prereqai`: 664 passed, 0 failed.
+
+## Tutor name matching shares one helper (2026-10-29)
+
+Duplication: `rule_based_tutor.py` spelled the same whole-word regex `(?<![a-z0-9])<name>s?(?![a-z0-9])` out in seven places (definitions, prerequisites, study plan, resources, quiz), so a fix to the rule (as when "paragraphs" had to stop matching "Graphs") had to be repeated seven times.
+They now call `_name_pattern(name, plural=True)`; the generated patterns are character-for-character the same, so behaviour is unchanged. Test: `test_prereqai_tutor_name_matching.py` (3). `pytest -m prereqai`: 667 passed, 0 failed.
+Other regexes in the file (the quiz-request words) are single-use and were left alone.

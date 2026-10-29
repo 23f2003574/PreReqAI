@@ -21,6 +21,12 @@ def _normalise(value):
     return re.sub(r"[\s\-_]+", " ", value.lower())
 
 
+def _name_pattern(name, plural=True):
+    """A regex for `name` as a whole word in normalised text ('paragraphs' or 'improbable' is not 'probability'), with an
+    optional plural s; the one spelling every question-matching rule shares."""
+    return rf"(?<![a-z0-9]){re.escape(_normalise(name))}{'s?' if plural else ''}(?![a-z0-9])"
+
+
 PREREQUISITE_DEFINITIONS = {
     "Linear Algebra": "The mathematics of vectors, matrices and linear transformations.",
     "Probability": "The mathematics of uncertainty: how likely events are and how to reason about random outcomes.",
@@ -117,8 +123,8 @@ class RuleBasedTutor(BaseTutor):
         if not re.search(r"(?<![a-z0-9])(quiz|test me|self test)(?![a-z0-9])", text):
             return ""
 
-        named = [name for name in QUIZ_BANK if re.search(rf"(?<![a-z0-9]){re.escape(_normalise(name))}s?(?![a-z0-9])", text)]
-        mentioned = [name for name in ConceptExplanationEngine.EXPLANATIONS if re.search(rf"(?<![a-z0-9]){re.escape(_normalise(name))}s?(?![a-z0-9])", text)]
+        named = [name for name in QUIZ_BANK if re.search(_name_pattern(name), text)]
+        mentioned = [name for name in ConceptExplanationEngine.EXPLANATIONS if re.search(_name_pattern(name), text)]
 
         if mentioned and not named:
             return "There are no practice questions yet for " + ", ".join(mentioned) + "."
@@ -174,7 +180,7 @@ class RuleBasedTutor(BaseTutor):
         # Longest names first and each match is removed, so "self-attention" does not also
         # answer for "Attention" and "paragraphs" or "improbable" match no concept at all.
         for name in sorted({**definitions, **reasons}, key=len, reverse=True):
-            pattern = rf"(?<![a-z0-9]){re.escape(_normalise(name))}s?(?![a-z0-9])"
+            pattern = _name_pattern(name)
             if re.search(pattern, text):
                 asked.append(name)
                 text = re.sub(pattern, " ", text)
@@ -209,7 +215,7 @@ class RuleBasedTutor(BaseTutor):
         # Longest names first and each match removed, as in _built_in_answer: "self-attention" is not "attention".
         named = []
         for name in sorted((n for n in detected if rules.get(n)), key=len, reverse=True):
-            pattern = rf"(?<![a-z0-9]){re.escape(_normalise(name))}s?(?![a-z0-9])"
+            pattern = _name_pattern(name)
             if re.search(pattern, text):
                 named.append(name)
                 text = re.sub(pattern, " ", text)
@@ -230,7 +236,7 @@ class RuleBasedTutor(BaseTutor):
             return ""
         plan = sorted(getattr(paper, "learning_plan", []), key=lambda step: -len(step.concept))
         for step in plan:
-            pattern = rf"(?<![a-z0-9]){re.escape(_normalise(step.concept))}(?![a-z0-9])"
+            pattern = _name_pattern(step.concept, plural=False)
             if re.search(pattern, text):
                 done = " You have already studied it." if step.concept in RuleBasedTutor._studied(paper) else ""
                 return f"{step.concept}: about {step.estimated_hours} hours of study.{done}"
@@ -247,10 +253,10 @@ class RuleBasedTutor(BaseTutor):
             return ""
 
         resources = list(getattr(paper, "learning_resources", []))
-        named = [r for r in resources if re.search(rf"(?<![a-z0-9]){re.escape(_normalise(r.concept))}(?![a-z0-9])", text)]
+        named = [r for r in resources if re.search(_name_pattern(r.concept, plural=False), text)]
         if not named:  # a prerequisite that needs no study (marked known, or covered by the paper) has no resource: say why
             for item in sorted(getattr(paper, "missing_prerequisites", []), key=lambda item: -len(item.concept)):
-                if item.satisfied and re.search(rf"(?<![a-z0-9]){re.escape(_normalise(item.concept))}(?![a-z0-9])", text):
+                if item.satisfied and re.search(_name_pattern(item.concept, plural=False), text):
                     return f"{item.concept} is not in your study plan, so there is no resource to suggest for it: {item.reason}."
         if named:
             chosen = named
