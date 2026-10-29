@@ -283,3 +283,9 @@ Gap (from "Still open" item 3 above, which named variational inference): no conc
 
 Defect: `RuleBasedConceptDetector` matched a plural only for a concept's name, so "GRUs", "DDPMs", "MHAs", "SGDs" and "ELBOs" were missed ("RNNs, GRUs and LSTMs" counted 2 of 3 mentions; "DDPMs" detected nothing). Fix: aliases match a plural too,
 and an alias whose plural is also listed ("RNN"/"RNNs") is deduplicated so it is not double counted. Test: `test_prereqai_plural_aliases.py` (3; 2 fail without the fix). `pytest -m prereqai`: 634 passed, 0 failed.
+
+## Quiz step added to the tutor (2026-10-29)
+
+Gap: the README promises adaptive quizzes, but `QuizGenerator`/`QUIZ_BANK` were not reachable from `ask` or the HTTP question route, so a learner could not self-test after studying. `RuleBasedTutor` now answers "Quiz me"
+/ "Quiz me on Softmax" with the concept's questions and answers (no concept named: the paper's concepts that have questions; a concept without questions says so). Test: `test_prereqai_tutor_quiz.py` (3). `pytest -m prereqai`: 637 passed, 0 failed.
+Limitation: only Attention, Transformer and Softmax have questions; answers are shown with the questions, not graded.

@@ -6,6 +6,8 @@ from .base_tutor import (
     BaseTutor,
 )
 
+from .quiz_bank import QUIZ_BANK
+
 from .tutor_prompt_builder import (
     TutorPromptBuilder,
 )
@@ -74,7 +76,8 @@ class RuleBasedTutor(BaseTutor):
         )
 
         answer = (
-            self._concept_time_answer(paper, question)
+            self._quiz_answer(paper, question)
+            or self._concept_time_answer(paper, question)
             or self._resources_answer(paper, question)
             or self._concept_prerequisites_answer(paper, question)
             or self._built_in_answer(paper, context, question)
@@ -103,6 +106,34 @@ class RuleBasedTutor(BaseTutor):
                 "Summarize this section",
             ],
         )
+
+    @staticmethod
+    def _quiz_answer(paper, question):
+        """'Quiz me on Softmax' -> that concept's practice questions with their answers; with no concept named, the
+        paper's own concepts that have questions. Empty for a question that does not ask for a quiz."""
+
+        text = _normalise(question)
+
+        if not re.search(r"(?<![a-z0-9])(quiz|test me|self test)(?![a-z0-9])", text):
+            return ""
+
+        named = [name for name in QUIZ_BANK if re.search(rf"(?<![a-z0-9]){re.escape(_normalise(name))}s?(?![a-z0-9])", text)]
+        mentioned = [name for name in ConceptExplanationEngine.EXPLANATIONS if re.search(rf"(?<![a-z0-9]){re.escape(_normalise(name))}s?(?![a-z0-9])", text)]
+
+        if mentioned and not named:
+            return "There are no practice questions yet for " + ", ".join(mentioned) + "."
+
+        topics = named or [c.name for c in getattr(paper, "concepts", []) if c.name in QUIZ_BANK]
+
+        if not topics:
+            return "There are no practice questions yet for " + (", ".join(named) if named else "this paper") + "."
+
+        lines = []
+        for name in topics:
+            for number, item in enumerate(QUIZ_BANK[name], 1):
+                lines.append(f"{name} Q{number} ({item['difficulty']}): {item['question']} Answer: {item['answer']}")
+
+        return " ".join(lines)
 
     @staticmethod
     def _built_in_answer(paper, context, question):
