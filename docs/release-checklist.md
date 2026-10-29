@@ -301,3 +301,9 @@ Risk: `--resume` / the `resume` upload restored progress only from lines startin
 Failure: `ArxivResolver`/`DoiResolver` reused any file already in `cache/arxiv` or `cache/doi` (`pdf_path.exists()`). New downloads are validated and stored atomically, but an empty or HTML file left by an older version or an interrupted
 write was returned forever, so every `analyze arXiv:...` failed until the learner found and deleted the cache by hand. A cached file that does not start with `%PDF` is now removed and downloaded again; a good cached PDF is still reused with no request.
 Test: `test_prereqai_cached_download_recovery.py` (3; 2 fail without the fix). `pytest -m prereqai`: 643 passed, 0 failed. Limitation: a truncated file that still starts with `%PDF` is not detected.
+
+## Quiz honours the question topic (2026-10-29)
+
+Mismatch: the session's `topic` (HTTP `topic` field, `ask --topic`) is stored as the session's active concept and scopes the other answers, but the quiz step added earlier ignored it: `ask "Quiz me" --topic Softmax` quizzed every paper concept.
+`RuleBasedTutor._quiz_answer` now uses the session's active concept (a concept without questions says so); a concept named in the question still wins. Test: `test_prereqai_tutor_quiz.py::test_a_topic_scopes_the_quiz_over_http_and_the_cli_alike` (HTTP and CLI give the same answers).
+Limitation: the active concept stays set for later questions in the same HTTP session, as for every topic-scoped answer.

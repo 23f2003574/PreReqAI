@@ -76,7 +76,7 @@ class RuleBasedTutor(BaseTutor):
         )
 
         answer = (
-            self._quiz_answer(paper, question)
+            self._quiz_answer(paper, session, question)
             or self._concept_time_answer(paper, question)
             or self._resources_answer(paper, question)
             or self._concept_prerequisites_answer(paper, question)
@@ -108,7 +108,7 @@ class RuleBasedTutor(BaseTutor):
         )
 
     @staticmethod
-    def _quiz_answer(paper, question):
+    def _quiz_answer(paper, session, question):
         """'Quiz me on Softmax' -> that concept's practice questions with their answers; with no concept named, the
         paper's own concepts that have questions. Empty for a question that does not ask for a quiz."""
 
@@ -123,10 +123,18 @@ class RuleBasedTutor(BaseTutor):
         if mentioned and not named:
             return "There are no practice questions yet for " + ", ".join(mentioned) + "."
 
+        # the session's topic (ask --topic / the `topic` field) scopes the quiz like it scopes every other answer
+        topic = getattr(session, "active_concept", None)
+
+        if topic and not named:
+            if topic not in QUIZ_BANK:
+                return f"There are no practice questions yet for {topic}."
+            named = [topic]
+
         topics = named or [c.name for c in getattr(paper, "concepts", []) if c.name in QUIZ_BANK]
 
         if not topics:
-            return "There are no practice questions yet for " + (", ".join(named) if named else "this paper") + "."
+            return "There are no practice questions yet for this paper."
 
         lines = []
         for name in topics:
