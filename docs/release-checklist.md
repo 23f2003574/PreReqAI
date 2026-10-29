@@ -332,3 +332,10 @@ its own report. `pytest -m prereqai`: 664 passed, 0 failed.
 Duplication: `rule_based_tutor.py` spelled the same whole-word regex `(?<![a-z0-9])<name>s?(?![a-z0-9])` out in seven places (definitions, prerequisites, study plan, resources, quiz), so a fix to the rule (as when "paragraphs" had to stop matching "Graphs") had to be repeated seven times.
 They now call `_name_pattern(name, plural=True)`; the generated patterns are character-for-character the same, so behaviour is unchanged. Test: `test_prereqai_tutor_name_matching.py` (3). `pytest -m prereqai`: 667 passed, 0 failed.
 Other regexes in the file (the quiz-request words) are single-use and were left alone.
+
+## Unwritable working directory no longer fails an arXiv/DOI analysis (2026-10-29)
+
+Blocker: downloads are cached in `cache/arxiv` / `cache/doi` relative to the current directory. When that directory cannot be written (a read-only checkout or container, or the server started from an unusual directory), `_store` raised
+after the paper had been downloaded successfully, so `analyze arXiv:...` failed with a file-system error. The resolvers now fall back to `<tempdir>/prereqai-cache/<arxiv|doi>` and look in both places before downloading. Defaults are unchanged
+when the directory is writable. Reproduced with a cache path under a regular file (a root user is not stopped by chmod, so a real read-only directory was not tried). Test: `test_prereqai_unwritable_cache.py` (2; 1 fails without the fix).
+`pytest -m prereqai`: 669 passed, 0 failed. Not tested: Windows/macOS temp locations.

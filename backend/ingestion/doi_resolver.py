@@ -75,9 +75,11 @@ class DoiResolver(ArxivResolver):
             f"{source.identifier.replace('/', '_')}.pdf"
         )
 
-        if self._is_cached_pdf(pdf_path):
+        for candidate in (pdf_path, self._fallback_directory() / pdf_path.name):
 
-            return str(pdf_path)
+            if self._is_cached_pdf(candidate):
+
+                return str(candidate)
 
         pdf_url = self._find_pdf_url(source.identifier)
 
@@ -89,9 +91,7 @@ class DoiResolver(ArxivResolver):
                 f"DOI {source.identifier} did not return a PDF"
             )
 
-        self._store(pdf_path, content)
-
-        return str(pdf_path)
+        return str(self._store(pdf_path, content))
 
     # Publisher links usually redirect (to a CDN, to a login-less copy); each hop is checked, not only the first.
     MAX_REDIRECTS = 5

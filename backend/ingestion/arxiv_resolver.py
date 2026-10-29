@@ -1,4 +1,5 @@
 import os
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -47,9 +48,11 @@ class ArxivResolver(BaseSourceResolver):
             f"{source.identifier.replace('/', '_')}.pdf"  # an old-style id ("hep-th/9901001") has a slash
         )
 
-        if self._is_cached_pdf(pdf_path):
+        for candidate in (pdf_path, self._fallback_directory() / pdf_path.name):
 
-            return str(pdf_path)
+            if self._is_cached_pdf(candidate):
+
+                return str(candidate)
 
         download_url = (
             f"https://arxiv.org/pdf/{source.identifier}.pdf"
@@ -66,9 +69,7 @@ class ArxivResolver(BaseSourceResolver):
                 f"arXiv returned no PDF for {source.identifier}"
             )
 
-        self._store(pdf_path, content)
-
-        return str(pdf_path)
+        return str(self._store(pdf_path, content))
 
     @staticmethod
     def _is_cached_pdf(pdf_path: Path) -> bool:
@@ -92,9 +93,27 @@ class ArxivResolver(BaseSourceResolver):
 
         return False
 
-    def _store(self, pdf_path: Path, content: bytes) -> None:
+    def _fallback_directory(self) -> Path:
+        """Where downloads go when the working directory cannot be written (a read-only or unusual current directory)."""
 
-        self.CACHE_DIRECTORY.mkdir(
+        return Path(tempfile.gettempdir()) / "prereqai-cache" / self.CACHE_DIRECTORY.name
+
+    def _store(self, pdf_path: Path, content: bytes) -> Path:
+        """Cache the download beside the working directory; if that cannot be written, in the temp directory instead:
+        a paper that was downloaded must not fail the analysis because it could not be cached. Returns the file used."""
+
+        try:
+
+            return self._write_atomically(pdf_path, content)
+
+        except OSError:
+
+            return self._write_atomically(self._fallback_directory() / pdf_path.name, content)
+
+    @staticmethod
+    def _write_atomically(pdf_path: Path, content: bytes) -> Path:
+
+        pdf_path.parent.mkdir(
             parents=True,
             exist_ok=True,
         )
@@ -112,6 +131,8 @@ class ArxivResolver(BaseSourceResolver):
         finally:
 
             partial_path.unlink(missing_ok=True)
+
+        return pdf_path
 
     def _download(self, url: str) -> bytes:
 
