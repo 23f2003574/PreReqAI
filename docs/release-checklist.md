@@ -319,3 +319,10 @@ Checked and already adequate: empty/non-PDF uploads, blank or junk `source`, wro
 Problem: a mistyped reference (`arXiv:1706.037`, `arXiv:`, `doi:10.1000`) failed with the hint "The paper must be a PDF file (a path ending in .pdf)", which tells someone who typed an arXiv id to do something unrelated. The failure now
 shows what a valid reference looks like (`https://arxiv.org/abs/1706.03762`, `arXiv:1706.03762`, `10.1000/xyz123`, `https://doi.org/...`); other unsupported inputs (`notes.txt`, a directory, `my-doi-notes.txt`) keep the PDF hint. This applies to the CLI and
 HTTP `source` field alike (shared failure builder; the CLI path is the one tested). Test: `test_prereqai_bad_source_hint.py` (8; 5 fail without the fix). `pytest -m prereqai`: 661 passed, 0 failed.
+
+## Session isolation covered (2026-10-29)
+
+Gap: no test analysed the same paper twice and checked that the sessions are independent, although the server is single-process and every session shares module-level engines (detector, planner, recommender, tutor, session manager).
+`test_prereqai_session_isolation.py` (3): studied/known/topic-question changes in one session leave the other's readiness, progress, study time and exported plan untouched; a topic in one session does not scope another's quiz; deleting
+one session leaves the other usable. It passed on first run (no defect found). Honest limit: it guards against shared mutable state in general; a mutation that removed the report `deepcopy` in the platform did not fail it, because each analysis builds
+its own report. `pytest -m prereqai`: 664 passed, 0 failed.
