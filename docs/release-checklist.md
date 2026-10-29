@@ -313,3 +313,9 @@ Limitation: the active concept stays set for later questions in the same HTTP se
 Gap: the new-style arXiv pattern was `[0-9]+\.[0-9]+`, so a typo such as `arXiv:1706.037` or `arXiv:1.1` passed source detection and triggered a network download that could only fail (or fetch a different paper). Identifiers are now
 `YYMM.NNNN` / `YYMM.NNNNN` (plus the existing old-style form); anything else is rejected up front as an unsupported source. Test: `test_prereqai_arxiv_id_shape.py` (9; 5 fail without the fix). `pytest -m prereqai`: 653 passed, 0 failed.
 Checked and already adequate: empty/non-PDF uploads, blank or junk `source`, wrong-typed or oversized questions, bad modes, CLI limits (0, negative, nan, inf), plan/resume paths. Limitation: a well-formed id that does not exist still fails at download.
+
+## Mistyped arXiv/DOI reference gets a useful hint (2026-10-29)
+
+Problem: a mistyped reference (`arXiv:1706.037`, `arXiv:`, `doi:10.1000`) failed with the hint "The paper must be a PDF file (a path ending in .pdf)", which tells someone who typed an arXiv id to do something unrelated. The failure now
+shows what a valid reference looks like (`https://arxiv.org/abs/1706.03762`, `arXiv:1706.03762`, `10.1000/xyz123`, `https://doi.org/...`); other unsupported inputs (`notes.txt`, a directory, `my-doi-notes.txt`) keep the PDF hint. This applies to the CLI and
+HTTP `source` field alike (shared failure builder; the CLI path is the one tested). Test: `test_prereqai_bad_source_hint.py` (8; 5 fail without the fix). `pytest -m prereqai`: 661 passed, 0 failed.
