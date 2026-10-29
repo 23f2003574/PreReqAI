@@ -45,6 +45,9 @@ class ConceptRegistry:
             Concept("Dropout", "deep_learning"),
             Concept("Recurrent Neural Network", "deep_learning", aliases=('RNN', 'RNNs', 'LSTM', 'LSTMs', 'GRU', 'long short-term memory', 'recurrent network')),
             Concept("Adam Optimizer", "deep_learning", aliases=('AdamW', 'Adam optimiser')),
+            Concept("Large Language Model", "transformers", aliases=('LLM', 'BERT', 'GPT')),
+            Concept("Cross-Entropy Loss", "deep_learning", aliases=('cross entropy', 'negative log-likelihood')),
+            Concept("Maximum Likelihood Estimation", "probability", aliases=('maximum likelihood', 'MLE')),
             Concept("Variational Autoencoder", "deep_learning", aliases=('VAE', 'variational auto-encoder')),
             Concept("Generative Adversarial Network", "deep_learning", aliases=('GAN',)),
             Concept("Variational Inference", "probability", aliases=('ELBO', 'evidence lower bound', 'variational lower bound', 'variational bound')),
@@ -60,6 +63,7 @@ class ConceptRegistry:
 
             # Reinforcement Learning
 
+            Concept("Reinforcement Learning", "rl"),
             Concept("Markov Decision Process", "rl", aliases=('MDP', 'MDPs')),
             Concept("Bellman Equation", "rl"),
             Concept("Policy Gradient", "rl"),

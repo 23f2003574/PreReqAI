@@ -346,3 +346,10 @@ Release status check first: the release blocker "run one real published paper en
 is not claimed. What could be closed from the "Required before January: broader detector coverage" item: variational autoencoders (VAE) and generative adversarial networks (GAN), the models papers on diffusion/generation compare against, were not recognised
 (only the ELBO had been added). Added both concepts with plural handling, definitions and prerequisites (Neural Networks, Probability and Information Theory for VAEs; Neural Networks, Probability and Calculus for GANs). Test:
 `test_prereqai_generative_models.py` (3, including look-alike words that must not match). `pytest -m prereqai`: 672 passed, 0 failed. Still open: the real-paper run, a model-backed tutor, large-language-model/attention variants and the optional items above.
+
+## Core vocabulary of the target domains (2026-10-29)
+
+Gap (verified by probing 41 common terms against the detector): the project targets transformer, diffusion, RL and graph ML papers, yet "reinforcement learning" itself, large language models (LLM/BERT/GPT), cross-entropy and maximum likelihood
+were not recognised, so an RL or language-model paper did not list its own subject. Added Reinforcement Learning, Large Language Model, Cross-Entropy Loss and Maximum Likelihood Estimation with definitions and prerequisites that all have curated resources.
+Test: `test_prereqai_core_ml_vocabulary.py` (3). `pytest -m prereqai`: 675 passed, 0 failed. Still undetected (probed): embeddings, fine-tuning/pretraining, regularisation/overfitting, convolution, autoregressive models, Markov chains, Monte Carlo,
+KL divergence/entropy as paper concepts, contrastive/self-supervised learning, distillation, mixture of experts, reward/policy as plain words (deliberately not matched).

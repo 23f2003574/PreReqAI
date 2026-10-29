@@ -167,6 +167,26 @@ class ConceptExplanationEngine:
             "Intermediate",
         ),
 
+        "Reinforcement Learning": (
+            "Learning to act by trial and error: an agent interacts with an environment and adjusts its behaviour to maximise the cumulative reward it receives.",
+            "Intermediate",
+        ),
+
+        "Large Language Model": (
+            "A very large Transformer trained on text to predict the next token (GPT) or masked tokens (BERT), whose learned representations are reused for many language tasks.",
+            "Intermediate",
+        ),
+
+        "Cross-Entropy Loss": (
+            "The standard loss for classification and language modelling: the negative log-probability a model assigns to the correct answer.",
+            "Beginner",
+        ),
+
+        "Maximum Likelihood Estimation": (
+            "Choosing the model parameters that make the observed data most probable, usually by maximising the log-likelihood.",
+            "Intermediate",
+        ),
+
         "Variational Autoencoder": (
             "A generative model with an encoder that maps data to a distribution over latent variables and a decoder that reconstructs it, trained by maximising the evidence lower bound.",
             "Advanced",

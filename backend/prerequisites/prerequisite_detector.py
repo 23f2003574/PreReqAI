@@ -132,6 +132,27 @@ class PrerequisiteDetector:
             "Calculus",
         ],
 
+        "Reinforcement Learning": [
+            "Probability",
+            "Calculus",
+        ],
+
+        "Large Language Model": [
+            "Neural Networks",
+            "Linear Algebra",
+            "Probability",
+        ],
+
+        "Cross-Entropy Loss": [
+            "Probability",
+            "Information Theory",
+        ],
+
+        "Maximum Likelihood Estimation": [
+            "Probability",
+            "Calculus",
+        ],
+
         "Variational Autoencoder": [
             "Neural Networks",
             "Probability",
