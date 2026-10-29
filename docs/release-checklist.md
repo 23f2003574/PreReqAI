@@ -307,3 +307,9 @@ Test: `test_prereqai_cached_download_recovery.py` (3; 2 fail without the fix). `
 Mismatch: the session's `topic` (HTTP `topic` field, `ask --topic`) is stored as the session's active concept and scopes the other answers, but the quiz step added earlier ignored it: `ask "Quiz me" --topic Softmax` quizzed every paper concept.
 `RuleBasedTutor._quiz_answer` now uses the session's active concept (a concept without questions says so); a concept named in the question still wins. Test: `test_prereqai_tutor_quiz.py::test_a_topic_scopes_the_quiz_over_http_and_the_cli_alike` (HTTP and CLI give the same answers).
 Limitation: the active concept stays set for later questions in the same HTTP session, as for every topic-scoped answer.
+
+## arXiv identifier shape is validated (2026-10-29)
+
+Gap: the new-style arXiv pattern was `[0-9]+\.[0-9]+`, so a typo such as `arXiv:1706.037` or `arXiv:1.1` passed source detection and triggered a network download that could only fail (or fetch a different paper). Identifiers are now
+`YYMM.NNNN` / `YYMM.NNNNN` (plus the existing old-style form); anything else is rejected up front as an unsupported source. Test: `test_prereqai_arxiv_id_shape.py` (9; 5 fail without the fix). `pytest -m prereqai`: 653 passed, 0 failed.
+Checked and already adequate: empty/non-PDF uploads, blank or junk `source`, wrong-typed or oversized questions, bad modes, CLI limits (0, negative, nan, inf), plan/resume paths. Limitation: a well-formed id that does not exist still fails at download.

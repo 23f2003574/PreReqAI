@@ -7,8 +7,8 @@ from pathlib import Path
 # Each pattern must match the whole (stripped) input: a reference inside other
 # text is ambiguous and rejected rather than guessed. The arXiv identifier keeps
 # its version (v5), since a versioned link asks for that exact version.
-# New-style ("1706.03762") and old-style ("hep-th/9901001", "math.GT/0309136") identifiers, each with an optional version.
-_ARXIV_ID = r"(?:[0-9]+\.[0-9]+|[a-z]+(?:-[a-z]+)*(?:\.[a-z]{2})?/[0-9]{7})(?:v[0-9]+)?"
+# New-style ("1706.03762": YYMM, then 4 digits before 2015 or 5 since) and old-style ("hep-th/9901001", "math.GT/0309136") identifiers, each with an optional version.
+_ARXIV_ID = r"(?:[0-9]{4}\.[0-9]{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[a-z]{2})?/[0-9]{7})(?:v[0-9]+)?"
 ARXIV_PATTERN = re.compile(
     rf"(?:https?://)?(?:www\.|export\.)?arxiv\.org/(?:abs|pdf)/({_ARXIV_ID})(?:\.pdf)?/?(?:[?#]\S*)?",
     re.IGNORECASE,
