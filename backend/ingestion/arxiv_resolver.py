@@ -47,7 +47,7 @@ class ArxivResolver(BaseSourceResolver):
             f"{source.identifier.replace('/', '_')}.pdf"  # an old-style id ("hep-th/9901001") has a slash
         )
 
-        if pdf_path.exists():
+        if self._is_cached_pdf(pdf_path):
 
             return str(pdf_path)
 
@@ -69,6 +69,28 @@ class ArxivResolver(BaseSourceResolver):
         self._store(pdf_path, content)
 
         return str(pdf_path)
+
+    @staticmethod
+    def _is_cached_pdf(pdf_path: Path) -> bool:
+        """A cached file is reused only if it still starts like a PDF. One left by an older version or an interrupted
+        write (empty, an HTML error page) would otherwise fail every later attempt: it is dropped so the paper is
+        downloaded again."""
+
+        try:
+
+            with open(pdf_path, "rb") as handle:
+
+                if handle.read(4) == b"%PDF":
+
+                    return True
+
+        except OSError:
+
+            return False
+
+        pdf_path.unlink(missing_ok=True)
+
+        return False
 
     def _store(self, pdf_path: Path, content: bytes) -> None:
 

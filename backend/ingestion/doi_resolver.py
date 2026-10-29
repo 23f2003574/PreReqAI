@@ -75,7 +75,7 @@ class DoiResolver(ArxivResolver):
             f"{source.identifier.replace('/', '_')}.pdf"
         )
 
-        if pdf_path.exists():
+        if self._is_cached_pdf(pdf_path):
 
             return str(pdf_path)
 

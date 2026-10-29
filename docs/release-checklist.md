@@ -295,3 +295,9 @@ Limitation: only Attention, Transformer and Softmax have questions; answers are 
 Risk: `--resume` / the `resume` upload restored progress only from lines starting exactly `- [x] N. Name (~Nh)`. A plan re-saved by a Markdown formatter or editor (`*` or `+` bullets, indented lines) silently restored no studied concepts
 (reproduced: a `*`-bullet copy of a plan with Probability ticked resumed with 0/3 ready, no warning), so progress was lost. The ticked-item and "Already known" patterns in `study_plan_markdown.py` now accept `-`, `*`, `+` bullets and leading indentation
 (CRLF and BOM already worked). Test: `test_prereqai_plan_resume_reformatted.py` (3; 1 fails without the fix). `pytest -m prereqai`: 640 passed, 0 failed. Limitation: ordered-list renumbering and edited step text are still not recognised.
+
+## Damaged cached downloads are replaced (2026-10-29)
+
+Failure: `ArxivResolver`/`DoiResolver` reused any file already in `cache/arxiv` or `cache/doi` (`pdf_path.exists()`). New downloads are validated and stored atomically, but an empty or HTML file left by an older version or an interrupted
+write was returned forever, so every `analyze arXiv:...` failed until the learner found and deleted the cache by hand. A cached file that does not start with `%PDF` is now removed and downloaded again; a good cached PDF is still reused with no request.
+Test: `test_prereqai_cached_download_recovery.py` (3; 2 fail without the fix). `pytest -m prereqai`: 643 passed, 0 failed. Limitation: a truncated file that still starts with `%PDF` is not detected.
