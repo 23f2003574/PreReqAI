@@ -289,3 +289,9 @@ and an alias whose plural is also listed ("RNN"/"RNNs") is deduplicated so it is
 Gap: the README promises adaptive quizzes, but `QuizGenerator`/`QUIZ_BANK` were not reachable from `ask` or the HTTP question route, so a learner could not self-test after studying. `RuleBasedTutor` now answers "Quiz me"
 / "Quiz me on Softmax" with the concept's questions and answers (no concept named: the paper's concepts that have questions; a concept without questions says so). Test: `test_prereqai_tutor_quiz.py` (3). `pytest -m prereqai`: 637 passed, 0 failed.
 Limitation: only Attention, Transformer and Softmax have questions; answers are shown with the questions, not graded.
+
+## Resumed plans survive reformatting (2026-10-29)
+
+Risk: `--resume` / the `resume` upload restored progress only from lines starting exactly `- [x] N. Name (~Nh)`. A plan re-saved by a Markdown formatter or editor (`*` or `+` bullets, indented lines) silently restored no studied concepts
+(reproduced: a `*`-bullet copy of a plan with Probability ticked resumed with 0/3 ready, no warning), so progress was lost. The ticked-item and "Already known" patterns in `study_plan_markdown.py` now accept `-`, `*`, `+` bullets and leading indentation
+(CRLF and BOM already worked). Test: `test_prereqai_plan_resume_reformatted.py` (3; 1 fails without the fix). `pytest -m prereqai`: 640 passed, 0 failed. Limitation: ordered-list renumbering and edited step text are still not recognised.

@@ -44,7 +44,7 @@ def plan_markdown(report):
     return "\n".join(lines) + "\n"
 
 
-_TICKED = re.compile(r"^- \[[xX]\] \d+\. (.+?) \(~\d+h\)", re.MULTILINE)
+_TICKED = re.compile(r"^[ \t]*[-*+] \[[xX]\] \d+\. (.+?) \(~\d+h\)", re.MULTILINE)
 
 
 def is_saved_plan(text):
@@ -58,7 +58,7 @@ def studied_from_plan(text):
     return [match.group(1) for match in _TICKED.finditer(text)]
 
 
-_KNOWN = re.compile(r"^Already known: (.+)$", re.MULTILINE)
+_KNOWN = re.compile(r"^[ \t]*Already known: (.+)$", re.MULTILINE)
 
 
 def known_from_plan(text):
