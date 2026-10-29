@@ -167,6 +167,11 @@ class ConceptExplanationEngine:
             "Intermediate",
         ),
 
+        "Variational Inference": (
+            "Approximating an intractable posterior distribution with a simpler one by maximising the evidence lower bound (ELBO), which is equivalent to minimising their KL divergence.",
+            "Advanced",
+        ),
+
         "Adam Optimizer": (
             "A gradient-based optimiser that keeps running averages of each parameter's gradient and squared gradient to adapt its step size per parameter.",
             "Intermediate",

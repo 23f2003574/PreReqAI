@@ -45,6 +45,7 @@ class ConceptRegistry:
             Concept("Dropout", "deep_learning"),
             Concept("Recurrent Neural Network", "deep_learning", aliases=('RNN', 'RNNs', 'LSTM', 'LSTMs', 'GRU', 'long short-term memory', 'recurrent network')),
             Concept("Adam Optimizer", "deep_learning", aliases=('AdamW', 'Adam optimiser')),
+            Concept("Variational Inference", "probability", aliases=('ELBO', 'evidence lower bound', 'variational lower bound', 'variational bound')),
 
             # Diffusion
 

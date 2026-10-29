@@ -272,3 +272,9 @@ established contract in `test_prereqai_configuration_surface.py` (an empty path 
 `-k` subset that did not select that test; the full `pytest -m prereqai` run found it (1 failed, 628 passed). The blank-paper validation and its test were removed; the contract test passes again.
 Lesson recorded: run the full `pytest -m prereqai` (about 3 minutes) before pushing, not a `-k` subset. Open: remaining-hours semantics are now decided (`study_time.remaining_hours`, added 2026-10-28);
 the real-paper blocker, tutor model provider and the items above are unchanged.
+
+## Variational inference detection (2026-10-29)
+
+Gap (from "Still open" item 3 above, which named variational inference): no concept for it existed, so papers using the ELBO got no definition or prerequisites for it. Added "Variational Inference"
+(aliases ELBO, evidence lower bound, variational lower/bound) with prerequisites Probability, Information Theory and Calculus, and a definition. Test: `test_prereqai_variational_inference.py` (3, incl. an unrelated
+"variational principle" paper that must not match). `pytest -m prereqai`: 631 passed, 0 failed. Still open: other detector gaps (for example VAEs/generative models beyond diffusion), and the items above.

@@ -132,6 +132,12 @@ class PrerequisiteDetector:
             "Calculus",
         ],
 
+        "Variational Inference": [
+            "Probability",
+            "Information Theory",
+            "Calculus",
+        ],
+
         "Adam Optimizer": [
             "Calculus",
             "Probability",
