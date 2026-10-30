@@ -33,3 +33,10 @@ def test_each_has_prerequisites_and_a_definition():
     assert {"Probability", "Neural Networks", "Calculus"} <= {item.concept for item in paper.prerequisites}
     ConceptExplanationEngine().explain(paper)
     assert {item.concept for item in paper.concept_explanations} == set(found)
+
+
+def test_spaced_and_hyphenated_spellings_of_the_same_terms_are_detected():
+    # "over-fitted", "over-fit" and "fine tuned" were missed although "overfitted" and "fine-tuned" matched.
+    _, found = _detect("The network over-fitted and over-fit again; we fine tuned it and then fine tune it twice.")
+    assert found == {"Overfitting": 2, "Fine-Tuning": 2}
+    assert _detect("A fine tuner and a fine tuned piano string.")[1] == {"Fine-Tuning": 1}

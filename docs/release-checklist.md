@@ -359,3 +359,8 @@ KL divergence/entropy as paper concepts, contrastive/self-supervised learning, d
 Gap (from the "still undetected" list above): overfitting, fine-tuning and Monte Carlo/MCMC were not recognised, so papers on transfer learning or sampling-based inference did not list them. Added the three concepts with aliases, definitions
 and prerequisites (Probability, Neural Networks, Calculus, all with curated resources). Test: `test_prereqai_training_vocabulary.py` (3, including look-alike words and a References-section title that must not match).
 Still undetected: embeddings, regularisation, convolution, autoregressive models, Markov chains, KL divergence, contrastive/self-supervised learning, distillation, mixture of experts.
+
+## Overfitting / fine-tuning spelling variants (2026-10-30)
+
+Defect (reproduced): the aliases added in the previous entry missed common spellings, so "over-fit", "over-fitted", "fine tune" and "fine tuned" were not detected although "overfitted" and "fine-tuned" were; a paper using them listed neither concept.
+Fix: the four spellings were added as aliases. Test: `test_spaced_and_hyphenated_spellings_of_the_same_terms_are_detected` (fails without the fix). Known limit: "fine tuned" is a plain-English phrase too, so a non-ML use ("a fine tuned string") would count.
