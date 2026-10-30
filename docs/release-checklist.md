@@ -364,3 +364,8 @@ Still undetected: embeddings, regularisation, convolution, autoregressive models
 
 Defect (reproduced): the aliases added in the previous entry missed common spellings, so "over-fit", "over-fitted", "fine tune" and "fine tuned" were not detected although "overfitted" and "fine-tuned" were; a paper using them listed neither concept.
 Fix: the four spellings were added as aliases. Test: `test_spaced_and_hyphenated_spellings_of_the_same_terms_are_detected` (fails without the fix). Known limit: "fine tuned" is a plain-English phrase too, so a non-ML use ("a fine tuned string") would count.
+
+## Practice questions for more core concepts (2026-10-30)
+
+Gap (verified): only 3 of the 44 registry concepts (Transformer, Attention, Softmax) had quiz questions, so "Quiz me" on a reinforcement learning, diffusion, VAE or overfitting paper answered "no practice questions yet". Added questions with answers for
+Backpropagation, Cross-Entropy Loss, Overfitting, Reinforcement Learning, Diffusion Model and Variational Autoencoder. Tests in `test_prereqai_tutor_quiz.py` (2 new, including a concept that still has none and must say so). Still without questions: the other 35 concepts (Gradient Descent is deliberately left as the existing "no questions" case in older tests).

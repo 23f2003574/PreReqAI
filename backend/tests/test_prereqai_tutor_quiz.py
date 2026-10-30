@@ -53,3 +53,27 @@ def test_a_topic_scopes_the_quiz_over_http_and_the_cli_alike():
     assert http("Softmax") == cli("Softmax") == _ask("Quiz me on Softmax")
     assert http("Attention").startswith("Attention Q1") and "Softmax" not in http("Attention")
     assert http("Gradient Descent") == cli("Gradient Descent") == "There are no practice questions yet for Gradient Descent."
+
+
+def _quiz_in_process(question, concepts):
+    from backend.models import DetectedConcept
+    from backend.tutor.rule_based_tutor import RuleBasedTutor
+
+    class Paper:
+        pass
+
+    paper, session = Paper(), Paper()
+    paper.concepts = [DetectedConcept(name=name, domain="x", occurrences=1) for name in concepts]
+    session.active_concept = None
+    return RuleBasedTutor._quiz_answer(paper, session, question)
+
+
+def test_quiz_covers_overfitting_and_the_other_core_concepts_that_used_to_have_no_questions():
+    for name in ("Backpropagation", "Cross-Entropy Loss", "Overfitting", "Reinforcement Learning", "Diffusion Model", "Variational Autoencoder"):
+        answer = _quiz_in_process(f"Quiz me on {name}", [])
+        assert answer.startswith(f"{name} Q1 (") and "no practice questions" not in answer
+    assert "Overfitting Q2 (Medium)" in _quiz_in_process("Quiz me", ["Overfitting"])
+
+
+def test_quiz_on_a_concept_that_still_has_no_questions_says_so():
+    assert _quiz_in_process("Quiz me on Q-Learning", []) == "There are no practice questions yet for Q-Learning."
