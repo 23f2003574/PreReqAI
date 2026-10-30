@@ -369,3 +369,9 @@ Fix: the four spellings were added as aliases. Test: `test_spaced_and_hyphenated
 
 Gap (verified): only 3 of the 44 registry concepts (Transformer, Attention, Softmax) had quiz questions, so "Quiz me" on a reinforcement learning, diffusion, VAE or overfitting paper answered "no practice questions yet". Added questions with answers for
 Backpropagation, Cross-Entropy Loss, Overfitting, Reinforcement Learning, Diffusion Model and Variational Autoencoder. Tests in `test_prereqai_tutor_quiz.py` (2 new, including a concept that still has none and must say so). Still without questions: the other 35 concepts (Gradient Descent is deliberately left as the existing "no questions" case in older tests).
+
+## Failed "mark known" no longer leaves a stale studied note (2026-10-30)
+
+Risk (reproduced): `mark_concept_known` recorded "this concept was studied" in `paper.studied_while_known` before taking its rollback backup, so when the rebuild failed the session was restored *with* the note. Un-studying the concept, marking it known and then undoing that would
+wrongly bring it back as studied (readiness and progress overstated). The backup is now taken first. Test: `test_prereqai_failed_known_rollback.py` (2; the failure case fails without the fix, the success case guards the existing undo behaviour).
+Limit: only this one rollback path was audited; `unmark_concept_known` already backs up before changing anything.

@@ -388,10 +388,10 @@ class PreReqAIPlatform:
         target = SimpleNamespace(paper=session.paper, report=session.report)
         studied = [item.concept for item in session.paper.study_progress if item.completed]  # rebuilding the plan resets progress
         name = planned[_concept_key(concept)]
-        if name in studied:  # remember it: un-marking known must not lose the study progress
-            session.paper.studied_while_known = [*getattr(session.paper, "studied_while_known", []), name]
-        backup = (deepcopy(session.paper), deepcopy(session.report))
+        backup = (deepcopy(session.paper), deepcopy(session.report))  # before the note below, so a failed rebuild leaves no trace of it
         try:
+            if name in studied:  # remember it: un-marking known must not lose the study progress
+                session.paper.studied_while_known = [*getattr(session.paper, "studied_while_known", []), name]
             self._personalize(target, [name], [item for item in studied if item != name])
         except BaseException:  # the rebuild changes the paper in place: a failed one must not leave a half-updated session
             session.paper, session.report = backup
