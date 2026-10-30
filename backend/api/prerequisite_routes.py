@@ -50,6 +50,7 @@ pipeline = platform.analysis
 MAX_UPLOAD_BYTES = 100 * 1024 * 1024
 
 _CHUNK_BYTES = 1024 * 1024
+MAX_CONCEPT_NAME_CHARS = 200  # no concept name comes close; a longer `known`/`studied` entry is a mistake, and the warnings echo each name back
 _MAX_PLAN_BYTES = 1024 * 1024  # a saved plan is a few KB of Markdown
 
 
@@ -188,6 +189,17 @@ async def analyze_prerequisites(
             "input",
             "Invalid request: paper: Field required (send exactly one of `paper`, a PDF upload, or `source`, an arXiv link or DOI).",
             hint="Upload the PDF as `paper`, or pass `source` such as https://arxiv.org/abs/1706.03762 or 10.1145/3292500.3330701.",
+        )
+
+    too_long = [name for name in (*known, *studied) if len(name) > MAX_CONCEPT_NAME_CHARS]
+
+    if too_long:
+
+        return failure_response(
+            422,
+            "input",
+            f"A `known` or `studied` name is too long ({len(too_long[0])} characters; the limit is {MAX_CONCEPT_NAME_CHARS}).",
+            hint="Send concept names as listed in the study plan, one per `known` / `studied` field; nothing was analysed.",
         )
 
     if resume is not None:

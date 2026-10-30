@@ -387,3 +387,9 @@ Not changed: the DOI resolver's publisher download has no retry; `test_arxiv_res
 Integration defect (reproduced): the study plan and progress endpoints list prerequisites the paper never names (Probability, Linear Algebra...), but `resolve_topic` (shared by `POST /question` and `prerequisites ask --topic`) only accepted concepts detected in the paper, so a learner could study Probability yet got "Unknown topic: 'Probability'" when focusing a question or quiz on it, although the tutor pipeline handles such a topic (`Quiz me` -> "no practice questions yet for Probability").
 `resolve_topic` now also accepts the session's study-progress concepts (case-insensitive); the 422 hint lists both. A concept marked known leaves the plan and is rejected again. Tests: `test_prereqai_topic_study_plan.py` (3; the first fails without the fix).
 Limit: free-text answers with such a topic are still the placeholder, and aliases ("RNN") are not accepted as topics.
+
+## Oversized known/studied names refused (2026-10-30)
+
+Gap (reproduced): the HTTP analyze form bounds the upload (100 MB), the saved plan (1 MB) and a question (MAX_QUESTION_CHARS) but not `known` / `studied` names; a 1 MB name was analysed and echoed back in full inside a ~1 MB warning in a 200 response.
+Names over 200 characters (no concept comes close) now get a 422 (`stage: input`) before any analysis, without echoing the value. Tests: `test_prereqai_concept_name_length.py` (3: both fields refused, limit-length still accepted).
+Limits: the CLI is not bounded (a local user's own shell); the number of entries is bounded only by the framework's multipart field limit (20000 entries gave a 400).
