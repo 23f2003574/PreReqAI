@@ -163,7 +163,7 @@ def delete_session(session_id: str):
 
 
 def resolve_topic(session, topic):
-    """(concept name, None) for a topic naming one of the paper's concepts (case-insensitively); (None, None) when no
+    """(concept name, None) for a topic naming one of the paper's concepts or study-plan prerequisites (case-insensitively); (None, None) when no
     topic is given; (None, hint) when it names no concept. Shared by POST /question and `prerequisites ask --topic`."""
 
     topic = topic.strip() if topic is not None else None
@@ -177,9 +177,14 @@ def resolve_topic(session, topic):
         for concept in getattr(session.paper, "concepts", None) or []
     }
 
+    # the study plan lists prerequisites the paper never names (Probability, Calculus...): the learner studies and asks about them too
+    for item in getattr(session.paper, "study_progress", None) or []:
+
+        known.setdefault(item.concept.casefold(), item.concept)
+
     if topic.casefold() not in known:
 
-        return None, ("Use one of this paper's concepts: "
+        return None, ("Use one of this paper's concepts or study-plan topics: "
                       + (", ".join(known.values()) or "none were detected")
                       + ". Omit `topic` to ask without one.")
 

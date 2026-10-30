@@ -381,3 +381,9 @@ Limit: only this one rollback path was audited; `unmark_concept_known` already b
 Failure (reproduced with scripted `requests` errors): the bounded retry covered dropped connections and 429/5xx replies only, so a body cut off mid-download (`ChunkedEncodingError`) failed the analysis on the first attempt although a retry normally succeeds.
 It is now treated as transient (2 retries, then the original error surfaces, nothing partial cached). A read timeout is deliberately *not* retried: `test_prereqai_retry_safety` requires it to be reported at once as a timeout, and retrying would add minutes. Tests: three in `test_prereqai_arxiv_recovery.py` (the two cut-short ones fail without the fix; the third pins the timeout behaviour).
 Not changed: the DOI resolver's publisher download has no retry; `test_arxiv_resolver.py::test_arxiv_download` needs the network and fails in this sandbox before and after.
+
+## Question topic accepts study-plan prerequisites (2026-10-30)
+
+Integration defect (reproduced): the study plan and progress endpoints list prerequisites the paper never names (Probability, Linear Algebra...), but `resolve_topic` (shared by `POST /question` and `prerequisites ask --topic`) only accepted concepts detected in the paper, so a learner could study Probability yet got "Unknown topic: 'Probability'" when focusing a question or quiz on it, although the tutor pipeline handles such a topic (`Quiz me` -> "no practice questions yet for Probability").
+`resolve_topic` now also accepts the session's study-progress concepts (case-insensitive); the 422 hint lists both. A concept marked known leaves the plan and is rejected again. Tests: `test_prereqai_topic_study_plan.py` (3; the first fails without the fix).
+Limit: free-text answers with such a topic are still the placeholder, and aliases ("RNN") are not accepted as topics.
