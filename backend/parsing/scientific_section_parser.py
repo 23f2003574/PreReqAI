@@ -12,7 +12,11 @@ _KNOWN = (
     r"Results(?: and Discussion)?|Analysis|Ablations?(?: Study| Studies)?|Discussion|Limitations|Broader Impacts?|Future Work|"
     r"Conclusions?(?: and Future Work)?|Acknowledge?ments?|References|Bibliography|Works Cited|Appendix|Appendices|Supplementary Material|"
     r"Notation|Datasets?|Implementation Details|Training(?: Details| Procedure| Setup)?|Experimental Details|Theoretical Analysis|"
-    r"Theory|Proofs?|Ethics Statement|Reproducibility(?: Statement)?)"
+    r"Theory|Proofs?|Ethics Statement|Reproducibility(?: Statement)?|"
+    # common venue variants: NeurIPS's "Acknowledgments and Disclosure of Funding", "Conclusion and Discussion", a lettered appendix, ...
+    r"(?:Reference|Literature Cited|Acknowledge?ments? and Disclosure of Funding|Conclusions? and Discussions?|Discussions? and Conclusions?|"
+    r"Limitations and Future Work|Results and Analysis|Experiments and Results|Broader Impacts? Statement|"
+    r"Appendix(?: [A-Z])?|Supplementary Materials?))"
 )
 # A numbered, title-cased line such as "3.2 Scaled Dot-Product Attention": at most 8 words, no digits or sentence punctuation.
 _WORD = r"(?:[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"
@@ -21,7 +25,7 @@ _NUMBERED = rf"\d+(?:\.\d+)*\.?[ \t]+[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{0,7}}"
 # IEEE-style "II. PROPOSED METHOD": a roman numeral and an all-caps title (all caps keeps an author line like "I. Goodfellow" out of the headings).
 _ROMAN_CAPS = r"[IVX]+\.[ \t]+[A-Z]{3,}(?:[ \t]+[A-Z][A-Z\-]*){0,7}"
 
-SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN})|{_NUMBERED}|{_ROMAN_CAPS})[ \t]*$", re.MULTILINE)
+SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN}):?|{_NUMBERED}|{_ROMAN_CAPS})[ \t]*$", re.MULTILINE)
 
 
 class ScientificSectionParser:

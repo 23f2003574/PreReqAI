@@ -425,3 +425,13 @@ Gap: every CI step ran in an environment built from `requirements-dev.txt` (pyte
 Added (1) a CI step that creates a venv, installs only `requirements.txt` and runs the README quickstart, and (2) `test_prereqai_runtime_dependencies.py` (3): importing `backend.cli` and `backend.main` loads only packages that `requirements.txt` (and their dependencies) provide, a sanity test proving the probe flags `pytest`, and a check that the workflow has the step.
 Optional SDK imports (Gemini/OpenAI adapters, anyio's sniffio) are hidden in the probe, as they are not runtime requirements. Locally verified: the new tests pass and the quickstart works in a runtime-only venv (also checked in commit 11); the new CI step itself runs only on GitHub and has not been run there.
 Limit: the probe covers what the CLI and server import at startup, not lazily imported modules.
+
+## Venue section headings (2026-10-30), and the state of the January blockers
+
+Gap (probed with 40 headings): the section parser missed headings that conference papers use, so the text after them folded into the previous section: `Reference`, `References:` (trailing colon), `Literature Cited`, NeurIPS's `Acknowledgments and Disclosure of Funding`,
+`Conclusion and Discussion` / `Discussion and Conclusion`, `Limitations and Future Work`, `Results and Analysis`, `Experiments and Results`, `Broader Impact Statement`, `Appendix A`, `Supplementary Materials`. The costly case is the bibliography: unless a heading ends the previous section the reference
+list is read as body text and its paper titles are counted as concepts. All are now headings (an optional trailing colon on any known heading; a bare trailing period is deliberately not accepted, as "Notation." is a sentence). Test: `test_prereqai_venue_section_headings.py`
+(a parametrised positive list, sentences that must stay body text, and a three-heading document). Still unrecognised: a named appendix such as `Appendix A: Proofs`, `Summary`, `Motivation`, `Contributions` (too ambiguous to add blind).
+
+Status of the January items, re-checked today: the 44 workspace/projection failures are gone (`pytest backend/tests/test_research_workspace_*.py backend/tests/test_consumer_projection_*.py`: 4112 passed, 0 failed); a real published paper has still not been run (no network here);
+the tutor is still the disclosed placeholder (provider decision); Python 3.10 is still not run locally (3.11 and 3.12 interpreters exist here, 3.10 does not; CI runs 3.10).
