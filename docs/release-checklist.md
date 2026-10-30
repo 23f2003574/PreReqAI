@@ -399,3 +399,10 @@ Limits: the CLI is not bounded (a local user's own shell); the number of entries
 Usability gap (reproduced): `ask ... "Why is the sky blue?"` (or any question the built-in tutor does not match) ended on "A tutoring model has not yet been configured." plus a warning that it is a placeholder, with no hint of what the release can answer, so a learner
 could not tell a wrong question from a missing feature. The warning (CLI and `POST /question`) now ends with the questions that do work: `What is <concept>?`, `What should I study first?`, `How long will it take?`, `Am I ready?`, `Quiz me`.
 The answer text itself is unchanged (older tests pin it); answerable questions get no hint. Tests: `test_prereqai_placeholder_guidance.py` (2, run through the real CLI and API). Not verified: the wording with real users.
+
+## Detector term-overlap checks cached (2026-10-30)
+
+Bottleneck (profiled, `cProfile` over 5 analyses of the sample paper): `RuleBasedConceptDetector.detect` was ~90% of an analysis (0.44 of 0.49 s), and most of it was independent of the paper: the "does this term contain that term" checks ran
+`re.search(re.escape(...))` for every pair of concepts x aliases on every call, a cost that grows with the registry (44 concepts now). The pure pair check is now cached (`_word_in`) and `_aliases` is cached per (frozen) concept.
+Measured on a 19-concept text, mean of 30 `detect` calls: 20.5 ms before, 5.6 ms after, with identical detected concepts and counts (compared before/after, and pinned in `test_prereqai_detector_term_cache.py`, 2 tests). Timing is not asserted in tests (flaky); one machine, one run each.
+Not changed: the per-term scans of the paper text itself (already guarded by a substring check).

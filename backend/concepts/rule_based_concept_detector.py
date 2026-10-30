@@ -1,5 +1,6 @@
 import re
 import unicodedata
+from functools import lru_cache
 
 from backend.models import (
     Paper,
@@ -14,6 +15,14 @@ from .concept_registry import ConceptRegistry
 _BACK_MATTER = re.compile(r"^[\dIVXLivxl.]*\s*(references|bibliography|works cited|acknowledge?ments?)\b", re.IGNORECASE)
 
 
+@lru_cache(maxsize=None)
+def _word_in(inner, outer):
+    """Whether `inner` occurs in `outer` as whole words. Registry terms never change, and detect() asks this for every pair of
+    terms (concepts x concepts x aliases), which dominated an analysis of any paper; the answer is cached per pair."""
+    return re.search(rf"\b{re.escape(inner)}\b", outer) is not None
+
+
+@lru_cache(maxsize=None)
 def _aliases(concept):
     # Aliases match a plural too, so "RNNs" next to "RNN" in the registry would be counted twice: keep the singular only.
     lowered = {alias.lower() for alias in concept.aliases}
@@ -98,7 +107,7 @@ class RuleBasedConceptDetector:
             terms = [alias.lower() for alias in _aliases(concept)]
             for short in terms:
                 for longer in terms:
-                    if short != longer and re.search(rf"\b{re.escape(short)}\b", longer):
+                    if short != longer and _word_in(short, longer):
                         total -= count(longer, True)
             return total
 
@@ -124,7 +133,7 @@ class RuleBasedConceptDetector:
                 if other is concept:
                     continue
                 for term in (other.name, *_aliases(other)):
-                    if term.lower() not in counted and any(re.search(rf"\b{re.escape(a)}\b", term.lower()) and a != term.lower() for a in own):
+                    if term.lower() not in counted and any(_word_in(a, term.lower()) and a != term.lower() for a in own):
                         inside_longer += count(term, True)
 
             occurrences = mentions(concept) - inside_longer
