@@ -380,8 +380,10 @@ def run_prerequisites_ask(args, platform=None) -> int:
         print("error: no answer was produced for the question", file=sys.stderr)
         print("  hint: rephrase the question, or name a concept from the study plan (see `analyze`)", file=sys.stderr)
         return EXIT_FAILURE
+    from backend.tutor.rule_based_tutor import ANSWERABLE_HINT
+
     placeholder = any("tutoring model has not yet been configured" in r["answer"] for r in responses)
-    warning = ("No tutoring model is configured in this release: the answer is a placeholder."
+    warning = ("No tutoring model is configured in this release: the answer is a placeholder. " + ANSWERABLE_HINT
                if placeholder else
                "No tutoring model is configured in this release: answers are built-in definitions, prerequisite reasons and study-plan figures, not generated explanations.")
     warnings = [*(outcome.get("warnings") or []), warning]  # e.g. a --known name that is not in the plan

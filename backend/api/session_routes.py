@@ -5,6 +5,7 @@ from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
 from backend.study_plan_markdown import plan_markdown, studied_concepts
+from backend.tutor.rule_based_tutor import ANSWERABLE_HINT
 
 from backend.api.workflow_result import (
     failure_response,
@@ -271,7 +272,8 @@ def ask_question(
 
     if placeholder:
         warnings = ["No tutoring model is configured in this release: the answer is a placeholder; "
-                    "supporting_concepts and supporting_sections show where the paper covers the question."]
+                    "supporting_concepts and supporting_sections show where the paper covers the question. "
+                    + ANSWERABLE_HINT]
     elif built_in:
         warnings = ["No tutoring model is configured in this release: answers are the built-in definitions "
                     "prerequisite reasons and study plan from the analysis, not generated explanations."]

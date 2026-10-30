@@ -363,3 +363,9 @@ class RuleBasedTutor(BaseTutor):
             return f"{verdict} {readiness.status}: {readiness.completed_concepts} of {readiness.total_concepts} planned concepts ready ({readiness.progress_percent}%)."
 
         return ""
+
+
+# Shown with a placeholder answer: the question matched nothing the built-in tutor can answer, so say what it can.
+ANSWERABLE_HINT = ("Questions this release can answer: 'What is <concept>?' for a concept in the study plan, "
+                   "'What should I study first?', 'How long will it take?', 'Am I ready?' and 'Quiz me'.")
+

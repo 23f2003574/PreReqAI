@@ -393,3 +393,9 @@ Limit: free-text answers with such a topic are still the placeholder, and aliase
 Gap (reproduced): the HTTP analyze form bounds the upload (100 MB), the saved plan (1 MB) and a question (MAX_QUESTION_CHARS) but not `known` / `studied` names; a 1 MB name was analysed and echoed back in full inside a ~1 MB warning in a 200 response.
 Names over 200 characters (no concept comes close) now get a 422 (`stage: input`) before any analysis, without echoing the value. Tests: `test_prereqai_concept_name_length.py` (3: both fields refused, limit-length still accepted).
 Limits: the CLI is not bounded (a local user's own shell); the number of entries is bounded only by the framework's multipart field limit (20000 entries gave a 400).
+
+## Unanswerable questions say what can be asked (2026-10-30)
+
+Usability gap (reproduced): `ask ... "Why is the sky blue?"` (or any question the built-in tutor does not match) ended on "A tutoring model has not yet been configured." plus a warning that it is a placeholder, with no hint of what the release can answer, so a learner
+could not tell a wrong question from a missing feature. The warning (CLI and `POST /question`) now ends with the questions that do work: `What is <concept>?`, `What should I study first?`, `How long will it take?`, `Am I ready?`, `Quiz me`.
+The answer text itself is unchanged (older tests pin it); answerable questions get no hint. Tests: `test_prereqai_placeholder_guidance.py` (2, run through the real CLI and API). Not verified: the wording with real users.
