@@ -406,3 +406,9 @@ Bottleneck (profiled, `cProfile` over 5 analyses of the sample paper): `RuleBase
 `re.search(re.escape(...))` for every pair of concepts x aliases on every call, a cost that grows with the registry (44 concepts now). The pure pair check is now cached (`_word_in`) and `_aliases` is cached per (frozen) concept.
 Measured on a 19-concept text, mean of 30 `detect` calls: 20.5 ms before, 5.6 ms after, with identical detected concepts and counts (compared before/after, and pinned in `test_prereqai_detector_term_cache.py`, 2 tests). Timing is not asserted in tests (flaky); one machine, one run each.
 Not changed: the per-term scans of the paper text itself (already guarded by a substring check).
+
+## README HTTP API table matches the endpoints (2026-10-30)
+
+Mismatch (checked against the running app): the README's HTTP API table said `analyze` takes only `paper` and answers 422 for "no `paper` field", but the endpoint also takes `source`, `known`, `studied` and `resume` and refuses neither/both of `paper`/`source`, an invalid `source`, an oversized name and a non-plan `resume` with 422;
+it said a question `topic` must be one of the paper's concepts (study-plan concepts are accepted since the topic entry above); and it said sessions always end with the server process (not so with `PREREQAI_SESSION_DIR`). Error envelopes were checked on 13 failure cases and all carry `status`, `stage`, `detail`, `hint`, `warnings` as documented, so no code change.
+Test: `test_prereqai_http_contract_table.py` (3, exercising each documented claim through the app). Limit: only this table was checked, not every sentence of the README.

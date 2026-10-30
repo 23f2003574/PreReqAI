@@ -1629,12 +1629,12 @@ Start it with `uvicorn backend.main:app --port 8000`; interactive docs are at `/
 
 | Request | Success | Failure |
 | --- | --- | --- |
-| `POST /api/prerequisites/analyze` (multipart field `paper`, a PDF) | `200`: `status`, `session_id`, `report`, `timings`, `warnings` | `400` unreadable or invalid PDF; `413` upload over 100 MB (`limit_exceeded`); `422` no `paper` field (no time limit) |
+| `POST /api/prerequisites/analyze` (multipart field `paper`, a PDF, or instead `source`, an arXiv link or DOI; optional repeated `known` / `studied` names of at most 200 characters, `resume`) | `200`: `status`, `session_id`, `report`, `timings`, `warnings` | `400` unreadable or invalid PDF; `413` upload over 100 MB (`limit_exceeded`); `422` neither or both of `paper` and `source`, an invalid `source`, an oversized `known` / `studied` name, or a `resume` file that is not a saved plan |
 | `GET /api/session/{session_id}` | `200`: `paper_title`, `active_concept`, `conversation_history`, ... | `404` unknown session |
-| `POST /api/session/{session_id}/question` (JSON `{"question": "...", "topic": null, "mode": "intuition"}`) | `200`: `responses`, `recommendations`, ... | `404` unknown session; `422` empty question or a `topic` that is not one of the paper's concepts |
+| `POST /api/session/{session_id}/question` (JSON `{"question": "...", "topic": null, "mode": "intuition"}`) | `200`: `responses`, `recommendations`, ... | `404` unknown session; `422` empty question or a `topic` that is neither one of the paper's concepts nor a concept in its study plan (such as Probability) |
 
 Workflow failures return the same envelope everywhere: `{"status": "failure", "stage": ..., "detail": ...,
-"hint": ..., "warnings": [...]}`. Sessions are held in memory and end with the server process.
+"hint": ..., "warnings": [...]}`. Sessions are held in memory and end with the server process unless `PREREQAI_SESSION_DIR` is set (see above).
 
 ```bash
 curl -s http://127.0.0.1:8000/api/session/<session_id>   # session_id comes from the analyze response
