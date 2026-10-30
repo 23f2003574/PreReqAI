@@ -23,6 +23,8 @@ python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.
 You should see `Analysed 'Attention Is All You Need (PreReqAI sample paper)'` with concept and
 prerequisite counts, and exit code 0. Add `--json` for the full report, or pass your own paper PDF.
 
+The commands above must run from the repository root (outside it, Python reports `No module named 'backend'`). From another directory, point `PYTHONPATH` at the checkout: `PYTHONPATH=/path/to/PreReqAI python -m backend.cli prerequisites analyze paper.pdf` (for the server, `uvicorn backend.main:app --app-dir /path/to/PreReqAI`).
+
 The same workflow over HTTP:
 
 ```bash

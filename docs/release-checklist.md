@@ -412,3 +412,9 @@ Not changed: the per-term scans of the paper text itself (already guarded by a s
 Mismatch (checked against the running app): the README's HTTP API table said `analyze` takes only `paper` and answers 422 for "no `paper` field", but the endpoint also takes `source`, `known`, `studied` and `resume` and refuses neither/both of `paper`/`source`, an invalid `source`, an oversized name and a non-plan `resume` with 422;
 it said a question `topic` must be one of the paper's concepts (study-plan concepts are accepted since the topic entry above); and it said sessions always end with the server process (not so with `PREREQAI_SESSION_DIR`). Error envelopes were checked on 13 failure cases and all carry `status`, `stage`, `detail`, `hint`, `warnings` as documented, so no code change.
 Test: `test_prereqai_http_contract_table.py` (3, exercising each documented claim through the app). Limit: only this table was checked, not every sentence of the README.
+
+## First run from another directory (2026-10-30)
+
+Clean-environment check first: in a fresh venv, `pip install -r requirements.txt` then the README quickstart (CLI analysis, `uvicorn` + `/health` + the curl analysis of the sample paper) all worked (Python 3.13; exit 0). The obstacle found: running the quickstart from any directory other than the
+repository root fails with Python's bare `No module named 'backend'` (reproduced from `/tmp`), and the README only said "from the repository root". The README now says what the error looks like and the two working alternatives (`PYTHONPATH=/path/to/PreReqAI`, `uvicorn --app-dir`).
+Test: `test_prereqai_run_from_another_directory.py` (2: the PYTHONPATH route runs from a temp directory; without it the documented error appears). The CLI route is covered by the test; the `--app-dir` form was run by hand from `/tmp` (`/health` answered ok) and is not in the automated test.
