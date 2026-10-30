@@ -353,3 +353,9 @@ Gap (verified by probing 41 common terms against the detector): the project targ
 were not recognised, so an RL or language-model paper did not list its own subject. Added Reinforcement Learning, Large Language Model, Cross-Entropy Loss and Maximum Likelihood Estimation with definitions and prerequisites that all have curated resources.
 Test: `test_prereqai_core_ml_vocabulary.py` (3). `pytest -m prereqai`: 675 passed, 0 failed. Still undetected (probed): embeddings, fine-tuning/pretraining, regularisation/overfitting, convolution, autoregressive models, Markov chains, Monte Carlo,
 KL divergence/entropy as paper concepts, contrastive/self-supervised learning, distillation, mixture of experts, reward/policy as plain words (deliberately not matched).
+
+## Training and sampling vocabulary (2026-10-30)
+
+Gap (from the "still undetected" list above): overfitting, fine-tuning and Monte Carlo/MCMC were not recognised, so papers on transfer learning or sampling-based inference did not list them. Added the three concepts with aliases, definitions
+and prerequisites (Probability, Neural Networks, Calculus, all with curated resources). Test: `test_prereqai_training_vocabulary.py` (3, including look-alike words and a References-section title that must not match).
+Still undetected: embeddings, regularisation, convolution, autoregressive models, Markov chains, KL divergence, contrastive/self-supervised learning, distillation, mixture of experts.

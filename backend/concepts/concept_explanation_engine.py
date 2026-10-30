@@ -187,6 +187,21 @@ class ConceptExplanationEngine:
             "Intermediate",
         ),
 
+        "Overfitting": (
+            "When a model fits noise in its training data so well that it performs worse on new data; countered by regularisation, dropout, early stopping and more data.",
+            "Beginner",
+        ),
+
+        "Fine-Tuning": (
+            "Continuing to train a pretrained model on a smaller task-specific dataset so that its learned representations adapt to the new task.",
+            "Intermediate",
+        ),
+
+        "Monte Carlo Method": (
+            "Estimating a quantity by averaging over many random samples, as in sampling-based inference (MCMC) and return estimation in reinforcement learning.",
+            "Intermediate",
+        ),
+
         "Variational Autoencoder": (
             "A generative model with an encoder that maps data to a distribution over latent variables and a decoder that reconstructs it, trained by maximising the evidence lower bound.",
             "Advanced",

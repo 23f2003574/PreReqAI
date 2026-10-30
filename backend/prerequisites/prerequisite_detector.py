@@ -153,6 +153,21 @@ class PrerequisiteDetector:
             "Calculus",
         ],
 
+        "Overfitting": [
+            "Probability",
+            "Neural Networks",
+        ],
+
+        "Fine-Tuning": [
+            "Neural Networks",
+            "Calculus",
+        ],
+
+        "Monte Carlo Method": [
+            "Probability",
+            "Calculus",
+        ],
+
         "Variational Autoencoder": [
             "Neural Networks",
             "Probability",
