@@ -67,3 +67,29 @@ def test_a_service_that_keeps_failing_surfaces_the_original_error_after_bounded_
 
     assert len(calls) == 3  # one try plus the two configured retries
     assert not list(resolver.CACHE_DIRECTORY.glob("*"))  # nothing half-written was cached
+
+
+def test_a_download_cut_short_is_retried_and_nothing_partial_is_cached(resolver, monkeypatch):
+    calls = _script(monkeypatch, requests.exceptions.ChunkedEncodingError("cut short"), requests.exceptions.ChunkedEncodingError("again"), _Reply())
+
+    path = resolver.resolve(SOURCE)
+
+    assert len(calls) == 3 and open(path, "rb").read() == PDF
+
+
+def test_a_download_that_keeps_getting_cut_short_surfaces_after_the_bounded_retries(resolver, monkeypatch):
+    calls = _script(monkeypatch, requests.exceptions.ChunkedEncodingError("cut short"))
+
+    with pytest.raises(requests.exceptions.ChunkedEncodingError):
+        resolver.resolve(SOURCE)
+
+    assert len(calls) == 3 and not list(resolver.CACHE_DIRECTORY.glob("*"))
+
+
+def test_a_read_timeout_is_still_not_retried(resolver, monkeypatch):
+    calls = _script(monkeypatch, requests.exceptions.ReadTimeout("stalled"), _Reply())
+
+    with pytest.raises(requests.exceptions.ReadTimeout):
+        resolver.resolve(SOURCE)
+
+    assert len(calls) == 1

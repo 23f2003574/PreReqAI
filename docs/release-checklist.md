@@ -375,3 +375,9 @@ Backpropagation, Cross-Entropy Loss, Overfitting, Reinforcement Learning, Diffus
 Risk (reproduced): `mark_concept_known` recorded "this concept was studied" in `paper.studied_while_known` before taking its rollback backup, so when the rebuild failed the session was restored *with* the note. Un-studying the concept, marking it known and then undoing that would
 wrongly bring it back as studied (readiness and progress overstated). The backup is now taken first. Test: `test_prereqai_failed_known_rollback.py` (2; the failure case fails without the fix, the success case guards the existing undo behaviour).
 Limit: only this one rollback path was audited; `unmark_concept_known` already backs up before changing anything.
+
+## arXiv download retries a body cut short mid-download (2026-10-30)
+
+Failure (reproduced with scripted `requests` errors): the bounded retry covered dropped connections and 429/5xx replies only, so a body cut off mid-download (`ChunkedEncodingError`) failed the analysis on the first attempt although a retry normally succeeds.
+It is now treated as transient (2 retries, then the original error surfaces, nothing partial cached). A read timeout is deliberately *not* retried: `test_prereqai_retry_safety` requires it to be reported at once as a timeout, and retrying would add minutes. Tests: three in `test_prereqai_arxiv_recovery.py` (the two cut-short ones fail without the fix; the third pins the timeout behaviour).
+Not changed: the DOI resolver's publisher download has no retry; `test_arxiv_resolver.py::test_arxiv_download` needs the network and fails in this sandbox before and after.

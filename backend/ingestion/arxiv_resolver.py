@@ -163,7 +163,9 @@ class ArxivResolver(BaseSourceResolver):
 
     def _is_transient(self, exc) -> bool:
 
-        if isinstance(exc, requests.exceptions.ConnectionError):
+        # a dropped connection or a body cut short mid-download is retried; a read timeout is not (it already cost
+        # the full 60 seconds and is reported as a timeout at once)
+        if isinstance(exc, (requests.exceptions.ConnectionError, requests.exceptions.ChunkedEncodingError)):
 
             return True
 
