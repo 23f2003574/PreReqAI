@@ -29,3 +29,9 @@ jobs:
         run: python -m pytest -m prereqai backend/tests -q
       - name: README quickstart
         run: python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf
+      - name: README quickstart with only the runtime requirements
+        # the steps above run in an environment that also has pytest/httpx; a user installs just requirements.txt
+        run: |
+          python -m venv "$RUNNER_TEMP/runtime"
+          "$RUNNER_TEMP/runtime/bin/pip" install -r requirements.txt
+          "$RUNNER_TEMP/runtime/bin/python" -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf

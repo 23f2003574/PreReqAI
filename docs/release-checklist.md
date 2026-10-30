@@ -418,3 +418,10 @@ Test: `test_prereqai_http_contract_table.py` (3, exercising each documented clai
 Clean-environment check first: in a fresh venv, `pip install -r requirements.txt` then the README quickstart (CLI analysis, `uvicorn` + `/health` + the curl analysis of the sample paper) all worked (Python 3.13; exit 0). The obstacle found: running the quickstart from any directory other than the
 repository root fails with Python's bare `No module named 'backend'` (reproduced from `/tmp`), and the README only said "from the repository root". The README now says what the error looks like and the two working alternatives (`PYTHONPATH=/path/to/PreReqAI`, `uvicorn --app-dir`).
 Test: `test_prereqai_run_from_another_directory.py` (2: the PYTHONPATH route runs from a temp directory; without it the documented error appears). The CLI route is covered by the test; the `--app-dir` form was run by hand from `/tmp` (`/health` answered ok) and is not in the automated test.
+
+## CI checks the runtime-only install (2026-10-30)
+
+Gap: every CI step ran in an environment built from `requirements-dev.txt` (pytest, httpx2 on top of the runtime), so a runtime import of a dev-only package, or of one missing from `requirements.txt`, would pass CI and only fail for a user following the README (`pip install -r requirements.txt`).
+Added (1) a CI step that creates a venv, installs only `requirements.txt` and runs the README quickstart, and (2) `test_prereqai_runtime_dependencies.py` (3): importing `backend.cli` and `backend.main` loads only packages that `requirements.txt` (and their dependencies) provide, a sanity test proving the probe flags `pytest`, and a check that the workflow has the step.
+Optional SDK imports (Gemini/OpenAI adapters, anyio's sniffio) are hidden in the probe, as they are not runtime requirements. Locally verified: the new tests pass and the quickstart works in a runtime-only venv (also checked in commit 11); the new CI step itself runs only on GitHub and has not been run there.
+Limit: the probe covers what the CLI and server import at startup, not lazily imported modules.
