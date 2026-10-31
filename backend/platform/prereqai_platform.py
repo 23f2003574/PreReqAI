@@ -56,6 +56,22 @@ def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None) 
 _MISSING_FILE_ERRORS = (FileNotFoundError, getattr(pymupdf, "FileNotFoundError", FileNotFoundError))
 
 
+def _repair_warning(file_path) -> list:
+    """A PDF cut short (an interrupted download or copy) is opened by MuPDF after repair and reads as a shorter paper, so the plan
+    would silently miss its later sections: say so, so the learner re-fetches the file instead of trusting a partial analysis."""
+    try:
+        import pymupdf
+
+        with pymupdf.open(file_path) as pdf:
+            repaired = pdf.is_repaired
+    except Exception:  # the analysis already read the file; a second open failing must not turn it into a failure
+        return []
+    return [
+        "The PDF was damaged (it may be cut short, e.g. an interrupted download) and could only be partly read, so concepts from "
+        "the missing pages are not in this analysis; download the paper again and re-run."
+    ] if repaired else []
+
+
 def _caused_by(exc: BaseException, types) -> bool:
     """Whether `exc` is, or was caused by, an exception of `types`. A stage may
     wrap an error in its own ("raise ... from", or as its first argument)."""
@@ -325,7 +341,7 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=unsaved + no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
+            warnings=unsaved + _repair_warning(file_path) + no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
             + [f"--studied {name!r} was ignored because you also said you already know it, so it is not in the study plan" for name in also_known]
             + [f"--studied {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in not_studied],
         )
