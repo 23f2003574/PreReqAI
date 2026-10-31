@@ -193,6 +193,9 @@ def _did_you_mean(name, concept_names):
     if folded in by_folded:  # spelled right: it is simply not in the plan (e.g. already known)
         return ""
     close = difflib.get_close_matches(folded, by_folded, n=1, cutoff=0.7)
+    if not close and len(folded) >= 3:  # shorthand such as "Linear" or "Neural": a word or the start of exactly one concept
+        close = [key for key in by_folded if key.startswith(folded) or folded in key.split()]
+        close = close if len(close) == 1 else []
     return f" (did you mean {by_folded[close[0]]!r}?)" if close else ""
 
 
