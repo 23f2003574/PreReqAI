@@ -10,7 +10,7 @@ Focused initially on transformers, diffusion, RL, and graph ML papers.
 
 ## Quickstart
 
-Requires Python 3.10 or newer. From the repository root:
+Requires Python 3.10 or newer. From the repository root (on Windows, activate the environment with `.venv\Scripts\activate` instead of `source .venv/bin/activate`, and use `py -m venv .venv` if `python` is not found):
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
