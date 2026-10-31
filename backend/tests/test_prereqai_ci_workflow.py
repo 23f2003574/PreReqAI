@@ -28,3 +28,20 @@ def test_workflow_uses_least_privilege_a_timeout_and_node24_actions():
     assert "timeout-minutes:" in WORKFLOW
     # GitHub runs Node 20 actions (checkout@v4, setup-python@v5) on Node 24 with a deprecation warning
     assert "actions/checkout@v4" not in WORKFLOW and "actions/setup-python@v5" not in WORKFLOW
+
+
+def test_workflow_starts_the_http_server_from_the_runtime_only_install():
+    # TestClient-based tests run with the dev requirements; only a real server in the runtime venv catches a missing runtime package
+    # (for example python-multipart, which the analyze upload needs, or uvicorn itself).
+    step = WORKFLOW.split("README HTTP server with only the runtime requirements", 1)[1]
+    assert '"$RUNNER_TEMP/runtime/bin/python" -m uvicorn backend.main:app' in step
+    assert "curl -sf http://127.0.0.1:8000/health" in step
+    assert "/api/prerequisites/analyze" in step and "examples/prerequisites/sample-paper.pdf" in step
+    # it must come after the runtime venv is created and filled, or it would use a venv that does not exist yet
+    assert WORKFLOW.index("pip\" install -r requirements.txt") < WORKFLOW.index("README HTTP server with only the runtime requirements")
+
+
+def test_runtime_requirements_list_what_the_http_server_needs():
+    runtime = (ROOT / "requirements.txt").read_text(encoding="utf-8").lower()
+    for package in ("fastapi", "uvicorn", "python-multipart", "pymupdf", "requests"):
+        assert package in runtime, f"{package} is needed to serve the upload endpoint from a runtime-only install"
