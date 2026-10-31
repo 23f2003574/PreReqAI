@@ -58,13 +58,14 @@ def studied_from_plan(text):
     return [match.group(1) for match in _TICKED.finditer(text)]
 
 
-_KNOWN = re.compile(r"^[ \t]*Already known: (.+)$", re.MULTILINE)
+_KNOWN = re.compile(r"^[ \t]*Already known:[ \t]*(.+)$", re.MULTILINE | re.IGNORECASE)
 
 
 def known_from_plan(text):
-    """The concepts a plan written by plan_markdown records as already known to the learner."""
+    """The concepts a plan written by plan_markdown records as already known to the learner. A hand-edited line may separate
+    names with commas, as the `--known` flag does."""
     match = _KNOWN.search(text)
-    return [name.strip() for name in match.group(1).split(";") if name.strip()] if match else []
+    return [name.strip() for name in re.split(r"[;,]", match.group(1)) if name.strip()] if match else []
 
 
 def resume_mismatch_warning(plan_text, paper_title):

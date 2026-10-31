@@ -444,3 +444,7 @@ Known limit: the bare word "embedding" in a non-ML sense ("embedding a video") w
 ## Named appendix headings (2026-10-31)
 
 Defect (reproduced): `Appendix A: Proofs`, `Appendix B. Additional Experiments` and `Appendix: Proofs` were not recognised as headings, so an appendix after the bibliography was folded into References. Fix: the section pattern accepts `Appendix`, an optional letter/number, a `:`/`.`/dash separator and a title-cased title (same word rules as numbered headings), so sentences such as "Appendix A: we show ..." or "See Appendix A: Proofs for details." stay body text. Test: `test_prereqai_named_appendix_heading.py` (the section test fails without the fix). Still unrecognised: `Summary`, `Motivation`, `Contributions`, `Appendix A.1 Details`.
+
+## Resume honours a hand-edited "Already known" line (2026-10-31)
+
+Workflow gap (reproduced): the save -> edit -> `--resume` loop broke at the edit step. `Already known: Linear Algebra, Calculus` (commas, as the `--known` flag and README use) was read as ONE concept named "Linear Algebra, Calculus" and ignored, and a lower-case `already known:` line was not read at all, so those concepts silently came back into the plan. `known_from_plan` now splits on `;` or `,` and matches the label case-insensitively; the CLI and HTTP `resume` share it. Test: `test_prereqai_resume_hand_edited_known.py` (3 of 5 cases fail without the fix). Limit: a concept name containing a comma would be split (none exists in the registry).
