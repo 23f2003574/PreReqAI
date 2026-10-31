@@ -27,7 +27,7 @@ def test_the_entrypoints_run_the_check_before_their_heavy_imports():
     for name in ("cli.py", "main.py"):
         source = (BACKEND / name).read_text()
         assert source.index("check_python_version()") < source.index("from backend.api") if name == "main.py" else (
-            source.index("check_python_version()") < source.index("from backend.agent_"))
+            source.index("check_python_version()") < source.index("from backend.cli_api_generation"))  # cli.py's first heavy import
 
 
 def test_module_imports_cleanly_and_the_cli_still_runs():

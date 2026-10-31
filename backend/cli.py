@@ -24,17 +24,6 @@ from backend.python_version import check_python_version
 
 check_python_version()  # before the heavy imports below, which fail obscurely on an old interpreter
 
-from backend.agent_task_recovery_execution_precondition_snapshots import (
-    HEALTH_HEALTHY,
-    IMPACT_LIFECYCLE_CLEAN,
-    IMPACT_LIFECYCLE_REMEDIATED,
-    IMPACT_LIFECYCLE_UP_TO_DATE,
-    LIFECYCLE_VERIFICATION_VALID,
-    READY,
-    InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError,
-    InvalidAgentTaskRecoveryExecutionDecisionLifecycleHealthError,
-    InvalidAgentTaskRecoveryExecutionDecisionLifecycleReadinessError,
-)
 from backend.cli_api_generation import (  # noqa: F401  (re-exported: the CLI's public names stay importable from backend.cli)
     EXIT_GENERATION_FAILED,
     EXIT_INTERNAL_ERROR,
@@ -47,14 +36,6 @@ from backend.cli_api_generation import (  # noqa: F401  (re-exported: the CLI's 
     run_api_generation_check,
     run_api_generation_generate,
 )
-from backend.recovery_decision_services import (  # noqa: F401  (re-exported: the builders stay importable from backend.cli)
-    _build_collaborators,
-    _build_health_stack,
-    build_recovery_decision_facade,
-    build_recovery_decision_health_and_readiness_services,
-    build_recovery_decision_health_service,
-    build_recovery_decision_readiness_service,
-)
 from backend.version import __version__
 from backend.cli_common import EXIT_FAILURE, EXIT_OK, EXIT_USAGE  # noqa: F401
 from backend.cli_prerequisites import (
@@ -63,7 +44,41 @@ from backend.cli_prerequisites import (
     run_prerequisites_ask,
 )
 
-_SUCCESS_STATUSES = (IMPACT_LIFECYCLE_REMEDIATED, IMPACT_LIFECYCLE_CLEAN, IMPACT_LIFECYCLE_UP_TO_DATE)
+
+# The recovery-decision names below pull in ~250 modules (about 0.2s of start-up); the `prerequisites` and API-generation
+# commands never need them, so they load on first use. They stay importable from backend.cli (module __getattr__).
+_LAZY_SOURCES = {
+    "backend.agent_task_recovery_execution_precondition_snapshots": (
+        "HEALTH_HEALTHY", "IMPACT_LIFECYCLE_CLEAN", "IMPACT_LIFECYCLE_REMEDIATED", "IMPACT_LIFECYCLE_UP_TO_DATE",
+        "LIFECYCLE_VERIFICATION_VALID", "READY",
+        "InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError",
+        "InvalidAgentTaskRecoveryExecutionDecisionLifecycleHealthError",
+        "InvalidAgentTaskRecoveryExecutionDecisionLifecycleReadinessError",
+    ),
+    "backend.recovery_decision_services": (
+        "_build_collaborators", "_build_health_stack", "build_recovery_decision_facade",
+        "build_recovery_decision_health_and_readiness_services", "build_recovery_decision_health_service",
+        "build_recovery_decision_readiness_service",
+    ),
+}
+_LAZY_MODULE = {name: module for module, names in _LAZY_SOURCES.items() for name in names}
+
+
+def __getattr__(name):
+    module = _LAZY_MODULE.get(name)
+    if module is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    import importlib
+
+    value = getattr(importlib.import_module(module), name)
+    globals()[name] = value
+    return value
+
+
+def _lazy(name):
+    """A recovery-decision name, loaded on first use; read from this module so a test that replaces it still takes effect."""
+    return globals()[name] if name in globals() else __getattr__(name)
+
 
 
 
@@ -74,8 +89,8 @@ def _is_success(result) -> bool:
     otherwise have to check by hand across three separate result
     objects."""
     return (
-        result.overall_status in _SUCCESS_STATUSES
-        and result.verification_status == LIFECYCLE_VERIFICATION_VALID
+        result.overall_status in (_lazy("IMPACT_LIFECYCLE_REMEDIATED"), _lazy("IMPACT_LIFECYCLE_CLEAN"), _lazy("IMPACT_LIFECYCLE_UP_TO_DATE"))
+        and result.verification_status == _lazy("LIFECYCLE_VERIFICATION_VALID")
         and not result.blocking_conditions
     )
 
@@ -207,10 +222,10 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _run_recovery_decision_evaluate(args, facade) -> int:
-    facade = facade if facade is not None else build_recovery_decision_facade()
+    facade = facade if facade is not None else _lazy("build_recovery_decision_facade")()
     try:
         result = facade.evaluate(args.task_id)
-    except InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError as error:
+    except _lazy("InvalidAgentTaskRecoveryExecutionDecisionLifecycleFacadeError") as error:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_FAILURE
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
@@ -229,10 +244,10 @@ def _run_recovery_decision_diagnose(args, health_service) -> int:
     HealthService.check() (#6, which itself composes #7's per-dependency
     diagnostics) -- never facade.evaluate(), so this command can never
     execute remediation/recovery or change any persisted state."""
-    health_service = health_service if health_service is not None else build_recovery_decision_health_service()
+    health_service = health_service if health_service is not None else _lazy("build_recovery_decision_health_service")()
     try:
         result = health_service.check(args.task_id)
-    except InvalidAgentTaskRecoveryExecutionDecisionLifecycleHealthError as error:
+    except _lazy("InvalidAgentTaskRecoveryExecutionDecisionLifecycleHealthError") as error:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_FAILURE
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
@@ -246,7 +261,7 @@ def _run_recovery_decision_diagnose(args, health_service) -> int:
     # Same non-success diagnostic convention as `evaluate`: only a clean
     # HEALTH_HEALTHY verdict is EXIT_OK; degraded/blocked/unavailable are
     # all EXIT_FAILURE -- there is no third exit code family to invent.
-    return EXIT_OK if result.status == HEALTH_HEALTHY else EXIT_FAILURE
+    return EXIT_OK if result.status == _lazy("HEALTH_HEALTHY") else EXIT_FAILURE
 
 
 def _run_recovery_decision_readiness(args, readiness_service) -> int:
@@ -256,10 +271,10 @@ def _run_recovery_decision_readiness(args, readiness_service) -> int:
     never facade.evaluate() and never lifecycle_service.run()/
     reconciliation_service.reconcile(), so this command can never execute
     remediation/recovery or change any persisted state."""
-    readiness_service = readiness_service if readiness_service is not None else build_recovery_decision_readiness_service()
+    readiness_service = readiness_service if readiness_service is not None else _lazy("build_recovery_decision_readiness_service")()
     try:
         result = readiness_service.check(args.task_id)
-    except InvalidAgentTaskRecoveryExecutionDecisionLifecycleReadinessError as error:
+    except _lazy("InvalidAgentTaskRecoveryExecutionDecisionLifecycleReadinessError") as error:
         print(f"error: {error}", file=sys.stderr)
         return EXIT_FAILURE
     except Exception as error:  # never leak a composed service's internals as a stack trace by default
@@ -272,7 +287,7 @@ def _run_recovery_decision_readiness(args, readiness_service) -> int:
 
     # Same non-success diagnostic convention as `evaluate`/`diagnose`:
     # only READY is EXIT_OK; BLOCKED is EXIT_FAILURE.
-    return EXIT_OK if result.status == READY else EXIT_FAILURE
+    return EXIT_OK if result.status == _lazy("READY") else EXIT_FAILURE
 
 
 def main(argv=None, facade=None, health_service=None, readiness_service=None) -> int:
