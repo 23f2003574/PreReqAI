@@ -440,3 +440,7 @@ the tutor is still the disclosed placeholder (provider decision); Python 3.10 is
 
 Gap (from the "still undetected" list above): embeddings, central to language and graph papers, were not detected. Added the Embedding concept (plural handled by the matcher; alias `word2vec`) with a definition and prerequisites (Linear Algebra, Neural Networks). Test: `test_prereqai_embedding_concept.py` (2: detection with prerequisites/definition; look-alike "embedded" and a References title must not match).
 Known limit: the bare word "embedding" in a non-ML sense ("embedding a video") would count. Still undetected: regularisation, convolution, autoregressive models, Markov chains, KL divergence, contrastive learning, distillation, mixture of experts.
+
+## Named appendix headings (2026-10-31)
+
+Defect (reproduced): `Appendix A: Proofs`, `Appendix B. Additional Experiments` and `Appendix: Proofs` were not recognised as headings, so an appendix after the bibliography was folded into References. Fix: the section pattern accepts `Appendix`, an optional letter/number, a `:`/`.`/dash separator and a title-cased title (same word rules as numbered headings), so sentences such as "Appendix A: we show ..." or "See Appendix A: Proofs for details." stay body text. Test: `test_prereqai_named_appendix_heading.py` (the section test fails without the fix). Still unrecognised: `Summary`, `Motivation`, `Contributions`, `Appendix A.1 Details`.
