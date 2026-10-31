@@ -10,7 +10,7 @@ from pathlib import Path
 # New-style ("1706.03762": YYMM, then 4 digits before 2015 or 5 since) and old-style ("hep-th/9901001", "math.GT/0309136") identifiers, each with an optional version.
 _ARXIV_ID = r"(?:[0-9]{4}\.[0-9]{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[a-z]{2})?/[0-9]{7})(?:v[0-9]+)?"
 ARXIV_PATTERN = re.compile(
-    rf"(?:https?://)?(?:www\.|export\.)?arxiv\.org/(?:abs|pdf)/({_ARXIV_ID})(?:\.pdf)?/?(?:[?#]\S*)?",
+    rf"(?:https?://)?(?:www\.|export\.)?arxiv\.org/(?:abs|pdf|html)/({_ARXIV_ID})(?:\.pdf)?/?(?:[?#]\S*)?",
     re.IGNORECASE,
 )
 # How a paper is usually cited: "arXiv:1706.03762". The explicit prefix is required: a bare number such as
