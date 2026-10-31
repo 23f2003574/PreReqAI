@@ -435,3 +435,8 @@ list is read as body text and its paper titles are counted as concepts. All are 
 
 Status of the January items, re-checked today: the 44 workspace/projection failures are gone (`pytest backend/tests/test_research_workspace_*.py backend/tests/test_consumer_projection_*.py`: 4112 passed, 0 failed); a real published paper has still not been run (no network here);
 the tutor is still the disclosed placeholder (provider decision); Python 3.10 is still not run locally (3.11 and 3.12 interpreters exist here, 3.10 does not; CI runs 3.10).
+
+## Embeddings recognised (2026-10-31)
+
+Gap (from the "still undetected" list above): embeddings, central to language and graph papers, were not detected. Added the Embedding concept (plural handled by the matcher; alias `word2vec`) with a definition and prerequisites (Linear Algebra, Neural Networks). Test: `test_prereqai_embedding_concept.py` (2: detection with prerequisites/definition; look-alike "embedded" and a References title must not match).
+Known limit: the bare word "embedding" in a non-ML sense ("embedding a video") would count. Still undetected: regularisation, convolution, autoregressive models, Markov chains, KL divergence, contrastive learning, distillation, mixture of experts.
