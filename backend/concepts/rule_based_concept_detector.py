@@ -102,9 +102,9 @@ class RuleBasedConceptDetector:
 
         def mentions(concept):
             total = count(concept.name, True) + sum(count(alias, True) for alias in _aliases(concept))
-            # Two of a concept's own terms can overlap ("graph convolutional" inside "graph convolutional network"):
-            # one mention is counted once, as the longer term.
-            terms = [alias.lower() for alias in _aliases(concept)]
+            # Two of a concept's own terms (its name or an alias) can overlap ("graph convolutional" inside "graph
+            # convolutional network", "monte carlo" inside "Monte Carlo Method"): one mention is counted once, as the longer term.
+            terms = [concept.name.lower(), *(alias.lower() for alias in _aliases(concept))]
             for short in terms:
                 for longer in terms:
                     if short != longer and _word_in(short, longer):
