@@ -16,7 +16,12 @@ _KNOWN = (
     # common venue variants: NeurIPS's "Acknowledgments and Disclosure of Funding", "Conclusion and Discussion", a lettered appendix, ...
     r"(?:Reference|Literature Cited|Acknowledge?ments? and Disclosure of Funding|Conclusions? and Discussions?|Discussions? and Conclusions?|"
     r"Limitations and Future Work|Results and Analysis|Experiments and Results|Broader Impacts? Statement|"
-    r"Appendix(?: [A-Z])?|Supplementary Materials?))"
+    r"Appendix(?: [A-Z])?|Supplementary Materials?|"
+    # more unnumbered headings seen in published papers (found by probing; each is a fixed phrase, so a sentence cannot match)
+    r"Introduction and Motivation|Background and Related Work|Related Work and Background|Preliminaries and Notation|Notation and Preliminaries|"
+    r"Main Results|Key Results|Qualitative Results|Quantitative Results|Hyperparameters|Evaluation Metrics|Experimental Setup and Results|"
+    r"Training Objective|Overview of the Method|Ethical Considerations|Societal Impacts?|Code Availability|Data Availability|"
+    r"Author Contributions|Competing Interests|Funding|Limitations and Broader Impacts?|Broader Impacts? and Limitations))"
 )
 # A numbered, title-cased line such as "3.2 Scaled Dot-Product Attention": at most 8 words, no digits or sentence punctuation.
 _WORD = r"(?:[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"

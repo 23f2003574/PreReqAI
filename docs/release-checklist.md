@@ -485,3 +485,16 @@ Clean-environment check (new venv in /tmp, `pip install -r requirements.txt` 7s,
 ## CI starts the real HTTP server from the runtime-only install (2026-10-31)
 
 Coverage gap: CI ran the whole suite in the dev environment (TestClient needs httpx and pytest) and the runtime-only venv only ran the CLI, so a package missing from `requirements.txt` that only the server needs would escape. Reproduced locally: in a venv holding just `requirements.txt` minus `python-multipart`, `uvicorn backend.main:app` exits at start-up ("pip install python-multipart"), and every test still passes in the dev environment. New CI step "README HTTP server with only the runtime requirements" starts uvicorn from the runtime venv, polls `/health`, and uploads the sample paper to `/api/prerequisites/analyze`. Tests: two in `test_prereqai_ci_workflow.py` pin the step (order after the runtime venv is built, health and upload calls) and the server's runtime packages in `requirements.txt`. Locally verified: the same shell logic (`bash serve_check.sh` in a fresh runtime venv) prints the health JSON and `OK`, and fails with rc=1 when python-multipart is removed; `pytest -m prereqai` 775 passed. CI-only: the new workflow step itself has not run on GitHub (Linux runner, Python 3.10 and 3.13).
+
+## More unnumbered section headings (2026-10-31)
+
+Slice of release blocker 1 ("fix what a real paper exposes"; the likely finding listed there is headings outside the fixed list). A probe of 36 common headings showed 7 recognised before this change (e.g. Related Work, Ablation Studies, Acknowledgements) and these missed, so their text folded into the preceding section and the tutor's `supporting_sections` named the wrong one: Introduction and Motivation, Background and Related Work (and the reverse order), Preliminaries and Notation (and reverse), Main/Key/Qualitative/Quantitative Results, Hyperparameters, Evaluation Metrics, Experimental Setup and Results, Training Objective, Overview of the Method, Ethical Considerations, Societal Impact, Code/Data Availability, Author Contributions, Competing Interests, Funding, Limitations and Broader Impact(s) (and reverse). All are fixed phrases, so sentences such as "Funding was provided by ..." or "Main results are shown in Table 2." stay body text. Test: `test_prereqai_more_section_headings.py` (22 of 29 fail without the change).
+Still unrecognised on purpose: `Summary`, `Motivation`, `Contributions`, `Setup`, `Baselines`, `Implementation`, `Appendix A.1 Details` (single words or too ambiguous to add blind).
+
+### Outstanding before January 2027 (re-checked 2026-10-31)
+
+1. **Real published paper never run (release blocker).** `analyze arXiv:1706.03762` cannot be attempted here: no outbound network. Everything else (HTML and URL links, damaged-PDF warning, typeset text, venue headings) is verified on generated PDFs only.
+2. **Tutor is a rule-based placeholder.** Needs a provider and key decision; plan in item 2 of the order of work above.
+3. **Python 3.10** is exercised only by CI (matrix) and never run locally; 3.11/3.12/3.13 were run.
+4. **Two-column text order, multi-line author blocks and scanned PDFs (no OCR)** are untested/unsupported on real layouts.
+The 44 workspace/projection failures are gone (4112 passed when last re-checked on 2026-10-30).
