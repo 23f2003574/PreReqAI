@@ -19,6 +19,7 @@ ARXIV_ID_PATTERN = re.compile(
     rf"arxiv:\s*({_ARXIV_ID})",
     re.IGNORECASE,
 )
+URL_SCHEME = re.compile(r"[a-z][a-z0-9+.\-]*://", re.IGNORECASE)
 DOI_PATTERN = re.compile(
     r"(?:doi:\s*|https?://(?:www\.|dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
     re.IGNORECASE,
@@ -96,6 +97,12 @@ class ResearchSourceDetector:
                 identifier=doi_match.group(1),
                 original_input=source,
             )
+
+        if URL_SCHEME.match(source):
+
+            # Only arXiv and DOI links are downloaded. Any other URL would otherwise be read as a local file path
+            # (Path collapses "//": "https:/example.com/p.pdf") and fail as a confusing "no such file".
+            raise ValueError(f"Unsupported research source: {source}")
 
         path = Path(source)
 

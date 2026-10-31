@@ -127,11 +127,12 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
         detail, hint = _download_failure(exc)
         return failure_body("analysis", detail, error=exc, hint=hint)
     if isinstance(exc, ValueError) and str(exc).startswith("Unsupported research source"):  # e.g. a .txt file or a directory
-        if re.match(r"(arxiv|doi)\s*:|\S*(arxiv|doi)\.org|10\.\d{4,}", str(exc).partition(": ")[2].strip(), re.IGNORECASE):  # an attempted link: say what a valid one looks like
+        if re.match(r"(arxiv|doi)\s*:|\S*(arxiv|doi)\.org|10\.\d{4,}|[a-z][a-z0-9+.\-]*://", str(exc).partition(": ")[2].strip(), re.IGNORECASE):  # an attempted link: say what a valid one looks like
             return failure_body(
                 "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
                 hint="That does not look like a valid arXiv or DOI reference. Give it alone, as https://arxiv.org/abs/1706.03762 or "
-                     "arXiv:1706.03762 (YYMM.NNNNN, optionally v2), or as a DOI such as 10.1000/xyz123 or https://doi.org/10.1000/xyz123.",
+                     "arXiv:1706.03762 (YYMM.NNNNN, optionally v2), or as a DOI such as 10.1000/xyz123 or https://doi.org/10.1000/xyz123. "
+                     "Only arXiv links and DOIs are downloaded: for any other site, download the PDF and pass its path.",
             )
         return failure_body(
             "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
