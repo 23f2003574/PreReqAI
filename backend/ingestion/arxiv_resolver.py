@@ -142,20 +142,30 @@ class ArxivResolver(BaseSourceResolver):
 
     def _download(self, url: str) -> bytes:
 
+        def fetch():
+
+            response = requests.get(
+                url,
+                timeout=60,
+            )
+
+            response.raise_for_status()
+
+            return response.content
+
+        return self._with_retries(fetch)
+
+    def _with_retries(self, fetch):
+        """Run `fetch`, retrying after RETRY_DELAYS when it fails with a transient request error; the last (or a
+        non-transient) failure surfaces unchanged. Shared by the arXiv and DOI downloads."""
+
         delays = iter(self.RETRY_DELAYS)
 
         while True:
 
             try:
 
-                response = requests.get(
-                    url,
-                    timeout=60,
-                )
-
-                response.raise_for_status()
-
-                return response.content
+                return fetch()
 
             except requests.exceptions.RequestException as exc:
 
@@ -163,7 +173,7 @@ class ArxivResolver(BaseSourceResolver):
 
                 if delay is None or not self._is_transient(exc):
 
-                    raise  # the last (or a non-transient) failure surfaces unchanged
+                    raise
 
             time.sleep(delay)
 
