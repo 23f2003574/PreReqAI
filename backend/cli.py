@@ -24,18 +24,7 @@ from backend.python_version import check_python_version
 
 check_python_version()  # before the heavy imports below, which fail obscurely on an old interpreter
 
-from backend.cli_api_generation import (  # noqa: F401  (re-exported: the CLI's public names stay importable from backend.cli)
-    EXIT_GENERATION_FAILED,
-    EXIT_INTERNAL_ERROR,
-    EXIT_INVALID_INPUT,
-    _generation_exit_code,
-    _load_draft,
-    _run_api_generation_check,
-    _run_api_generation_generate,
-    add_api_generation_parser,
-    run_api_generation_check,
-    run_api_generation_generate,
-)
+from backend.generation_cli_parser import add_api_generation_parser
 from backend.version import __version__
 from backend.cli_common import EXIT_FAILURE, EXIT_OK, EXIT_USAGE  # noqa: F401
 from backend.cli_prerequisites import (
@@ -48,6 +37,11 @@ from backend.cli_prerequisites import (
 # The recovery-decision names below pull in ~250 modules (about 0.2s of start-up); the `prerequisites` and API-generation
 # commands never need them, so they load on first use. They stay importable from backend.cli (module __getattr__).
 _LAZY_SOURCES = {
+    # the api-generation commands (generator, drafts, LLM package) load when one of them runs; their parser does not
+    "backend.cli_api_generation": (
+        "EXIT_GENERATION_FAILED", "EXIT_INTERNAL_ERROR", "EXIT_INVALID_INPUT", "_generation_exit_code", "_load_draft",
+        "_run_api_generation_check", "_run_api_generation_generate", "run_api_generation_check", "run_api_generation_generate",
+    ),
     "backend.agent_task_recovery_execution_precondition_snapshots": (
         "HEALTH_HEALTHY", "IMPACT_LIFECYCLE_CLEAN", "IMPACT_LIFECYCLE_REMEDIATED", "IMPACT_LIFECYCLE_UP_TO_DATE",
         "LIFECYCLE_VERIFICATION_VALID", "READY",
@@ -317,9 +311,9 @@ def main(argv=None, facade=None, health_service=None, readiness_service=None) ->
         return _run_recovery_decision_readiness(args, readiness_service)
 
     if args.command == "api-generation" and args.api_generation_command == "generate":
-        return run_api_generation_generate(args)
+        return _lazy("run_api_generation_generate")(args)
     if args.command == "api-generation" and args.api_generation_command == "check":
-        return run_api_generation_check(args)
+        return _lazy("run_api_generation_check")(args)
 
     if args.command == "prerequisites" and args.prerequisites_command == "analyze":
         return run_prerequisites_analyze(args)
