@@ -9,7 +9,7 @@ from backend.ingestion.research_source_detector import ResearchSource
 
 pytestmark = pytest.mark.prereqai
 
-PDF = b"%PDF-1.4 fresh"
+PDF = b"%PDF-1.4 fresh\n%%EOF"
 
 
 class _Reply:

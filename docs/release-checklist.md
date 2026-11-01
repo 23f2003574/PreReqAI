@@ -498,3 +498,7 @@ Still unrecognised on purpose: `Summary`, `Motivation`, `Contributions`, `Setup`
 3. **Python 3.10** is exercised only by CI (matrix) and never run locally; 3.11/3.12/3.13 were run.
 4. **Two-column text order, multi-line author blocks and scanned PDFs (no OCR)** are untested/unsupported on real layouts.
 The 44 workspace/projection failures are gone (4112 passed when last re-checked on 2026-10-30).
+
+## Truncated cached PDFs are replaced (2026-11-01)
+
+Gap (from the 2026-10-29 limitation): a cached download cut off mid-write that still began with `%PDF` was reused forever and failed every analysis. `_is_cached_pdf` now also requires `%%EOF` in the last 1 KiB (trailing padding after it is fine); otherwise the file is removed and downloaded again. Applies to arXiv and DOI caches. Tests added in `test_prereqai_cached_download_recovery.py`; two fixtures gained `%%EOF`. Limitation: a freshly downloaded body is still only checked for `%PDF`, and a PDF damaged mid-file but ending in `%%EOF` is not detected.

@@ -46,7 +46,28 @@ def test_a_damaged_cached_file_is_downloaded_again(resolver, damaged):
 def test_a_good_cached_pdf_is_reused_without_a_request(resolver):
     resolve, calls = resolver
     ArxivResolver.CACHE_DIRECTORY.mkdir(parents=True)
-    (ArxivResolver.CACHE_DIRECTORY / "1706.03762.pdf").write_bytes(b"%PDF-1.4 cached")
+    (ArxivResolver.CACHE_DIRECTORY / "1706.03762.pdf").write_bytes(b"%PDF-1.4 cached\n%%EOF")
 
-    assert open(resolve.resolve(SOURCE), "rb").read() == b"%PDF-1.4 cached"
+    assert open(resolve.resolve(SOURCE), "rb").read() == b"%PDF-1.4 cached\n%%EOF"
+    assert calls == []
+
+
+def test_a_truncated_cached_pdf_is_downloaded_again(resolver):
+    resolve, calls = resolver
+    ArxivResolver.CACHE_DIRECTORY.mkdir(parents=True)
+    (ArxivResolver.CACHE_DIRECTORY / "1706.03762.pdf").write_bytes(b"%PDF-1.4 cut off mid-stream")
+
+    path = resolve.resolve(SOURCE)
+
+    assert len(calls) == 1
+    assert open(path, "rb").read() == PDF
+
+
+def test_a_cached_pdf_with_trailing_padding_after_eof_is_reused(resolver):
+    resolve, calls = resolver
+    ArxivResolver.CACHE_DIRECTORY.mkdir(parents=True)
+    (ArxivResolver.CACHE_DIRECTORY / "1706.03762.pdf").write_bytes(b"%PDF-1.4 x\n%%EOF\n" + b"\0" * 500)
+
+    resolve.resolve(SOURCE)
+
     assert calls == []

@@ -83,7 +83,13 @@ class ArxivResolver(BaseSourceResolver):
 
                 if handle.read(4) == b"%PDF":
 
-                    return True
+                    # A complete PDF ends with %%EOF; an interrupted copy that still starts with %PDF does not.
+                    handle.seek(0, 2)
+                    handle.seek(max(handle.tell() - 1024, 0))
+
+                    if b"%%EOF" in handle.read():
+
+                        return True
 
         except OSError:
 
