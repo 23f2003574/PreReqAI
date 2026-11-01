@@ -77,3 +77,14 @@ def test_quiz_covers_overfitting_and_the_other_core_concepts_that_used_to_have_n
 
 def test_quiz_on_a_concept_that_still_has_no_questions_says_so():
     assert _quiz_in_process("Quiz me on Q-Learning", []) == "There are no practice questions yet for Q-Learning."
+
+
+@pytest.mark.parametrize("prerequisite", ["Calculus", "Linear Algebra", "Probability"])
+def test_quiz_on_a_prerequisite_without_questions_says_so_instead_of_quizzing_other_concepts(prerequisite):
+    answer = _ask(f"Quiz me on {prerequisite}")
+    assert answer == f"There are no practice questions yet for {prerequisite}."
+
+
+def test_quiz_naming_a_prerequisite_and_a_concept_with_questions_still_quizzes_the_concept():
+    answer = _ask("Quiz me on Calculus and Softmax")
+    assert answer.startswith("Softmax Q1") and "Attention Q1" not in answer

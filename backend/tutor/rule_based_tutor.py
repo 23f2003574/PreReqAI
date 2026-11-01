@@ -124,7 +124,9 @@ class RuleBasedTutor(BaseTutor):
             return ""
 
         named = [name for name in QUIZ_BANK if re.search(_name_pattern(name), text)]
-        mentioned = [name for name in ConceptExplanationEngine.EXPLANATIONS if re.search(_name_pattern(name), text)]
+        # prerequisites such as Calculus or Probability are named in questions too, but have no questions of their own
+        known_names = [*ConceptExplanationEngine.EXPLANATIONS, *PREREQUISITE_DEFINITIONS]
+        mentioned = [name for name in dict.fromkeys(known_names) if re.search(_name_pattern(name), text)]
 
         if mentioned and not named:
             return "There are no practice questions yet for " + ", ".join(mentioned) + "."
