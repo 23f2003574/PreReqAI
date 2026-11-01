@@ -44,7 +44,9 @@ def plan_markdown(report):
     return "\n".join(lines) + "\n"
 
 
-_TICKED = re.compile(r"^[ \t]*[-*+] \[[xX]\] \d+\. (.+?) \(~\d+h\)", re.MULTILINE)
+# The concept ends at its hours note "(~10h)", at a parenthesised hours note of another form (a hand-edited "(about 10 h)", "(10 hours)"), at the
+# study link " - [title](url)", or at the end of the line: a ticked step must not lose its progress because the note was edited.
+_TICKED = re.compile(r"^[ \t]*[-*+] \[[xX]\] \d+\. (.+?)(?=[ \t]+\((?:~|about|approx|around|\d)|[ \t]+-[ \t]+\[|[ \t]*$)", re.MULTILINE)
 
 
 def is_saved_plan(text):
