@@ -26,8 +26,15 @@ while todo:
     except md.PackageNotFoundError:
         continue
     todo += [re.split(r"[<>=!~\[; (]", r)[0].lower().replace("_", "-") for r in requires if "extra ==" not in r]
-allowed = {top for dist, tops in md.packages_distributions().items() for top in [dist] for _ in [0]}
-allowed = {module for module, dists in md.packages_distributions().items() if any(d.lower().replace("_", "-") in seen for d in dists)}
+# The importable names of every requirement (and its dependencies), read from each package's file list. md.packages_distributions()
+# is not used: before Python 3.11 it reads only top_level.txt, which most modern wheels (fastapi, pydantic, urllib3...) do not ship.
+allowed = set()
+for dist in md.distributions():
+    if (dist.metadata["Name"] or "").lower().replace("_", "-") not in seen:
+        continue
+    for path in dist.files or []:
+        top = path.parts[0]
+        allowed.add(top[:-3] if top.endswith(".py") else top.split(".")[0] if top.endswith((".so", ".pyd")) else top)
 # optional imports (the LLM adapters' SDKs, anyio's sniffio) are not in requirements.txt: hide them, as in a runtime-only install
 for optional in ("google", "google.generativeai", "openai", "sniffio"):
     sys.modules[optional] = None
