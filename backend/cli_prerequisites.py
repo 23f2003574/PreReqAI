@@ -29,6 +29,14 @@ def _finite_number(value):
     return number
 
 
+def _nonblank(value):
+    """argparse type for flags that take a name or path: an empty or blank value (typically an unset shell variable such as
+    --resume "$PLAN") is a usage error naming the flag, never silently treated as "flag not given"."""
+    if not value.strip():
+        raise argparse.ArgumentTypeError("must not be empty or blank (omit the flag if you do not need it)")
+    return value
+
+
 def add_prerequisites_parser(subparsers):
     prerequisites = subparsers.add_parser("prerequisites", help="Prerequisite Explorer: analyse a research paper PDF (start here)")
     commands = prerequisites.add_subparsers(dest="prerequisites_command", required=True, metavar="<subcommand>")
@@ -47,17 +55,17 @@ def add_prerequisites_parser(subparsers):
     analyze.add_argument("--diagnose", action="store_true", dest="diagnose",
                          help="Also report per-stage durations, completed stages, warnings and run statistics "
                               "(in the --json result as `diagnostics`)")
-    analyze.add_argument("--known", action="append", default=[], metavar="CONCEPT",
+    analyze.add_argument("--known", type=_nonblank, action="append", default=[], metavar="CONCEPT",
                          help="A concept you already know; it is left out of the study plan (repeat for several)")
-    analyze.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
+    analyze.add_argument("--studied", type=_nonblank, action="append", default=[], metavar="CONCEPT",
                          help="A planned concept you have finished studying; it counts toward readiness "
                               "(repeat for several; re-run with more as you progress)")
-    analyze.add_argument("--resume", default=None, metavar="PLAN_FILE",
+    analyze.add_argument("--resume", type=_nonblank, default=None, metavar="PLAN_FILE",
                          help="Mark as studied every concept ticked in a plan saved earlier with --plan-file, "
                               "so progress carries over between runs (add --studied for newly finished concepts)")
     analyze.add_argument("--resources", action="store_true",
                          help="Also list a curated course or article (with link) for each concept still to study")
-    analyze.add_argument("--plan-file", default=None, metavar="PATH", dest="plan_file",
+    analyze.add_argument("--plan-file", type=_nonblank, default=None, metavar="PATH", dest="plan_file",
                          help="Also save the study plan as a Markdown checklist (studied concepts ticked, with study links) to PATH")
     add_limit_arguments(analyze)
     analyze.add_argument("--json", action="store_true", dest="as_json",
@@ -104,13 +112,13 @@ def add_prerequisites_ask_parser(commands):
     )
     ask.add_argument("paper", help="Path to the paper PDF, or an arXiv link / arXiv:ID, or a DOI (downloaded for you)")
     ask.add_argument("question", help="The question to ask about the paper")
-    ask.add_argument("--topic", default=None, metavar="CONCEPT",
+    ask.add_argument("--topic", type=_nonblank, default=None, metavar="CONCEPT",
                      help="Focus the answer on one concept detected in the paper (as the API's `topic` field)")
-    ask.add_argument("--known", action="append", default=[], metavar="CONCEPT",
+    ask.add_argument("--known", type=_nonblank, action="append", default=[], metavar="CONCEPT",
                      help="A concept you already know; it is left out of the study plan (repeat for several)")
-    ask.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
+    ask.add_argument("--studied", type=_nonblank, action="append", default=[], metavar="CONCEPT",
                      help="A planned concept you have finished studying (repeat for several)")
-    ask.add_argument("--resume", default=None, metavar="PLAN_FILE",
+    ask.add_argument("--resume", type=_nonblank, default=None, metavar="PLAN_FILE",
                      help="Mark as studied every concept ticked in a plan saved with `analyze --plan-file`")
     add_limit_arguments(ask)
     ask.add_argument("--json", action="store_true", dest="as_json",
