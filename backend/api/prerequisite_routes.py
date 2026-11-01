@@ -26,6 +26,8 @@ from backend.api.workflow_result import (
     failure_response,
     SUCCESS,
     limit_exceeded_body,
+    REQUEST_FAILURES,
+    ANALYSIS_FAILURES,
 )
 
 from backend.ingestion.research_source_detector import (
@@ -39,6 +41,7 @@ from backend.platform import (
 router = APIRouter(
     prefix="/api/prerequisites",
     tags=["Prerequisite Explorer"],
+    responses=REQUEST_FAILURES,
 )
 
 pipeline = platform.analysis
@@ -168,7 +171,7 @@ def _analyze_source(source: str, known: list[str], studied: list[str], diagnosti
     return outcome
 
 
-@router.post("/analyze")
+@router.post("/analyze", responses=ANALYSIS_FAILURES)
 async def analyze_prerequisites(
 
     paper: UploadFile | None = File(default=None),

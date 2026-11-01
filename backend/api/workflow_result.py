@@ -9,7 +9,10 @@ Failure: HTTP error status with {"status": "failure", "stage", "detail", "error"
 unaffected; the lower-level pipeline return types are not changed.
 """
 
+from typing import Optional
+
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 SUCCESS = "success"
 FAILURE = "failure"
@@ -114,3 +117,29 @@ def timeout_body(stage: str, message: str, error=None, hint: str = None) -> dict
 def failure_response(status_code: int, stage: str, message: str, error=None, hint: str = None) -> JSONResponse:
     """failure_body() as an HTTP error response."""
     return JSONResponse(status_code=status_code, content=failure_body(stage, message, error, hint))
+
+
+class FailureEnvelope(BaseModel):
+    """The body of every failed request (documentation only: responses are built by failure_body and friends)."""
+
+    status: str = Field(description="failure, limit_exceeded, timeout or cancelled")
+    stage: str
+    detail: str
+    error: Optional[dict] = Field(default=None, description='{"type", "message"} of the underlying error, when there is one')
+    hint: Optional[str] = None
+    warnings: list[str] = []
+
+
+# REQUEST_FAILURES (on the routers) and ANALYSIS_FAILURES (on analyze) are declared so /openapi.json describes the error bodies the endpoints really return (not FastAPI's default
+# validation-error shape for 422).
+REQUEST_FAILURES = {
+    404: {"model": FailureEnvelope, "description": "Unknown session"},
+    422: {"model": FailureEnvelope, "description": "Invalid request"},
+}
+ANALYSIS_FAILURES = {
+    400: {"model": FailureEnvelope, "description": "The paper could not be read, downloaded or analysed"},
+    409: {"model": FailureEnvelope, "description": "The analysis was cancelled"},
+    413: {"model": FailureEnvelope, "description": "A size or time limit was exceeded (status limit_exceeded)"},
+    422: {"model": FailureEnvelope, "description": "Invalid request"},
+    504: {"model": FailureEnvelope, "description": "The analysis timed out"},
+}
