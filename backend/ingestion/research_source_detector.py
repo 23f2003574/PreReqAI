@@ -21,9 +21,31 @@ ARXIV_ID_PATTERN = re.compile(
 )
 URL_SCHEME = re.compile(r"[a-z][a-z0-9+.\-]*://", re.IGNORECASE)
 DOI_PATTERN = re.compile(
-    r"(?:doi:\s*|https?://(?:www\.|dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
+    r"(?:doi:?\s*|(?:https?://)?(?:www\.|dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
     re.IGNORECASE,
 )
+
+
+_WRAPPERS = {"<": ">", '"': '"', "'": "'", "(": ")", "[": "]"}
+
+
+def _unwrap_reference(text: str) -> str:
+    """Drop one pair of wrapping <>, quotes or brackets and trailing sentence punctuation (. , ;) around a pasted reference."""
+
+    text = text.strip()
+    previous = None
+
+    while text and text != previous:
+
+        previous = text
+
+        if len(text) > 1 and _WRAPPERS.get(text[0]) == text[-1]:
+
+            text = text[1:-1].strip()
+
+        text = text.rstrip(".,;").strip()
+
+    return text
 
 
 def has_dot_segment(doi: str) -> bool:
@@ -64,6 +86,13 @@ class ResearchSourceDetector:
         source = source.strip()
 
         local_path = Path(source)
+
+        if not local_path.is_file():
+
+            # A link copied out of running text or an email: "<https://arxiv.org/abs/1706.03762>", "(…)." or "…, " carry
+            # wrapper characters that are not part of the reference. An existing file is never touched.
+            source = _unwrap_reference(source)
+            local_path = Path(source)
 
         if local_path.suffix.lower() == ".pdf" and local_path.is_file():
 
