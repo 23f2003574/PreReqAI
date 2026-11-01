@@ -25,6 +25,21 @@ class ArxivResolver(BaseSourceResolver):
 
     CACHE_DIRECTORY = Path("cache/arxiv")
 
+    @property
+    def cache_directory(self) -> Path:
+        """Where this resolver's downloads are cached. By default `cache/<kind>` under the current directory, so the same
+        paper is downloaded again from another directory; PREREQAI_CACHE_DIR (a leading ~ is expanded, blank means unset)
+        moves every cache under one fixed directory. A CACHE_DIRECTORY set to anything but the default (tests, subclasses)
+        is used as given."""
+
+        configured = os.environ.get("PREREQAI_CACHE_DIR", "").strip()
+
+        if configured and self.CACHE_DIRECTORY.parent == Path("cache"):
+
+            return Path(os.path.expanduser(configured)) / self.CACHE_DIRECTORY.name
+
+        return self.CACHE_DIRECTORY
+
     # A download is a plain GET, so repeating it is safe. A refused/dropped
     # connection or a busy arXiv (429/5xx) is usually gone a moment later;
     # anything else (a 404, a non-PDF reply, a read timeout) is not retried.
@@ -44,7 +59,7 @@ class ArxivResolver(BaseSourceResolver):
     ) -> str:
 
         pdf_path = (
-            self.CACHE_DIRECTORY /
+            self.cache_directory /
             f"{source.identifier.replace('/', '_')}.pdf"  # an old-style id ("hep-th/9901001") has a slash
         )
 

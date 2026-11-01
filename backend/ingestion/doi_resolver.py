@@ -71,7 +71,7 @@ class DoiResolver(ArxivResolver):
             )
 
         pdf_path = (
-            self.CACHE_DIRECTORY /
+            self.cache_directory /
             f"{source.identifier.replace('/', '_')}.pdf"
         )
 
