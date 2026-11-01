@@ -262,10 +262,20 @@ def _limit_misconfiguration():
     return None
 
 
+def _http_wording(warning):
+    """A platform warning about a --known / --studied name, phrased for the `known` / `studied` fields of the request."""
+    for flag in ("known", "studied"):
+        if isinstance(warning, str) and warning.startswith(f"--{flag} "):
+            return f"`{flag}` " + warning[len(flag) + 3:]
+    return warning
+
+
 def _with_request_warnings(outcome, plan_text):
     """Warnings about the request itself, added to a successful analysis: a resumed plan saved for another paper (applied
     anyway) and an unusable server time limit. Failures pass through untouched."""
     if isinstance(outcome, dict) and outcome.get("status") == SUCCESS:
+        # The platform words its warnings for the command line (--known / --studied); an HTTP client sent form fields.
+        outcome["warnings"] = [_http_wording(warning) for warning in outcome.get("warnings") or []]
         extra = []
         if plan_text:
             extra.append(resume_mismatch_warning(plan_text, outcome["report"]["paper"]["title"]))

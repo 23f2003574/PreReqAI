@@ -38,6 +38,6 @@ def test_comma_lists_behave_the_same_over_http_and_python(tmp_path):
                                 data={"known": "Linear Algebra, Probability", "studied": "Calculus,Nonsense"}).json()
     assert [s["concept"] for s in body["report"]["learning_plan"]] == ["Calculus", "Neural Networks"]
     assert body["report"]["readiness"]["completed_concepts"] == 1
-    assert body["warnings"] == ["--studied 'Nonsense' is not in this paper's study plan and was ignored"]
+    assert body["warnings"] == ["`studied` 'Nonsense' is not in this paper's study plan and was ignored"]
     direct = platform.analyze(str(sample), known=["Linear Algebra,Probability"])
     assert [s["concept"] for s in direct["report"]["learning_plan"]] == ["Calculus", "Neural Networks"]
