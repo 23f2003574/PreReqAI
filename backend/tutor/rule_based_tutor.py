@@ -1,3 +1,4 @@
+import functools
 import re
 
 from backend.concepts.concept_registry import ConceptRegistry
@@ -28,13 +29,20 @@ def _name_pattern(name, plural=True):
     return rf"(?<![a-z0-9]){re.escape(_normalise(name))}{'s?' if plural else ''}(?![a-z0-9])"
 
 
+@functools.lru_cache(maxsize=1)
+def _alias_spellings():
+    """{normalised alias: concept name} for every registry alias, longest alias first; built once, not per question."""
+    spellings = {_normalise(alias): concept.name for concept in ConceptRegistry().all() for alias in concept.aliases}
+    return tuple((re.compile(_name_pattern(spelling, plural=False), re.IGNORECASE), spellings[spelling])
+                 for spelling in sorted(spellings, key=len, reverse=True))
+
+
 def _canonical_question(question):
     """The question with registry alias spellings (SGD, backprop, RNN...) replaced by the concept's own name, so every
     matching rule (quiz, time, prerequisites, definitions) understands them as the detector does."""
-    spellings = {_normalise(alias): concept.name for concept in ConceptRegistry().all() for alias in concept.aliases}
     text = question
-    for spelling in sorted(spellings, key=len, reverse=True):
-        text = re.sub(_name_pattern(spelling, plural=False), spellings[spelling], text, flags=re.IGNORECASE)
+    for pattern, name in _alias_spellings():
+        text = pattern.sub(name, text)
     return text
 
 
