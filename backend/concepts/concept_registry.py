@@ -49,6 +49,7 @@ class ConceptRegistry:
             Concept("Cross-Entropy Loss", "deep_learning", aliases=('cross entropy', 'negative log-likelihood')),
             Concept("Maximum Likelihood Estimation", "probability", aliases=('maximum likelihood', 'MLE')),
             Concept("Overfitting", "deep_learning", aliases=('overfit', 'overfitted', 'over-fit', 'over-fitted', 'over-fitting')),
+            Concept("Embedding", "deep_learning", aliases=('word2vec',)),
             Concept("Fine-Tuning", "transformers", aliases=('fine tuning', 'finetuning', 'fine tune', 'fine tuned', 'fine-tune', 'fine-tuned')),
             Concept("Monte Carlo Method", "probability", aliases=('Monte Carlo', 'MCMC')),
             Concept("Variational Autoencoder", "deep_learning", aliases=('VAE', 'variational auto-encoder')),

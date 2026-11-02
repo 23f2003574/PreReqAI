@@ -84,3 +84,14 @@ def test_quiz_covers_gradient_descent_adam_and_dropout():
     assert answer.startswith("Gradient Descent Q1 (Easy)") and "Gradient Descent Q2 (Medium)" in answer
     for name in ("Adam Optimizer", "Dropout"):
         assert _quiz_in_process(f"Quiz me on {name}", []).startswith(f"{name} Q1 (")
+
+
+@pytest.mark.parametrize("prerequisite", ["Calculus", "Linear Algebra", "Probability"])
+def test_quiz_on_a_prerequisite_without_questions_says_so_instead_of_quizzing_other_concepts(prerequisite):
+    answer = _ask(f"Quiz me on {prerequisite}")
+    assert answer == f"There are no practice questions yet for {prerequisite}."
+
+
+def test_quiz_naming_a_prerequisite_and_a_concept_with_questions_still_quizzes_the_concept():
+    answer = _ask("Quiz me on Calculus and Softmax")
+    assert answer.startswith("Softmax Q1") and "Attention Q1" not in answer

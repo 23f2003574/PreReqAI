@@ -10,7 +10,7 @@ from pathlib import Path
 # New-style ("1706.03762": YYMM, then 4 digits before 2015 or 5 since) and old-style ("hep-th/9901001", "math.GT/0309136") identifiers, each with an optional version.
 _ARXIV_ID = r"(?:[0-9]{4}\.[0-9]{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[a-z]{2})?/[0-9]{7})(?:v[0-9]+)?"
 ARXIV_PATTERN = re.compile(
-    rf"(?:https?://)?(?:www\.|export\.)?arxiv\.org/(?:abs|pdf)/({_ARXIV_ID})(?:\.pdf)?/?(?:[?#]\S*)?",
+    rf"(?:https?://)?(?:www\.|export\.)?arxiv\.org/(?:abs|pdf|html)/({_ARXIV_ID})(?:\.pdf)?/?(?:[?#]\S*)?",
     re.IGNORECASE,
 )
 # How a paper is usually cited: "arXiv:1706.03762". The explicit prefix is required: a bare number such as
@@ -19,10 +19,33 @@ ARXIV_ID_PATTERN = re.compile(
     rf"arxiv:\s*({_ARXIV_ID})",
     re.IGNORECASE,
 )
+URL_SCHEME = re.compile(r"[a-z][a-z0-9+.\-]*://", re.IGNORECASE)
 DOI_PATTERN = re.compile(
-    r"(?:doi:\s*|https?://(?:www\.|dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
+    r"(?:doi:?\s*|(?:https?://)?(?:www\.|dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
     re.IGNORECASE,
 )
+
+
+_WRAPPERS = {"<": ">", '"': '"', "'": "'", "(": ")", "[": "]"}
+
+
+def _unwrap_reference(text: str) -> str:
+    """Drop one pair of wrapping <>, quotes or brackets and trailing sentence punctuation (. , ;) around a pasted reference."""
+
+    text = text.strip()
+    previous = None
+
+    while text and text != previous:
+
+        previous = text
+
+        if len(text) > 1 and _WRAPPERS.get(text[0]) == text[-1]:
+
+            text = text[1:-1].strip()
+
+        text = text.rstrip(".,;").strip()
+
+    return text
 
 
 def has_dot_segment(doi: str) -> bool:
@@ -64,6 +87,13 @@ class ResearchSourceDetector:
 
         local_path = Path(source)
 
+        if not local_path.is_file():
+
+            # A link copied out of running text or an email: "<https://arxiv.org/abs/1706.03762>", "(…)." or "…, " carry
+            # wrapper characters that are not part of the reference. An existing file is never touched.
+            source = _unwrap_reference(source)
+            local_path = Path(source)
+
         if local_path.suffix.lower() == ".pdf" and local_path.is_file():
 
             # An existing local PDF is always a local PDF, even when its
@@ -96,6 +126,12 @@ class ResearchSourceDetector:
                 identifier=doi_match.group(1),
                 original_input=source,
             )
+
+        if URL_SCHEME.match(source):
+
+            # Only arXiv and DOI links are downloaded. Any other URL would otherwise be read as a local file path
+            # (Path collapses "//": "https:/example.com/p.pdf") and fail as a confusing "no such file".
+            raise ValueError(f"Unsupported research source: {source}")
 
         path = Path(source)
 

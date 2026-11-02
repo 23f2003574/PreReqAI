@@ -192,6 +192,11 @@ class ConceptExplanationEngine:
             "Beginner",
         ),
 
+        "Embedding": (
+            "A learned dense vector that represents a discrete item such as a word, token or node, so that similar items lie close together in the vector space.",
+            "Beginner",
+        ),
+
         "Fine-Tuning": (
             "Continuing to train a pretrained model on a smaller task-specific dataset so that its learned representations adapt to the new task.",
             "Intermediate",

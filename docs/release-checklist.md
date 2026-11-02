@@ -435,3 +435,70 @@ list is read as body text and its paper titles are counted as concepts. All are 
 
 Status of the January items, re-checked today: the 44 workspace/projection failures are gone (`pytest backend/tests/test_research_workspace_*.py backend/tests/test_consumer_projection_*.py`: 4112 passed, 0 failed); a real published paper has still not been run (no network here);
 the tutor is still the disclosed placeholder (provider decision); Python 3.10 is still not run locally (3.11 and 3.12 interpreters exist here, 3.10 does not; CI runs 3.10).
+
+## Embeddings recognised (2026-10-31)
+
+Gap (from the "still undetected" list above): embeddings, central to language and graph papers, were not detected. Added the Embedding concept (plural handled by the matcher; alias `word2vec`) with a definition and prerequisites (Linear Algebra, Neural Networks). Test: `test_prereqai_embedding_concept.py` (2: detection with prerequisites/definition; look-alike "embedded" and a References title must not match).
+Known limit: the bare word "embedding" in a non-ML sense ("embedding a video") would count. Still undetected: regularisation, convolution, autoregressive models, Markov chains, KL divergence, contrastive learning, distillation, mixture of experts.
+
+## Named appendix headings (2026-10-31)
+
+Defect (reproduced): `Appendix A: Proofs`, `Appendix B. Additional Experiments` and `Appendix: Proofs` were not recognised as headings, so an appendix after the bibliography was folded into References. Fix: the section pattern accepts `Appendix`, an optional letter/number, a `:`/`.`/dash separator and a title-cased title (same word rules as numbered headings), so sentences such as "Appendix A: we show ..." or "See Appendix A: Proofs for details." stay body text. Test: `test_prereqai_named_appendix_heading.py` (the section test fails without the fix). Still unrecognised: `Summary`, `Motivation`, `Contributions`, `Appendix A.1 Details`.
+
+## Resume honours a hand-edited "Already known" line (2026-10-31)
+
+Workflow gap (reproduced): the save -> edit -> `--resume` loop broke at the edit step. `Already known: Linear Algebra, Calculus` (commas, as the `--known` flag and README use) was read as ONE concept named "Linear Algebra, Calculus" and ignored, and a lower-case `already known:` line was not read at all, so those concepts silently came back into the plan. `known_from_plan` now splits on `;` or `,` and matches the label case-insensitively; the CLI and HTTP `resume` share it. Test: `test_prereqai_resume_hand_edited_known.py` (3 of 5 cases fail without the fix). Limit: a concept name containing a comma would be split (none exists in the registry).
+
+## One mention counted once when a name contains its own alias (2026-10-31)
+
+Invariant: a single mention is a single occurrence. Evidence (reproduced): the detector subtracted overlaps between a concept's aliases but not between its NAME and an alias, so "Monte Carlo Method" counted 2, "Monte Carlo Methods" 2, "Maximum Likelihood Estimation (MLE)" 3 (should be 2: the name and the abbreviation), "stochastic gradient descent (SGD)" 3 (should be 2). Occurrence counts rank concepts, so the inflated ones were over-weighted. Fix: `mentions()` in `rule_based_concept_detector.py` now includes the concept name in the overlap check. Test: `test_prereqai_overlapping_terms_counted_once.py` (all 5 cases fail without the fix). Limit: overlaps between different concepts were already handled; a concept whose alias equals its name case-insensitively is still counted twice (none in the registry).
+
+## Cut-short PDFs are flagged (2026-10-31)
+
+Failure scenario (reproduced): a PDF cut short by an interrupted download or copy (half the sample file) is repaired by MuPDF and analysed as a shorter paper with `warnings: []` and exit 0, so the plan silently missed everything after the cut and there was no cue to retry. `PreReqAIPlatform._analyze` now reopens the file, and if `Document.is_repaired` is set adds a warning to re-download and re-run (CLI and HTTP share it). The analysis itself is unchanged and still succeeds; a failing re-open is ignored. Test: `test_prereqai_damaged_pdf_warning.py` (the truncation case fails without the fix; an intact PDF must stay warning-free). Limit: a file cut cleanly at an object boundary may not be reported as repaired by MuPDF; a file with fully missing trailer but no text is already refused as unreadable.
+
+## arXiv HTML links accepted (2026-10-31)
+
+Integration defect (reproduced): the source detector and the downloader disagreed about what an arXiv link is. arXiv's own paper page now links the HTML view (`https://arxiv.org/html/1706.03762v7`), which names the same identifier the downloader fetches as `/pdf/<id>.pdf`, but the detector only accepted `/abs/` and `/pdf/`, so pasting it failed with "Unsupported research source" (CLI `analyze`/`ask` and the HTTP `source` field alike). `ARXIV_PATTERN` now accepts `/html/`. Test: `test_prereqai_arxiv_html_link.py` (3 of 6 cases fail without the fix; a missing or malformed identifier and another site stay rejected). Network download itself is not exercised here (no outbound network). Still unhandled: a non-arXiv `https://.../paper.pdf` URL is read as a local path and fails with "no such file: 'https:/...'".
+
+## Non-arXiv URLs refused clearly (2026-10-31)
+
+Validation gap (reproduced): `https://example.com/paper.pdf` passed the source detector as a local PDF because `Path` collapses `//` (`https:/example.com/paper.pdf`), and the learner got "no such file: 'https:/...'" with a hint about file paths. The detector now rejects any `scheme://` input that is not an arXiv or DOI link (an existing local file is still checked first), and the failure hint says only arXiv links and DOIs are downloaded and to pass a local PDF path otherwise. Test: `test_prereqai_non_arxiv_url_source.py` (5 of 6 fail without the fix; valid local, arXiv and DOI sources unchanged). Limit: no general URL download is offered.
+
+## Shorthand concept names get a suggestion (2026-10-31)
+
+Usability gap (reproduced with `analyze --studied Linear`): the only feedback was "is not in this paper's study plan and was ignored" with no suggestion, because the did-you-mean used spelling similarity only, which never matches a natural shorthand ("Linear", "Calc", "Neural" are far from the full name). `_did_you_mean` (used for `--known`, `--studied` and the question topic warnings) now also suggests the one planned concept that a word or the start of the typed name fits, and stays silent when two fit, the input is under 3 characters, or the name is spelled right. Test: `test_prereqai_shorthand_suggestion.py` (3 of 8 fail without the change); the existing spelling suggestions are unchanged. Verified by unit test; the CLI wording is the existing "(did you mean ...?)" format.
+Reverted attempt noted for the record: an extra `next:` line after the `analyze` summary breaks the five-line summary contract pinned by four existing tests, so it was not shipped.
+
+## CLI start-up no longer loads the recovery-decision stack (2026-10-31)
+
+Bottleneck (measured): analysing the sample paper takes 0.02s in the pipeline, but `python -m backend.cli prerequisites analyze` took a median 0.663s (min 0.653s, 7 runs) because `backend/cli.py` imported the recovery-decision modules at the top (247 `backend.agent_*` modules, ~0.21s on their own) that only the `recovery-decision` commands use. They now load on first use (`_lazy`, plus a module `__getattr__` so `from backend.cli import READY, build_recovery_decision_facade, ...` still works); after: median 0.534s (min 0.523s), about 0.13s (20%) less per CLI call. Larger papers are not affected: 400 generated pages analyse in 0.39s in total, so the pipeline is not the bottleneck. Test: `test_prereqai_cli_lazy_recovery_imports.py` (1 of 3 fails without the change: the others pin that the names stay importable and unknown attributes still raise); the `recovery-decision` CLI tests (`-k "recovery_decision or cli"`) pass. Remaining start-up cost: fastapi/requests/pymupdf and `backend.cli_api_generation` (~0.12s) are still imported for every command.
+
+## `ask --json` failures use the failure envelope (2026-10-31)
+
+Contract mismatch (reproduced): README says failures are `{"status": "failure", "stage", "detail", "hint", "warnings"}` and `analyze --json` prints that envelope on stdout, as does the HTTP question endpoint (stage `question`/`input`). `ask --json` instead printed only a text line to stderr and left stdout empty for a blank or oversized question, an unreadable paper, a limit or timeout, an unknown `--topic`, and a failed or empty answer, so a script reading stdout got nothing to parse. With `--json` these now print the envelope (the analysis outcome as-is for analysis failures) to stdout and nothing to stderr; exit codes and the text mode are unchanged. Test: `test_prereqai_cli_ask_json_failures.py` (3 of 5 fail without the change). Limit: a `--resume` file that cannot be read still reports as text on stderr, even with `--json` (the same as before; `analyze` shares that path).
+
+## First-run setup check and Windows activation (2026-10-31)
+
+Clean-environment check (new venv in /tmp, `pip install -r requirements.txt` 7s, then `requirements-dev.txt`): the documented quickstart `analyze` and `ask` commands, `uvicorn backend.main:app` with `/health` and an `/api/prerequisites/analyze` upload, and `pytest backend/tests/test_prereqai_release_smoke.py` all succeed (Linux, Python 3.13 only). Obstacle found: the quickstart only gave `source .venv/bin/activate`, which does not exist on Windows (and `python` may be `py` there), so a Windows developer's first step failed. The README now gives the Windows activation and `py -m venv` alternative. Test: `test_prereqai_setup_instructions.py` (1 of 3 fails without the README change; it also pins that the files the setup block names exist and that `.venv/` is git-ignored). Not verified: the commands on an actual Windows or macOS host (none available here); Python 3.10 first-run is covered by CI only.
+
+## CI starts the real HTTP server from the runtime-only install (2026-10-31)
+
+Coverage gap: CI ran the whole suite in the dev environment (TestClient needs httpx and pytest) and the runtime-only venv only ran the CLI, so a package missing from `requirements.txt` that only the server needs would escape. Reproduced locally: in a venv holding just `requirements.txt` minus `python-multipart`, `uvicorn backend.main:app` exits at start-up ("pip install python-multipart"), and every test still passes in the dev environment. New CI step "README HTTP server with only the runtime requirements" starts uvicorn from the runtime venv, polls `/health`, and uploads the sample paper to `/api/prerequisites/analyze`. Tests: two in `test_prereqai_ci_workflow.py` pin the step (order after the runtime venv is built, health and upload calls) and the server's runtime packages in `requirements.txt`. Locally verified: the same shell logic (`bash serve_check.sh` in a fresh runtime venv) prints the health JSON and `OK`, and fails with rc=1 when python-multipart is removed; `pytest -m prereqai` 775 passed. CI-only: the new workflow step itself has not run on GitHub (Linux runner, Python 3.10 and 3.13).
+
+## More unnumbered section headings (2026-10-31)
+
+Slice of release blocker 1 ("fix what a real paper exposes"; the likely finding listed there is headings outside the fixed list). A probe of 36 common headings showed 7 recognised before this change (e.g. Related Work, Ablation Studies, Acknowledgements) and these missed, so their text folded into the preceding section and the tutor's `supporting_sections` named the wrong one: Introduction and Motivation, Background and Related Work (and the reverse order), Preliminaries and Notation (and reverse), Main/Key/Qualitative/Quantitative Results, Hyperparameters, Evaluation Metrics, Experimental Setup and Results, Training Objective, Overview of the Method, Ethical Considerations, Societal Impact, Code/Data Availability, Author Contributions, Competing Interests, Funding, Limitations and Broader Impact(s) (and reverse). All are fixed phrases, so sentences such as "Funding was provided by ..." or "Main results are shown in Table 2." stay body text. Test: `test_prereqai_more_section_headings.py` (22 of 29 fail without the change).
+Still unrecognised on purpose: `Summary`, `Motivation`, `Contributions`, `Setup`, `Baselines`, `Implementation`, `Appendix A.1 Details` (single words or too ambiguous to add blind).
+
+### Outstanding before January 2027 (re-checked 2026-10-31)
+
+1. **Real published paper never run (release blocker).** `analyze arXiv:1706.03762` cannot be attempted here: no outbound network. Everything else (HTML and URL links, damaged-PDF warning, typeset text, venue headings) is verified on generated PDFs only.
+2. **Tutor is a rule-based placeholder.** Needs a provider and key decision; plan in item 2 of the order of work above.
+3. **Python 3.10** is exercised only by CI (matrix) and never run locally; 3.11/3.12/3.13 were run.
+4. **Two-column text order, multi-line author blocks and scanned PDFs (no OCR)** are untested/unsupported on real layouts.
+The 44 workspace/projection failures are gone (4112 passed when last re-checked on 2026-10-30).
+
+## Truncated cached PDFs are replaced (2026-11-01)
+
+Gap (from the 2026-10-29 limitation): a cached download cut off mid-write that still began with `%PDF` was reused forever and failed every analysis. `_is_cached_pdf` now also requires `%%EOF` in the last 1 KiB (trailing padding after it is fine); otherwise the file is removed and downloaded again. Applies to arXiv and DOI caches. Tests added in `test_prereqai_cached_download_recovery.py`; two fixtures gained `%%EOF`. Limitation: a freshly downloaded body is still only checked for `%PDF`, and a PDF damaged mid-file but ending in `%%EOF` is not detected.

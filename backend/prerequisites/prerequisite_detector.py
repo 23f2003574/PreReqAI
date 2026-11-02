@@ -158,6 +158,11 @@ class PrerequisiteDetector:
             "Neural Networks",
         ],
 
+        "Embedding": [
+            "Linear Algebra",
+            "Neural Networks",
+        ],
+
         "Fine-Tuning": [
             "Neural Networks",
             "Calculus",

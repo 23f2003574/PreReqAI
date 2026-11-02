@@ -8,6 +8,7 @@ from backend.study_plan_markdown import plan_markdown, studied_concepts
 from backend.tutor.rule_based_tutor import ANSWERABLE_HINT
 
 from backend.api.workflow_result import (
+    REQUEST_FAILURES,
     failure_response,
     success_body,
 )
@@ -26,6 +27,7 @@ router = APIRouter(
     prefix="/api/session",
 
     tags=["Learning Session"],
+    responses=REQUEST_FAILURES,
 )
 
 pipeline = platform.learning

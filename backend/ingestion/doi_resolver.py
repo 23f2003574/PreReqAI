@@ -71,7 +71,7 @@ class DoiResolver(ArxivResolver):
             )
 
         pdf_path = (
-            self.CACHE_DIRECTORY /
+            self.cache_directory /
             f"{source.identifier.replace('/', '_')}.pdf"
         )
 
@@ -107,7 +107,17 @@ class DoiResolver(ArxivResolver):
                     "download the paper and give its .pdf path instead"
                 )
 
-            response = requests.get(url, timeout=60, allow_redirects=False)
+            def fetch(url=url):
+
+                response = requests.get(url, timeout=60, allow_redirects=False)
+
+                if not response.is_redirect:
+
+                    response.raise_for_status()
+
+                return response
+
+            response = self._with_retries(fetch)
 
             if response.is_redirect:
 
@@ -115,20 +125,24 @@ class DoiResolver(ArxivResolver):
 
                 continue
 
-            response.raise_for_status()
-
             return response.content
 
         raise ValueError("Too many redirects while downloading the PDF for this DOI")
 
     def _find_pdf_url(self, doi: str) -> str:
 
-        response = requests.get(
-            self.CROSSREF_API + doi,
-            timeout=30,
-        )
+        def fetch():
 
-        response.raise_for_status()
+            reply = requests.get(
+                self.CROSSREF_API + doi,
+                timeout=30,
+            )
+
+            reply.raise_for_status()
+
+            return reply
+
+        response = self._with_retries(fetch)
 
         links = response.json().get("message", {}).get("link", [])
 

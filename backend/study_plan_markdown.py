@@ -44,7 +44,9 @@ def plan_markdown(report):
     return "\n".join(lines) + "\n"
 
 
-_TICKED = re.compile(r"^[ \t]*[-*+] \[[xX]\] \d+\. (.+?) \(~\d+h\)", re.MULTILINE)
+# The concept ends at its hours note "(~10h)", at a parenthesised hours note of another form (a hand-edited "(about 10 h)", "(10 hours)"), at the
+# study link " - [title](url)", or at the end of the line: a ticked step must not lose its progress because the note was edited.
+_TICKED = re.compile(r"^[ \t]*[-*+] \[[xX]\] \d+\. (.+?)(?=[ \t]+\((?:~|about|approx|around|\d)|[ \t]+-[ \t]+\[|[ \t]*$)", re.MULTILINE)
 
 
 def is_saved_plan(text):
@@ -58,13 +60,14 @@ def studied_from_plan(text):
     return [match.group(1) for match in _TICKED.finditer(text)]
 
 
-_KNOWN = re.compile(r"^[ \t]*Already known: (.+)$", re.MULTILINE)
+_KNOWN = re.compile(r"^[ \t]*Already known:[ \t]*(.+)$", re.MULTILINE | re.IGNORECASE)
 
 
 def known_from_plan(text):
-    """The concepts a plan written by plan_markdown records as already known to the learner."""
+    """The concepts a plan written by plan_markdown records as already known to the learner. A hand-edited line may separate
+    names with commas, as the `--known` flag does."""
     match = _KNOWN.search(text)
-    return [name.strip() for name in match.group(1).split(";") if name.strip()] if match else []
+    return [name.strip() for name in re.split(r"[;,]", match.group(1)) if name.strip()] if match else []
 
 
 def resume_mismatch_warning(plan_text, paper_title):

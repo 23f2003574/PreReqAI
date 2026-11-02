@@ -16,7 +16,12 @@ _KNOWN = (
     # common venue variants: NeurIPS's "Acknowledgments and Disclosure of Funding", "Conclusion and Discussion", a lettered appendix, ...
     r"(?:Reference|Literature Cited|Acknowledge?ments? and Disclosure of Funding|Conclusions? and Discussions?|Discussions? and Conclusions?|"
     r"Limitations and Future Work|Results and Analysis|Experiments and Results|Broader Impacts? Statement|"
-    r"Appendix(?: [A-Z])?|Supplementary Materials?))"
+    r"Appendix(?: [A-Z])?|Supplementary Materials?|"
+    # more unnumbered headings seen in published papers (found by probing; each is a fixed phrase, so a sentence cannot match)
+    r"Introduction and Motivation|Background and Related Work|Related Work and Background|Preliminaries and Notation|Notation and Preliminaries|"
+    r"Main Results|Key Results|Qualitative Results|Quantitative Results|Hyperparameters|Evaluation Metrics|Experimental Setup and Results|"
+    r"Training Objective|Overview of the Method|Ethical Considerations|Societal Impacts?|Code Availability|Data Availability|"
+    r"Author Contributions|Competing Interests|Funding|Limitations and Broader Impacts?|Broader Impacts? and Limitations))"
 )
 # A numbered, title-cased line such as "3.2 Scaled Dot-Product Attention": at most 8 words, no digits or sentence punctuation.
 _WORD = r"(?:[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"
@@ -25,7 +30,10 @@ _NUMBERED = rf"\d+(?:\.\d+)*\.?[ \t]+[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{0,7}}"
 # IEEE-style "II. PROPOSED METHOD": a roman numeral and an all-caps title (all caps keeps an author line like "I. Goodfellow" out of the headings).
 _ROMAN_CAPS = r"[IVX]+\.[ \t]+[A-Z]{3,}(?:[ \t]+[A-Z][A-Z\-]*){0,7}"
 
-SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN}):?|{_NUMBERED}|{_ROMAN_CAPS})[ \t]*$", re.MULTILINE)
+# A named appendix such as "Appendix A: Proofs" or "Appendix B. Additional Experiments" (the title follows the same title-case rule).
+_NAMED_APPENDIX = rf"Appendix(?:[ \t]+(?:[A-Z]|\d+)(?:\.\d+)*)?[ \t]*[:.\-\u2013\u2014][ \t]*[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{0,7}}"
+
+SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN}):?|{_NUMBERED}|{_ROMAN_CAPS}|{_NAMED_APPENDIX})[ \t]*$", re.MULTILINE)
 
 
 class ScientificSectionParser:

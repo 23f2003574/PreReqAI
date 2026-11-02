@@ -124,7 +124,9 @@ class RuleBasedTutor(BaseTutor):
             return ""
 
         named = [name for name in QUIZ_BANK if re.search(_name_pattern(name), text)]
-        mentioned = [name for name in ConceptExplanationEngine.EXPLANATIONS if re.search(_name_pattern(name), text)]
+        # prerequisites such as Calculus or Probability are named in questions too, but have no questions of their own
+        known_names = [*ConceptExplanationEngine.EXPLANATIONS, *PREREQUISITE_DEFINITIONS]
+        mentioned = [name for name in dict.fromkeys(known_names) if re.search(_name_pattern(name), text)]
 
         if mentioned and not named:
             return "There are no practice questions yet for " + ", ".join(mentioned) + "."
@@ -274,6 +276,12 @@ class RuleBasedTutor(BaseTutor):
         return {item.concept for item in getattr(paper, "study_progress", []) if item.completed}
 
     @staticmethod
+    def _nothing_detected(paper):
+        """True when the analysis ran (readiness was evaluated) and found no concept at all: its empty plan says nothing."""
+        readiness = getattr(paper, "readiness", None)
+        return readiness is not None and readiness.total_concepts == 0 and not getattr(paper, "concepts", None)
+
+    @staticmethod
     def _study_plan_answer(paper, question):
         """Answer paper-level study questions (what to learn first, how long,
         how hard) from the learning plan, study time and difficulty already computed."""
@@ -286,6 +294,8 @@ class RuleBasedTutor(BaseTutor):
                 return ""
             plan = getattr(paper, "learning_plan", [])
             done = RuleBasedTutor._studied(paper)
+            if RuleBasedTutor._nothing_detected(paper) and not plan:
+                return NO_CONCEPTS_ANSWER
             if not plan and estimate.total_hours == 0:  # nothing was planned (e.g. everything marked known), so nothing was studied either
                 return "There are no prerequisites left to study, so no preparation time is left."
             if estimate.total_hours == 0 or (plan and all(step.concept in done for step in plan)):
@@ -313,7 +323,7 @@ class RuleBasedTutor(BaseTutor):
             if not steps:
                 if getattr(paper, "concepts", None):  # concepts were found but nothing is left to study
                     return "There are no prerequisites left to study for this paper."
-                return ""
+                return NO_CONCEPTS_ANSWER if RuleBasedTutor._nothing_detected(paper) else ""
             done = RuleBasedTutor._studied(paper)
             todo = [step for step in steps if step.concept not in done]
             if not todo:
@@ -359,10 +369,17 @@ class RuleBasedTutor(BaseTutor):
             readiness = getattr(paper, "readiness", None)
             if readiness is None:
                 return ""
+            if RuleBasedTutor._nothing_detected(paper):  # "Ready to Read (100%)" over an empty plan would be a verdict about nothing
+                return NO_CONCEPTS_ANSWER
             verdict = "You are ready to read the paper." if readiness.ready_to_read else "You are not ready to read the paper yet."
             return f"{verdict} {readiness.status}: {readiness.completed_concepts} of {readiness.total_concepts} planned concepts ready ({readiness.progress_percent}%)."
 
         return ""
+
+
+# Study, time and readiness questions about a paper in which no known concept was found: say so instead of a verdict or a placeholder.
+NO_CONCEPTS_ANSWER = ("No concepts this release knows were detected in this paper, so there is no study plan and I cannot say "
+                      "whether you are ready; check that the PDF has selectable text, or try a paper in a covered area (machine learning).")
 
 
 # Shown with a placeholder answer: the question matched nothing the built-in tutor can answer, so say what it can.

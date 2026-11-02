@@ -29,6 +29,14 @@ def _finite_number(value):
     return number
 
 
+def _nonblank(value):
+    """argparse type for flags that take a name or path: an empty or blank value (typically an unset shell variable such as
+    --resume "$PLAN") is a usage error naming the flag, never silently treated as "flag not given"."""
+    if not value.strip():
+        raise argparse.ArgumentTypeError("must not be empty or blank (omit the flag if you do not need it)")
+    return value
+
+
 def add_prerequisites_parser(subparsers):
     prerequisites = subparsers.add_parser("prerequisites", help="Prerequisite Explorer: analyse a research paper PDF (start here)")
     commands = prerequisites.add_subparsers(dest="prerequisites_command", required=True, metavar="<subcommand>")
@@ -47,17 +55,17 @@ def add_prerequisites_parser(subparsers):
     analyze.add_argument("--diagnose", action="store_true", dest="diagnose",
                          help="Also report per-stage durations, completed stages, warnings and run statistics "
                               "(in the --json result as `diagnostics`)")
-    analyze.add_argument("--known", action="append", default=[], metavar="CONCEPT",
+    analyze.add_argument("--known", type=_nonblank, action="append", default=[], metavar="CONCEPT",
                          help="A concept you already know; it is left out of the study plan (repeat for several)")
-    analyze.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
+    analyze.add_argument("--studied", type=_nonblank, action="append", default=[], metavar="CONCEPT",
                          help="A planned concept you have finished studying; it counts toward readiness "
                               "(repeat for several; re-run with more as you progress)")
-    analyze.add_argument("--resume", default=None, metavar="PLAN_FILE",
+    analyze.add_argument("--resume", type=_nonblank, default=None, metavar="PLAN_FILE",
                          help="Mark as studied every concept ticked in a plan saved earlier with --plan-file, "
                               "so progress carries over between runs (add --studied for newly finished concepts)")
     analyze.add_argument("--resources", action="store_true",
                          help="Also list a curated course or article (with link) for each concept still to study")
-    analyze.add_argument("--plan-file", default=None, metavar="PATH", dest="plan_file",
+    analyze.add_argument("--plan-file", type=_nonblank, default=None, metavar="PATH", dest="plan_file",
                          help="Also save the study plan as a Markdown checklist (studied concepts ticked, with study links) to PATH")
     add_limit_arguments(analyze)
     analyze.add_argument("--json", action="store_true", dest="as_json",
@@ -104,13 +112,13 @@ def add_prerequisites_ask_parser(commands):
     )
     ask.add_argument("paper", help="Path to the paper PDF, or an arXiv link / arXiv:ID, or a DOI (downloaded for you)")
     ask.add_argument("question", help="The question to ask about the paper")
-    ask.add_argument("--topic", default=None, metavar="CONCEPT",
+    ask.add_argument("--topic", type=_nonblank, default=None, metavar="CONCEPT",
                      help="Focus the answer on one concept detected in the paper (as the API's `topic` field)")
-    ask.add_argument("--known", action="append", default=[], metavar="CONCEPT",
+    ask.add_argument("--known", type=_nonblank, action="append", default=[], metavar="CONCEPT",
                      help="A concept you already know; it is left out of the study plan (repeat for several)")
-    ask.add_argument("--studied", action="append", default=[], metavar="CONCEPT",
+    ask.add_argument("--studied", type=_nonblank, action="append", default=[], metavar="CONCEPT",
                      help="A planned concept you have finished studying (repeat for several)")
-    ask.add_argument("--resume", default=None, metavar="PLAN_FILE",
+    ask.add_argument("--resume", type=_nonblank, default=None, metavar="PLAN_FILE",
                      help="Mark as studied every concept ticked in a plan saved with `analyze --plan-file`")
     add_limit_arguments(ask)
     ask.add_argument("--json", action="store_true", dest="as_json",
@@ -327,18 +335,33 @@ def run_prerequisites_analyze(args, platform=None) -> int:
     return EXIT_CANCELLED if was_cancelled else (EXIT_FAILURE if failed else EXIT_OK)
 
 
+def _ask_failed(args, code, envelope, *lines):
+    """A failed `ask`: with --json the failure envelope (the one `analyze --json` and the HTTP API return) goes to stdout so a
+    script reading stdout always gets JSON; otherwise the readable lines go to stderr as before."""
+    if args.as_json:
+        if callable(envelope):  # built only now: the module that builds it needs fastapi, which a failing text run never loads
+            from backend.api.workflow_result import failure_body
+
+            envelope = envelope(failure_body)
+        print(json.dumps(envelope, indent=2))
+    else:
+        for line in lines:
+            print(line, file=sys.stderr)
+    return code
+
+
 def run_prerequisites_ask(args, platform=None) -> int:
     """Analyse the paper, then answer the question from that session; the same two calls the HTTP API makes."""
     import dataclasses
 
     if not args.question.strip():
-        print("error: the question must not be empty", file=sys.stderr)
-        return EXIT_USAGE
+        return _ask_failed(args, EXIT_USAGE, lambda failure_body: failure_body("input", "The question must not be empty.", hint="Pass the question as the second argument."),
+                           "error: the question must not be empty")
     from backend.api.session_routes import MAX_QUESTION_CHARS
 
     if len(args.question) > MAX_QUESTION_CHARS:
-        print(f"error: the question is too long ({len(args.question)} characters; the limit is {MAX_QUESTION_CHARS})", file=sys.stderr)
-        return EXIT_USAGE
+        message = f"the question is too long ({len(args.question)} characters; the limit is {MAX_QUESTION_CHARS})"
+        return _ask_failed(args, EXIT_USAGE, lambda failure_body: failure_body("input", message.capitalize() + ".", hint="Shorten the question."), f"error: {message}")
     if not _apply_resume(args):
         return EXIT_USAGE
     if platform is None:
@@ -351,14 +374,12 @@ def run_prerequisites_ask(args, platform=None) -> int:
     outcome = platform.analyze(args.paper, limits=_limits_from(args), known=args.known, studied=args.studied)
     _note_resume_mismatch(args, outcome)
     if outcome["status"] in ("limit_exceeded", "timeout"):  # same wording and exit codes as `analyze`
-        print(f"error: {'limit exceeded' if outcome['status'] == 'limit_exceeded' else 'timed out'}: {outcome['detail']}", file=sys.stderr)
-        print(f"  hint: {outcome['hint']}", file=sys.stderr)
-        return EXIT_LIMIT_EXCEEDED if outcome["status"] == "limit_exceeded" else EXIT_TIMEOUT
+        return _ask_failed(args, EXIT_LIMIT_EXCEEDED if outcome["status"] == "limit_exceeded" else EXIT_TIMEOUT, outcome,
+                           f"error: {'limit exceeded' if outcome['status'] == 'limit_exceeded' else 'timed out'}: {outcome['detail']}",
+                           f"  hint: {outcome['hint']}")
     if outcome["status"] != "success":
-        print(f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
-        if outcome.get("hint"):
-            print(f"  hint: {outcome['hint']}", file=sys.stderr)
-        return EXIT_FAILURE
+        return _ask_failed(args, EXIT_FAILURE, outcome, f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}",
+                           *([f"  hint: {outcome['hint']}"] if outcome.get("hint") else []))
     from backend.session import TutorMode, session_manager
 
     session = session_manager.get(outcome["session_id"])
@@ -366,20 +387,19 @@ def run_prerequisites_ask(args, platform=None) -> int:
 
     topic, problem = resolve_topic(session, getattr(args, "topic", None))
     if problem:
-        print(f"error: unknown topic: {args.topic!r}", file=sys.stderr)
-        print(f"  hint: {problem}", file=sys.stderr)
-        return EXIT_USAGE
+        return _ask_failed(args, EXIT_USAGE, lambda failure_body: failure_body("input", f"Unknown topic: {args.topic!r}", hint=problem),
+                           f"error: unknown topic: {args.topic!r}", f"  hint: {problem}")
     try:
         result = platform.learning.answer(session=session, paper=session.paper, question=args.question,
                                           mode=TutorMode.INTUITION, topic=topic)
     except Exception as exc:  # same envelope idea as the API: one readable line, never a traceback
-        print(f"error: failed to answer the question: {exc}", file=sys.stderr)
-        return EXIT_FAILURE
+        return _ask_failed(args, EXIT_FAILURE, lambda failure_body: failure_body("question", f"Failed to answer the question: {exc}", error=exc),
+                           f"error: failed to answer the question: {exc}")
     responses = [dataclasses.asdict(r) for r in result.get("responses") or []]
     if not responses:  # exit 0 with nothing printed would look like an answer that was simply empty
-        print("error: no answer was produced for the question", file=sys.stderr)
-        print("  hint: rephrase the question, or name a concept from the study plan (see `analyze`)", file=sys.stderr)
-        return EXIT_FAILURE
+        hint = "rephrase the question, or name a concept from the study plan (see `analyze`)"
+        return _ask_failed(args, EXIT_FAILURE, lambda failure_body: failure_body("question", "No answer was produced for the question.", hint=hint),
+                           "error: no answer was produced for the question", f"  hint: {hint}")
     from backend.tutor.rule_based_tutor import ANSWERABLE_HINT
 
     placeholder = any("tutoring model has not yet been configured" in r["answer"] for r in responses)

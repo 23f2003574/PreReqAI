@@ -28,7 +28,7 @@ def test_ambiguous_or_malformed_references_are_still_rejected(text):
 def test_an_old_style_id_is_downloaded_from_its_pdf_url_and_cached_in_one_file(tmp_path, monkeypatch):
     monkeypatch.setattr(ArxivResolver, "CACHE_DIRECTORY", tmp_path / "arxiv")
     urls = []
-    monkeypatch.setattr(ArxivResolver, "_download", lambda self, url: urls.append(url) or b"%PDF-1.4 x")
+    monkeypatch.setattr(ArxivResolver, "_download", lambda self, url: urls.append(url) or b"%PDF-1.4 x\n%%EOF")
     resolver, source = ArxivResolver(), ResearchSourceDetector().detect("arXiv:hep-th/9901001")
 
     path = resolver.resolve(source)

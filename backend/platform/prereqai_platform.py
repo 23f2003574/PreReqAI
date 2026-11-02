@@ -56,6 +56,22 @@ def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None) 
 _MISSING_FILE_ERRORS = (FileNotFoundError, getattr(pymupdf, "FileNotFoundError", FileNotFoundError))
 
 
+def _repair_warning(file_path) -> list:
+    """A PDF cut short (an interrupted download or copy) is opened by MuPDF after repair and reads as a shorter paper, so the plan
+    would silently miss its later sections: say so, so the learner re-fetches the file instead of trusting a partial analysis."""
+    try:
+        import pymupdf
+
+        with pymupdf.open(file_path) as pdf:
+            repaired = pdf.is_repaired
+    except Exception:  # the analysis already read the file; a second open failing must not turn it into a failure
+        return []
+    return [
+        "The PDF was damaged (it may be cut short, e.g. an interrupted download) and could only be partly read, so concepts from "
+        "the missing pages are not in this analysis; download the paper again and re-run."
+    ] if repaired else []
+
+
 def _caused_by(exc: BaseException, types) -> bool:
     """Whether `exc` is, or was caused by, an exception of `types`. A stage may
     wrap an error in its own ("raise ... from", or as its first argument)."""
@@ -111,11 +127,12 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
         detail, hint = _download_failure(exc)
         return failure_body("analysis", detail, error=exc, hint=hint)
     if isinstance(exc, ValueError) and str(exc).startswith("Unsupported research source"):  # e.g. a .txt file or a directory
-        if re.match(r"(arxiv|doi)\s*:|\S*(arxiv|doi)\.org|10\.\d{4,}", str(exc).partition(": ")[2].strip(), re.IGNORECASE):  # an attempted link: say what a valid one looks like
+        if re.match(r"(arxiv|doi)\s*:|\S*(arxiv|doi)\.org|10\.\d{4,}|[a-z][a-z0-9+.\-]*://", str(exc).partition(": ")[2].strip(), re.IGNORECASE):  # an attempted link: say what a valid one looks like
             return failure_body(
                 "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
                 hint="That does not look like a valid arXiv or DOI reference. Give it alone, as https://arxiv.org/abs/1706.03762 or "
-                     "arXiv:1706.03762 (YYMM.NNNNN, optionally v2), or as a DOI such as 10.1000/xyz123 or https://doi.org/10.1000/xyz123.",
+                     "arXiv:1706.03762 (YYMM.NNNNN, optionally v2), or as a DOI such as 10.1000/xyz123 or https://doi.org/10.1000/xyz123. "
+                     "Only arXiv links and DOIs are downloaded: for any other site, download the PDF and pass its path.",
             )
         return failure_body(
             "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
@@ -176,6 +193,9 @@ def _did_you_mean(name, concept_names):
     if folded in by_folded:  # spelled right: it is simply not in the plan (e.g. already known)
         return ""
     close = difflib.get_close_matches(folded, by_folded, n=1, cutoff=0.7)
+    if not close and len(folded) >= 3:  # shorthand such as "Linear" or "Neural": a word or the start of exactly one concept
+        close = [key for key in by_folded if key.startswith(folded) or folded in key.split()]
+        close = close if len(close) == 1 else []
     return f" (did you mean {by_folded[close[0]]!r}?)" if close else ""
 
 
@@ -325,7 +345,7 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=unsaved + no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
+            warnings=unsaved + _repair_warning(file_path) + no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
             + [f"--studied {name!r} was ignored because you also said you already know it, so it is not in the study plan" for name in also_known]
             + [f"--studied {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in not_studied],
         )

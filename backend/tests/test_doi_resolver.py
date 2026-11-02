@@ -40,7 +40,7 @@ def test_doi_downloads_listed_pdf_and_caches_it(cached, monkeypatch):
     )
     fetched = []
     monkeypatch.setattr(
-        DoiResolver, "_download_public", lambda self, url: fetched.append(url) or b"%PDF-1.4 data"
+        DoiResolver, "_download_public", lambda self, url: fetched.append(url) or b"%PDF-1.4 data\n%%EOF"
     )
 
     path = DoiResolver().resolve(doi_source("10.1234/abc"))

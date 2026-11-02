@@ -35,3 +35,13 @@ jobs:
           python -m venv "$RUNNER_TEMP/runtime"
           "$RUNNER_TEMP/runtime/bin/pip" install -r requirements.txt
           "$RUNNER_TEMP/runtime/bin/python" -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf
+      - name: README HTTP server with only the runtime requirements
+        # the server and its multipart upload need packages (fastapi, uvicorn, python-multipart) that the test suite's TestClient hides
+        run: |
+          "$RUNNER_TEMP/runtime/bin/python" -m uvicorn backend.main:app --port 8000 &
+          SERVER=$!
+          trap 'kill $SERVER' EXIT
+          for _ in $(seq 1 30); do curl -sf http://127.0.0.1:8000/health && break; sleep 1; done
+          curl -sf http://127.0.0.1:8000/health
+          curl -sf -F "paper=@examples/prerequisites/sample-paper.pdf;type=application/pdf" \
+            http://127.0.0.1:8000/api/prerequisites/analyze | grep -q '"status":"success"'
