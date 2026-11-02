@@ -11,7 +11,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from fastapi.testclient import TestClient  # noqa: E402
+try:
+    from fastapi.testclient import TestClient  # noqa: E402
+except RuntimeError:  # the in-process HTTP client needs httpx2, which requirements.txt (runtime only) does not install
+    sys.exit("error: this example drives the HTTP endpoints in process and needs the test client's httpx2 package.\n"
+             "  hint: run `pip install httpx2` (or `pip install -r requirements-dev.txt`), then run it again.")
 
 from backend.main import app  # noqa: E402
 

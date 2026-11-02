@@ -80,6 +80,7 @@ The summary then shows `1. Linear Algebra (12h, studied)` and `(1/3 concepts rea
 ## Run the whole journey in one command
 
 ```bash
+pip install httpx2   # the in-process HTTP client; requirements.txt is runtime only (requirements-dev.txt includes it)
 python examples/prerequisites/study_journey.py
 ```
 
