@@ -437,5 +437,7 @@ NO_CONCEPTS_ANSWER = ("No concepts this release knows were detected in this pape
 
 # Shown with a placeholder answer: the question matched nothing the built-in tutor can answer, so say what it can.
 ANSWERABLE_HINT = ("Questions this release can answer: 'What is <concept>?' for a concept in the study plan, "
-                   "'What should I study first?', 'How long will it take?', 'Am I ready?' and 'Quiz me'.")
+                   "'What should I study first?', 'How long will it take?', 'How difficult is it?', 'Am I ready?', "
+                   "'How much have I completed?', 'Which prerequisites does <concept> need?', 'Which equations are in the paper?', "
+                   "'Summarize this paper' and 'Quiz me'.")
 
