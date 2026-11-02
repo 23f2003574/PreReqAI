@@ -29,6 +29,9 @@ def _name_pattern(name, plural=True):
     return rf"(?<![a-z0-9]){re.escape(_normalise(name))}{'s?' if plural else ''}(?![a-z0-9])"
 
 
+_CONCEPT_POINTER = re.compile(r"\b(this|that|the) concept\b|\b(explain|describe) it\b", re.IGNORECASE)
+
+
 @functools.lru_cache(maxsize=1)
 def _alias_spellings():
     """{normalised alias: concept name} for every registry alias, longest alias first; built once, not per question."""
@@ -102,6 +105,13 @@ class RuleBasedTutor(BaseTutor):
 
         question = _canonical_question(question)
 
+        pointer = _CONCEPT_POINTER.search(question)
+        topic = getattr(session, "active_concept", None)
+
+        if pointer and topic:  # "Explain this concept" with a topic means that topic's concept
+
+            question = question[:pointer.start()] + topic + question[pointer.end():]
+
         answer = (
             self._quiz_answer(paper, session, question)
             or self._concept_time_answer(paper, question)
@@ -110,6 +120,7 @@ class RuleBasedTutor(BaseTutor):
             or self._built_in_answer(paper, context, question)
             or self._overview_answer(paper, question)
             or self._study_plan_answer(paper, question)
+            or (self._name_a_concept_answer(paper) if pointer and not topic else "")
         )
 
         return TutorResponse(
@@ -341,6 +352,18 @@ class RuleBasedTutor(BaseTutor):
 
         parts.append("This overview comes from the paper's analysis, not a generated summary of its text.")
         return " ".join(parts)
+
+    @staticmethod
+    def _name_a_concept_answer(paper):
+        """'Explain this concept' with no concept in focus (no topic): say how to pick one, instead of the placeholder."""
+
+        names = [c.name for c in getattr(paper, "concepts", [])]
+
+        if not names:
+            return ""
+
+        return ("Name the concept to explain, for example 'What is " + names[0] + "?', or ask with that concept as the topic. "
+                "Concepts in this paper: " + ", ".join(names) + ".")
 
     @staticmethod
     def _study_plan_answer(paper, question):
