@@ -1,5 +1,6 @@
 import os
 import pickle
+import threading
 import time
 from pathlib import Path
 from uuid import UUID
@@ -136,7 +137,9 @@ class SessionManager:
 
             return True
 
-        temp = path.with_suffix(".tmp")
+        # one temp file per writer: requests run in threads, and two saves of the same session sharing a temp file
+        # truncated each other or lost the swap, reporting a failed save (and a lost restart) that never happened
+        temp = path.with_name(f"{path.stem}.{os.getpid()}.{threading.get_ident()}.tmp")
 
         try:
 
