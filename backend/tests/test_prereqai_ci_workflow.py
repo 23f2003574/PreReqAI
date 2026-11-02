@@ -45,3 +45,15 @@ def test_runtime_requirements_list_what_the_http_server_needs():
     runtime = (ROOT / "requirements.txt").read_text(encoding="utf-8").lower()
     for package in ("fastapi", "uvicorn", "python-multipart", "pymupdf", "requests"):
         assert package in runtime, f"{package} is needed to serve the upload endpoint from a runtime-only install"
+
+
+def test_workflow_runs_every_test_command_of_the_release_checklist():
+    # docs/release-checklist.md step 3 lists the release checks; a command missing from CI lets a release blocker pass unnoticed
+    checklist = (ROOT / "docs/release-checklist.md").read_text(encoding="utf-8")
+    commands = [line.split("#")[0].strip() for line in checklist.splitlines() if line.strip().startswith("python -m pytest")]
+    assert len(commands) >= 2
+    for command in commands:
+        targets = re.findall(r"backend/tests/\S+", command) + (["-m prereqai"] if "-m prereqai" in command else [])
+        assert targets, command
+        for target in targets:
+            assert target in WORKFLOW, f"CI does not run `{target}` from the release checklist command: {command}"

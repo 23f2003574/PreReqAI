@@ -27,6 +27,9 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - name: PreReqAI product tests (the release checks)
         run: python -m pytest -m prereqai backend/tests -q
+      - name: API generation and generated-project release checks
+        # the release checklist (docs/release-checklist.md, step 3) requires these as well; about 20 seconds, offline
+        run: python -m pytest -q backend/tests/test_api_generation_*.py backend/tests/test_generated_project_*.py
       - name: README quickstart
         run: python -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf
       - name: README quickstart with only the runtime requirements
