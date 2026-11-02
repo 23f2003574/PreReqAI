@@ -1,5 +1,6 @@
 import re
 
+from backend.concepts.concept_registry import ConceptRegistry
 from backend.concepts.concept_explanation_engine import ConceptExplanationEngine
 
 from .base_tutor import (
@@ -181,10 +182,18 @@ class RuleBasedTutor(BaseTutor):
 
         # Longest names first and each match is removed, so "self-attention" does not also
         # answer for "Attention" and "paragraphs" or "improbable" match no concept at all.
-        for name in sorted({**definitions, **reasons}, key=len, reverse=True):
-            pattern = _name_pattern(name)
+        # Registry aliases (SGD, backprop, CNN...) are spellings the detector already treats as the same concept.
+        spellings = {name: name for name in {**definitions, **reasons}}
+        for concept in ConceptRegistry().all():
+            if concept.name in spellings:
+                spellings.update({alias: concept.name for alias in concept.aliases})
+
+        for spelling in sorted(spellings, key=len, reverse=True):
+            name = spellings[spelling]
+            pattern = _name_pattern(spelling)
             if re.search(pattern, text):
-                asked.append(name)
+                if name not in asked:
+                    asked.append(name)
                 text = re.sub(pattern, " ", text)
 
         for name in context.concepts:
