@@ -136,7 +136,19 @@ def get_session(session_id: str):
     }
 
 
-@router.get("/{session_id}/plan")
+class MarkdownResponse(PlainTextResponse):
+    """Markdown text: declared as text/markdown in the OpenAPI document (a generated client must not parse it as JSON)."""
+
+    media_type = "text/markdown"
+
+
+_FAILURE_JSON = {"application/json": {"schema": {"$ref": "#/components/schemas/FailureEnvelope"}}}
+
+
+# Failures stay the JSON failure envelope: only the success body is Markdown.
+@router.get("/{session_id}/plan", response_class=MarkdownResponse,
+            responses={404: {"description": "Unknown session", "content": _FAILURE_JSON},
+                       422: {"description": "Invalid request", "content": _FAILURE_JSON}})
 def get_study_plan(session_id: str):
     """The session's study plan as a Markdown checklist, with progress ticked (same text as `analyze --plan-file`)."""
 
@@ -146,7 +158,7 @@ def get_study_plan(session_id: str):
 
         return session_not_found(session_id)
 
-    return PlainTextResponse(plan_markdown(session.report), media_type="text/markdown; charset=utf-8")
+    return MarkdownResponse(plan_markdown(session.report))
 
 
 @router.delete("/{session_id}")
