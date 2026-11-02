@@ -28,6 +28,16 @@ def _name_pattern(name, plural=True):
     return rf"(?<![a-z0-9]){re.escape(_normalise(name))}{'s?' if plural else ''}(?![a-z0-9])"
 
 
+def _canonical_question(question):
+    """The question with registry alias spellings (SGD, backprop, RNN...) replaced by the concept's own name, so every
+    matching rule (quiz, time, prerequisites, definitions) understands them as the detector does."""
+    spellings = {_normalise(alias): concept.name for concept in ConceptRegistry().all() for alias in concept.aliases}
+    text = question
+    for spelling in sorted(spellings, key=len, reverse=True):
+        text = re.sub(_name_pattern(spelling, plural=False), spellings[spelling], text, flags=re.IGNORECASE)
+    return text
+
+
 PREREQUISITE_DEFINITIONS = {
     "Linear Algebra": "The mathematics of vectors, matrices and linear transformations.",
     "Probability": "The mathematics of uncertainty: how likely events are and how to reason about random outcomes.",
@@ -81,6 +91,8 @@ class RuleBasedTutor(BaseTutor):
 
             mode,
         )
+
+        question = _canonical_question(question)
 
         answer = (
             self._quiz_answer(paper, session, question)
