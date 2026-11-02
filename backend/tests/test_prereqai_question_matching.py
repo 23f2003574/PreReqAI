@@ -27,7 +27,7 @@ def _answers(client, sid, question):
 GRAPH = "Abstract\nA graph neural network with message passing and a policy gradient agent.\n"
 
 
-@pytest.mark.parametrize("question", ["Summarize the paragraphs", "What is the improbability of this?", "Is the multigraphs section important?"])
+@pytest.mark.parametrize("question", ["Describe the paragraphs", "What is the improbability of this?", "Is the multigraphs section important?"])
 def test_a_word_containing_a_concept_name_does_not_trigger_its_answer(tmp_path, question):
     client, sid = _session(tmp_path, GRAPH)
     assert all(PLACEHOLDER in a for a in _answers(client, sid, question))

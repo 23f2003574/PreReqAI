@@ -88,6 +88,7 @@ class RuleBasedTutor(BaseTutor):
             or self._resources_answer(paper, question)
             or self._concept_prerequisites_answer(paper, question)
             or self._built_in_answer(paper, context, question)
+            or self._overview_answer(paper, question)
             or self._study_plan_answer(paper, question)
         )
 
@@ -110,7 +111,7 @@ class RuleBasedTutor(BaseTutor):
 
                 "Show prerequisite path",
 
-                "Summarize this section",
+                "Summarize this paper",
             ],
         )
 
@@ -289,6 +290,37 @@ class RuleBasedTutor(BaseTutor):
         """True when the analysis ran (readiness was evaluated) and found no concept at all: its empty plan says nothing."""
         readiness = getattr(paper, "readiness", None)
         return readiness is not None and readiness.total_concepts == 0 and not getattr(paper, "concepts", None)
+
+    @staticmethod
+    def _overview_answer(paper, question):
+        """'Summarize the paper' -> an overview built from the analysis (concepts, difficulty, preparation and readiness);
+        it is not a generated summary of the paper's text."""
+
+        if not re.search(r"\b(summari[sz]e|summary|overview)\b", _normalise(question)):
+            return ""
+
+        concepts = [c.name for c in getattr(paper, "concepts", [])]
+        if not concepts:
+            return NO_CONCEPTS_ANSWER if RuleBasedTutor._nothing_detected(paper) else ""
+
+        shown = ", ".join(concepts[:8]) + (f" and {len(concepts) - 8} more" if len(concepts) > 8 else "")
+        parts = [f"{getattr(getattr(paper, 'metadata', None), 'title', None) or 'This paper'} covers {len(concepts)} concept{'s' if len(concepts) != 1 else ''}: {shown}."]
+
+        difficulty = getattr(paper, "difficulty", None)
+        if difficulty is not None:
+            parts.append(f"Difficulty: {difficulty.level}.")
+
+        done = RuleBasedTutor._studied(paper)
+        hours = sum(step.estimated_hours for step in getattr(paper, "learning_plan", []) if step.concept not in done)
+        if hours:
+            parts.append(f"Preparation left: about {hours} hours.")
+
+        readiness = getattr(paper, "readiness", None)
+        if readiness is not None:
+            parts.append(f"Readiness: {readiness.status} ({readiness.completed_concepts} of {readiness.total_concepts} planned concepts ready).")
+
+        parts.append("This overview comes from the paper's analysis, not a generated summary of its text.")
+        return " ".join(parts)
 
     @staticmethod
     def _study_plan_answer(paper, question):
