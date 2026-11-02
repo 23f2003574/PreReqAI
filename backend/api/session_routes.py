@@ -169,11 +169,15 @@ def resolve_topic(session, topic):
     """(concept name, None) for a topic naming one of the paper's concepts or study-plan prerequisites (case-insensitively); (None, None) when no
     topic is given; (None, hint) when it names no concept. Shared by POST /question and `prerequisites ask --topic`."""
 
-    topic = topic.strip() if topic is not None else None
-
-    if not topic:
+    if topic is None:
 
         return None, None
+
+    topic = topic.strip()
+
+    if not topic:  # a blank value is a mistake (an unset variable), not "no topic": the CLI refuses a blank --topic too
+
+        return None, "`topic` is blank. Name one of this paper's concepts or study-plan topics, or omit `topic` to ask without one."
 
     known = {
         concept.name.casefold(): concept.name
