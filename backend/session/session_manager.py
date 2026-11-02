@@ -250,7 +250,7 @@ class SessionManager:
 
     @staticmethod
     def _read(path: Path) -> LearningSession | None:
-        """The session saved in `path`; None when it is unreadable, from an incompatible version, or not a session."""
+        """The session saved in `path`; None when it is unreadable, from an incompatible version, not a session, or saved under another session's id."""
 
         try:
 
@@ -260,7 +260,13 @@ class SessionManager:
 
             return None
 
-        return session if isinstance(session, LearningSession) else None
+        # A file renamed or copied under another id must not load as that id: the copy would answer for one id while
+        # saving over the file of the session it really is.
+        if not isinstance(session, LearningSession) or session.session_id != path.stem:
+
+            return None
+
+        return session
 
     def is_unreadable(self, session_id: str) -> bool:
         """True when a saved file exists for this id but cannot be loaded (corrupt or from another version)."""
