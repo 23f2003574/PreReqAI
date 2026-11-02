@@ -91,4 +91,24 @@ QUIZ_BANK = {
          "answer": "It keeps the encoder's latent distribution close to the prior, so the latent space can be sampled from.",
          "difficulty": "Hard"},
     ],
+    "Gradient Descent": [
+        {"question": "In which direction does gradient descent move the parameters at each step?",
+         "answer": "Against the gradient of the loss, i.e. the direction in which the loss decreases fastest.",
+         "difficulty": "Easy"},
+        {"question": "What goes wrong if the learning rate is set too large?",
+         "answer": "The updates overshoot the minimum, so the loss oscillates or diverges instead of decreasing.",
+         "difficulty": "Medium"},
+    ],
+
+    "Adam Optimizer": [
+        {"question": "What two running statistics of the gradient does Adam keep for each parameter?",
+         "answer": "An exponential moving average of the gradient (momentum) and of its square (scale), used to adapt the step size.",
+         "difficulty": "Medium"},
+    ],
+
+    "Dropout": [
+        {"question": "How does dropout reduce overfitting?",
+         "answer": "It randomly zeroes units during training, so the network cannot rely on any single unit and learns more robust features.",
+         "difficulty": "Easy"},
+    ],
 }

@@ -30,7 +30,7 @@ def test_quiz_with_no_concept_named_covers_the_paper_concepts_that_have_question
 
 
 def test_quiz_on_a_concept_without_questions_says_so_and_a_normal_question_is_unchanged():
-    assert _ask("Quiz me on Gradient Descent") == "There are no practice questions yet for Gradient Descent."
+    assert _ask("Quiz me on Recurrent Neural Network") == "There are no practice questions yet for Recurrent Neural Network."
     assert _ask("What is softmax?").startswith("Softmax: ")
 
 
@@ -52,7 +52,7 @@ def test_a_topic_scopes_the_quiz_over_http_and_the_cli_alike():
 
     assert http("Softmax") == cli("Softmax") == _ask("Quiz me on Softmax")
     assert http("Attention").startswith("Attention Q1") and "Softmax" not in http("Attention")
-    assert http("Gradient Descent") == cli("Gradient Descent") == "There are no practice questions yet for Gradient Descent."
+    assert http("Recurrent Neural Network") == cli("Recurrent Neural Network") == "There are no practice questions yet for Recurrent Neural Network."
 
 
 def _quiz_in_process(question, concepts):
@@ -77,3 +77,10 @@ def test_quiz_covers_overfitting_and_the_other_core_concepts_that_used_to_have_n
 
 def test_quiz_on_a_concept_that_still_has_no_questions_says_so():
     assert _quiz_in_process("Quiz me on Q-Learning", []) == "There are no practice questions yet for Q-Learning."
+
+
+def test_quiz_covers_gradient_descent_adam_and_dropout():
+    answer = _quiz_in_process("Quiz me on Gradient Descent", [])
+    assert answer.startswith("Gradient Descent Q1 (Easy)") and "Gradient Descent Q2 (Medium)" in answer
+    for name in ("Adam Optimizer", "Dropout"):
+        assert _quiz_in_process(f"Quiz me on {name}", []).startswith(f"{name} Q1 (")
