@@ -157,6 +157,9 @@ class RuleBasedTutor(BaseTutor):
             return ""
 
         named = [name for name in QUIZ_BANK if re.search(_name_pattern(name), text)]
+        # 'Self-Attention' contains 'Attention': a concept named only inside a longer named concept is not named itself
+        named = [name for name in named
+                 if not any(other != name and _normalise(name) in _normalise(other) for other in named)]
         # prerequisites such as Calculus or Probability are named in questions too, but have no questions of their own
         known_names = [*ConceptExplanationEngine.EXPLANATIONS, *PREREQUISITE_DEFINITIONS]
         mentioned = [name for name in dict.fromkeys(known_names) if re.search(_name_pattern(name), text)]

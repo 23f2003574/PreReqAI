@@ -95,3 +95,16 @@ def test_quiz_on_a_prerequisite_without_questions_says_so_instead_of_quizzing_ot
 def test_quiz_naming_a_prerequisite_and_a_concept_with_questions_still_quizzes_the_concept():
     answer = _ask("Quiz me on Calculus and Softmax")
     assert answer.startswith("Softmax Q1") and "Attention Q1" not in answer
+
+
+def test_quiz_on_self_attention_returns_only_its_own_questions():
+    answer = _ask("Quiz me on Self-Attention")
+    assert answer.startswith("Self-Attention Q1 (Easy): Where do the queries, keys and values")
+    assert "Self-Attention Q2 (Medium)" in answer
+    assert "Attention Q1" not in answer.replace("Self-Attention Q1", "")
+
+
+def test_other_core_transformer_concepts_now_have_questions():
+    for name in ("Multi-Head Attention", "Positional Encoding", "Layer Normalization",
+                 "Residual Connection", "Feed Forward Network"):
+        assert _ask(f"Quiz me on {name}").startswith(f"{name} Q1 (")

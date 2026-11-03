@@ -111,4 +111,99 @@ QUIZ_BANK = {
          "answer": "It randomly zeroes units during training, so the network cannot rely on any single unit and learns more robust features.",
          "difficulty": "Easy"},
     ],
+
+    "Self-Attention": [
+
+        {
+            "question":
+                "Where do the queries, keys and values of Self-Attention come from?",
+
+            "answer":
+                "All three are computed from the same input sequence.",
+
+            "difficulty":
+                "Easy",
+        },
+
+        {
+            "question":
+                "Why are Self-Attention scores divided by the square root of the key dimension?",
+
+            "answer":
+                "To keep the dot products small so the Softmax does not saturate and gradients stay useful.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Multi-Head Attention": [
+
+        {
+            "question":
+                "Why use several attention heads instead of one?",
+
+            "answer":
+                "Each head can attend to a different kind of relationship in a different subspace.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Positional Encoding": [
+
+        {
+            "question":
+                "What problem does Positional Encoding solve?",
+
+            "answer":
+                "Attention alone ignores token order, so position information must be added to the embeddings.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Layer Normalization": [
+
+        {
+            "question":
+                "What does Layer Normalization normalize over?",
+
+            "answer":
+                "The features of each individual example, not across the batch.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Residual Connection": [
+
+        {
+            "question":
+                "Why do Residual Connections make deep networks easier to train?",
+
+            "answer":
+                "They give gradients a direct path around each layer.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Feed Forward Network": [
+
+        {
+            "question":
+                "What does the Feed Forward Network do in a Transformer block?",
+
+            "answer":
+                "It applies the same two-layer nonlinear transform to each token position independently.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
 }
