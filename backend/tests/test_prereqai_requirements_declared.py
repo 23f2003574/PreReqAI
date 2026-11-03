@@ -51,3 +51,10 @@ def test_the_urllib3_floor_excludes_releases_that_cannot_be_imported_on_python_3
     floor = tuple(int(part) for part in re.search(r">=\s*([\d.]+)", spec).group(1).split("."))
 
     assert floor >= (1, 26, 5), f"{spec}: urllib3 1.26.0-1.26.4 fail with 'No module named urllib3.packages.six.moves'"
+
+
+def test_the_requests_floor_excludes_the_yanked_2_32_0_and_2_32_1_releases():
+    spec = _declared()["requests"]
+    floor = tuple(int(part) for part in re.search(r">=\s*([\d.]+)", spec).group(1).split("."))
+
+    assert floor >= (2, 32, 2), f"{spec}: requests 2.32.0 and 2.32.1 are yanked on PyPI"
