@@ -65,8 +65,11 @@ identical files.
 ├── README.md                # endpoint, parameters and run instructions
 ├── prereqai-config.json     # editable settings: generation.project_name, runtime.base_image/port
 ├── prereqai-project.json    # generator, contract version and source draft
-└── prereqai-manifest.json   # full file inventory
+├── prereqai-manifest.json   # full file inventory
+└── .prereqai-generated.json # hidden: the files a run wrote and whether it finished (copy it with the project)
 ```
+
+`ls` does not show the last entry; use `ls -a`, or copy the whole directory rather than `*`.
 
 The same output is committed, unedited, as
 [`examples/api-generation/generated/`](../examples/api-generation/generated/).
