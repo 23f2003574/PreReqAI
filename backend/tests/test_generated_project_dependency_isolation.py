@@ -50,7 +50,8 @@ def test_manifest_is_exactly_the_generated_imports_plus_the_served_asgi_server(t
 
     # each requirement is justified by the project itself, and each import is covered
     distributions = importlib.metadata.packages_distributions()
-    imported_distributions = {distributions[m][0].lower() for m in third_party}
+    # packages_distributions() misses most modern wheels on Python 3.10; fastapi and pydantic import under their own names
+    imported_distributions = {distributions.get(m, [m])[0].lower() for m in third_party}
     assert set(names) == imported_distributions | {server} == {"fastapi", "pydantic", "uvicorn"}
     # deterministic, sorted, duplicate-free, versioned only by the generator's own floors
     assert names == sorted(set(names))

@@ -6,6 +6,7 @@ from backend.api_documentation_draft import LLMAPIDocumentationDraft, LLMAPIDocu
 from .config import APIGenerationConfig
 from .fastapi_generator import FastAPIApplicationGenerator
 from .generator import APIGenerator
+from .notes import add_note
 from .openapi import OPENAPI_FILENAME
 from .service import LLMAPIGenerationService
 from .validation import require_valid
@@ -45,7 +46,7 @@ def _stage(name, call, *args):
         return call(*args)
     except Exception as error:
         error.stage = name
-        error.add_note(f"API generation failed at stage: {name}")
+        add_note(error, f"API generation failed at stage: {name}")
         raise
 
 

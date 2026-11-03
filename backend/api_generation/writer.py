@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .metadata import METADATA_FILENAME, InvalidProjectMetadataError, GeneratedProjectMetadata
 from .models import LLMAPIGenerationResult
+from .notes import add_note
 
 MARKER_FILENAME = ".prereqai-generated.json"
 COMPLETE = "complete"
@@ -201,7 +202,7 @@ def write_generated_application(result: LLMAPIGenerationResult, output_dir) -> l
     except BaseException as error:
         _clean_up_failed_attempt(root, root_existed, marker_existed, created_files, created_dirs, old_files)
         if isinstance(error, Exception):
-            error.add_note(f"generation cleaned up {len(created_files)} file(s) created by this attempt")
+            add_note(error, f"generation cleaned up {len(created_files)} file(s) created by this attempt")
         raise
     return sorted(targets)
 
