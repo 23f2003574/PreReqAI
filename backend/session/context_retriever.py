@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from backend.concepts.rule_based_concept_detector import _BACK_MATTER
 from backend.models import (
     Paper,
 )
@@ -41,6 +42,10 @@ class ContextRetriever:
                 )
 
         for section in paper.sections:
+
+            # the detector ignores the bibliography and acknowledgements; a cited title is not where the paper covers a concept
+            if _BACK_MATTER.match((section.title or "").strip()):
+                continue
 
             if any(
                 concept.lower() in section.content.lower()
