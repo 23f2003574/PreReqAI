@@ -1,5 +1,6 @@
 import functools
 import re
+import threading
 
 from backend.concepts.concept_registry import ConceptRegistry
 from backend.concepts.concept_explanation_engine import ConceptExplanationEngine
@@ -72,7 +73,17 @@ class RuleBasedTutor(BaseTutor):
             TutorPromptBuilder()
         )
 
-        self.last_prompt: str | None = None
+        # One tutor serves every session; the prompt of the last answer is kept per thread so a concurrent request
+        # for another session can neither overwrite it nor be read through it.
+        self._local = threading.local()
+
+    @property
+    def last_prompt(self) -> "str | None":
+        return getattr(self._local, "last_prompt", None)
+
+    @last_prompt.setter
+    def last_prompt(self, value):
+        self._local.last_prompt = value
 
     def answer(
 
