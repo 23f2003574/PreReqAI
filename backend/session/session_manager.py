@@ -285,7 +285,13 @@ class SessionManager:
 
         self.sessions.pop(session_id, None)
 
+        self._last_used.pop(session_id, None)  # a deleted session must not leave bookkeeping behind in a long-lived server
+
         path = self._path(session_id)
+
+        if path is not None:
+
+            self._summaries.pop(path, None)
 
         if not known and path is not None and path.is_file():  # an unreadable saved file: removing it is a real delete
 
