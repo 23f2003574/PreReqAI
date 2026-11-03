@@ -326,7 +326,8 @@ class SessionManager:
                         found[path.stem] = saved
 
         # sessions saved by older versions lack created_at
-        return sorted(found.values(), key=lambda session: getattr(session, "created_at", 0.0), reverse=True)
+        # equal timestamps (coarse clocks) are ordered by id, not by dict/directory-listing order
+        return sorted(found.values(), key=lambda session: (getattr(session, "created_at", 0.0), session.session_id), reverse=True)
 
     @staticmethod
     def _summary(session: LearningSession) -> dict:
@@ -383,4 +384,4 @@ class SessionManager:
 
             del self._summaries[path]
 
-        return sorted(found.values(), key=lambda item: item["created_at"] or 0.0, reverse=True)
+        return sorted(found.values(), key=lambda item: (item["created_at"] or 0.0, item["session_id"]), reverse=True)
