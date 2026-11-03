@@ -30,6 +30,7 @@ from backend.pipeline import (
 )
 from backend.pipeline.research_paper_pipeline import (
     PIPELINE_STAGES,
+    PaperTooLarge,
     PipelineCancelled,
 )
 
@@ -113,6 +114,8 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
             "analysis", "Analysis was cancelled before it finished.",
             hint="Run the analysis again to start over; nothing was kept.",
         )
+    if isinstance(exc, PaperTooLarge):
+        return limit_exceeded_body("analysis", str(exc), hint="Raise the file size limit or analyse a smaller paper.")
     if _is_timeout(exc):
         return timeout_body(
             "analysis", f"The analysis timed out: {exc}", error=exc,
@@ -298,7 +301,8 @@ class PreReqAIPlatform:
                     return False
 
         try:
-            result = self.analysis.run(file_path, should_cancel=should_cancel)
+            result = self.analysis.run(file_path, should_cancel=should_cancel,
+                                       **({'max_file_bytes': limits.max_file_bytes} if limits is not None and limits.max_file_bytes is not None else {}))
         except Exception as exc:
             # Every way a run can stop becomes one terminal outcome here, with what finished before it.
             outcome = _stopped_outcome(exc, limits if exceeded else None)

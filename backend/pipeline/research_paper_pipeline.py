@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass, field
 from time import perf_counter
 
@@ -110,6 +111,10 @@ from backend.reporting import (
 
 
 from backend.models import Paper
+
+
+class PaperTooLarge(Exception):
+    """The paper the source resolved to (a downloaded arXiv/DOI file) is over the configured file size limit."""
 
 
 class PipelineCancelled(Exception):
@@ -333,6 +338,7 @@ class ResearchPaperPipeline:
         self,
         file_path: str,
         should_cancel=None,
+        max_file_bytes=None,
     ) -> PipelineResult:
 
         timer = _StageTimer(should_cancel)
@@ -341,7 +347,7 @@ class ResearchPaperPipeline:
 
             timer.check_cancelled()
 
-            return self._run(file_path, timer)
+            return self._run(file_path, timer, max_file_bytes)
 
         except Exception as exc:
 
@@ -357,6 +363,7 @@ class ResearchPaperPipeline:
         self,
         file_path: str,
         timer: "_StageTimer",
+        max_file_bytes=None,
     ) -> PipelineResult:
 
         context = {"file_path": file_path}
@@ -376,6 +383,12 @@ class ResearchPaperPipeline:
                 raise TypeError(f"stage {stage} returned {type(value).__name__}, expected {expected.__name__}")
 
             context[output] = value
+
+            # a downloaded paper (arXiv/DOI) only exists after this stage: the file size limit applies to it too
+            if stage == "source_resolver" and max_file_bytes is not None and os.path.isfile(value) \
+                    and os.path.getsize(value) > max_file_bytes:
+
+                raise PaperTooLarge(f"The paper is larger than the limit of {max_file_bytes} bytes.")
 
             timer.current = None  # done: a cancellation from here on is not this stage's failure
 
