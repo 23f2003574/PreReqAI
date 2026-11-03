@@ -2,6 +2,7 @@
 --diagnose` (and platform.analyze(..., diagnostics=True)) report stage
 durations, completed/failed stages, warnings, status and run statistics; normal
 runs are unchanged."""
+import re
 import json
 
 import pymupdf as fitz
@@ -91,3 +92,13 @@ def test_the_failure_envelope_keeps_its_shape_without_diagnostics(tmp_path):
     outcome = platform.analyze(str(_bad_pdf(tmp_path)))
 
     assert set(outcome) == {"status", "stage", "detail", "error", "hint", "warnings"}
+
+
+def test_the_cli_names_the_stage_that_broke_and_the_elapsed_time_without_the_input_path(tmp_path, capsys):
+    bad = _bad_pdf(tmp_path)
+
+    assert main(["prerequisites", "analyze", str(bad), "--diagnose"]) == EXIT_FAILURE
+    line = [l for l in capsys.readouterr().err.splitlines() if l.startswith("  diagnostics:")][0]
+
+    assert "failed after source_resolver; failed in stage 'ingestion'; " in line
+    assert re.search(r"; \d+\.\d{3}s elapsed$", line) and str(tmp_path) not in line

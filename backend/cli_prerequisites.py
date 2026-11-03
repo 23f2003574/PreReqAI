@@ -251,8 +251,10 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             print(f"  hint: {outcome['hint']}", file=sys.stderr)
         if args.diagnose:
             info = outcome["diagnostics"]
+            # failed_after is the last stage that finished; failed_stage is the one that broke (the next, never completed)
+            broke = f"; failed in stage '{info['failed_stage']}'" if info.get("failed_stage") else ""
             print(f"  diagnostics: {len(info['completed_stages'])} stages completed; failed after "
-                  f"{info['failed_after'] or 'the start'}", file=sys.stderr)
+                  f"{info['failed_after'] or 'the start'}{broke}; {info['total_seconds']:.3f}s elapsed", file=sys.stderr)
     if not args.as_json and args.diagnose and (timed_out or limit_hit or was_cancelled):
         info = outcome["diagnostics"]
         print(f"  diagnostics: {len(info['completed_stages'])} stages completed; stopped after "
