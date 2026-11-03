@@ -82,6 +82,7 @@ Order of work, most consequential first. Everything the product's documented wor
 1. **Real published paper (blocker, needs input).** Run an arXiv PDF end to end (CLI and HTTP), then fix what it exposes. Likely findings:
    headings outside the numbered/fixed list, multi-line author blocks, two-column text order. Dependency: a PDF in the repo or network access;
    the sandbox cannot reach arXiv (proxy 403). Next step: add the PDF under `examples/` (if its licence allows) or run it locally and send the report.
+   One command on a machine that can reach arXiv: `PREREQAI_LIVE_PAPER=1 python -m pytest backend/tests/test_prereqai_real_paper_live.py` (skipped by default; analyses arXiv:1706.03762 over the platform and HTTP and checks the report's invariants). Its mechanics were verified here only against the sample paper seeded into the arXiv cache; it has never run on the real paper.
 2. **Tutoring model (needs a decision).** The tutor is the rule-based placeholder and is disclosed in the README and every answer's `warnings`.
    Dependency: a provider choice and an API key. Next step: implement a `Tutor` that builds prompts with the existing `TutorPromptBuilder`
    (`backend/tutor/tutor_prompt_builder.py`), selected when a key is configured; keep the placeholder as the offline default.
