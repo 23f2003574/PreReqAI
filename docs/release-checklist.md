@@ -507,3 +507,7 @@ Gap (from the 2026-10-29 limitation): a cached download cut off mid-write that s
 ## Truncated fresh downloads are rejected (2026-11-04)
 
 Gap (from the 2026-11-01 limitation): a freshly downloaded arXiv/DOI body was checked only for `%PDF`, so a body cut off mid-transfer was cached and analysed (the analysis then failed or produced a partial result). Both resolvers now also require `%%EOF` in the last 1 KiB (`ArxivResolver._is_complete_pdf`) and otherwise raise "incomplete PDF ... try again" without caching. Test: `test_a_truncated_fresh_download_is_rejected_and_not_cached`; fixtures that used fake PDF bodies gained `%%EOF`. Limitation: a PDF damaged mid-file but ending in `%%EOF` is not detected.
+
+## "How long will X take?" for a known concept (2026-11-04)
+
+Defect (reproduced): with `--known Calculus`, `ask paper.pdf "How long will Calculus take?"` returned Calculus's definition, not an answer to the question, because `_concept_time_answer` only looked at planned concepts and a known one is not in the plan. It now answers that no study time is needed (known or covered by the paper, not in the plan). Test: `test_a_known_concept_gets_a_time_answer_not_its_definition` (fails without the fix). `pytest -m prereqai -k "tutor or question or session or ask or alias"`: 204 passed. Limitation: the wording does not distinguish "you said you know it" from "the paper covers it".

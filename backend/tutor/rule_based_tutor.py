@@ -297,6 +297,15 @@ class RuleBasedTutor(BaseTutor):
             if re.search(pattern, text):
                 done = " You have already studied it." if step.concept in RuleBasedTutor._studied(paper) else ""
                 return f"{step.concept}: about {step.estimated_hours} hours of study.{done}"
+        # A concept the learner already knows (or the paper covers) is not in the plan, so it has no hours: say so rather than
+        # falling through to its definition, which does not answer "how long".
+        satisfied = sorted(
+            (item.concept for item in getattr(paper, "missing_prerequisites", []) if item.satisfied),
+            key=len, reverse=True,
+        )
+        for name in satisfied:
+            if re.search(_name_pattern(name, plural=False), text):
+                return f"{name}: no study time needed. You already know it or the paper covers it, so it is not in your study plan."
         return ""
 
     @staticmethod

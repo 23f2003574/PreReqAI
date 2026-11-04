@@ -30,3 +30,10 @@ def test_whole_plan_time_and_known_concepts_are_unchanged():
     client, sid = _session({"known": "Calculus"})
     assert _ask(client, sid, "How long will it take to prepare?").startswith("Plan about 37 hours")
     assert not _ask(client, sid, "How long will calculus take?").endswith("hours of study.")  # known: not in the plan
+
+
+def test_a_known_concept_gets_a_time_answer_not_its_definition():
+    client, sid = _session({"known": "Calculus"})
+    assert _ask(client, sid, "How long will calculus take?") == (
+        "Calculus: no study time needed. You already know it or the paper covers it, so it is not in your study plan."
+    )
