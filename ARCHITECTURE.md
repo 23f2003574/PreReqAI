@@ -224,7 +224,7 @@ Code that implements the learning-assistance idea (ingestion, parsing, concepts,
 - Difficulty is a function of a count of missing prerequisites; hours are fixed per subject, independent of paper or learner.
 - English only; PDFs only; no OCR.
 - Pickle-based session files; trusted-environment only; no multi-process safety.
-- Python 3.10: CI runs it, but the checklist (dated earlier) records it as not yet run locally; check the CI history.
+- Python 3.10: CI runs it, and it was also run in a clean venv from a fresh clone on 2026-11-04 (978 passed; see the release checklist).
 - Dates/figures in `docs/release-checklist.md` are the author's self-reports at specific commits and have not been re-verified here except as noted in §8.
 
 ---

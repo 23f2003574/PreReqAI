@@ -110,7 +110,7 @@ Evidence at this commit: release checks (PreReqAI, endpoint, API generation, gen
 | Release blocker | Run a real published paper end to end (CLI and HTTP) and fix what it exposes. |
 | Required before January | Tutoring model (placeholder is disclosed; a model-backed tutor needs a provider decision). |
 | Required before January | The 44 workspace/projection test failures (scoped in the triage above). |
-| Required before January | Python versions: 3.11 verified (quickstart + 303 PreReqAI tests, 2026-10-11); 3.12 verified (fresh venv from requirements-dev.txt on Python 3.12.3: the README quickstart analysis, then `pytest -m prereqai` = 534 passed, 11747 deselected, 0 failed, 2026-10-27); 3.10 not yet run (no 3.10 interpreter in the sandbox). Older interpreters are refused with a clear message; all sources parse under the 3.10 grammar. |
+| Required before January | Python versions: 3.11 verified (quickstart + 303 PreReqAI tests, 2026-10-11); 3.12 verified (fresh venv from requirements-dev.txt on Python 3.12.3: the README quickstart analysis, then `pytest -m prereqai` = 534 passed, 11747 deselected, 0 failed, 2026-10-27); 3.10 verified 2026-11-04 (see "Clean-environment verification on every supported Python" below). Older interpreters are refused with a clear message; all sources parse under the 3.10 grammar. |
 | Optional | unnumbered-heading detection, unmark a studied concept, OCR, multi-line authors, concepts outside the registry. |
 
 ## Calculus prerequisite (2026-10-12)
@@ -543,3 +543,16 @@ Configuration inconsistency (reproduced): an unusable `PREREQAI_MAX_ANALYSIS_SEC
 ## OpenAPI no longer advertises an impossible 404 (2026-11-04)
 
 Contract mismatch (reproduced): the routers declare `404 Unknown session` for every route they hold, so `/openapi.json` told generated clients that `POST /api/prerequisites/analyze` (which creates the session) and `GET /api/session` (the listing) can answer 404, which neither ever does. `backend.main` now removes those two entries from the served schema (runtime behaviour, status codes and all session routes unchanged). Test: `test_prereqai_openapi_contract.py` (fails without the change). Limitation: other declared-but-rare codes (e.g. `409 cancelled` over HTTP) were not audited against real triggers.
+
+## Clean-environment verification on every supported Python (2026-11-04)
+
+Checked on commit `58e8449`. Each interpreter got its own new venv (`python -m venv`), `pip install -r requirements.txt` (13 s on 3.13), then the README quickstart (`prerequisites analyze examples/prerequisites/sample-paper.pdf`: exit 0, 6 concepts, 4-step plan), `prerequisites ask ... "Am I ready?"`, and `import backend.main` (the server module), all from the runtime requirements alone:
+
+| Python | Runtime-only quickstart + ask + server import | Fresh `git clone` + `requirements-dev.txt` + `pytest -m prereqai` |
+| --- | --- | --- |
+| 3.10.20 (uv-managed build) | ok | 978 passed, 1 skipped, 0 failed (4:06) |
+| 3.11.18 | ok | 978 passed, 1 skipped, 0 failed (3:44) |
+| 3.12.3 | ok | not run (the earlier 2026-10-27 run stands) |
+| 3.13.18 | ok | run in the working checkout every commit (978 passed) |
+
+The 3.11 and 3.10 suite runs were made from a fresh `git clone` of the repository, so nothing untracked in the working directory could mask a missing file; `uvicorn backend.main:app` from the 3.11 clone answered `/health` and an upload to `/api/prerequisites/analyze` with `success`. No install or first-run defect was found, so no code changed. Not tested: Windows and macOS (activation commands in the README are unverified there), and any Python below 3.10 (refused with a clear message by design).
