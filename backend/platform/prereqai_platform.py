@@ -1,4 +1,5 @@
 import difflib
+import logging
 import os
 import re
 from copy import deepcopy
@@ -54,6 +55,8 @@ def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None) 
 
 
 # PyMuPDF reports a missing file with its own FileNotFoundError (a RuntimeError).
+_log = logging.getLogger("prereqai.analysis")
+
 _MISSING_FILE_ERRORS = (FileNotFoundError, getattr(pymupdf, "FileNotFoundError", FileNotFoundError))
 
 
@@ -241,7 +244,9 @@ class PreReqAIPlatform:
         """The workflow's public entry point: _analyze() plus the final-state guard. A result that is
         not a valid terminal state (see workflow_result.terminal_violations) is never returned as it
         is -- it becomes a failure at stage "finalization"."""
+        started = perf_counter()
         outcome = self._analyze(file_path, diagnostics, should_cancel, limits, _split_names(known), _split_names(studied))
+        self._log_unsuccessful(outcome, perf_counter() - started)
         problems = terminal_violations(outcome)
         if problems:
             outcome = failure_body(
@@ -251,6 +256,20 @@ class PreReqAIPlatform:
             if diagnostics:
                 outcome["diagnostics"] = _diagnostics(outcome, {}, None)
         return outcome
+
+    @staticmethod
+    def _log_unsuccessful(outcome: dict, elapsed: float) -> None:
+        """One server-side log line for an analysis that did not succeed, so an operator can tell which stage failed and why
+        without the client's response. Only the status, the failing stage, the error type and the elapsed time are logged: never
+        the message or paper text (which can echo the input), the file path or the learner's concept names."""
+        if outcome.get("status") == "success":
+            return
+        stage_note = re.search(r"in analysis stage '([a-z_]+)'", str(outcome.get("detail", "")))
+        failed_stage = (outcome.get("diagnostics") or {}).get("failed_stage") or (stage_note.group(1) if stage_note else None)
+        _log.warning(
+            "analysis %s: stage=%s failed_stage=%s error=%s elapsed=%.3fs",
+            outcome.get("status"), outcome.get("stage"), failed_stage, (outcome.get("error") or {}).get("type"), elapsed,
+        )
 
     def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits, known=(), studied=()) -> dict:
         """Run the analysis pipeline on a paper PDF and open a learning
