@@ -97,3 +97,24 @@ async def invalid_request(request: Request, exc: RequestValidationError):
         422, "input", "Invalid request: " + "; ".join(problems),
         hint="Fix the fields named above; see /docs for each endpoint's expected request.",
     )
+
+
+# The routers declare 404 "Unknown session" for every route they hold, but a route with no session in its path can never answer
+# it: analysing a paper creates the session, and listing sessions finds none "unknown". Keep /openapi.json (what generated
+# clients are built from) to the responses the service can really send.
+_NO_SESSION_ROUTES = (("/api/prerequisites/analyze", "post"), ("/api/session", "get"))
+
+
+_default_openapi = app.openapi
+
+
+def _openapi_schema():
+    first_build = app.openapi_schema is None
+    schema = _default_openapi()
+    if first_build:  # FastAPI caches the schema it returns, so it is trimmed once
+        for path, method in _NO_SESSION_ROUTES:
+            schema["paths"][path][method]["responses"].pop("404", None)
+    return schema
+
+
+app.openapi = _openapi_schema
