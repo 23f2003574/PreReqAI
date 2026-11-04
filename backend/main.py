@@ -2,6 +2,7 @@ from backend.python_version import check_python_version
 
 check_python_version()  # before the imports below, which fail obscurely on an old interpreter
 
+import logging
 import os
 
 from fastapi import FastAPI, Request
@@ -29,6 +30,11 @@ from backend.version import __version__
 from backend.platform import (  # noqa: F401  (kept as backend.main.platform)
     platform,
 )
+
+# The HTTP server writes failed-analysis log lines (see PreReqAIPlatform._log_unsuccessful) to stderr; the CLI does not.
+_analysis_log = logging.getLogger("prereqai.analysis")
+if not any(isinstance(h, logging.StreamHandler) for h in _analysis_log.handlers):
+    _analysis_log.addHandler(logging.StreamHandler())
 
 app = FastAPI(
     title="PreReqAI",

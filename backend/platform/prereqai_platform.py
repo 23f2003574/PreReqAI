@@ -56,6 +56,7 @@ def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None) 
 
 # PyMuPDF reports a missing file with its own FileNotFoundError (a RuntimeError).
 _log = logging.getLogger("prereqai.analysis")
+_log.addHandler(logging.NullHandler())  # library default: silent (the CLI reports failures itself); backend.main turns the server log on
 
 _MISSING_FILE_ERRORS = (FileNotFoundError, getattr(pymupdf, "FileNotFoundError", FileNotFoundError))
 
