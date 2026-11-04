@@ -33,6 +33,13 @@ _ROMAN_CAPS = r"[IVX]+\.[ \t]+[A-Z]{3,}(?:[ \t]+[A-Z][A-Z\-]*){0,7}"
 # A named appendix such as "Appendix A: Proofs" or "Appendix B. Additional Experiments" (the title follows the same title-case rule).
 _NAMED_APPENDIX = rf"Appendix(?:[ \t]+(?:[A-Z]|\d+)(?:\.\d+)*)?[ \t]*[:.\-\u2013\u2014][ \t]*[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{0,7}}"
 
+# A lettered appendix section such as "A Proofs" or "B.1 Additional Results" (NeurIPS/ICML style, with no "Appendix" word). Only
+# trusted after the References/Appendix heading: elsewhere "A Survey Of Methods" is as likely a wrapped title-case line. No dot
+# follows the letter, so a reference author line such as "A. Vaswani" is not a heading.
+_LETTERED_APPENDIX = re.compile(rf"^[A-Z](?:\.\d+)*[ \t]+[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{0,7}}[ \t]*$", re.MULTILINE)
+
+_BACK_MATTER_HEADING = re.compile(r"(?i:references|bibliography|works cited|acknowledge?ments?|appendix|appendices|supplementary materials?)\b")
+
 SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN}):?|{_NUMBERED}|{_ROMAN_CAPS}|{_NAMED_APPENDIX})[ \t]*$", re.MULTILINE)
 
 
@@ -47,6 +54,15 @@ class ScientificSectionParser:
         text = document.full_text
 
         matches = list(SECTION_PATTERN.finditer(text))
+
+        back = next((m.start() for m in matches if _BACK_MATTER_HEADING.match(m.group().strip())), None)
+
+        if back is not None:  # lettered appendix headings, only once the back matter has begun
+
+            matches = sorted(
+                [*matches, *(m for m in _LETTERED_APPENDIX.finditer(text) if m.start() > back)],
+                key=lambda m: m.start(),
+            )
 
         if not matches:
             sections = [
