@@ -143,6 +143,34 @@ class ArxivResolver(BaseSourceResolver):
 
             return self._write_atomically(self._fallback_directory() / pdf_path.name, content)
 
+    # A download is written to a `.part` file that is removed on success and on any error. A process killed mid-write (SIGKILL,
+    # power loss) never reaches that cleanup, and nothing else reads the file, so its leftovers would pile up in the cache
+    # forever. One older than this cannot belong to a live download and is removed the next time anything is stored.
+    STALE_PARTIAL_SECONDS = 3600
+
+    @staticmethod
+    def _remove_stale_partials(directory: Path) -> None:
+
+        cutoff = time.time() - ArxivResolver.STALE_PARTIAL_SECONDS
+
+        try:
+
+            for partial in directory.glob("*.part"):
+
+                try:
+
+                    if partial.stat().st_mtime < cutoff:
+
+                        partial.unlink(missing_ok=True)
+
+                except OSError:
+
+                    pass
+
+        except OSError:
+
+            pass
+
     @staticmethod
     def _write_atomically(pdf_path: Path, content: bytes) -> Path:
 
@@ -150,6 +178,8 @@ class ArxivResolver(BaseSourceResolver):
             parents=True,
             exist_ok=True,
         )
+
+        ArxivResolver._remove_stale_partials(pdf_path.parent)
 
         partial_path = pdf_path.with_name(
             f"{pdf_path.name}.{os.getpid()}.{threading.get_ident()}.part"

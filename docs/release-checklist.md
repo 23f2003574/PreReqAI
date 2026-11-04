@@ -515,3 +515,7 @@ Defect (reproduced): with `--known Calculus`, `ask paper.pdf "How long will Calc
 ## Session table is safe under concurrent requests (2026-11-04)
 
 Defect (reproduced): `SessionManager` iterated `self.sessions` (`list`, `summaries`, eviction) while other request threads created, restored, evicted or deleted sessions, so `GET /api/session` could fail with `RuntimeError: dictionary keys changed during iteration`. One re-entrant lock now guards every change to the table and the snapshots the listings take. Test: `test_prereqai_session_table_concurrency.py` (fails without the fix, passes 3 of 3 runs with it). Limitation: the sessions themselves are still unsynchronised, so two requests mutating the same session at once are not serialised.
+
+## Stale download `.part` files are cleaned up (2026-11-04)
+
+Lifecycle gap (reproduced): a download is written to `<id>.pdf.<pid>.<thread>.part` and removed on success or any in-process error, but a process killed mid-write (SIGKILL, power loss) never runs that cleanup, and nothing ever read or removed the file, so leftovers accumulated in `cache/arxiv` and `cache/doi` (saved-session `.tmp` leftovers were already purged). `ArxivResolver._write_atomically` now first removes `.part` files in the cache directory older than `STALE_PARTIAL_SECONDS` (1 hour); a recent one, which may be a download still running, is kept. Test: `test_prereqai_stale_partial_downloads.py` (the stale-removal test fails without the fix). Limitation: cleanup runs only when a later download is stored in the same cache directory.
