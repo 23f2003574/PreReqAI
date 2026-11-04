@@ -35,6 +35,11 @@ class SessionManager:
 
         self.sessions = {}
 
+        # Requests run on worker threads: a listing iterating self.sessions while another request creates, restores,
+        # evicts or deletes a session raised "dictionary keys changed during iteration". Every change to the table and
+        # every iteration over it (as a snapshot) holds this lock.
+        self._lock = threading.RLock()
+
         self.last_save_ok = True
 
         self._last_purge = float("-inf")
@@ -181,11 +186,13 @@ class SessionManager:
             paper=paper,
         )
 
-        self.sessions[
-            session.session_id
-        ] = session
+        with self._lock:
 
-        self._last_used[session.session_id] = time.time()
+            self.sessions[
+                session.session_id
+            ] = session
+
+            self._last_used[session.session_id] = time.time()
 
         if time.time() - self._last_purge >= self.PURGE_INTERVAL_SECONDS:
 
@@ -201,20 +208,22 @@ class SessionManager:
 
     def _evict_oldest(self) -> None:
 
-        excess = len(self.sessions) - self.MAX_SESSIONS_IN_MEMORY
+        with self._lock:
 
-        if excess > 0:
+            excess = len(self.sessions) - self.MAX_SESSIONS_IN_MEMORY
 
-            oldest = sorted(
-                self.sessions.values(),
-                key=lambda item: self._last_used.get(item.session_id, getattr(item, "created_at", 0.0)),
-            )[:excess]
+            if excess > 0:
 
-            for old in oldest:
+                oldest = sorted(
+                    self.sessions.values(),
+                    key=lambda item: self._last_used.get(item.session_id, getattr(item, "created_at", 0.0)),
+                )[:excess]
 
-                self.sessions.pop(old.session_id, None)
+                for old in oldest:
 
-                self._last_used.pop(old.session_id, None)
+                    self.sessions.pop(old.session_id, None)
+
+                    self._last_used.pop(old.session_id, None)
 
     def get(
         self,
@@ -241,11 +250,15 @@ class SessionManager:
 
                 return None
 
-            self.sessions[session_id] = session
+            with self._lock:
+
+                self.sessions[session_id] = session
 
         if session is not None:
 
-            self._last_used[session_id] = time.time()
+            with self._lock:
+
+                self._last_used[session_id] = time.time()
 
             self._evict_oldest()  # restoring saved sessions one by one must not grow memory past the cap either
 
@@ -283,9 +296,11 @@ class SessionManager:
 
         known = self.get(session_id) is not None
 
-        self.sessions.pop(session_id, None)
+        with self._lock:
 
-        self._last_used.pop(session_id, None)  # a deleted session must not leave bookkeeping behind in a long-lived server
+            self.sessions.pop(session_id, None)
+
+            self._last_used.pop(session_id, None)  # a deleted session must not leave bookkeeping behind in a long-lived server
 
         path = self._path(session_id)
 
@@ -315,7 +330,9 @@ class SessionManager:
 
         directory = SessionManager._directory()
 
-        found = dict(self.sessions)
+        with self._lock:
+
+            found = dict(self.sessions)
 
         if directory and Path(directory).is_dir():
 
@@ -352,7 +369,11 @@ class SessionManager:
 
         directory = SessionManager._directory()
 
-        found = {session_id: self._summary(session) for session_id, session in self.sessions.items()}
+        with self._lock:
+
+            snapshot = list(self.sessions.items())
+
+        found = {session_id: self._summary(session) for session_id, session in snapshot}
 
         if directory and Path(directory).is_dir():
 

@@ -511,3 +511,7 @@ Gap (from the 2026-11-01 limitation): a freshly downloaded arXiv/DOI body was ch
 ## "How long will X take?" for a known concept (2026-11-04)
 
 Defect (reproduced): with `--known Calculus`, `ask paper.pdf "How long will Calculus take?"` returned Calculus's definition, not an answer to the question, because `_concept_time_answer` only looked at planned concepts and a known one is not in the plan. It now answers that no study time is needed (known or covered by the paper, not in the plan). Test: `test_a_known_concept_gets_a_time_answer_not_its_definition` (fails without the fix). `pytest -m prereqai -k "tutor or question or session or ask or alias"`: 204 passed. Limitation: the wording does not distinguish "you said you know it" from "the paper covers it".
+
+## Session table is safe under concurrent requests (2026-11-04)
+
+Defect (reproduced): `SessionManager` iterated `self.sessions` (`list`, `summaries`, eviction) while other request threads created, restored, evicted or deleted sessions, so `GET /api/session` could fail with `RuntimeError: dictionary keys changed during iteration`. One re-entrant lock now guards every change to the table and the snapshots the listings take. Test: `test_prereqai_session_table_concurrency.py` (fails without the fix, passes 3 of 3 runs with it). Limitation: the sessions themselves are still unsynchronised, so two requests mutating the same session at once are not serialised.
