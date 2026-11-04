@@ -279,10 +279,13 @@ def _with_request_warnings(outcome, plan_text):
     if isinstance(outcome, dict) and outcome.get("status") == SUCCESS:
         # The platform words its warnings for the command line (--known / --studied); an HTTP client sent form fields.
         outcome["warnings"] = [_http_wording(warning) for warning in outcome.get("warnings") or []]
+        from backend.session import session_manager
+
         extra = []
         if plan_text:
             extra.append(resume_mismatch_warning(plan_text, outcome["report"]["paper"]["title"]))
         extra.append(_limit_misconfiguration())
+        extra.append(session_manager.max_age_misconfiguration())
         extra = [warning for warning in extra if warning]
         if extra:
             outcome["warnings"] = [*(outcome.get("warnings") or []), *extra]

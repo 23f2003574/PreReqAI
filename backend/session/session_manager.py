@@ -73,6 +73,33 @@ class SessionManager:
         return Path(directory) / f"{session_id}.session" if directory and valid else None
 
     @classmethod
+    def max_age_misconfiguration(cls) -> str | None:
+        """A warning when PREREQAI_SESSION_DIR is in use and PREREQAI_SESSION_MAX_AGE_DAYS is set to something unusable (not a
+        number, NaN or negative), so the default expiry applies instead; None when saving is off, or the setting is unset,
+        blank or valid. A typo such as "7d" would otherwise quietly keep sessions for the default days, not the intended 7."""
+
+        value = os.environ.get("PREREQAI_SESSION_MAX_AGE_DAYS", "").strip()
+
+        if not value or cls._directory() is None:
+
+            return None
+
+        try:
+
+            days = float(value)
+
+        except ValueError:
+
+            days = float("nan")
+
+        if days != days or days < 0:
+
+            return (f"PREREQAI_SESSION_MAX_AGE_DAYS={value!r} is not a number of days (0 keeps sessions forever), "
+                    f"so the default of {cls.DEFAULT_MAX_AGE_DAYS:g} days applies.")
+
+        return None
+
+    @classmethod
     def _max_age_seconds(cls) -> float | None:
         """None: never expire. An unset, unreadable or negative setting falls back to the default."""
 
