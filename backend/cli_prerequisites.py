@@ -81,6 +81,12 @@ def _print_tree(nodes, depth):
         _print_tree(node["prerequisites"], depth + 1)
 
 
+def _cli_detail(detail: str) -> str:
+    """The analysis failure detail as a command-line user should read it: the shared message says "the uploaded paper" (the
+    HTTP wording), but nothing was uploaded here; the learner gave a path or link. --json keeps the shared text."""
+    return str(detail).replace("the uploaded paper", "the paper").replace("Upload a text-based PDF", "Use a text-based PDF")
+
+
 def add_limit_arguments(parser):
     parser.add_argument("--max-seconds", type=_finite_number, default=None, dest="max_seconds",
                         help="Stop the analysis once it has run this long (checked between stages; default: no limit)")
@@ -246,9 +252,9 @@ def run_prerequisites_analyze(args, platform=None) -> int:
     elif was_cancelled:
         print("cancelled: analysis stopped before it finished; nothing was kept", file=sys.stderr)
     elif failed:
-        print(f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}", file=sys.stderr)
+        print(f"error: analysis failed at stage '{outcome['stage']}': {_cli_detail(outcome['detail'])}", file=sys.stderr)
         if outcome["hint"]:
-            print(f"  hint: {outcome['hint']}", file=sys.stderr)
+            print(f"  hint: {_cli_detail(outcome['hint'])}", file=sys.stderr)
         if args.diagnose:
             info = outcome["diagnostics"]
             # failed_after is the last stage that finished; failed_stage is the one that broke (the next, never completed)
@@ -380,8 +386,8 @@ def run_prerequisites_ask(args, platform=None) -> int:
                            f"error: {'limit exceeded' if outcome['status'] == 'limit_exceeded' else 'timed out'}: {outcome['detail']}",
                            f"  hint: {outcome['hint']}")
     if outcome["status"] != "success":
-        return _ask_failed(args, EXIT_FAILURE, outcome, f"error: analysis failed at stage '{outcome['stage']}': {outcome['detail']}",
-                           *([f"  hint: {outcome['hint']}"] if outcome.get("hint") else []))
+        return _ask_failed(args, EXIT_FAILURE, outcome, f"error: analysis failed at stage '{outcome['stage']}': {_cli_detail(outcome['detail'])}",
+                           *([f"  hint: {_cli_detail(outcome['hint'])}"] if outcome.get("hint") else []))
     from backend.session import TutorMode, session_manager
 
     session = session_manager.get(outcome["session_id"])

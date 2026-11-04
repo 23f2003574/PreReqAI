@@ -38,8 +38,8 @@ def test_corrupt_paper_fails_with_one_actionable_error_and_exit_code_1(tmp_path)
     result = _cli("prerequisites", "analyze", str(bad))
 
     assert result.returncode == 1 and result.stdout == ""
-    assert result.stderr.startswith("error: analysis failed at stage 'analysis': Failed to process the uploaded paper")
-    assert "  hint: Upload a text-based PDF research paper." in result.stderr and "Traceback" not in result.stderr
+    assert result.stderr.startswith("error: analysis failed at stage 'analysis': Failed to process the paper")
+    assert "  hint: Use a text-based PDF research paper." in result.stderr and "Traceback" not in result.stderr
 
 
 def test_a_mistyped_paper_path_is_reported_as_a_path_problem(tmp_path):
@@ -47,3 +47,19 @@ def test_a_mistyped_paper_path_is_reported_as_a_path_problem(tmp_path):
 
     assert result.returncode == 1 and result.stdout == "" and "Traceback" not in result.stderr
     assert "  hint: Check the paper path: it must name an existing PDF file" in result.stderr
+
+
+def test_cli_failure_never_says_a_local_file_was_uploaded(tmp_path):
+    import subprocess, sys
+
+    result = subprocess.run([sys.executable, "-m", "backend.cli", "prerequisites", "analyze", str(tmp_path / "missing.pdf")],
+                            capture_output=True, text=True)
+
+    assert result.returncode == 1
+    assert "uploaded" not in result.stderr
+    assert result.stderr.startswith("error: analysis failed at stage 'analysis': Failed to process the paper: ")
+    assert "Upload" not in result.stderr  # the hint too: nothing is uploaded on the command line
+    # the machine-readable output keeps the shared wording that HTTP clients also read
+    as_json = subprocess.run([sys.executable, "-m", "backend.cli", "prerequisites", "analyze", str(tmp_path / "missing.pdf"), "--json"],
+                             capture_output=True, text=True)
+    assert "Failed to process the uploaded paper" in as_json.stdout
