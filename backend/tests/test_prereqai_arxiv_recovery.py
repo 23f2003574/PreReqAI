@@ -6,7 +6,7 @@ import requests
 from backend.ingestion.arxiv_resolver import ArxivResolver
 from backend.ingestion.research_source_detector import ResearchSource
 
-PDF = b"%PDF-1.4 minimal"
+PDF = b"%PDF-1.4 minimal\n%%EOF"
 
 
 class _Reply:

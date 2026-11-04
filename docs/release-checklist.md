@@ -503,3 +503,7 @@ The 44 workspace/projection failures are gone (4112 passed when last re-checked 
 ## Truncated cached PDFs are replaced (2026-11-01)
 
 Gap (from the 2026-10-29 limitation): a cached download cut off mid-write that still began with `%PDF` was reused forever and failed every analysis. `_is_cached_pdf` now also requires `%%EOF` in the last 1 KiB (trailing padding after it is fine); otherwise the file is removed and downloaded again. Applies to arXiv and DOI caches. Tests added in `test_prereqai_cached_download_recovery.py`; two fixtures gained `%%EOF`. Limitation: a freshly downloaded body is still only checked for `%PDF`, and a PDF damaged mid-file but ending in `%%EOF` is not detected.
+
+## Truncated fresh downloads are rejected (2026-11-04)
+
+Gap (from the 2026-11-01 limitation): a freshly downloaded arXiv/DOI body was checked only for `%PDF`, so a body cut off mid-transfer was cached and analysed (the analysis then failed or produced a partial result). Both resolvers now also require `%%EOF` in the last 1 KiB (`ArxivResolver._is_complete_pdf`) and otherwise raise "incomplete PDF ... try again" without caching. Test: `test_a_truncated_fresh_download_is_rejected_and_not_cached`; fixtures that used fake PDF bodies gained `%%EOF`. Limitation: a PDF damaged mid-file but ending in `%%EOF` is not detected.

@@ -32,8 +32,8 @@ def test_a_file_named_cache_in_the_working_directory_no_longer_breaks_analysis(t
 
 def test_download_still_creates_the_cache_directory_on_demand(tmp_path, monkeypatch):
     monkeypatch.setattr(ArxivResolver, "CACHE_DIRECTORY", tmp_path / "deep" / "arxiv")
-    monkeypatch.setattr(ArxivResolver, "_download", lambda self, url: b"%PDF-1.4 fake")
+    monkeypatch.setattr(ArxivResolver, "_download", lambda self, url: b"%PDF-1.4 fake\n%%EOF")
     resolver = ArxivResolver()
     assert not (tmp_path / "deep").exists()
     source = type("S", (), {"identifier": "1706.03762"})()
-    assert Path(resolver.resolve(source)).read_bytes() == b"%PDF-1.4 fake"
+    assert Path(resolver.resolve(source)).read_bytes() == b"%PDF-1.4 fake\n%%EOF"

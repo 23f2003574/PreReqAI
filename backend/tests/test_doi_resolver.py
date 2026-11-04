@@ -138,7 +138,7 @@ def test_a_public_pdf_link_is_downloaded_through_a_redirect(cached, monkeypatch)
     def get(url, timeout, allow_redirects=True):
         if url.endswith("/works/10.1234/ok"):
             return crossref([{"URL": "https://x.org/p.pdf", "content-type": "application/pdf"}])
-        return Redirect() if url == "https://x.org/p.pdf" else Pdf(content=b"%PDF-1.4 ok")
+        return Redirect() if url == "https://x.org/p.pdf" else Pdf(content=b"%PDF-1.4 ok\n%%EOF")
 
     monkeypatch.setattr("backend.ingestion.doi_resolver.requests.get", get)
-    assert open(DoiResolver().resolve(doi_source("10.1234/ok")), "rb").read() == b"%PDF-1.4 ok"
+    assert open(DoiResolver().resolve(doi_source("10.1234/ok")), "rb").read() == b"%PDF-1.4 ok\n%%EOF"

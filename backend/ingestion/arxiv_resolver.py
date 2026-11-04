@@ -84,7 +84,19 @@ class ArxivResolver(BaseSourceResolver):
                 f"arXiv returned no PDF for {source.identifier}"
             )
 
+        if not self._is_complete_pdf(content):
+
+            raise ValueError(
+                f"arXiv returned an incomplete PDF for {source.identifier} (the download was cut off); try again"
+            )
+
         return str(self._store(pdf_path, content))
+
+    @staticmethod
+    def _is_complete_pdf(content: bytes) -> bool:
+        """A whole PDF ends with %%EOF (trailing padding is fine); a download cut off mid-transfer does not."""
+
+        return b"%%EOF" in content[-1024:]
 
     @staticmethod
     def _is_cached_pdf(pdf_path: Path) -> bool:

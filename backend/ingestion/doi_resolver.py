@@ -91,6 +91,12 @@ class DoiResolver(ArxivResolver):
                 f"DOI {source.identifier} did not return a PDF"
             )
 
+        if not self._is_complete_pdf(content):
+
+            raise ValueError(
+                f"DOI {source.identifier} returned an incomplete PDF (the download was cut off); try again"
+            )
+
         return str(self._store(pdf_path, content))
 
     # Publisher links usually redirect (to a CDN, to a login-less copy); each hop is checked, not only the first.

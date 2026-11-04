@@ -8,7 +8,7 @@ from backend.ingestion.research_source_detector import ResearchSource
 
 pytestmark = pytest.mark.prereqai
 
-PDF = b"%PDF-1.4 fresh"
+PDF = b"%PDF-1.4 fresh\n%%EOF"
 
 
 class _Reply:
@@ -71,3 +71,13 @@ def test_a_cached_pdf_with_trailing_padding_after_eof_is_reused(resolver):
     resolve.resolve(SOURCE)
 
     assert calls == []
+
+
+def test_a_truncated_fresh_download_is_rejected_and_not_cached(resolver, monkeypatch):
+    resolve, calls = resolver
+    monkeypatch.setattr(_Reply, "content", b"%PDF-1.4 cut off mid-stream")
+
+    with pytest.raises(ValueError, match="incomplete PDF"):
+        resolve.resolve(SOURCE)
+
+    assert not list(ArxivResolver.CACHE_DIRECTORY.glob("*"))
