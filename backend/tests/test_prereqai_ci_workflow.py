@@ -57,3 +57,15 @@ def test_workflow_runs_every_test_command_of_the_release_checklist():
         assert targets, command
         for target in targets:
             assert target in WORKFLOW, f"CI does not run `{target}` from the release checklist command: {command}"
+
+
+def test_workflow_runs_every_documented_command_group_from_the_runtime_only_install():
+    # ask / api-generation / recovery-decision are imported lazily per command: with the dev requirements installed (pytest,
+    # httpx2) a package missing from requirements.txt that only one of them needs would pass every other step.
+    step = WORKFLOW.split("Other documented CLI commands with only the runtime requirements", 1)[1]
+    for command in ("--version", "--help", "prerequisites ask examples/prerequisites/sample-paper.pdf",
+                    "api-generation generate --draft examples/api-generation/draft.json", "api-generation check",
+                    "recovery-decision readiness"):
+        assert command in step, command
+    assert 'PY="$RUNNER_TEMP/runtime/bin/python"' in step  # the runtime venv, not the dev environment
+    assert WORKFLOW.index("install -r requirements.txt") < WORKFLOW.index("Other documented CLI commands")

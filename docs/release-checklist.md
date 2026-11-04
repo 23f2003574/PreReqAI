@@ -556,3 +556,9 @@ Checked on commit `58e8449`. Each interpreter got its own new venv (`python -m v
 | 3.13.18 | ok | run in the working checkout every commit (978 passed) |
 
 The 3.11 and 3.10 suite runs were made from a fresh `git clone` of the repository, so nothing untracked in the working directory could mask a missing file; `uvicorn backend.main:app` from the 3.11 clone answered `/health` and an upload to `/api/prerequisites/analyze` with `success`. No install or first-run defect was found, so no code changed. Not tested: Windows and macOS (activation commands in the README are unverified there), and any Python below 3.10 (refused with a clear message by design).
+
+## CI exercises every documented command group from the runtime-only install (2026-11-04)
+
+Uncovered failure mode: the "runtime requirements" CI steps ran only `prerequisites analyze` and the HTTP server; `prerequisites ask`, `api-generation generate/check`, `recovery-decision readiness`, `--version` and `--help` were exercised only by pytest, i.e. with the dev requirements (pytest, httpx2) installed. These command groups are imported lazily, so a package missing from `requirements.txt` that only one of them needs would pass every CI step and break a user's install. New step "Other documented CLI commands with only the runtime requirements" in `.github/workflows/prereqai.yml` runs them from the runtime venv (about 5 s); `test_workflow_runs_every_documented_command_group_from_the_runtime_only_install` keeps the step from being dropped (fails when it is removed).
+
+Local verification only: the step's script was run verbatim (`set -eo pipefail`, `RUNNER_TEMP` pointing at a runtime-only Python 3.12 venv) and exited 0, and `pytest backend/tests/test_prereqai_ci_workflow.py` gives 8 passed. The step has NOT yet run on GitHub Actions: its first remote run happens with this push, so check the "PreReqAI checks" run on `main`. Limitation: it checks exit codes only, not the commands' output.
