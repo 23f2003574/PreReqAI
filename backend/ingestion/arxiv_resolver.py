@@ -1,3 +1,4 @@
+import contextvars
 import os
 import tempfile
 import threading
@@ -13,6 +14,12 @@ from .research_source_detector import (
 from .base_source_resolver import (
     BaseSourceResolver,
 )
+
+
+# Set by the analysis pipeline for the duration of a run: a callable that raises when the run was cancelled or ran out of time.
+# The download retry loop calls it before each retry, so a time limit (--max-seconds) is not outlasted by the retry delays
+# and repeated 60-second attempts of a download that is failing.
+RETRY_CHECKPOINT = contextvars.ContextVar("prereqai_retry_checkpoint", default=None)
 
 
 class ArxivResolver(BaseSourceResolver):
@@ -232,7 +239,20 @@ class ArxivResolver(BaseSourceResolver):
 
                     raise
 
+            self._checkpoint()
+
             time.sleep(delay)
+
+            self._checkpoint()
+
+    @staticmethod
+    def _checkpoint() -> None:
+
+        check = RETRY_CHECKPOINT.get()
+
+        if check is not None:
+
+            check()
 
     def _is_transient(self, exc) -> bool:
 

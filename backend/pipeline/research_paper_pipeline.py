@@ -117,6 +117,9 @@ class PaperTooLarge(Exception):
     """The paper the source resolved to (a downloaded arXiv/DOI file) is over the configured file size limit."""
 
 
+from backend.ingestion.arxiv_resolver import RETRY_CHECKPOINT  # noqa: E402
+
+
 class PipelineCancelled(Exception):
     """Raised by ResearchPaperPipeline.run() when its should_cancel callback
     reported True. Cancellation is checked between stages (a running stage is
@@ -343,6 +346,8 @@ class ResearchPaperPipeline:
 
         timer = _StageTimer(should_cancel)
 
+        checkpoint = RETRY_CHECKPOINT.set(timer.check_cancelled)
+
         try:
 
             timer.check_cancelled()
@@ -358,6 +363,10 @@ class ResearchPaperPipeline:
             exc.failed_stage = timer.current
 
             raise
+
+        finally:
+
+            RETRY_CHECKPOINT.reset(checkpoint)
 
     def _run(
         self,
