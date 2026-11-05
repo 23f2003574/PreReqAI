@@ -241,12 +241,12 @@ class PreReqAIPlatform:
             InteractiveLearningPipeline()
         )
 
-    def analyze(self, file_path: str, diagnostics: bool = False, should_cancel=None, limits=None, known=(), studied=()) -> dict:
+    def analyze(self, file_path: str, diagnostics: bool = False, should_cancel=None, limits=None, known=(), studied=(), labels=("--known", "--studied")) -> dict:
         """The workflow's public entry point: _analyze() plus the final-state guard. A result that is
         not a valid terminal state (see workflow_result.terminal_violations) is never returned as it
         is -- it becomes a failure at stage "finalization"."""
         started = perf_counter()
-        outcome = self._analyze(file_path, diagnostics, should_cancel, limits, _split_names(known), _split_names(studied))
+        outcome = self._analyze(file_path, diagnostics, should_cancel, limits, _split_names(known), _split_names(studied), labels)
         self._log_unsuccessful(outcome, perf_counter() - started)
         problems = terminal_violations(outcome)
         if problems:
@@ -272,7 +272,7 @@ class PreReqAIPlatform:
             outcome.get("status"), outcome.get("stage"), failed_stage, (outcome.get("error") or {}).get("type"), elapsed,
         )
 
-    def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits, known=(), studied=()) -> dict:
+    def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits, known=(), studied=(), labels=("--known", "--studied")) -> dict:
         """Run the analysis pipeline on a paper PDF and open a learning
         session for it. Returns the public workflow result envelope
         (backend.api.workflow_result): a success body carrying session_id and
@@ -339,6 +339,7 @@ class PreReqAIPlatform:
                 "finalization", f"The analysis did not complete: {', '.join(incomplete)}",
                 error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
             ), result.timings)
+        known_label, studied_label = labels  # how the caller names these inputs: CLI flags by default, form fields over HTTP
         concept_names = [item["concept"] for item in result.report.get("missing_prerequisites", [])]
         in_plan = {_concept_key(step.concept) for step in result.paper.learning_plan}
         not_studied = []
@@ -369,9 +370,9 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=unsaved + _repair_warning(file_path) + no_concepts + [f"--known {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
-            + [f"--studied {name!r} was ignored because you also said you already know it, so it is not in the study plan" for name in also_known]
-            + [f"--studied {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in not_studied],
+            warnings=unsaved + _repair_warning(file_path) + no_concepts + [f"{known_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
+            + [f"{studied_label} {name!r} was ignored because you also said you already know it, so it is not in the study plan" for name in also_known]
+            + [f"{studied_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in not_studied],
         )
         return with_diagnostics(outcome, result.timings, result.report)
 

@@ -31,3 +31,12 @@ def test_a_studied_name_that_is_also_known_is_reported_against_the_form_fields()
 
 def test_a_request_without_problems_has_no_warnings():
     assert _analyze(studied=["Calculus"]) == []
+
+
+def test_platform_words_warnings_with_the_labels_its_caller_gives():
+    """The wording belongs to the caller (CLI flags by default, form fields for HTTP), not to a rewrite of the platform's text."""
+    from backend.platform import PreReqAIPlatform
+    import inspect
+
+    default = inspect.signature(PreReqAIPlatform.analyze).parameters["labels"].default
+    assert default == ("--known", "--studied")
