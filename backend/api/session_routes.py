@@ -71,11 +71,18 @@ def session_not_found(session_id: str):
             "DELETE /api/session/{session_id} clears it; then run the analysis again.".replace("{session_id}", session_id),
         )
 
+    hint = "Run an analysis first and use the session_id it returns."
+
+    if session_manager._directory() is None:  # the usual reason a once-valid id is gone: the server restarted
+
+        hint += (" Sessions are kept in memory only and are lost when the server restarts; "
+                 "set PREREQAI_SESSION_DIR to keep them across restarts.")
+
     return failure_response(
         404,
         "session_lookup",
         "Session not found",
-        hint="Run an analysis first and use the session_id it returns.",
+        hint=hint,
     )
 
 
