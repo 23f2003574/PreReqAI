@@ -183,9 +183,7 @@ class SessionManager:
 
             self.last_save_ok = True
 
-        except Exception:
-
-            self.last_save_ok = False
+        except BaseException as exc:  # an interrupt (Ctrl-C, SystemExit) must not leave its temp file behind either
 
             try:  # a half-written temp file (disk full) must not keep eating the space the next attempt needs
 
@@ -194,6 +192,12 @@ class SessionManager:
             except OSError:
 
                 pass
+
+            if not isinstance(exc, Exception):  # the interrupt still propagates; only real failures become a failed save
+
+                raise
+
+            self.last_save_ok = False
 
         return self.last_save_ok
 
