@@ -86,6 +86,17 @@ async def http_error(request: Request, exc: StarletteHTTPException):
     return response
 
 
+@app.exception_handler(Exception)
+async def unexpected_error(request: Request, exc: Exception):
+    """An error no route anticipated (a bug, a failed rebuild) gets the failure envelope too, naming the underlying error,
+    instead of the server's bare plain-text "Internal Server Error" that a client cannot read `status` from."""
+    logging.getLogger(__name__).error("Unhandled error on %s %s", request.method, request.url.path, exc_info=exc)
+    return failure_response(
+        500, "server", "The request failed unexpectedly", error=exc,
+        hint="Retry the request; if it keeps failing, report it with the error above.",
+    )
+
+
 @app.exception_handler(RequestValidationError)
 async def invalid_request(request: Request, exc: RequestValidationError):
     """A malformed request (missing upload, unknown tutor mode, missing
