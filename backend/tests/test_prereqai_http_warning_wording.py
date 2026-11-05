@@ -33,10 +33,29 @@ def test_a_request_without_problems_has_no_warnings():
     assert _analyze(studied=["Calculus"]) == []
 
 
-def test_platform_words_warnings_with_the_labels_its_caller_gives():
-    """The wording belongs to the caller (CLI flags by default, form fields for HTTP), not to a rewrite of the platform's text."""
-    from backend.platform import PreReqAIPlatform
-    import inspect
 
-    default = inspect.signature(PreReqAIPlatform.analyze).parameters["labels"].default
-    assert default == ("--known", "--studied")
+def _platform_warnings(**kwargs):
+    from backend.platform import PreReqAIPlatform
+
+    outcome = PreReqAIPlatform().analyze(str(PAPER), **kwargs)
+    assert outcome["status"] == "success"
+    return outcome["warnings"]
+
+
+def test_platform_defaults_to_command_line_flag_names():
+    assert _platform_warnings(known=["Typo"], studied=["Nonsense"]) == [
+        "--known 'Typo' is not in this paper's study plan and was ignored",
+        "--studied 'Nonsense' is not in this paper's study plan and was ignored",
+    ]
+
+
+def test_platform_uses_the_labels_its_caller_supplies():
+    warnings = _platform_warnings(known=["Typo"], studied=["Nonsense"], labels=("the 'k' field", "the 's' field"))
+    assert warnings == [
+        "the 'k' field 'Typo' is not in this paper's study plan and was ignored",
+        "the 's' field 'Nonsense' is not in this paper's study plan and was ignored",
+    ]
+
+
+def test_labels_do_not_change_an_analysis_that_has_nothing_to_warn_about():
+    assert _platform_warnings(labels=("`known`", "`studied`")) == _platform_warnings()
