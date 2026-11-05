@@ -10,7 +10,9 @@ pytestmark = pytest.mark.prereqai
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = "examples/prerequisites/study_journey.py"
-BLOCK_HTTPX2 = "import sys, runpy; sys.modules['httpx2'] = None; runpy.run_path(sys.argv[1], run_name='__main__')"
+# Starlette's test client falls back to the legacy `httpx` (with a deprecation warning) when `httpx2` is absent, so an
+# environment that happens to have `httpx` installed would still run the example: block both to model "no client at all".
+BLOCK_HTTPX2 = "import sys, runpy; sys.modules['httpx2'] = None; sys.modules['httpx'] = None; runpy.run_path(sys.argv[1], run_name='__main__')"
 
 
 def test_a_missing_httpx2_gives_an_install_hint_and_no_traceback():
