@@ -9,6 +9,8 @@ import pymupdf
 import requests
 import urllib3
 
+from backend.ingestion.arxiv_resolver import RETRY_COUNTER
+
 from backend.api.workflow_result import (
     REQUIRED_REPORT_KEYS,
     cancelled_body,
@@ -36,7 +38,7 @@ from backend.pipeline.research_paper_pipeline import (
 )
 
 
-def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None) -> dict:
+def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None, download_retries=0) -> dict:
     """What the run already knows, for development: final status, completed
     stages with their durations, where a failed run stopped, warnings and the
     report's own statistics. Counts and timings only -- no inputs or paths.
@@ -50,6 +52,7 @@ def _diagnostics(outcome: dict, stage_timings: dict, report, failed_stage=None) 
         "stopped_after": completed[-1] if outcome["status"] in ("cancelled", "limit_exceeded", "timeout") and completed else None,
         "stage_seconds": dict(stage_timings), "total_seconds": round(sum(stage_timings.values()), 6),
         "slowest_stage": max(stage_timings, key=stage_timings.get) if stage_timings else None,
+        "download_retries": download_retries,  # transient arXiv/DOI download failures that were retried in this run
         "warnings": list(outcome["warnings"]), "statistics": dict(report["statistics"]) if report else None,
     }
 
@@ -289,9 +292,11 @@ class PreReqAIPlatform:
         session). The default is no limits."""
         from backend.session import session_manager
 
+        retries = {}  # filled by the download retry loop during this run (see RETRY_COUNTER)
+
         def with_diagnostics(outcome, timings=None, report=None, failed_stage=None):
             if diagnostics:
-                outcome["diagnostics"] = _diagnostics(outcome, timings or {}, report, failed_stage)
+                outcome["diagnostics"] = _diagnostics(outcome, timings or {}, report, failed_stage, retries.get("download_retries", 0))
             return outcome
 
         exceeded = []
@@ -320,6 +325,7 @@ class PreReqAIPlatform:
                         return True
                     return False
 
+        counter_token = RETRY_COUNTER.set(retries)
         try:
             result = self.analysis.run(file_path, should_cancel=should_cancel,
                                        **({'max_file_bytes': limits.max_file_bytes} if limits is not None and limits.max_file_bytes is not None else {}))
@@ -332,6 +338,8 @@ class PreReqAIPlatform:
                 outcome["hint"] = (f"The '{failed_stage}' stage failed on this paper, which usually means a bug rather than a "
                                    f"problem with the file; re-run with --diagnose and report it.")
             return with_diagnostics(outcome, getattr(exc, "stage_timings", {}), failed_stage=failed_stage)
+        finally:
+            RETRY_COUNTER.reset(counter_token)
         incomplete = [stage for stage in PIPELINE_STAGES if stage not in result.timings]
         incomplete += [f"report.{key}" for key in REQUIRED_REPORT_KEYS if key not in result.report]
         if incomplete:  # a partial result must never open a session or be reported as a success

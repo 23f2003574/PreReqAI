@@ -21,6 +21,10 @@ from .base_source_resolver import (
 # and repeated 60-second attempts of a download that is failing.
 RETRY_CHECKPOINT = contextvars.ContextVar("prereqai_retry_checkpoint", default=None)
 
+# Set by the platform for the duration of a run: a dict whose "download_retries" counts the transient download failures that
+# were retried (arXiv and DOI), so a flaky source shows up in --diagnose instead of only as a slow stage. Counts only.
+RETRY_COUNTER = contextvars.ContextVar("prereqai_retry_counter", default=None)
+
 
 class ArxivResolver(BaseSourceResolver):
     """
@@ -240,6 +244,12 @@ class ArxivResolver(BaseSourceResolver):
                     raise
 
             self._checkpoint()
+
+            counter = RETRY_COUNTER.get()
+
+            if counter is not None:
+
+                counter["download_retries"] = counter.get("download_retries", 0) + 1
 
             time.sleep(delay)
 

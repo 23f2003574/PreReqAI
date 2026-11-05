@@ -13,7 +13,7 @@ from backend.main import app
 from backend.platform import platform
 
 DIAGNOSTIC_KEYS = {"status", "stage", "completed_stages", "failed_after", "failed_stage", "stopped_after", "stage_seconds", "total_seconds",
-                   "slowest_stage", "warnings", "statistics"}
+                   "slowest_stage", "download_retries", "warnings", "statistics"}
 
 
 def _pdf(tmp_path):
