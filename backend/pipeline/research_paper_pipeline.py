@@ -2,7 +2,7 @@ import os
 from dataclasses import dataclass, field
 from time import perf_counter
 
-from backend.ingestion import PDFIngestionEngine
+from backend.ingestion import PDFIngestionEngine, RawDocument, ResearchSource
 
 from backend.ingestion import (
     ResearchSourceDetector,
@@ -210,7 +210,9 @@ _STAGES = (
 # What the stages writing these context keys must return: a stage that returns
 # anything else (e.g. None from a missing return) fails at that stage instead of
 # handing a broken value to the stages after it.
-_STAGE_OUTPUT_TYPES = {"paper": Paper, "report": dict}
+# The early hand-offs (source -> local file -> raw document) are checked too: a wrong value there used to surface one
+# stage later as an AttributeError or a PDF-library error that blamed the stage that received it, not the one that made it.
+_STAGE_OUTPUT_TYPES = {"source": ResearchSource, "pdf_path": str, "document": RawDocument, "paper": Paper, "report": dict}
 
 # A result is complete only if all of these were timed (a test pins this tuple
 # to what run() really records).
