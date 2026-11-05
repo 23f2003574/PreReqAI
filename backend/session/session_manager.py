@@ -283,7 +283,9 @@ class SessionManager:
 
             with self._lock:
 
-                self.sessions[session_id] = session
+                # Another thread may have restored this id while this one was reading the file: keep the first object so
+                # every request works on (and saves) the same session instead of each on its own copy.
+                session = self.sessions.setdefault(session_id, session)
 
         if session is not None:
 
