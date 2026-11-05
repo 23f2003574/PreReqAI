@@ -29,6 +29,35 @@ def _aliases(concept):
     return tuple(alias for alias in concept.aliases if not (alias.lower().endswith("s") and alias.lower()[:-1] in lowered))
 
 
+@lru_cache(maxsize=None)
+def _shadowing_terms(concepts):
+    """For each concept, the terms of other concepts whose mentions must not also count for it (with multiplicity). This
+    depends only on the registry, not on the paper, so it is computed once instead of for every analysed paper.
+
+    "Self-Attention" and "Multi-Head Attention" contain "attention": mentions of the longer concept (by name or alias) are
+    not also mentions of the shorter one, only a standalone "attention" is. The same holds for an alias: "convolutional
+    network" inside "graph convolutional network" belongs to the graph concept. Whole words only ("gat" is not in "gated")."""
+    shadowing = {}
+    for concept in concepts:
+        name = concept.name.lower()
+        terms = []
+        for other in concepts:
+            if other is not concept and name in other.name.lower():
+                terms.append(other.name)
+                terms.extend(alias for alias in _aliases(other) if name in alias.lower())
+        own = [alias.lower() for alias in _aliases(concept)]
+        counted = {other_term.lower() for other in concepts if other is not concept and name in other.name.lower()
+                   for other_term in (other.name, *_aliases(other))}
+        for other in concepts:
+            if other is concept:
+                continue
+            for term in (other.name, *_aliases(other)):
+                if term.lower() not in counted and any(_word_in(a, term.lower()) and a != term.lower() for a in own):
+                    terms.append(term)
+        shadowing[concept] = tuple(terms)
+    return shadowing
+
+
 class RuleBasedConceptDetector:
     """
     Detects known concepts using exact,
@@ -111,30 +140,11 @@ class RuleBasedConceptDetector:
                         total -= count(longer, True)
             return total
 
+        shadowing = _shadowing_terms(tuple(concepts))
+
         for concept in concepts:
 
-            name = concept.name.lower()
-
-            # "Self-Attention" and "Multi-Head Attention" contain "attention": mentions of the longer concept
-            # (by name or alias) are not also mentions of the shorter one, only a standalone "attention" is.
-            inside_longer = sum(
-                count(other.name, True)
-                + sum(count(alias, True) for alias in _aliases(other) if name in alias.lower())
-                for other in concepts
-                if other is not concept and name in other.name.lower()
-            )
-
-            # The same holds for an alias: "convolutional network" inside "graph convolutional network" belongs to
-            # the graph concept, not to Convolutional Neural Network. Whole words only ("gat" is not in "gated").
-            own = [alias.lower() for alias in _aliases(concept)]
-            counted = {other_term.lower() for other in concepts if other is not concept and name in other.name.lower()
-                       for other_term in (other.name, *_aliases(other))}
-            for other in concepts:
-                if other is concept:
-                    continue
-                for term in (other.name, *_aliases(other)):
-                    if term.lower() not in counted and any(_word_in(a, term.lower()) and a != term.lower() for a in own):
-                        inside_longer += count(term, True)
+            inside_longer = sum(count(term, True) for term in shadowing[concept])
 
             occurrences = mentions(concept) - inside_longer
 

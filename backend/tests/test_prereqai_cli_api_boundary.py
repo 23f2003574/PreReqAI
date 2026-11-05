@@ -67,7 +67,7 @@ def test_the_api_route_does_not_duplicate_the_workflow_conversion(tmp_path):
 
     calls = []
     real = platform.analyze
-    platform.analyze = lambda path: calls.append(path) or real(path)
+    platform.analyze = lambda path, **kwargs: calls.append(path) or real(path, **kwargs)
     try:
         response = client.post("/api/prerequisites/analyze", files={"paper": ("p.pdf", b"x", "application/pdf")})
     finally:
