@@ -27,6 +27,40 @@ class RawDocument:
         return len(self.pages)
 
 
+def _three_column_order(lines, width):
+    """The (box, text, position) items of a three-column page in reading order, or None when the lines are not three columns.
+
+    A line wider than 60% of the page (title, abstract, figure) separates runs. In each run, narrow lines are grouped by their
+    left edge (a gap of more than 5% of the page width starts a column); a run that has exactly three columns of at least two
+    lines is read column by column, any other run keeps its original order. None unless some run is three columns, so a one- or
+    two-column page is left to `_lines_in_column_order`."""
+
+    items = [(box, text, position) for position, (box, text) in enumerate(lines)]
+    runs, current = [], []
+    for item in items:
+        if item[0][2] - item[0][0] > 0.6 * width:
+            runs.extend([current, [item]] if current else [[item]])
+            current = []
+        else:
+            current.append(item)
+    if current:
+        runs.append(current)
+    ordered, found = [], False
+    for run in runs:
+        columns = []
+        for item in sorted(run, key=lambda entry: entry[0][0]):
+            if columns and item[0][0] - columns[-1][-1][0][0] <= 0.05 * width:
+                columns[-1].append(item)
+            else:
+                columns.append([item])
+        if len(columns) == 3 and all(len(column) >= 2 for column in columns):
+            found = True
+            ordered.extend(item for column in columns for item in sorted(column, key=lambda entry: entry[2]))
+        else:
+            ordered.extend(run)
+    return ordered if found else None
+
+
 def _lines_in_column_order(page):
     """The page's text lines (with their boxes) in reading order, or None when the page needs no reordering.
 
@@ -42,6 +76,11 @@ def _lines_in_column_order(page):
         for block in page.get_text("dict")["blocks"] if block.get("type") == 0
         for line in block["lines"]
     ]
+    three = _three_column_order(lines, page.rect.width)
+    if three is not None:
+        if [item[2] for item in three] == list(range(len(lines))):
+            return None
+        return "\n".join(item[1] for item in three) + "\n"
     ordered, run = [], {"left": [], "right": []}
 
     def flush():
