@@ -30,6 +30,10 @@ _NUMBERED = rf"\d+(?:\.\d+)*\.?[ \t]+[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{0,7}}"
 # IEEE-style "II. PROPOSED METHOD": a roman numeral and an all-caps title (all caps keeps an author line like "I. Goodfellow" out of the headings).
 _ROMAN_CAPS = r"[IVX]+\.[ \t]+[A-Z]{3,}(?:[ \t]+[A-Z][A-Z\-]*){0,7}"
 
+# IEEE-style title-case "II. Proposed Method": a roman numeral and at least two title-case words (one word would also match an author
+# line such as "I. Goodfellow"; "I. Goodfellow and Y. Bengio" fails on the dot after "Y").
+_ROMAN_TITLE = rf"[IVX]+\.[ \t]+[A-Z][a-z]+(?:[ \t]+{_WORD}){{1,7}}"
+
 # A named appendix such as "Appendix A: Proofs" or "Appendix B. Additional Experiments" (the title follows the same title-case rule).
 _NAMED_APPENDIX = rf"Appendix(?:[ \t]+(?:[A-Z]|\d+)(?:\.\d+)*)?[ \t]*[:.\-\u2013\u2014][ \t]*[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{0,7}}"
 
@@ -47,7 +51,7 @@ _UNNUMBERED_TITLE = re.compile(rf"^[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{1,7}}$")
 _SENTENCE_END = re.compile(r"[.!?]$")
 _SKIPPED_TITLES = re.compile(r"(?i:front matter|full paper|references|bibliography|works cited|acknowledge?ments?)\b")
 
-SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN}):?|{_NUMBERED}|{_ROMAN_CAPS}|{_NAMED_APPENDIX})[ \t]*$", re.MULTILINE)
+SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN}):?|{_NUMBERED}|{_ROMAN_CAPS}|{_ROMAN_TITLE}|{_NAMED_APPENDIX})[ \t]*$", re.MULTILINE)
 
 
 class ScientificSectionParser:
