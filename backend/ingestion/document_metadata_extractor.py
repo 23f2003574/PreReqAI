@@ -72,13 +72,15 @@ class DocumentMetadataExtractor:
         return " ".join(run)[:200]
 
     _NAME = re.compile(r"^[A-Z][\w.'\-]*(?: [A-Z][\w.'\-]*){1,3}$")
-    _NOT_AUTHORS = re.compile(r"universit|institute|laborator|research|google|microsoft|department|school|abstract|@|\d|arxiv", re.I)
+    _NOT_AUTHORS = re.compile(r"universit|college|centre|center|faculty|institute|laborator|research|google|microsoft|department|school|abstract|@|\d|arxiv", re.I)
+
+    _AFFILIATION = re.compile(r"universit|college|centre|center|faculty|institute|laborator|research|google|microsoft|department|school|@|\d", re.I)
+    _BLOCK_END = re.compile(r"abstract|arxiv", re.I)
 
     @classmethod
     def _author_from_first_page(cls, pdf) -> str:
         """The author lines of page one when the metadata has none: the run of consecutive lines within the few after
-        the title that are lists of person names (one author per line or several per line; affiliations, e-mail
-        addresses and the abstract are skipped and end the run), or ""."""
+        the title that are lists of person names (one author per line or several per line; affiliation and e-mail lines between authors are skipped, the abstract ends the run), or ""."""
         if not len(pdf):
             return ""
         lines = [line.strip() for line in clean_pdf_text(pdf[0].get_text()).splitlines() if line.strip()]
@@ -88,6 +90,6 @@ class DocumentMetadataExtractor:
             names = [n.strip() for n in re.split(r",|\band\b|;", cleaned) if n.strip()]
             if names and not cls._NOT_AUTHORS.search(cleaned) and all(cls._NAME.match(n) for n in names):
                 authors.extend(name for name in names if name not in authors)
-            elif authors:
-                break  # the author block ended (affiliation, e-mail, abstract)
+            elif authors and not (cls._AFFILIATION.search(cleaned) and not cls._BLOCK_END.search(cleaned)):
+                break  # the author block ended (abstract or other text); an affiliation line between authors does not end it
         return ", ".join(authors)

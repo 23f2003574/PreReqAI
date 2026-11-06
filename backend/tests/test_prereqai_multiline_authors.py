@@ -22,3 +22,8 @@ def test_authors_on_separate_lines_are_joined_and_stop_at_the_affiliation(tmp_pa
 def test_a_single_author_line_still_works_and_no_author_lines_stay_unknown(tmp_path):
     assert _author(tmp_path, "A Title", "Jane Doe and John Smith", "Department of Things") == "Jane Doe, John Smith"
     assert _author(tmp_path, "A Title", "Abstract", "we study things", "Department of Things") == "Unknown Author"
+
+
+def test_affiliation_lines_between_authors_do_not_cut_the_list_short(tmp_path):
+    assert _author(tmp_path, "A Title", "Ada Lovelace", "University of London", "Alan Turing", "King's College", "Abstract", "We sort.") == "Ada Lovelace, Alan Turing"
+    assert _author(tmp_path, "A Title", "Ada Lovelace", "ada@example.org", "Alan Turing", "Abstract", "We sort.") == "Ada Lovelace, Alan Turing"
