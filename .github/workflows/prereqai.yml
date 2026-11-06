@@ -56,6 +56,8 @@ jobs:
           "$PY" -m backend.cli --version
           "$PY" -m backend.cli --help > /dev/null
           "$PY" -m backend.cli prerequisites ask examples/prerequisites/sample-paper.pdf "What should I learn first?"
+          "$PY" -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf --tree --resources --plan-file "$RUNNER_TEMP/plan.md"
+          "$PY" -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf --resume "$RUNNER_TEMP/plan.md"
           "$PY" -m backend.cli api-generation generate --draft examples/api-generation/draft.json --output-dir "$RUNNER_TEMP/generated-api"
           "$PY" -m backend.cli api-generation check "$RUNNER_TEMP/generated-api"
           "$PY" -m backend.cli recovery-decision readiness
