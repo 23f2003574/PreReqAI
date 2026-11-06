@@ -21,7 +21,10 @@ _KNOWN = (
     r"Introduction and Motivation|Background and Related Work|Related Work and Background|Preliminaries and Notation|Notation and Preliminaries|"
     r"Main Results|Key Results|Qualitative Results|Quantitative Results|Hyperparameters|Evaluation Metrics|Experimental Setup and Results|"
     r"Training Objective|Overview of the Method|Ethical Considerations|Societal Impacts?|Code Availability|Data Availability|"
-    r"Author Contributions|Competing Interests|Funding|Limitations and Broader Impacts?|Broader Impacts? and Limitations))"
+    r"Author Contributions|Competing Interests|Funding|Limitations and Broader Impacts?|Broader Impacts? and Limitations|"
+    # more fixed phrases seen as unnumbered headings (the section-folding warning points at these)
+    r"Motivation|Problem (?:Definition|Description)|Baselines?|Contributions|Architecture|Model Training|Case Stud(?:y|ies)|"
+    r"Preliminary|Setup|Implementation|Qualitative Analysis|Error Analysis|Hyperparameter Settings|Task Description))"
 )
 # A numbered, title-cased line such as "3.2 Scaled Dot-Product Attention": at most 8 words, no digits or sentence punctuation.
 _WORD = r"(?:[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"
