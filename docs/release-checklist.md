@@ -52,7 +52,7 @@ workspace/projection failures plus the 2 network tests listed below, nothing new
 | Blocker before release | Run at least one real published paper (e.g. an arXiv PDF) end to end and fix what it exposes. |
 | Done | Session persistence: opt-in `PREREQAI_SESSION_DIR` (pickle files; single-process, no locking or expiry/cleanup). Default stays in-memory. Verified with a real `uvicorn` stop/start in `test_prereqai_restart_acceptance.py`. |
 | Done (documented) | Tutor answers are a placeholder: stated in the README, and every question response carries a warning. Wiring a real model remains open and needs a provider decision. |
-| Required before January | The 44 workspace/projection test failures: scoped in "January scope triage" below. |
+| Resolved (2026-10-30; re-run 2026-11-06) | The 44 workspace/projection test failures: fixed, see "Status as of 2026-11-06" at the end. |
 | Required before January | Section parser: numbered title-case headings and IEEE-style roman-numbered all-caps headings (`II. PROPOSED METHOD`) now split; unnumbered headings outside the fixed list (and roman-numbered title-case ones) still fold into the previous section. |
 | Optional | Concepts outside the registry (e.g. Calculus) have no rules, resources or explanations. |
 | Optional | Unmark a studied concept (HTTP analyze form now accepts `studied`, matching the CLI). |
@@ -61,7 +61,7 @@ workspace/projection failures plus the 2 network tests listed below, nothing new
 
 ## Known open items (not release gates today)
 
-- The 44 non-network failures in the full run (`test_research_workspace_*`, `test_consumer_projection_*`) are real
+- (Resolved 2026-10-30, see the end of this file.) The 44 non-network failures in the full run (`test_research_workspace_*`, `test_consumer_projection_*`) are real
   bugs in those modules (e.g. a missing `ResearchWorkspaceConsumerProjectionDiagnosticsStageHelper`); steps 3 and 4
   are the gate until they are fixed.
 - `test_arxiv_resolver.py` needs network access.
@@ -86,7 +86,7 @@ Order of work, most consequential first. Everything the product's documented wor
 2. **Tutoring model (needs a decision).** The tutor is the rule-based placeholder and is disclosed in the README and every answer's `warnings`.
    Dependency: a provider choice and an API key. Next step: implement a `Tutor` that builds prompts with the existing `TutorPromptBuilder`
    (`backend/tutor/tutor_prompt_builder.py`), selected when a key is configured; keep the placeholder as the offline default.
-3. **44 failing tests in `test_research_workspace_*` (24) and `test_consumer_projection_*` (20, 13 of them fingerprinting) — scoped, not in the release path.**
+3. **(Resolved 2026-10-30; the scoping below is historical.) 44 failing tests in `test_research_workspace_*` (24) and `test_consumer_projection_*` (20, 13 of them fingerprinting) — scoped, not in the release path.**
    Counts by file: fingerprinting 13, actions 12, execution_receipt 5, bootstrap 3, projection_context 3, formatter 2, diagnostics 2, and one each in budget,
    freshness, gateway, readiness. Causes seen: tests mutating frozen dataclasses (`enabled`), a descriptor without `.name`, missing helper
    `ResearchWorkspaceConsumerProjectionDiagnosticsStageHelper`, lambdas not accepting `value=`, status `degraded` where `succeeded` is expected.
@@ -109,7 +109,7 @@ Evidence at this commit: release checks (PreReqAI, endpoint, API generation, gen
 |---|---|
 | Release blocker | Run a real published paper end to end (CLI and HTTP) and fix what it exposes. |
 | Required before January | Tutoring model (placeholder is disclosed; a model-backed tutor needs a provider decision). |
-| Required before January | The 44 workspace/projection test failures (scoped in the triage above). |
+| Resolved (2026-10-30; re-run 2026-11-06) | The 44 workspace/projection test failures: see "Status as of 2026-11-06" at the end. |
 | Required before January | Python versions: 3.11 verified (quickstart + 303 PreReqAI tests, 2026-10-11); 3.12 verified (fresh venv from requirements-dev.txt on Python 3.12.3: the README quickstart analysis, then `pytest -m prereqai` = 534 passed, 11747 deselected, 0 failed, 2026-10-27); 3.10 verified 2026-11-04 (see "Clean-environment verification on every supported Python" below). Older interpreters are refused with a clear message; all sources parse under the 3.10 grammar. |
 | Optional | unnumbered-heading detection, unmark a studied concept, OCR, multi-line authors, concepts outside the registry. |
 
@@ -566,3 +566,7 @@ Local verification only: the step's script was run verbatim (`set -eo pipefail`,
 ## Interleaved two-column pages are read column by column (2026-11-04)
 
 Blocker slice ("two-column text order ... untested on real layouts", item 4 of "Outstanding before January 2027"): reproduced with a generated two-column page whose lines are written alternately (left 1, right 1, left 2, ...), as some generators do: the text read across the gutter, so "policy / gradient", "back- / propagation" and the section headings broke and 4 of the 7 concepts were lost (Policy Gradient, Attention, Backpropagation, Variational Autoencoder). `PDFIngestionEngine` now reads such a page's lines in runs between full-width lines, left column before right, when a run has at least two lines on each side; a page already column by column, and any one-column page, is returned exactly as extracted (`get_text("text")`). Tests: `test_prereqai_two_column_reading_order.py` (3; two fail without the change). Still unverified: real published two-column papers (no network here), three or more columns, and figures/captions that sit between columns.
+
+## Status as of 2026-11-06: workspace/projection failures
+
+The older sections above (release decision table, "Known open items", "January scope triage") still described the 44 workspace/projection failures as open; they were fixed on 2026-10-30 (see that day's entry). Re-run on 2026-11-06 from a fresh virtualenv: `python -m pytest -p no:cacheprovider -q -k "research_workspace or consumer_projection" backend/tests` -> 4112 passed, 8652 deselected, 0 failed (22 s). Not re-run: the complete `backend/tests` suite, the two network tests, and Python 3.10/3.12. Unchanged and still open: the real published paper, the tutoring model.
