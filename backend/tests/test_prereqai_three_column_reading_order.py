@@ -36,3 +36,19 @@ def test_a_full_width_line_separates_runs():
 def test_column_by_column_pages_and_two_columns_are_unchanged():
     assert _page_text(_page(3, alternate=False)).split() == [f"c{c}l{r}" for c in range(3) for r in range(4)]
     assert _page_text(_page(2)).split() == [f"c{c}l{r}" for c in range(2) for r in range(4)]
+
+
+def test_a_full_width_figure_caption_between_two_column_runs_keeps_its_place():
+    page = fitz.open().new_page()
+    for row in range(3):
+        for column, x in enumerate([72, 330]):
+            page.insert_text((x, 100 + 14 * row), f"a{column}l{row}", fontsize=10)
+    page.insert_text((72, 160), "Figure 1: A caption that spans both columns across the whole width of the page.", fontsize=10)
+    for row in range(3):
+        for column, x in enumerate([72, 330]):
+            page.insert_text((x, 190 + 14 * row), f"b{column}l{row}", fontsize=10)
+    words = _page_text(page).split()
+    order = [w for w in words if w[0] in "ab" and w[1] in "01" and w[2] == "l"]
+    assert order == [f"a{c}l{r}" for c in range(2) for r in range(3)] + [f"b{c}l{r}" for c in range(2) for r in range(3)]
+    assert words.index("Figure") > words.index("a1l2") and words.index("Figure") < words.index("b0l0")
+    assert words.count("Figure") == 1
