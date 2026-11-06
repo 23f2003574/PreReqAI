@@ -73,6 +73,13 @@ printed as a warning.
 
 Releasing? Follow [docs/release-checklist.md](docs/release-checklist.md). Run `python -m backend.cli --help` for every command, and `python -m pytest backend/tests` for the test suite (`python -m pytest -m prereqai` runs just the PreReqAI product tests) (first `pip install -r requirements-dev.txt`, which adds pytest on top of the runtime requirements; run it from the repository root; a few tests, such as the arXiv download, need network access).
 
+### What the analysis tells you about the paper's layout
+
+- If a line inside a section looks like a heading the parser did not recognise (a short title-cased line after a sentence end), the analysis adds a `warnings` entry naming it and the section it sits in. The text is still analysed; it is only filed under the previous section. Single-word headings are not reported.
+- Pages with two or three columns whose lines were written alternately are read column by column; a full-width line (title, abstract, caption) separates runs. Four or more columns are not handled.
+- A PDF with no extractable text (a scan) is reported in `warnings`; there is no OCR.
+- When the PDF metadata has no author, the author block on page one is read, including blocks with affiliation lines between authors; it is a heuristic and may answer "Unknown Author".
+
 ## Prerequisite Explorer
 
 Upload a research paper to receive:
