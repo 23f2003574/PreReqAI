@@ -40,6 +40,13 @@ _LETTERED_APPENDIX = re.compile(rf"^[A-Z](?:\.\d+)*[ \t]+[A-Z][A-Za-z\-]*(?:[ \t
 
 _BACK_MATTER_HEADING = re.compile(r"(?i:references|bibliography|works cited|acknowledge?ments?|appendix|appendices|supplementary materials?)\b")
 
+# An unrecognised heading hidden inside a section body: a short title-cased line (the _NUMBERED shape without the number, at least two
+# words, no digits or sentence punctuation) that follows a line ending a sentence. A wrapped line never qualifies (the line before it
+# does not end a sentence), and a lone capitalised word is too ambiguous to report.
+_UNNUMBERED_TITLE = re.compile(rf"^[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{1,7}}$")
+_SENTENCE_END = re.compile(r"[.!?]$")
+_SKIPPED_TITLES = re.compile(r"(?i:front matter|full paper|references|bibliography|works cited|acknowledge?ments?)\b")
+
 SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN}):?|{_NUMBERED}|{_ROMAN_CAPS}|{_NAMED_APPENDIX})[ \t]*$", re.MULTILINE)
 
 
@@ -103,3 +110,25 @@ class ScientificSectionParser:
             pages=document.pages,
             sections=sections,
         )
+
+
+def absorbed_heading_candidates(paper: Paper) -> list:
+    """Lines inside a recognised section's body that look like a heading the parser did not recognise (so the text after them
+    was filed under the previous section). Report-only: sections are never changed. Front matter and bibliography are not
+    inspected (author names and reference titles have the same shape)."""
+
+    found = []
+
+    for section in paper.sections:
+
+        if _SKIPPED_TITLES.match(section.title):
+            continue
+
+        lines = [line.strip() for line in section.content.splitlines()]
+
+        for before, line in zip(lines, lines[1:]):
+
+            if line and _UNNUMBERED_TITLE.match(line) and _SENTENCE_END.search(before):
+                found.append((section.title, line))
+
+    return found

@@ -10,6 +10,7 @@ import requests
 import urllib3
 
 from backend.ingestion.arxiv_resolver import RETRY_COUNTER
+from backend.parsing.scientific_section_parser import absorbed_heading_candidates
 
 from backend.api.workflow_result import (
     REQUIRED_REPORT_KEYS,
@@ -62,6 +63,22 @@ _log = logging.getLogger("prereqai.analysis")
 _log.addHandler(logging.NullHandler())  # library default: silent (the CLI reports failures itself); backend.main turns the server log on
 
 _MISSING_FILE_ERRORS = (FileNotFoundError, getattr(pymupdf, "FileNotFoundError", FileNotFoundError))
+
+
+def _absorbed_heading_warning(paper) -> list:
+    """Possible headings the section parser did not recognise: their text is filed under the previous section."""
+    try:
+        found = absorbed_heading_candidates(paper)
+    except Exception:  # a diagnostic must never fail an analysis
+        return []
+    if not found:
+        return []
+    shown = "; ".join(f"{line!r} (inside '{title}')" for title, line in found[:5])
+    more = f" and {len(found) - 5} more" if len(found) > 5 else ""
+    return [
+        f"Possible section headings were not recognised and may be filed under the previous section: {shown}{more}. "
+        "Concepts are still detected, but section-based reasoning for this text may be imprecise."
+    ]
 
 
 def _repair_warning(file_path) -> list:
@@ -378,7 +395,7 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=unsaved + _repair_warning(file_path) + no_concepts + [f"{known_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
+            warnings=unsaved + _repair_warning(file_path) + _absorbed_heading_warning(result.paper) + no_concepts + [f"{known_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
             + [f"{studied_label} {name!r} was ignored because you also said you already know it, so it is not in the study plan" for name in also_known]
             + [f"{studied_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in not_studied],
         )
