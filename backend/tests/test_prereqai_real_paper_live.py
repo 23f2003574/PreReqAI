@@ -19,6 +19,22 @@ pytestmark = [
 SOURCE = "arXiv:1706.03762"
 
 
+def explain_failure(outcome, source=SOURCE):
+    """A readable account of a failed analysis for the live run: which step failed, what the pipeline said and what to try, so a
+    download problem, a bad PDF and an analysis bug are not all the same opaque `assert outcome["status"] == "success"` dump."""
+    if outcome.get("status") == "success":
+        return ""
+    detail = outcome.get("detail") or (outcome.get("error") or {}).get("message") or "no detail given"
+    stage = outcome.get("failed_stage") or outcome.get("stage")
+    where = "downloading the paper (check network access to arxiv.org; a proxy 403 means the host is blocked)" if stage == "analysis" and "reach" in detail.lower() else f"stage {stage!r}"
+    lines = [f"Live-paper run for {source} ended with status {outcome.get('status')!r} at {where}.", f"Pipeline said: {detail}"]
+    if outcome.get("hint"):
+        lines.append(f"Hint: {outcome['hint']}")
+    if outcome.get("diagnostics"):
+        lines.append(f"Diagnostics: {outcome['diagnostics']}")
+    return "\n".join(lines)
+
+
 def _check_report(report):
     names = {c["concept"] for c in report["concept_evidence"]}
     assert {"Attention", "Transformer"} <= names and len(names) >= 5, sorted(names)
@@ -33,13 +49,14 @@ def _check_report(report):
 
 def test_a_real_published_paper_is_analysed_end_to_end_over_the_platform_and_http():
     outcome = platform.analyze(SOURCE, diagnostics=True)
-    assert outcome["status"] == "success", outcome
+    assert outcome["status"] == "success", explain_failure(outcome)
     names = _check_report(outcome["report"])
 
     client = TestClient(app)
     response = client.post("/api/prerequisites/analyze", data={"source": SOURCE})
-    assert response.status_code == 200
+    assert response.status_code == 200, explain_failure(response.json())
     body = response.json()
+    assert body["status"] == "success", explain_failure(body)
     assert _check_report(body["report"]) == names  # CLI/platform and HTTP agree on the same paper
 
     asked = client.post(f"/api/session/{body['session_id']}/question", json={"question": "What should I learn first?"})
