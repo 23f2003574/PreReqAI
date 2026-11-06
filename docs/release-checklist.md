@@ -570,3 +570,15 @@ Blocker slice ("two-column text order ... untested on real layouts", item 4 of "
 ## Status as of 2026-11-06: workspace/projection failures
 
 The older sections above (release decision table, "Known open items", "January scope triage") still described the 44 workspace/projection failures as open; they were fixed on 2026-10-30 (see that day's entry). Re-run on 2026-11-06 from a fresh virtualenv: `python -m pytest -p no:cacheprovider -q -k "research_workspace or consumer_projection" backend/tests` -> 4112 passed, 8652 deselected, 0 failed (22 s). Not re-run: the complete `backend/tests` suite, the two network tests, and Python 3.10/3.12. Unchanged and still open: the real published paper, the tutoring model.
+
+## Product changes of 2026-11-06
+
+Checked at commit `1914907`: `pytest -m prereqai` 1022 passed, 1 skipped, 0 failed; API generation and generated-project checks 235 passed.
+
+- Possible unrecognised (unnumbered) headings inside a section now add one `warnings` entry (platform, CLI `--json`, HTTP); section extraction is unchanged. Heuristic: a short title-cased line after a sentence end; it misses single-word headings and can flag a title-cased figure label. Test: `test_prereqai_absorbed_headings.py`.
+- Author extraction keeps going past affiliation or e-mail lines between authors (it stopped at the first one). Test: `test_prereqai_multiline_authors.py`.
+- Pages with three alternating columns are read column by column (two-column behaviour unchanged). Test: `test_prereqai_three_column_reading_order.py`. Still unverified: real published layouts, four or more columns.
+- Coverage only (no behaviour change): unmarking a studied concept survives a restart; an image-only PDF warns "no extractable text"; the live-paper check explains failures (`PREREQAI_LIVE_PAPER=1` still required; it has NOT been run: no network here).
+- CI: `analyze --tree --resources --plan-file` and `--resume` run from the runtime-only install. Not yet seen running on GitHub Actions.
+- Examined and left unchanged: HTTP unmarking of studied concepts and atomic session writes already existed with tests. Every one of the 45 registry concepts has prerequisite rules or is a base subject, so there is no "unmapped registry concept" to report; concepts outside the registry are simply not detected.
+- Still open: the real published paper (release blocker), the tutoring model, Python 3.10/3.12 re-runs.
