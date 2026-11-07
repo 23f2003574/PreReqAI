@@ -335,7 +335,44 @@ class SessionManager:
 
             return None
 
+        SessionManager._reconcile_known_and_studied(session)
+
         return session
+
+    @staticmethod
+    def _reconcile_known_and_studied(session: LearningSession) -> None:
+        """A saved session (older version, hand-edited file) that lists a concept both as studied and as already known is made
+        consistent the way marking it known does: it leaves the plan's progress and is remembered in `studied_while_known`,
+        so un-marking known gives the study progress back. A consistent session is left untouched."""
+
+        paper = session.paper
+
+        if paper is None or not getattr(paper, "study_progress", None):
+
+            return
+
+        try:
+
+            from backend.platform import platform
+            from backend.platform.prereqai_platform import KNOWN_REASON
+
+            known = {item.concept.casefold() for item in paper.missing_prerequisites if item.reason == KNOWN_REASON}
+
+            clash = [item.concept for item in paper.study_progress if item.concept.casefold() in known and item.completed]
+
+            if not clash:
+
+                return
+
+            paper.studied_while_known = [*getattr(paper, "studied_while_known", []), *clash]
+
+            paper.study_progress = [item for item in paper.study_progress if item.concept not in clash]
+
+            platform._refresh_progress(paper, session.report)
+
+        except Exception:  # the file stays readable as saved: repairing is best effort
+
+            pass
 
     def is_unreadable(self, session_id: str) -> bool:
         """True when a saved file exists for this id but cannot be loaded (corrupt or from another version)."""
