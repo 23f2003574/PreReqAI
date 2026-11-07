@@ -40,6 +40,11 @@ class KnowledgeGraph:
         edge: GraphEdge,
     ):
 
+        # A self-loop is a malformed relationship: it would make a concept its own prerequisite.
+        if edge.source == edge.target:
+
+            raise ValueError(f"Graph edge cannot connect {edge.source!r} to itself")
+
         self.edges.append(edge)
 
     def node_exists(
