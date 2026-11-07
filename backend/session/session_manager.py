@@ -42,6 +42,8 @@ class SessionManager:
 
         self.last_save_ok = True
 
+        self._save_locks = {}  # session_id -> lock: saves of one session run one at a time (see save)
+
         self._last_purge = float("-inf")
 
         self._summaries = {}  # saved-only session path -> ((mtime_ns, size), summary), so a listing re-reads only changed files
@@ -173,13 +175,21 @@ class SessionManager:
         # truncated each other or lost the swap, reporting a failed save (and a lost restart) that never happened
         temp = path.with_name(f"{path.stem}.{os.getpid()}.{threading.get_ident()}.tmp")
 
+        with self._lock:
+
+            save_lock = self._save_locks.setdefault(session.session_id, threading.Lock())
+
+        # Two saves of one session must not interleave: one that pickled an older state could otherwise replace the file
+        # after a later save wrote the newer state, losing that update. Snapshot and swap happen under the session's lock.
         try:
 
-            path.parent.mkdir(parents=True, exist_ok=True)
+            with save_lock:
 
-            temp.write_bytes(pickle.dumps(session))
+                path.parent.mkdir(parents=True, exist_ok=True)
 
-            temp.replace(path)
+                temp.write_bytes(pickle.dumps(session))
+
+                temp.replace(path)
 
             self.last_save_ok = True
 
@@ -332,6 +342,8 @@ class SessionManager:
         with self._lock:
 
             self.sessions.pop(session_id, None)
+
+            self._save_locks.pop(session_id, None)
 
             self._last_used.pop(session_id, None)  # a deleted session must not leave bookkeeping behind in a long-lived server
 
