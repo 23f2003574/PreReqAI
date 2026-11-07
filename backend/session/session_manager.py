@@ -42,6 +42,8 @@ class SessionManager:
 
         self.last_save_ok = True
 
+        self._unsaved = set()  # ids whose latest save failed: memory holds progress the file lacks, so eviction must keep them
+
         self._save_locks = {}  # session_id -> lock: saves of one session run one at a time (see save)
 
         self._last_purge = float("-inf")
@@ -193,6 +195,10 @@ class SessionManager:
 
             self.last_save_ok = True
 
+            with self._lock:
+
+                self._unsaved.discard(session.session_id)
+
         except BaseException as exc:  # an interrupt (Ctrl-C, SystemExit) must not leave its temp file behind either
 
             try:  # a half-written temp file (disk full) must not keep eating the space the next attempt needs
@@ -208,6 +214,10 @@ class SessionManager:
                 raise
 
             self.last_save_ok = False
+
+            with self._lock:
+
+                self._unsaved.add(session.session_id)
 
         return self.last_save_ok
 
@@ -256,7 +266,7 @@ class SessionManager:
             if excess > 0:
 
                 oldest = sorted(
-                    self.sessions.values(),
+                    (item for item in self.sessions.values() if item.session_id not in self._unsaved),
                     key=lambda item: self._last_used.get(item.session_id, getattr(item, "created_at", 0.0)),
                 )[:excess]
 
@@ -344,6 +354,8 @@ class SessionManager:
             self.sessions.pop(session_id, None)
 
             self._save_locks.pop(session_id, None)
+
+            self._unsaved.discard(session_id)
 
             self._last_used.pop(session_id, None)  # a deleted session must not leave bookkeeping behind in a long-lived server
 
