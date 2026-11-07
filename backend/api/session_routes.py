@@ -305,6 +305,10 @@ def ask_question(
     else:
         warnings = []
 
+    if not session_manager.last_save_ok:  # same wording the progress endpoints use when a change cannot be written
+        warnings.append("This change could not be saved to PREREQAI_SESSION_DIR, so it will not survive a server restart; "
+                        "check that the directory exists and is writable.")
+
     return success_body(
         "Interactive Learning", "answered",
         warnings=warnings,
