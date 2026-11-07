@@ -134,9 +134,11 @@ class RuleBasedTutor(BaseTutor):
             or (self._name_a_concept_answer(paper) if pointer and not topic else "")
         )
 
+        unsupported = "" if answer else self._unsupported_concept_answer(question)
+
         return TutorResponse(
 
-            answer=answer or (
+            answer=answer or unsupported or (
                 "A tutoring model has not yet "
                 "been configured."
             ),
@@ -255,6 +257,38 @@ class RuleBasedTutor(BaseTutor):
                 parts.append(f"Why it is needed here: {reasons[name]}")
 
         return " ".join(parts)
+
+    _DEFINITION_QUESTION = re.compile(
+        r"^\s*(?:what\s+(?:is|are)|what's|explain|define|tell\s+me\s+about)\s+(?:an?\s+|the\s+)?(?P<name>[^?.!]+?)\s*[?.!]*\s*$",
+        re.IGNORECASE,
+    )
+
+    @staticmethod
+    def _unsupported_concept_answer(question):
+        """A definition question nothing built-in could answer: name the concept as unsupported instead of leaving only the
+        generic placeholder. No definition or prerequisite is invented for it."""
+
+        match = RuleBasedTutor._DEFINITION_QUESTION.match(question or "")
+
+        if not match:
+            return ""
+
+        name = match.group("name").strip()
+
+        if not name or re.match(r"(this|that|these|those|it|them|paper|the paper)\b", name, re.IGNORECASE):
+            return ""
+
+        registered = {*PREREQUISITE_DEFINITIONS, *ConceptExplanationEngine.EXPLANATIONS}
+        for concept in ConceptRegistry().all():
+            registered.add(concept.name)
+            registered.update(concept.aliases)
+
+        text = _normalise(name)
+        if any(re.search(_name_pattern(spelling), text) for spelling in registered):
+            return ""  # a registered concept the paper does not discuss: not "unsupported", so keep the plain placeholder
+
+        return (f"'{name}' is not in PreReqAI's built-in concept registry, so there is no built-in definition or "
+                f"prerequisite information for it. A tutoring model has not yet been configured.")
 
     @staticmethod
     def _concept_prerequisites_answer(paper, question):
