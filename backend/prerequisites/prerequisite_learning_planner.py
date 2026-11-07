@@ -1,7 +1,12 @@
+import logging
+
 from backend.models import (
     Paper,
     LearningStep,
 )
+
+
+logger = logging.getLogger("prereqai.planner")
 
 
 class PrerequisiteLearningPlanner:
@@ -67,6 +72,14 @@ class PrerequisiteLearningPlanner:
                 999,
             )
         )
+
+        # A concept missing from the order or time tables gets the fallback position and 5 hours: that is a placeholder, not a
+        # curated estimate, so the gap is logged instead of passing silently.
+        uncurated = sorted({p.concept for p in missing if p.concept not in self.STUDY_ORDER or p.concept not in self.STUDY_TIME})
+
+        if uncurated:
+
+            logger.warning("study plan uses fallback order and hours for concepts without a curated entry: %s", ", ".join(uncurated))
 
         for index, prerequisite in enumerate(
             missing,
