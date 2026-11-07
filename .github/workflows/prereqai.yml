@@ -38,6 +38,11 @@ jobs:
           python -m venv "$RUNNER_TEMP/runtime"
           "$RUNNER_TEMP/runtime/bin/pip" install -r requirements.txt
           "$RUNNER_TEMP/runtime/bin/python" -m backend.cli prerequisites analyze examples/prerequisites/sample-paper.pdf
+      - name: CLI question answering with only the runtime requirements
+        # `ask` is the other documented CLI path: it must not need the test-only packages either
+        run: >-
+          "$RUNNER_TEMP/runtime/bin/python" -m backend.cli prerequisites ask
+          examples/prerequisites/sample-paper.pdf "What is attention?"
       - name: README HTTP server with only the runtime requirements
         # the server and its multipart upload need packages (fastapi, uvicorn, python-multipart) that the test suite's TestClient hides
         run: |

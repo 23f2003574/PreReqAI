@@ -69,3 +69,8 @@ def test_workflow_runs_every_documented_command_group_from_the_runtime_only_inst
         assert command in step, command
     assert 'PY="$RUNNER_TEMP/runtime/bin/python"' in step  # the runtime venv, not the dev environment
     assert WORKFLOW.index("install -r requirements.txt") < WORKFLOW.index("Other documented CLI commands")
+
+
+def test_workflow_also_runs_the_ask_command_with_only_the_runtime_requirements():
+    step = WORKFLOW.split("CLI question answering with only the runtime requirements", 1)[1].split("- name:", 1)[0]
+    assert '"$RUNNER_TEMP/runtime/bin/python" -m backend.cli prerequisites ask' in step and "sample-paper.pdf" in step
