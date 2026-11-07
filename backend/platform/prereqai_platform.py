@@ -170,9 +170,12 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
             "analysis", "The paper is a password-protected PDF and cannot be read.", error=exc,
             hint="Remove the password (for example, print the PDF to a new file) and upload that copy.",
         )
+    hint = ("The file is empty (0 bytes), perhaps from an interrupted download or save: upload a PDF that has content."
+            if type(exc).__name__ == "EmptyFileError" else
+            "Upload a text-based PDF research paper.")  # `detail` keeps its wording: clients read it
     return failure_body(
         "analysis", f"Failed to process the uploaded paper: {exc}", error=exc,
-        hint="Upload a text-based PDF research paper.",
+        hint=hint,
     )
 
 
