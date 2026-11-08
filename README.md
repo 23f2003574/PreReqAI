@@ -92,6 +92,13 @@ Upload a research paper to receive:
 - Difficulty assessment
 - Readiness tracking
 
+## Concept coverage
+
+> **Current limitation:** PreReqAI recognises only the concepts in its built-in registry (`backend/concepts/concept_registry.py`) and the
+> prerequisite rules written for them. A concept a paper uses that is not in the registry is not detected, gets no prerequisites and does not
+> appear in the study plan, and no warning is raised for it: an empty or short plan means "nothing registered was found", not "the paper needs
+> nothing else". The only related warning is the one for a paper in which no concept at all is detected.
+
 ## Interactive Learning
 
 > **Current limitation:** no tutoring model is configured in this release. A question about a concept of the paper is answered
