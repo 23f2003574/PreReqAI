@@ -1,4 +1,5 @@
 import os
+import io
 import pickle
 import threading
 import time
@@ -10,6 +11,18 @@ from backend.models import Paper
 from .learning_session import (
     LearningSession,
 )
+
+
+class _SessionUnpickler(pickle.Unpickler):
+    """Loads a saved session, resolving only classes defined in this project. A session file is the project's own dataclasses and plain
+    containers, so anything else a file asks for (os.system, builtins.eval...) is refused instead of run: PREREQAI_SESSION_DIR may hold
+    files this process did not write, and an unrestricted pickle.loads would execute them. A refused file reads as unreadable."""
+
+    def find_class(self, module, name):
+        found = super().find_class(module, name)
+        if (module == "backend" or module.startswith("backend.")) and isinstance(found, type):
+            return found
+        raise pickle.UnpicklingError(f"refused to load {module}.{name} from a saved session")
 
 
 class SessionManager:
@@ -329,7 +342,7 @@ class SessionManager:
 
         try:
 
-            session = pickle.loads(path.read_bytes())
+            session = _SessionUnpickler(io.BytesIO(path.read_bytes())).load()
 
         except Exception:
 
