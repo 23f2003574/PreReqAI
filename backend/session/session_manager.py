@@ -191,6 +191,12 @@ class SessionManager:
 
                 temp.write_bytes(pickle.dumps(session))
 
+                with temp.open("rb+") as written:  # on disk before the swap: a power loss must not leave an empty file under the real name
+
+                    written.flush()
+
+                    os.fsync(written.fileno())
+
                 temp.replace(path)
 
             self.last_save_ok = True
