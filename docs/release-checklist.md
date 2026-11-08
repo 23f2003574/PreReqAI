@@ -1,7 +1,7 @@
 # Release checklist
 
 PreReqAI ships as its source tree (no wheel, no package metadata): the release is what `git archive HEAD`
-exports. Run from the repository root on Python 3.10+. Last verified on Python 3.13.
+exports. Run from the repository root on Python 3.10+. Last verified on Python 3.13; CI runs Python 3.10, 3.12 and 3.13 (3.12 also run locally 2026-11-08: `pytest -m prereqai` 1092 passed, 1 skipped).
 
 1. **Version.** Set `__version__` in `backend/version.py` (the one source for the API and `--version`).
 2. **Clean install.** In a fresh virtualenv: `pip install -r requirements.txt` (what users run), then
