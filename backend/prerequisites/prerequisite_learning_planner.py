@@ -73,13 +73,20 @@ class PrerequisiteLearningPlanner:
             if not prerequisite.satisfied
         ]
 
+        # A concept listed twice is one thing to study: keep its first entry so its hours are not counted twice.
+        missing = list({prerequisite.concept: prerequisite for prerequisite in reversed(missing)}.values())[::-1]
+
         missing.sort(
 
-            key=lambda prerequisite:
+            # Concepts without a curated position share the fallback position, so the name breaks the tie deterministically.
+            key=lambda prerequisite: (
 
-            self.STUDY_ORDER.get(
+                self.STUDY_ORDER.get(
+                    prerequisite.concept,
+                    999,
+                ),
+
                 prerequisite.concept,
-                999,
             )
         )
 
