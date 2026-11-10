@@ -236,6 +236,9 @@ KNOWN_REASON = "Already known (reported by the learner)"
 PROGRESS_REPORT_KEYS = ("study_progress", "readiness", "study_actions", "prerequisite_tree", "study_time")
 
 
+_UNREADABLE = re.compile(r"\(cid:\d+\)|\ufffd")
+
+
 class PreReqAIPlatform:
     """
     High-level platform entry point
@@ -390,10 +393,15 @@ class PreReqAIPlatform:
         ]
         no_concepts = []
         if not result.report.get("concepts"):
-            has_text = any((getattr(page, "text", "") or "").strip() for page in (result.paper.pages or []))
+            page_texts = [(getattr(page, "text", "") or "") for page in (result.paper.pages or [])]
+            has_text = any(text.strip() for text in page_texts)
+            # Font-encoding failures extract as "(cid:12)" placeholders or U+FFFD: that is text, but not readable text.
+            readable = any(_UNREADABLE.sub("", text).strip() and any(c.isalpha() for c in _UNREADABLE.sub("", text)) for text in page_texts)
             no_concepts = [
                 "No concepts were detected in this paper, so the study plan is empty and 'Ready to Read' means nothing."
-                + ("" if has_text else " The PDF has no extractable text (a scanned or image-only paper?); run OCR on it first.")
+                + ("" if has_text and readable else
+                   " The PDF text is unreadable (font-encoding placeholders such as (cid:12)); run OCR on it first." if has_text else
+                   " The PDF has no extractable text (a scanned or image-only paper?); run OCR on it first.")
             ]
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
