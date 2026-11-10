@@ -64,3 +64,7 @@ def test_cycle_checker_detects_cycles():
     assert _cycle({"A": ["B"], "B": ["C"], "C": ["A"]}) == ["A", "B", "C", "A"]
     assert _cycle({"A": ["A"]}) == ["A", "A"]
     assert _cycle({"A": ["B", "C"], "B": ["C"]}) is None
+
+
+def test_a_valid_chain_resolves_transitively_in_order():
+    assert _cycle({"Transformer": RULES["Transformer"], **RULES}) is None and "Attention" in RULES["Transformer"]
