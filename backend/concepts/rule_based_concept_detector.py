@@ -7,6 +7,7 @@ from backend.models import (
     DetectedConcept,
 )
 
+from .concept_coverage import concept_detection_coverage
 from .concept_registry import ConceptRegistry
 from .unrecognised_term_diagnostics import find_unrecognised_terms
 
@@ -162,5 +163,7 @@ class RuleBasedConceptDetector:
                     occurrences=occurrences,
                 )
             )
+
+        paper.concept_coverage = concept_detection_coverage(len(concepts), len(paper.concepts))
 
         return paper

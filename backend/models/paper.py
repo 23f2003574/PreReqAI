@@ -214,6 +214,9 @@ class Paper:
     # Diagnostic only: acronym-defined terms the concept registry does not know (never treated as detected concepts).
     unrecognised_terms: list[str] = field(default_factory=list)
 
+    # Diagnostic only: registered vs detected concept counts for this document (see concept_detection_coverage).
+    concept_coverage: dict = field(default_factory=dict)
+
     knowledge_graph: KnowledgeGraph = field(
         default_factory=KnowledgeGraph
     )
