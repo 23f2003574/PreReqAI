@@ -8,6 +8,7 @@ from backend.models import (
 )
 
 from .concept_registry import ConceptRegistry
+from .unrecognised_term_diagnostics import find_unrecognised_terms
 
 
 # A bibliography lists titles of other papers ("Graph attention networks", "Policy gradient methods"):
@@ -76,12 +77,15 @@ class RuleBasedConceptDetector:
     ) -> Paper:
 
         paper.concepts.clear()
+        paper.unrecognised_terms = []
 
-        full_text = "\n".join(
+        original_text = "\n".join(
             paragraph.content
             for paragraph in paper.paragraphs
             if not _BACK_MATTER.match((paragraph.section_title or "").strip())
-        ).lower()
+        )
+        paper.unrecognised_terms = find_unrecognised_terms(original_text, self.registry)
+        full_text = original_text.lower()
 
         # LaTeX PDFs encode "ff", "fi", "fl"... as ligature characters ("Di\ufb00usion") and may hold soft hyphens;
         # NFKC turns the ligatures (and full-width letters) into plain text.

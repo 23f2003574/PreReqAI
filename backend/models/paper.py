@@ -211,6 +211,9 @@ class Paper:
 
     concepts: list[DetectedConcept] = field(default_factory=list)
 
+    # Diagnostic only: acronym-defined terms the concept registry does not know (never treated as detected concepts).
+    unrecognised_terms: list[str] = field(default_factory=list)
+
     knowledge_graph: KnowledgeGraph = field(
         default_factory=KnowledgeGraph
     )
