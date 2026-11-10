@@ -1,4 +1,5 @@
 import logging
+import math
 
 from backend.models import (
     Paper,
@@ -44,6 +45,17 @@ class PrerequisiteLearningPlanner:
         "Transformer": 10,
         "Markov Decision Process": 8,
     }
+
+    FALLBACK_HOURS = 5
+
+    @classmethod
+    def _hours(cls, concept):
+        """Study hours for a concept: the curated value when it is a finite positive number, otherwise the logged fallback."""
+        hours = cls.STUDY_TIME.get(concept, cls.FALLBACK_HOURS)
+        if isinstance(hours, bool) or not isinstance(hours, (int, float)) or not math.isfinite(hours) or hours <= 0:
+            logger.warning("invalid study hours %r for %s: using the fallback of %s", hours, concept, cls.FALLBACK_HOURS)
+            return cls.FALLBACK_HOURS
+        return hours
 
     def generate(
         self,
@@ -92,10 +104,7 @@ class PrerequisiteLearningPlanner:
 
                     concept=prerequisite.concept,
 
-                    estimated_hours=self.STUDY_TIME.get(
-                        prerequisite.concept,
-                        5,
-                    ),
+                    estimated_hours=self._hours(prerequisite.concept),
                 )
             )
 
