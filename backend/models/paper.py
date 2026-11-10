@@ -229,6 +229,10 @@ class Paper:
         Prerequisite
     ] = field(default_factory=list)
 
+    # Diagnostic only: detected concepts with no entry at all in the prerequisite rules. That means "unsupported", not
+    # "needs nothing" (a rule with an empty list is the explicit way to say the latter).
+    concepts_without_rules: list[str] = field(default_factory=list)
+
     missing_prerequisites: list[
         MissingPrerequisite
     ] = field(default_factory=list)

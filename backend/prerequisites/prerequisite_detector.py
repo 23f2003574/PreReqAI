@@ -1,7 +1,12 @@
+import logging
+
 from backend.models import (
     Paper,
     Prerequisite,
 )
+
+
+logger = logging.getLogger("prereqai.prerequisites")
 
 
 class PrerequisiteDetector:
@@ -255,6 +260,17 @@ class PrerequisiteDetector:
     ) -> Paper:
 
         paper.prerequisites.clear()
+
+        paper.concepts_without_rules = [
+            concept.name for concept in paper.concepts if concept.name not in self.PREREQUISITE_RULES
+        ]
+
+        if paper.concepts_without_rules:
+
+            logger.warning(
+                "no prerequisite rule for detected concepts (their prerequisites are unknown, not absent): %s",
+                ", ".join(paper.concepts_without_rules),
+            )
 
         # A prerequisite needed by several concepts is listed once, and its reason names every concept that
         # needs it (not only the first one found), so the learner sees how much of the paper depends on it.
