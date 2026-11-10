@@ -71,7 +71,21 @@ class DocumentMetadataExtractor:
             run.append(line_text)
         return " ".join(run)[:200]
 
-    _NAME = re.compile(r"^[A-Z][\w.'\-]*(?: [A-Z][\w.'\-]*){1,3}$")
+    _WORD = re.compile(r"^[\w.'\-]+$")
+    # Lowercase particles inside a surname ("Jan van der Berg"); a name never starts or ends with one.
+    _PARTICLES = frozenset({"van", "von", "der", "den", "de", "del", "della", "di", "da", "dos", "du", "la", "le", "bin", "ibn", "al", "el", "ter", "ten"})
+
+    @classmethod
+    def _is_name(cls, text) -> bool:
+        """2-4 words, each capitalised (accented capitals such as "Ł" or "É" included) or a lowercase particle in the middle."""
+        words = text.split(" ")
+        if not 2 <= len(words) <= (6 if any(w in cls._PARTICLES for w in words) else 4):
+            return False
+        return all(
+            cls._WORD.match(word) and (word[0].isupper() or (0 < index < len(words) - 1 and word in cls._PARTICLES))
+            for index, word in enumerate(words)
+        )
+
     _NOT_AUTHORS = re.compile(r"universit|college|centre|center|faculty|institute|laborator|research|google|microsoft|department|school|abstract|@|\d|arxiv", re.I)
 
     _AFFILIATION = re.compile(r"universit|college|centre|center|faculty|institute|laborator|research|google|microsoft|department|school|@|\d", re.I)
@@ -88,7 +102,7 @@ class DocumentMetadataExtractor:
         for line in lines[1:12]:
             cleaned = re.sub(r"[*†‡§¶∗]", "", line).strip()
             names = [n.strip() for n in re.split(r",|\band\b|;", cleaned) if n.strip()]
-            if names and not cls._NOT_AUTHORS.search(cleaned) and all(cls._NAME.match(n) for n in names):
+            if names and not cls._NOT_AUTHORS.search(cleaned) and all(cls._is_name(n) for n in names):
                 authors.extend(name for name in names if name not in authors)
             elif authors and not (cls._AFFILIATION.search(cleaned) and not cls._BLOCK_END.search(cleaned)):
                 break  # the author block ended (abstract or other text); an affiliation line between authors does not end it
