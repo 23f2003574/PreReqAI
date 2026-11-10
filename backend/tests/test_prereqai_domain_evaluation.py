@@ -1,6 +1,10 @@
 """Evaluation of the analysis on one representative paper per focus area (RL, graph ML, diffusion, the bundled
 transformer sample): the expected concepts and prerequisite plan, plus the invariants every report must satisfy,
-so a regression in any stage shows up as a wrong plan or an inconsistent report."""
+so a regression in any stage shows up as a wrong plan or an inconsistent report.
+
+The three papers are SYNTHETIC: short texts written to contain the expected terms. They are regression fixtures, not a
+measurement of accuracy on real papers (see docs/release-checklist.md)."""
+import hashlib
 import json
 
 import pymupdf
@@ -68,3 +72,29 @@ def test_each_focus_area_gets_its_expected_concepts_and_plan(name, tmp_path, cap
 
 def test_the_bundled_sample_paper_report_is_consistent(capsys):
     _assert_report_is_consistent(_analyze("examples/prerequisites/sample-paper.pdf", capsys))
+
+
+# Fingerprints of the synthetic fixtures (title, text, expected concepts, expected plan, expected hours): changing a fixture or
+# its expectation changes the digest, so a different evaluation input cannot pass for the recorded one unnoticed.
+FIXTURE_FINGERPRINTS = {
+    "diffusion": "83367cee9807da9f",
+    "graph": "2bc6e429a0b2c915",
+    "rl": "2262fa20f97e006a",
+}
+
+
+def _fingerprint(name):
+    title, body, concepts, plan, hours = PAPERS[name]
+    return hashlib.sha256(repr((title, body, sorted(concepts), plan, hours)).encode()).hexdigest()[:16]
+
+
+def test_fixture_fingerprints_are_recorded_for_every_paper():
+    assert {name: _fingerprint(name) for name in PAPERS} == FIXTURE_FINGERPRINTS
+
+
+@pytest.mark.parametrize("name", sorted(PAPERS))
+def test_identical_input_gives_an_identical_report(name, tmp_path, capsys):
+    title, body = PAPERS[name][:2]
+    first = _analyze(_paper(tmp_path, title, body), capsys)
+    second = _analyze(_paper(tmp_path, title, body), capsys)
+    assert first == second
