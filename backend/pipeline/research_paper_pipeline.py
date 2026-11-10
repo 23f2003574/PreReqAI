@@ -393,6 +393,11 @@ class ResearchPaperPipeline:
 
                 raise TypeError(f"stage {stage} returned {type(value).__name__}, expected {expected.__name__}")
 
+            # The ingestion -> section_parser contract: a document needs at least one page, or every later stage runs on nothing.
+            if stage == "ingestion" and not getattr(value, "pages", None):
+
+                raise ValueError("stage ingestion returned a document with no pages, so there is nothing to analyse")
+
             context[output] = value
 
             # a downloaded paper (arXiv/DOI) only exists after this stage: the file size limit applies to it too
