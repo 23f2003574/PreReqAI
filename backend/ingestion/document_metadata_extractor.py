@@ -6,6 +6,12 @@ from dataclasses import dataclass
 from .text_cleaning import clean_pdf_text
 
 
+# Titles that word processors and converters write when the author set none: "Microsoft Word - paper.docx", "untitled", "paper.docx".
+_PLACEHOLDER_TITLE = re.compile(
+    r"^(?:untitled(?:[ _-]?\d+)?|microsoft (?:word|powerpoint|excel) - .*|\S+\.(?:docx?|tex|odt|rtf|pdf|pptx?|txt|dvi))$", re.IGNORECASE
+)
+
+
 @dataclass
 class DocumentMetadata:
     title: str
@@ -34,8 +40,12 @@ class DocumentMetadataExtractor:
 
         metadata = {key: clean_pdf_text(value) if isinstance(value, str) else value for key, value in (pdf.metadata or {}).items()}
 
+        embedded_title = (metadata.get("title", "") or "").strip()
+        if _PLACEHOLDER_TITLE.match(embedded_title):  # not a real title: fall back to the first page
+            embedded_title = ""
+
         return DocumentMetadata(
-            title=(metadata.get("title", "") or "").strip() or self._title_from_first_page(pdf) or "Unknown Title",
+            title=embedded_title or self._title_from_first_page(pdf) or "Unknown Title",
             author=(metadata.get("author", "") or "").strip() or self._author_from_first_page(pdf) or "Unknown Author",
             subject=metadata.get("subject", ""),
             keywords=metadata.get("keywords", ""),
