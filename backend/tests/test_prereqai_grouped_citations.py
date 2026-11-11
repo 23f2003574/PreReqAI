@@ -32,3 +32,14 @@ def test_malformed_or_reversed_ranges_yield_no_citation(text):
 
 def test_reversed_range_in_a_list_keeps_the_valid_parts():
     assert [n for _, n in _numbers("See [1, 5-3, 7].")] == [1, 7]
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Since [2019-2021] we see.", []),
+    ("Since [2018, 2020] we see.", []),
+    ("Since [3, 2020] we see.", [3]),
+    ("Since [1999] we see.", [1999]),  # a lone bracketed number stays one citation, as before
+    ("Since [998-1000] we see.", []),
+])
+def test_year_like_groups_are_not_expanded_into_citations(text, expected):
+    assert [number for _, number in _numbers(text)] == expected

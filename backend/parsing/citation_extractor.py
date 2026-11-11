@@ -9,6 +9,7 @@ from .reference_extractor import REFERENCES_TITLE
 CITATION_PATTERN = re.compile(r"\[(\d+(?:\s*(?:,|-|\u2013)\s*\d+)*)\]")
 _PART_SEPARATOR = re.compile(r"\s*,\s*")
 _RANGE_SEPARATOR = re.compile(r"\s*[-\u2013]\s*")
+YEAR_LIKE = 1000  # a list or range reaching this ("[2019-2021]", "[2018, 2020]") is years, not reference numbers
 MAX_RANGE_SIZE = 500  # a longer range is a typo or not a citation, not worth that many records
 
 
@@ -18,8 +19,9 @@ def reference_numbers(group: str) -> list[int]:
     for part in _PART_SEPARATOR.split(group):
         bounds = [int(bound) for bound in _RANGE_SEPARATOR.split(part)]
         if len(bounds) == 1:
-            numbers.append(bounds[0])
-        elif len(bounds) == 2 and 0 <= bounds[1] - bounds[0] < MAX_RANGE_SIZE:
+            if bounds[0] < YEAR_LIKE or group.isdigit():  # a lone "[1999]" is still one citation, as before
+                numbers.append(bounds[0])
+        elif len(bounds) == 2 and 0 <= bounds[1] - bounds[0] < MAX_RANGE_SIZE and bounds[1] < YEAR_LIKE:
             numbers.extend(range(bounds[0], bounds[1] + 1))
     return numbers
 
