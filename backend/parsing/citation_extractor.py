@@ -2,6 +2,8 @@ import re
 
 from backend.models import Paper, Citation
 
+from .reference_extractor import REFERENCES_TITLE
+
 
 CITATION_PATTERN = re.compile(r"\[(\d+)\]")
 
@@ -24,9 +26,8 @@ class CitationExtractor:
 
         for paragraph in paper.paragraphs:
 
-            if (
-                paragraph.section_title.lower()
-                == "references"
+            if REFERENCES_TITLE.match(
+                paragraph.section_title.strip()
             ):
                 continue
 
