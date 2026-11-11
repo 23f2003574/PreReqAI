@@ -4,6 +4,7 @@ from fastapi import (
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
+from backend.platform.prereqai_platform import _concept_key
 from backend.study_plan_markdown import plan_markdown, studied_concepts
 from backend.tutor.rule_based_tutor import ANSWERABLE_HINT
 
@@ -185,7 +186,7 @@ def delete_session(session_id: str):
 
 
 def resolve_topic(session, topic):
-    """(concept name, None) for a topic naming one of the paper's concepts or study-plan prerequisites (case-insensitively); (None, None) when no
+    """(concept name, None) for a topic naming one of the paper's concepts or study-plan prerequisites (ignoring case, whitespace, hyphens and underscores, as `--known` does); (None, None) when no
     topic is given; (None, hint) when it names no concept. Shared by POST /question and `prerequisites ask --topic`."""
 
     if topic is None:
@@ -199,22 +200,22 @@ def resolve_topic(session, topic):
         return None, "`topic` is blank. Name one of this paper's concepts or study-plan topics, or omit `topic` to ask without one."
 
     known = {
-        concept.name.casefold(): concept.name
+        _concept_key(concept.name): concept.name
         for concept in getattr(session.paper, "concepts", None) or []
     }
 
     # the study plan lists prerequisites the paper never names (Probability, Calculus...): the learner studies and asks about them too
     for item in getattr(session.paper, "study_progress", None) or []:
 
-        known.setdefault(item.concept.casefold(), item.concept)
+        known.setdefault(_concept_key(item.concept), item.concept)
 
-    if topic.casefold() not in known:
+    if _concept_key(topic) not in known:
 
         return None, ("Use one of this paper's concepts or study-plan topics: "
                       + (", ".join(known.values()) or "none were detected")
                       + ". Omit `topic` to ask without one.")
 
-    return known[topic.casefold()], None
+    return known[_concept_key(topic)], None
 
 
 @router.post("/{session_id}/question")
