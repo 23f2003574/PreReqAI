@@ -9,8 +9,8 @@ REFERENCE_PATTERN = re.compile(
 )
 
 
-# The titles ScientificSectionParser accepts for the bibliography, with an optional section number ("7", "7.", "VII.").
-REFERENCES_TITLE = re.compile(r"^(?:\d+(?:\.\d+)*\.?|[IVXivx]+\.)?\s*(?:references|bibliography|works cited)\s*$", re.IGNORECASE)
+# The titles ScientificSectionParser accepts for the bibliography, with an optional section number ("7", "7.", "VII.") and a trailing colon.
+REFERENCES_TITLE = re.compile(r"^(?:\d+(?:\.\d+)*\.?|[IVXivx]+\.)?\s*(?:references|bibliography|works cited)\s*:?\s*$", re.IGNORECASE)
 
 
 class ReferenceExtractor:
