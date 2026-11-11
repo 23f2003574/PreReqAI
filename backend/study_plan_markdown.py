@@ -46,8 +46,12 @@ def plan_markdown(report):
 
 # The concept ends at its hours note "(~10h)", at a parenthesised hours note of another form (a hand-edited "(about 10 h)", "(10 hours)"), at the
 # study link " - [title](url)", or at the end of the line: a ticked step must not lose its progress because the note was edited.
-_TICKED = re.compile(r"^[ \t]*[-*+] \[[xX]\] \d+\. (.+?)(?=[ \t]+\((?:~|about|approx|around|\d)|[ \t]+-[ \t]+\[|[ \t]*$)", re.MULTILINE)
-
+_TICKED = re.compile(
+    # a "-", "*", "+" or ordered ("1." / "1)") list marker, the tick, an optional step number ("1." or "1)"), then the concept
+    r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[xX]\][ \t]+(?:\d+[.)][ \t]+)?(\S.*?)"
+    r"(?=[ \t]+\((?:~|about|approx|around|\d)|[ \t]+-[ \t]+\[|[ \t]+[\u2014\u2013-][ \t]+~?\d|[ \t]*$)",
+    re.MULTILINE,
+)
 
 def is_saved_plan(text):
     """Whether `text` is a plan written by plan_markdown (a leading BOM or blank lines from an editor are ignored). The one
@@ -57,7 +61,7 @@ def is_saved_plan(text):
 
 def studied_from_plan(text):
     """The concepts ticked in a checklist written by plan_markdown, so a saved plan can restore progress."""
-    return [match.group(1) for match in _TICKED.finditer(text)]
+    return [match.group(1).strip() for match in _TICKED.finditer(text)]
 
 
 _KNOWN = re.compile(r"^[ \t]*Already known:[ \t]*(.+)$", re.MULTILINE | re.IGNORECASE)
