@@ -93,7 +93,7 @@ class RuleBasedConceptDetector:
         full_text = unicodedata.normalize("NFKC", full_text).replace("\u00ad", "")
 
         # Typeset papers use en/em dashes and non-breaking hyphens where the registry has a plain hyphen.
-        full_text = re.sub("[\u2010\u2011\u2012\u2013\u2014]", "-", full_text)
+        full_text = re.sub("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-", full_text)
 
         concepts = self.registry.all()
 
