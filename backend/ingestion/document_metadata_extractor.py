@@ -8,7 +8,7 @@ from .text_cleaning import clean_pdf_text
 
 # Titles that word processors and converters write when the author set none: "Microsoft Word - paper.docx", "untitled", "paper.docx".
 _PLACEHOLDER_TITLE = re.compile(
-    r"^(?:untitled(?:[ _-]?\d+)?|microsoft (?:word|powerpoint|excel) - .*|\S+\.(?:docx?|tex|odt|rtf|pdf|pptx?|txt|dvi))$", re.IGNORECASE
+    r"^(?:untitled(?:[ _-]?\d+)?|microsoft (?:word|powerpoint|excel) - .*|.*\S\.(?:docx?|tex|odt|rtf|pdf|pptx?|txt|dvi))$", re.IGNORECASE
 )
 
 
