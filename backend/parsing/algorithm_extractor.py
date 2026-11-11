@@ -2,10 +2,12 @@ import re
 
 from backend.models import Paper, PaperAlgorithm
 
+from .reference_extractor import REFERENCES_TITLE
+
 
 ALGORITHM_PATTERN = re.compile(
-    r"(Algorithm\s+\d+[:\s].*?)(?=\n\s*\n|\Z)",
-    re.IGNORECASE | re.DOTALL,
+    r"^[ \t]*(Algorithm\s+\d+[:\s].*?)(?=\n\s*\n|\Z)",  # a caption starts its line: "in Algorithm 1 we ..." is a mention
+    re.IGNORECASE | re.DOTALL | re.MULTILINE,
 )
 
 
@@ -26,6 +28,9 @@ class AlgorithmExtractor:
         algorithm_counter = 1
 
         for section in paper.sections:
+
+            if REFERENCES_TITLE.match(section.title.strip()):
+                continue
 
             matches = ALGORITHM_PATTERN.findall(
                 section.content
