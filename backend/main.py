@@ -74,6 +74,15 @@ def _field(location) -> str:
     return ".".join(parts) or "request body"
 
 
+def _problem(error) -> str:
+    """One validation error as text. A body that is not valid JSON locates the error by character position, which `_field` would
+    print as a bare number ("1: JSON decode error"): name the body and say what the number is."""
+    if error.get("type") == "json_invalid":
+        position = error["loc"][-1] if error["loc"] and isinstance(error["loc"][-1], int) else None
+        return f"request body: {error['msg']}" + (f" (at character {position})" if position is not None else "")
+    return f"{_field(error['loc'])}: {error['msg']}"
+
+
 @app.exception_handler(StarletteHTTPException)
 async def http_error(request: Request, exc: StarletteHTTPException):
     """An unknown path (404) or a wrong method (405) gets the failure envelope too, so a caller can always read
@@ -103,7 +112,7 @@ async def invalid_request(request: Request, exc: RequestValidationError):
     question...) gets the same failure envelope as every other PreReqAI
     failure -- naming each bad field and what it should be -- instead of
     FastAPI's raw validation list. The status code stays 422."""
-    problems = [f"{_field(error['loc'])}: {error['msg']}" for error in exc.errors()]
+    problems = [_problem(error) for error in exc.errors()]
     return failure_response(
         422, "input", "Invalid request: " + "; ".join(problems),
         hint="Fix the fields named above; see /docs for each endpoint's expected request.",
