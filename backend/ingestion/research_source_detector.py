@@ -15,8 +15,10 @@ ARXIV_PATTERN = re.compile(
 )
 # How a paper is usually cited: "arXiv:1706.03762". The explicit prefix is required: a bare number such as
 # 1706.03762 is rejected as ambiguous (it could be a mistyped file name).
+# The stamp printed down the side of an arXiv PDF carries the category and the date: "arXiv:1706.03762v5 [cs.CL] 6 Dec 2017".
+_ARXIV_STAMP_TAIL = r"(?:\s*\[[a-z\-]+(?:\.[a-z\-]+)?\](?:\s+[0-9]{1,2}\s+[a-z]{3}[a-z]*\.?\s+[0-9]{4})?)?"
 ARXIV_ID_PATTERN = re.compile(
-    rf"arxiv:\s*({_ARXIV_ID})",
+    rf"arxiv:\s*({_ARXIV_ID}){_ARXIV_STAMP_TAIL}",
     re.IGNORECASE,
 )
 URL_SCHEME = re.compile(r"[a-z][a-z0-9+.\-]*://", re.IGNORECASE)
