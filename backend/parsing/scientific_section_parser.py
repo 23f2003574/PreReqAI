@@ -57,6 +57,10 @@ _SKIPPED_TITLES = re.compile(r"(?i:front matter|full paper|references|bibliograp
 
 SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN}):?|{_NUMBERED}|{_ROMAN_CAPS}|{_ROMAN_TITLE}|{_NAMED_APPENDIX})[ \t]*$", re.MULTILINE)
 
+# An abstract whose text starts on the heading's line ("Abstract\u2014We study ...", "Abstract: ...", "Abstract \u2013 ..."). The separator is required, so prose
+# that merely starts with the word ("Abstract algebra is ...") is not a heading.
+_INLINE_ABSTRACT = re.compile(r"^(?P<title>(?i:abstract))[ \t]*[\u2014\u2013:][ \t]*(?=\S)", re.MULTILINE)
+
 
 class ScientificSectionParser:
     """
@@ -68,7 +72,7 @@ class ScientificSectionParser:
 
         text = document.full_text
 
-        matches = list(SECTION_PATTERN.finditer(text))
+        matches = sorted([*SECTION_PATTERN.finditer(text), *_INLINE_ABSTRACT.finditer(text)], key=lambda m: m.start())
 
         back = next((m.start() for m in matches if _BACK_MATTER_HEADING.match(m.group().strip())), None)
 
@@ -107,7 +111,7 @@ class ScientificSectionParser:
 
                 sections.append(
                     PaperSection(
-                        title=match.group().strip(),
+                        title=match.groupdict().get("title") or match.group().strip(),
                         content=text[start:end].strip(),
                     )
                 )
