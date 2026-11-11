@@ -27,7 +27,8 @@ _KNOWN = (
     r"Preliminary|Setup|Implementation|Qualitative Analysis|Error Analysis|Hyperparameter Settings|Task Description|"
     r"Problem Setting|Related Literature|Experimental Settings|Future Directions|"
     # academic variants found missing by probing (fixed phrases only)
-    r"Experimental Evaluation|Empirical Evaluation|Discussion and Limitations|Limitations and Discussion|Concluding Remarks(?: and Future Work)?))"
+    r"Experimental Evaluation|Empirical Evaluation|Discussion and Limitations|Limitations and Discussion|Concluding Remarks(?: and Future Work)?|"
+    r"Materials and Methods|Methods and Materials|Proposed (?:Method|Approach)|Our Approach|Network Architecture|Evaluation Results))"
 )
 # A numbered, title-cased line such as "3.2 Scaled Dot-Product Attention": at most 8 words, no digits or sentence punctuation.
 _WORD = r"(?:[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"
