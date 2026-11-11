@@ -5,6 +5,11 @@ from dataclasses import dataclass, field
 from .document_metadata_extractor import DocumentMetadata
 from .text_cleaning import clean_pdf_text  # noqa: F401  (re-exported)
 
+# MuPDF prints its repair diagnostics ("syntax error in array") to stdout, which corrupts `analyze --json` for a damaged PDF. The
+# damage is still reported (to the learner, as a warning) through `pdf.is_repaired`, so the raw messages add nothing.
+fitz.TOOLS.mupdf_display_errors(False)
+fitz.TOOLS.mupdf_display_warnings(False)
+
 
 @dataclass
 class RawPage:
