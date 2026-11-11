@@ -5,6 +5,23 @@ YEAR_PATTERN = re.compile(r"\b(19|20)\d{2}\b")
 
 SENTENCE_SPLIT_PATTERN = re.compile(r"\.\s+(?=[A-Z])")
 
+# A full stop after a lone capital is an author's initial, not a sentence end, when a surname follows ("A. Vaswani, N. Shazeer. Title"):
+# the next word is then followed by a comma, "and", a full stop or another initial. A title word ("N. Attention is all you need") is not.
+_AUTHOR_INITIAL_BEFORE = re.compile(r"(?:^|[\s,])[A-Z]$")
+_SURNAME_AFTER = re.compile(r"\s+[A-Z][\w'\u2019-]+(?:,|\s+and\b|\.|\s+[A-Z]\.)")
+_INITIALS_ONLY = re.compile(r"^(?:[A-Z]\.?\s*)+$")
+
+
+def _split_sentences(text: str) -> list[str]:
+    segments, start = [], 0
+    for match in SENTENCE_SPLIT_PATTERN.finditer(text):
+        if _AUTHOR_INITIAL_BEFORE.search(text[start:match.start()]) and _SURNAME_AFTER.match(text, match.start() + 1):
+            continue
+        segments.append(text[start:match.start()])
+        start = match.end()
+    segments.append(text[start:])
+    return segments
+
 
 class ReferenceMetadataParser:
     """
@@ -25,9 +42,7 @@ class ReferenceMetadataParser:
 
             segment.strip()
 
-            for segment in SENTENCE_SPLIT_PATTERN.split(
-                raw_text
-            )
+            for segment in _split_sentences(raw_text)
 
             if segment.strip()
         ]
@@ -67,14 +82,15 @@ class ReferenceMetadataParser:
 
         segment = segment.replace(" and ", ", ")
 
-        return [
-
-            author.strip()
-
-            for author in segment.split(",")
-
-            if author.strip()
-        ]
+        authors = []
+        for author in (part.strip() for part in segment.split(",")):
+            if not author:
+                continue
+            if authors and _INITIALS_ONLY.match(author):  # "Vaswani, A." lists the surname and its initials apart
+                authors[-1] += f", {author}"
+            else:
+                authors.append(author)
+        return authors
 
     def _extract_year(
         self,
