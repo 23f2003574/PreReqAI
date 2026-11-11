@@ -4,6 +4,18 @@ from backend.models import (
 )
 
 
+# Upper bound of missing prerequisite subjects for each level. The rule table has only 8 distinct prerequisite subjects, so 8 is the
+# most a paper can miss; the bands 0-2, 3-4, 5-6 and 7-8 make every level reachable (the old 6-8 / "more than 8" split never produced Expert).
+LEVEL_BANDS = (("Beginner", 2), ("Intermediate", 4), ("Advanced", 6))
+
+
+def difficulty_level(missing: int) -> str:
+    for level, upper in LEVEL_BANDS:
+        if missing <= upper:
+            return level
+    return "Expert"
+
+
 class DifficultyAssessmentEngine:
     """
     Estimates the overall difficulty of a
@@ -21,21 +33,7 @@ class DifficultyAssessmentEngine:
             if not prerequisite.satisfied
         )
 
-        if missing <= 2:
-
-            level = "Beginner"
-
-        elif missing <= 5:
-
-            level = "Intermediate"
-
-        elif missing <= 8:
-
-            level = "Advanced"
-
-        else:
-
-            level = "Expert"
+        level = difficulty_level(missing)
 
         paper.difficulty = PaperDifficulty(
 
