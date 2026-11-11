@@ -25,7 +25,9 @@ _KNOWN = (
     # more fixed phrases seen as unnumbered headings (the section-folding warning points at these)
     r"Motivation|Problem (?:Definition|Description)|Baselines?|Contributions|Architecture|Model Training|Case Stud(?:y|ies)|"
     r"Preliminary|Setup|Implementation|Qualitative Analysis|Error Analysis|Hyperparameter Settings|Task Description|"
-    r"Problem Setting|Related Literature|Experimental Settings|Future Directions))"
+    r"Problem Setting|Related Literature|Experimental Settings|Future Directions|"
+    # academic variants found missing by probing (fixed phrases only)
+    r"Experimental Evaluation|Empirical Evaluation|Discussion and Limitations|Limitations and Discussion|Concluding Remarks(?: and Future Work)?))"
 )
 # A numbered, title-cased line such as "3.2 Scaled Dot-Product Attention": at most 8 words, no digits or sentence punctuation.
 _WORD = r"(?:[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"
