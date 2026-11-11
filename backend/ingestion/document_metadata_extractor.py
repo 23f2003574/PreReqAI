@@ -12,6 +12,10 @@ _PLACEHOLDER_TITLE = re.compile(
 )
 
 
+# Authors that word processors and converters fill in when the person set none: the account name of whoever saved the file.
+_PLACEHOLDER_AUTHOR = re.compile(r"^(?:unknown|anonymous|admin|administrator|user|owner|author|default|root|guest|unspecified)$", re.IGNORECASE)
+
+
 @dataclass
 class DocumentMetadata:
     title: str
@@ -44,9 +48,13 @@ class DocumentMetadataExtractor:
         if _PLACEHOLDER_TITLE.match(embedded_title):  # not a real title: fall back to the first page
             embedded_title = ""
 
+        embedded_author = (metadata.get("author", "") or "").strip()
+        if _PLACEHOLDER_AUTHOR.match(embedded_author):  # not a person: fall back to the first page
+            embedded_author = ""
+
         return DocumentMetadata(
             title=embedded_title or self._title_from_first_page(pdf) or "Unknown Title",
-            author=(metadata.get("author", "") or "").strip() or self._author_from_first_page(pdf) or "Unknown Author",
+            author=embedded_author or self._author_from_first_page(pdf) or "Unknown Author",
             subject=metadata.get("subject", ""),
             keywords=metadata.get("keywords", ""),
             creator=metadata.get("creator", ""),
