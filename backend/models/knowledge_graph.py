@@ -45,7 +45,48 @@ class KnowledgeGraph:
 
             raise ValueError(f"Graph edge cannot connect {edge.source!r} to itself")
 
+        # A prerequisite cycle (A needs B needs A) has no valid study order. Only "depends_on" edges are prerequisites: a
+        # "co_occurs_with" edge is naturally mutual. The error names the whole cycle so the bad relationship can be found.
+        if edge.relationship == "depends_on":
+
+            route = self._prerequisite_route(edge.target, edge.source)
+
+            if route is not None:
+
+                cycle = " -> ".join(node.replace("concept:", "") for node in [edge.source, *route])
+
+                raise ValueError(f"Graph edge {edge.source!r} -> {edge.target!r} would create a prerequisite cycle: {cycle}")
+
         self.edges.append(edge)
+
+    def _prerequisite_route(self, start: str, goal: str) -> list[str] | None:
+        """The nodes from `start` to `goal` (both included) along existing "depends_on" edges, or None when there is no route."""
+
+        parents, pending = {start: None}, [start]
+
+        while pending:
+
+            node = pending.pop()
+
+            if node == goal:
+
+                route = []
+
+                while node is not None:
+
+                    route.append(node)
+                    node = parents[node]
+
+                return route[::-1]
+
+            for edge in self.edges:
+
+                if edge.relationship == "depends_on" and edge.source == node and edge.target not in parents:
+
+                    parents[edge.target] = node
+                    pending.append(edge.target)
+
+        return None
 
     def node_exists(
         self,
