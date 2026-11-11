@@ -1,7 +1,7 @@
 # PreReqAI — Architecture and Research-Readiness Assessment
 
 **Audience:** a researcher deciding whether this project could support an arXiv paper.
-**Basis:** everything below was read from the code, tests and docs in this repository (HEAD `7134903`, 78 commits, all dated 2026-10-28 to 2026-11-02 in this checkout). Statements about behaviour were checked by running the code where noted. Anything unfinished, planned, or merely declared is marked **[NOT IMPLEMENTED]**, **[PARTIAL]** or **[UNUSED]**.
+**Basis:** everything below was read from the code, tests and docs in this repository (originally written at a commit that no longer exists in this checkout's history; later figures were re-checked at the commits named where they appear). Statements about behaviour were checked by running the code where noted. Anything unfinished, planned, or merely declared is marked **[NOT IMPLEMENTED]**, **[PARTIAL]** or **[UNUSED]**.
 
 **Bottom line up front.** The part of this repository that is wired to a user-facing entry point is a small, deterministic, rule-based pipeline: PDF → section/equation heuristics → dictionary-based concept detection (45 hand-written concepts) → hard-coded prerequisite rules (46 rules over 8 base subjects) → study plan. There is **no machine-learning model in the loop**, no LLM is called anywhere on that path, and **there is no evaluation against real papers or human judgments**. Most of the repository's ~650k lines (see §3.7) are large, mostly unconnected scaffolding around that core. On its present evidence the project is a working prototype/engineering artifact, not a research result.
 
@@ -117,7 +117,7 @@ A fixed list of 30 stages executed sequentially with per-stage wall-clock timing
 
 | Module | Role |
 |---|---|
-| `backend/session/session_manager.py`, `learning_session.py` | In-memory sessions (cap 500, idlest evicted). With `PREREQAI_SESSION_DIR` set, each session is also written as a **pickle** file (atomic temp-file swap, per-writer temp names, 30-day expiry, id must be a canonical UUID and match the file). Documented as "trusted data only": loading a session file executes pickle. |
+| `backend/session/session_manager.py`, `learning_session.py` | In-memory sessions (cap 500, idlest evicted). With `PREREQAI_SESSION_DIR` set, each session is also written as a **pickle** file (atomic temp-file swap, per-writer temp names, 30-day expiry, id must be a canonical UUID and match the file). Loading uses a restricted unpickler (commit `eda9b88`) that refuses classes outside `backend.*`; still keep the directory private. |
 | `backend/pipeline/interactive_learning_pipeline.py` | For a question: keyword `LearningIntentDetector` → `LearningWorkflowPlanner` (maps an intent to 1–3 workflow types) → `ContextRetriever` (lower-cased substring match of concept names in the question, then sections containing them) → `RuleBasedTutor`; duplicate replies are removed. |
 | `backend/tutor/rule_based_tutor.py` (474 lines) | Self-described as "Temporary tutor used before the LLM tutor is introduced." Answers via ordered regex rules: quiz (12-concept `quiz_bank`), per-concept time, resources, "which prerequisites does X need", built-in definitions/justifications, paper overview, study-plan questions ("what first / how long / how hard / am I ready"). Alias spellings (SGD, RNN, backprop) are rewritten to canonical names. **Anything else returns the literal string "A tutoring model has not yet been configured."** and the response carries a `warnings` entry saying so. `TutorPromptBuilder` builds an LLM prompt string (stored as `last_prompt`) that is never sent anywhere. |
 
@@ -161,7 +161,7 @@ Code that implements the learning-assistance idea (ingestion, parsing, concepts,
 
 | Layer | Choice (from code) |
 |---|---|
-| Language | Python 3.10+ (enforced by `backend/python_version.py`; CI matrix 3.10 and 3.13) |
+| Language | Python 3.10+ (enforced by `backend/python_version.py`; CI matrix 3.10, 3.12 and 3.13) |
 | PDF | PyMuPDF (`pymupdf`, pinned `<2`), `pdfplumber` (table extraction) |
 | Network | `requests`, `urllib3` (arXiv, Crossref) |
 | Web/API | FastAPI, uvicorn, python-multipart. OpenAPI is produced by FastAPI and tested for stability |
@@ -170,7 +170,7 @@ Code that implements the learning-assistance idea (ingestion, parsing, concepts,
 | Models / external APIs | **None called at runtime.** arXiv and Crossref over HTTP for link inputs. Provider adapters for OpenAI / Gemini / local server exist but are not wired and their client libraries are not in requirements |
 | Storage | In-memory dict; optional pickle files per session (`PREREQAI_SESSION_DIR`); download cache on disk (`PREREQAI_CACHE_DIR` or `./cache/`); Markdown plan files. Other JSON/in-memory stores exist inside unwired packages. No database |
 | Deployment | Run from source (no wheel/package metadata; "the release is what `git archive HEAD` exports"). No Dockerfile for PreReqAI itself; the API generator emits Dockerfiles for *generated* projects. No hosted deployment. |
-| CI | One GitHub Actions workflow: product tests on 3.10 and 3.13, API-generation tests, the README quickstart, a runtime-only-dependency install, and a live `uvicorn` + `curl` smoke test |
+| CI | One GitHub Actions workflow: product tests and the rest of the backend suite on 3.10, 3.12 and 3.13, API-generation tests, the README quickstart, a runtime-only-dependency install, and a live `uvicorn` + `curl` smoke test |
 | Test tooling | pytest, `httpx2` (for Starlette `TestClient`) |
 
 ---
@@ -182,7 +182,7 @@ Code that implements the learning-assistance idea (ingestion, parsing, concepts,
 3. **LLM tutoring deferred behind a placeholder.** The README, every response's `warnings`, and the release checklist all disclose this honestly. The prompt builder and provider adapters were built ahead of any integration. Trade-off: the "Interactive Learning" feature list in the README (Socratic questioning, adaptive quizzes, multiple teaching strategies) is mostly aspirational relative to what answers are produced.
 4. **Single mutable `Paper` through a staged pipeline** with type checks, cancellation points, timings and a diagnostics mode. Good for debuggability and for reporting which stage failed; not designed for streaming or very large documents.
 5. **Uniform failure envelope and extensive input-error UX** (hints, did-you-mean, exit codes, limits). A large share of the commit history is this kind of hardening.
-6. **Sessions in memory, optional pickle persistence.** Simple, but pickle load of on-disk files is unsafe for untrusted data (documented), and storage is single-process with no locking beyond atomic file replacement.
+6. **Sessions in memory, optional pickle persistence.** Simple, but session files are pickles: loading uses a restricted unpickler (`_SessionUnpickler`, commit `eda9b88`) that refuses any class outside `backend.*`, which blocks the obvious code-execution payloads but is not a substitute for keeping the directory private; and storage is single-process with no locking beyond atomic file replacement.
 7. **Lazy imports for start-up time** (`backend.session` exports ~2,000 names through PEP 562 lazy loading; CLI defers recovery and API-generation modules). A symptom of the codebase's size; the release checklist notes the product still loads ~1,260 modules in the worst case.
 8. **SSRF guard on downloads** — only public HTTPS hosts are fetched for DOI-derived PDF links.
 9. **Breadth over depth in architecture.** Many subsystems (workspace, policy governance, LLM ops) were built as complete-looking service layers with their own tests but without an end-user path. This is the main maturity risk for anyone evaluating the repo.

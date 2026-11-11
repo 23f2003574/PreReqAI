@@ -582,3 +582,14 @@ Checked at commit `1914907`: `pytest -m prereqai` 1022 passed, 1 skipped, 0 fail
 - CI: `analyze --tree --resources --plan-file` and `--resume` run from the runtime-only install. Not yet seen running on GitHub Actions.
 - Examined and left unchanged: HTTP unmarking of studied concepts and atomic session writes already existed with tests. Every one of the 45 registry concepts has prerequisite rules or is a base subject, so there is no "unmapped registry concept" to report; concepts outside the registry are simply not detected.
 - Still open: the real published paper (release blocker), the tutoring model, Python 3.10/3.12 re-runs.
+
+## Product changes of 2026-11-07 to 2026-11-11 (from `git log`)
+
+No test run is recorded here; CI ("PreReqAI checks", Python 3.10/3.12/3.13) was green on the pushes up to `77654e0` (run 206).
+
+- 11-07: session consistency work (concurrent-update safety `cf8ac57`, restoration after interruption `a578aa2`, state consistency `8da7b0a`, API mutation persistence `bd57a82`), invalid-PDF handling `2c88ab1`, plan validation `2af8ded`, readiness after progress changes `2efb7c4`, clean-install and error-report standardisation `0cddc97`, `433f8b9`.
+- 11-08: restricted session unpickling `eda9b88`, durable session writes `963fb53`, manual real-paper workflow `972c618` (never run: no workflow runs exist), Python 3.12 in CI `a912be6`, broader CI backend coverage `7a19c8b`.
+- 11-10: registry/planner/resource consistency tests `3da570a`, concept-coverage and unrecognised-term diagnostics `d6fbdd3`, `02f7960`, planner hours validation and ordering `e31a96f`, `d4d6fcf`, unsupported-concept flag `5116e3a`, author-name recognition `c46a2e3`, unreadable-text warning `0c64302`, page-less document rejection `76fa178`.
+- 11-11: citation ranges/groups `18422d5`, `d7179e2`, `2948731`, Unicode minus `7d6ebd5`, damaged-PDF JSON `59fa8bd`, bibliography colon `17c3e23`, topic matching `5e237d8`, cycle validation `18cb03e`, placeholder title/author fallbacks `3e0c593`, `8ee4662`, `ee8c2ef`, arXiv stamp `6f6558a`, malformed-JSON message `77654e0`, prose no longer extracted as equations `8face07`.
+
+Release status unchanged: NOT release-ready. Still open: the real published paper, the tutoring model, a real frontend.
