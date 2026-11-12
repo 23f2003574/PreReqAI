@@ -33,6 +33,8 @@ curl -F "paper=@examples/prerequisites/sample-paper.pdf;type=application/pdf" \
     http://127.0.0.1:8000/api/prerequisites/analyze
 ```
 
+With the server running, open `http://127.0.0.1:8000/` for a small web interface: upload a PDF or enter an arXiv link / DOI (and, optionally, concepts you already know) to see the paper's details, detected concepts, prerequisite gaps and the study plan. It is one static page (`backend/web/index.html`) that calls `POST /api/prerequisites/analyze`; it does not track studied concepts or ask questions (use the API or CLI for those).
+
 To call the API from a browser app on another origin, set `PREREQAI_CORS_ORIGINS=https://app.example.com` (comma separated; unset by default, so no cross-origin access).
 
 Send the form field `diagnostics=true` with the upload to get the same per-stage timings and statistics as the CLI's `--diagnose` in a `diagnostics` object of the result (also on failures, where it names the stage that failed).

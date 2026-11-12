@@ -26,6 +26,10 @@ from backend.api.recovery_decision_routes import (
     router as recovery_decision_router,
 )
 
+from backend.api.web_routes import (
+    router as web_router,
+)
+
 from backend.version import __version__
 from backend.platform import (  # noqa: F401  (kept as backend.main.platform)
     platform,
@@ -59,6 +63,10 @@ app.include_router(
 
 app.include_router(
     recovery_decision_router,
+)
+
+app.include_router(
+    web_router,
 )
 
 

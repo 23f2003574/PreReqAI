@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PreReqAI</title>
+<style>
+  :root { --bg:#f7f7f5; --fg:#1d1d1b; --muted:#5f5f5a; --card:#fff; --line:#d9d9d3; --accent:#1f5fbf; --bad:#a3231f; --ok:#1c6b3a; --warn:#8a5a00; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161615; --fg:#ececea; --muted:#a3a39c; --card:#20201f; --line:#3a3a37; --accent:#7aa7f0; --bad:#ff8d86; --ok:#6fcf97; --warn:#e8b45a; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, sans-serif; }
+  main { max-width: 56rem; margin: 0 auto; padding: 1rem; }
+  h1 { font-size: 1.5rem; margin: .5rem 0 0; } h2 { font-size: 1.15rem; margin: 0 0 .5rem; }
+  p.lead { color: var(--muted); margin-top: .25rem; }
+  section, form { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+  label { display:block; font-weight:600; margin: .75rem 0 .25rem; } small { color: var(--muted); font-weight: 400; }
+  input[type=text], input[type=file] { width: 100%; padding: .5rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; }
+  button { margin-top: 1rem; padding: .6rem 1.2rem; border: 0; border-radius: 6px; background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: progress; }
+  .msg { padding: .75rem 1rem; border-radius: 6px; border: 1px solid var(--line); margin: 1rem 0; }
+  .msg.error { border-color: var(--bad); color: var(--bad); } .msg.warn { border-color: var(--warn); color: var(--warn); } .msg.info { color: var(--muted); }
+  .table-wrap { overflow-x: auto; } table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .gap { color: var(--bad); font-weight: 600; } .covered { color: var(--ok); font-weight: 600; }
+  dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: 0; } dt { color: var(--muted); } dd { margin: 0; overflow-wrap: anywhere; }
+  [hidden] { display: none !important; }
+  @media (max-width: 520px) { main { padding: .5rem; } dl { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>PreReqAI</h1>
+  <p class="lead">Find out what to study before reading a research paper.</p>
+
+  <form id="form" novalidate>
+    <label for="paper">Paper PDF <small>(text-based PDF; scans are not read)</small></label>
+    <input id="paper" name="paper" type="file" accept="application/pdf,.pdf">
+    <label for="source">or an arXiv link / DOI <small>(for example arXiv:1706.03762 or 10.1145/3292500.3330701)</small></label>
+    <input id="source" name="source" type="text" autocomplete="off" placeholder="https://arxiv.org/abs/1706.03762">
+    <label for="known">Concepts you already know <small>(optional, comma separated, e.g. Linear Algebra, Probability)</small></label>
+    <input id="known" name="known" type="text" autocomplete="off">
+    <button id="submit" type="submit">Analyse paper</button>
+  </form>
+
+  <div id="status" role="status" aria-live="polite"></div>
+
+  <div id="results" hidden>
+    <section><h2>Paper</h2><dl id="meta"></dl></section>
+    <section><h2>Detected concepts</h2><div id="concepts"></div></section>
+    <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
+    <section><h2>Study plan</h2><div id="plan"></div></section>
+  </div>
+</main>
+<script>
+"use strict";
+var $ = function (id) { return document.getElementById(id); };
+
+function el(tag, text, className) {
+  var node = document.createElement(tag);
+  if (text !== undefined && text !== null) node.textContent = String(text);
+  if (className) node.className = className;
+  return node;
+}
+
+function safeUrl(url) { return /^https?:\/\//i.test(String(url)) ? url : null; }
+
+function showStatus(kind, text, extra) {
+  var box = $("status");
+  box.textContent = "";
+  if (!text) return;
+  var node = el("div", text, "msg " + kind);
+  if (extra) node.appendChild(el("div", extra));
+  box.appendChild(node);
+}
+
+function table(headers, rows) {
+  var wrap = el("div", null, "table-wrap"), t = el("table"), head = el("tr");
+  headers.forEach(function (h) { head.appendChild(el("th", h)); });
+  t.appendChild(head);
+  rows.forEach(function (cells) {
+    var tr = el("tr");
+    cells.forEach(function (cell) {
+      var td = el("td");
+      if (cell && cell.nodeType) td.appendChild(cell); else td.textContent = cell === undefined || cell === null ? "" : String(cell);
+      tr.appendChild(td);
+    });
+    t.appendChild(tr);
+  });
+  wrap.appendChild(t);
+  return wrap;
+}
+
+function fill(id, node) { var box = $(id); box.textContent = ""; box.appendChild(node); }
+
+function render(body) {
+  var report = body.report || {}, paper = report.paper || {};
+  var meta = $("meta");
+  meta.textContent = "";
+  var facts = [["Title", paper.title], ["Author", paper.author], ["Pages", paper.pages]];
+  if (report.paper_difficulty) facts.push(["Difficulty", report.paper_difficulty.level + " - " + report.paper_difficulty.explanation]);
+  if (report.study_time) facts.push(["Preparation", report.study_time.total_hours + " h over about " + report.study_time.recommended_days + " days"]);
+  if (report.readiness) facts.push(["Readiness", report.readiness.status + " (" + report.readiness.progress_percent + "%)"]);
+  facts.forEach(function (f) { meta.appendChild(el("dt", f[0])); meta.appendChild(el("dd", f[1])); });
+
+  var evidence = report.concept_evidence || [];
+  fill("concepts", evidence.length
+    ? table(["Concept", "Area", "Mentions"], evidence.map(function (c) {
+        return [c.concept, c.domain, c.occurrences + (c.mentioned_once ? " (mentioned once)" : "")];
+      }))
+    : el("p", "No known concepts were detected in this paper, so there is nothing to plan.", "msg warn"));
+
+  var prerequisites = report.missing_prerequisites || [];
+  fill("gaps", prerequisites.length
+    ? table(["Prerequisite", "Status", "Why"], prerequisites.map(function (p) {
+        return [p.concept, el("span", p.satisfied ? "Covered or known" : "Gap", p.satisfied ? "covered" : "gap"), p.reason];
+      }))
+    : el("p", "This paper has no prerequisites to check.", "msg info"));
+
+  var links = {};
+  (report.learning_resources || []).forEach(function (r) { links[r.concept] = r; });
+  var plan = report.learning_plan || [];
+  fill("plan", plan.length
+    ? table(["#", "Study", "Hours", "Resource"], plan.map(function (s) {
+        var r = links[s.concept], cell = "";
+        if (r && safeUrl(r.url)) { cell = el("a", r.title); cell.href = r.url; cell.rel = "noopener noreferrer"; cell.target = "_blank"; }
+        return [s.step, s.concept, s.estimated_hours, cell];
+      }))
+    : el("p", "Nothing left to study: no planned prerequisites.", "msg info"));
+
+  $("results").hidden = false;
+  var warnings = body.warnings || [];
+  if (warnings.length) showStatus("warn", "Notes about this analysis:", warnings.join(" "));
+  else showStatus("info", "");
+}
+
+function failureText(body, status) {
+  var detail = body && (typeof body.detail === "string" ? body.detail : body.message);
+  return [detail || ("The request failed (HTTP " + status + ")."), body && body.hint];
+}
+
+async function submit(event) {
+  event.preventDefault();
+  var file = $("paper").files[0], source = $("source").value.trim(), known = $("known").value;
+  $("results").hidden = true;
+  if (!file && !source) return showStatus("error", "Choose a PDF or enter an arXiv link or DOI.");
+  if (file && source) return showStatus("error", "Use either a PDF or an arXiv link / DOI, not both.");
+  var data = new FormData();
+  if (file) data.append("paper", file); else data.append("source", source);
+  known.split(",").map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (k) { data.append("known", k); });
+  $("submit").disabled = true;
+  showStatus("info", "Analysing the paper... this can take a few seconds" + (source ? " (the paper is downloaded first)." : "."));
+  try {
+    var response = await fetch("/api/prerequisites/analyze", { method: "POST", body: data });
+    var body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (!response.ok || !body || body.status !== "success") {
+      var text = failureText(body, response.status);
+      showStatus("error", text[0], text[1]);
+    } else {
+      render(body);
+    }
+  } catch (error) {
+    showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.");
+  } finally {
+    $("submit").disabled = false;
+  }
+}
+
+$("form").addEventListener("submit", submit);
+</script>
+</body>
+</html>
