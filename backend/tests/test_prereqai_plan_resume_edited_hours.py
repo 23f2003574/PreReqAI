@@ -14,12 +14,13 @@ pytestmark = pytest.mark.prereqai
     "- [x] 1. Calculus - [MIT](https://ocw.mit.edu/)",
     "- [X] 1. Calculus",
     "  * [x] 1. Calculus   ",
+    "- [x] Calculus (~10h)",  # step number deleted by hand: still a ticked step (names outside the plan are ignored with a warning when applied)
 ])
 def test_ticked_steps_are_read_whatever_follows_the_name(line):
     assert studied_from_plan(line + "\n") == ["Calculus"]
 
 
-@pytest.mark.parametrize("line", ["- [ ] 1. Calculus (~10h)", "- [x] Calculus (~10h)", "  - Why: - [x] 1. Calculus"])
+@pytest.mark.parametrize("line", ["- [ ] 1. Calculus (~10h)", "  - Why: - [x] 1. Calculus"])
 def test_unticked_or_non_step_lines_are_not_studied(line):
     assert studied_from_plan(line + "\n") == []
 

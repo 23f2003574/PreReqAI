@@ -13,7 +13,7 @@ def test_roman_numbered_all_caps_headings_are_sections():
 
 
 def test_author_lines_and_sentences_are_not_headings():
-    text = "I. Goodfellow and Y. Bengio\nIn II. the other IV. THING continues\nX. A\nII. Proposed method\n"
+    text = "I. Goodfellow and Y. Bengio\nIn II. the other IV. THING continues\nX. A\nII. Proposed methods are used here\n"
     assert [m.group() for m in SECTION_PATTERN.finditer(text)] == []
 
 
@@ -22,3 +22,8 @@ def test_the_section_content_follows_the_new_headings():
     sections = {s.title: s.content for s in ScientificSectionParser().parse(document).sections}
     assert sections["II. PROPOSED METHOD"] == "Body two.\nA. Network Design\nDetails."
     assert sections["III. EXPERIMENTAL EVALUATION"] == "Body three."
+
+
+def test_roman_numbered_title_case_known_heading_is_a_section():
+    # "Proposed Method" is a known heading phrase (any case), so the numbered line is a real section, unlike the author lines above
+    assert [m.group() for m in SECTION_PATTERN.finditer("II. Proposed method\nBody.\n")] == ["II. Proposed method"]
