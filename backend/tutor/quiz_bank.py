@@ -262,4 +262,424 @@ QUIZ_BANK = {
                 "Easy",
         },
     ],
+
+    "Cross-Attention": [
+
+        {
+            "question":
+                "In cross-attention, where do the queries come from compared with the keys and values?",
+
+            "answer":
+                "The queries come from one sequence (such as the decoder) while the keys and values come from another (such as the encoder output).",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Recurrent Neural Network": [
+
+        {
+            "question":
+                "Why can an RNN not process all positions of a sequence in parallel during training?",
+
+            "answer":
+                "Each hidden state depends on the previous one, so the steps must be computed in order.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Convolutional Neural Network": [
+
+        {
+            "question":
+                "What does weight sharing in a convolutional layer achieve?",
+
+            "answer":
+                "The same small filter is applied at every position, which needs far fewer parameters and detects a pattern wherever it appears.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Batch Normalization": [
+
+        {
+            "question":
+                "What does batch normalization compute its statistics over?",
+
+            "answer":
+                "The mean and variance of each feature over the current mini-batch, before a learned scale and shift.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Maximum Likelihood Estimation": [
+
+        {
+            "question":
+                "What does maximum likelihood estimation choose?",
+
+            "answer":
+                "The parameters under which the observed data has the highest probability.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Fine-Tuning": [
+
+        {
+            "question":
+                "What is fine-tuning?",
+
+            "answer":
+                "Continuing to train a pretrained model on a smaller task-specific dataset so that it adapts to the new task.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Embedding": [
+
+        {
+            "question":
+                "What property should an embedding space have?",
+
+            "answer":
+                "Items that are similar should be close together as vectors.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Markov Decision Process": [
+
+        {
+            "question":
+                "What does the Markov property say in a Markov decision process?",
+
+            "answer":
+                "The next state and reward depend only on the current state and action, not on the earlier history.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Bellman Equation": [
+
+        {
+            "question":
+                "What does the Bellman equation express?",
+
+            "answer":
+                "The value of a state equals the immediate reward plus the discounted value of the states that follow.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Policy Gradient": [
+
+        {
+            "question":
+                "What do policy gradient methods optimise directly?",
+
+            "answer":
+                "The parameters of the policy, by following the gradient of the expected return.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Value Function": [
+
+        {
+            "question":
+                "What does a value function estimate?",
+
+            "answer":
+                "The expected return an agent obtains from a state (or state and action) when it follows a given policy.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Q-Learning": [
+
+        {
+            "question":
+                "Is Q-learning on-policy or off-policy, and why?",
+
+            "answer":
+                "Off-policy: it updates toward the best next action's value, whatever action the behaviour policy actually takes.",
+
+            "difficulty":
+                "Hard",
+        },
+    ],
+
+    "Actor-Critic": [
+
+        {
+            "question":
+                "What are the two parts of an actor-critic method?",
+
+            "answer":
+                "An actor that chooses actions (the policy) and a critic that estimates values to judge them.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Graph Neural Network": [
+
+        {
+            "question":
+                "What does a graph neural network update at each layer?",
+
+            "answer":
+                "Each node's representation, computed from its own features and those of its neighbours.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Message Passing": [
+
+        {
+            "question":
+                "What are the two steps of a message passing layer?",
+
+            "answer":
+                "Nodes aggregate messages from their neighbours, then update their own state from the aggregate.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Graph Convolution": [
+
+        {
+            "question":
+                "What does a graph convolution do to a node's features?",
+
+            "answer":
+                "It combines them with those of neighbouring nodes using normalised weights, like a filter over the graph.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Graph Attention Network": [
+
+        {
+            "question":
+                "How does a graph attention network differ from a plain graph convolution?",
+
+            "answer":
+                "It learns attention weights so each neighbour contributes with a different importance instead of fixed weights.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Generative Adversarial Network": [
+
+        {
+            "question":
+                "What are the two networks in a GAN and what do they do?",
+
+            "answer":
+                "A generator that creates samples and a discriminator that tries to tell them from real data; each trains against the other.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Monte Carlo Method": [
+
+        {
+            "question":
+                "Why do Monte Carlo methods work for estimating an expectation?",
+
+            "answer":
+                "The average of many random samples converges to the true expectation as the number of samples grows.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Variational Inference": [
+
+        {
+            "question":
+                "What does variational inference do to approximate a hard posterior?",
+
+            "answer":
+                "It picks the closest distribution from a simpler family by maximising a lower bound (the ELBO) on the data likelihood.",
+
+            "difficulty":
+                "Hard",
+        },
+    ],
+
+    "Large Language Model": [
+
+        {
+            "question":
+                "What is a large language model trained to do?",
+
+            "answer":
+                "Predict text, typically the next token, from very large amounts of data.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Contrastive Learning": [
+
+        {
+            "question":
+                "What does a contrastive loss do to embeddings?",
+
+            "answer":
+                "It pulls together embeddings of related (positive) examples and pushes apart those of unrelated (negative) ones.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Score Matching": [
+
+        {
+            "question":
+                "What is the score that score matching learns?",
+
+            "answer":
+                "The gradient of the log data density with respect to the input.",
+
+            "difficulty":
+                "Hard",
+        },
+    ],
+
+    "U-Net": [
+
+        {
+            "question":
+                "Why does a U-Net have skip connections between its encoder and decoder?",
+
+            "answer":
+                "They pass fine spatial detail directly to the decoder so it is not lost while downsampling.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Forward Process": [
+
+        {
+            "question":
+                "What happens in the forward process of a diffusion model?",
+
+            "answer":
+                "Noise is added to the data step by step until it is close to pure noise.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Reverse Process": [
+
+        {
+            "question":
+                "What does the reverse process of a diffusion model learn?",
+
+            "answer":
+                "To remove the noise step by step, turning noise back into a data sample.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Noise Schedule": [
+
+        {
+            "question":
+                "What does the noise schedule of a diffusion model set?",
+
+            "answer":
+                "How much noise is added at each step of the forward process.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Parameter-Efficient Fine-Tuning": [
+
+        {
+            "question":
+                "Why is parameter-efficient fine-tuning cheaper than full fine-tuning?",
+
+            "answer":
+                "Only a small number of added or selected parameters are trained while the pretrained weights stay frozen.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Reinforcement Learning from Human Feedback": [
+
+        {
+            "question":
+                "What is the role of the reward model in RLHF?",
+
+            "answer":
+                "It is trained on human preference comparisons and then supplies the reward used to optimise the model with reinforcement learning.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Node Embedding": [
+
+        {
+            "question":
+                "What is a node embedding?",
+
+            "answer":
+                "A learned vector for a graph node that captures its position and neighbourhood so similar nodes lie close together.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
 }

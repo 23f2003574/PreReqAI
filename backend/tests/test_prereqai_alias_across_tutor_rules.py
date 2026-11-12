@@ -25,8 +25,8 @@ def test_quiz_on_an_alias_quizzes_that_concept_only():
     assert _ask("Quiz me on SGD") == _ask("Quiz me on Gradient Descent")
 
 
-def test_quiz_on_an_alias_of_a_concept_without_questions_says_so_by_its_name():
-    assert _ask("Quiz me on RNN") == "There are no practice questions yet for Recurrent Neural Network."
+def test_quiz_on_an_alias_quizzes_the_concept_it_names():
+    assert _ask("Quiz me on RNN") == _ask("Quiz me on Recurrent Neural Network") and _ask("Quiz me on RNN").startswith("Recurrent Neural Network Q1 (")
 
 
 def test_prerequisites_of_an_alias_are_those_of_the_concept():

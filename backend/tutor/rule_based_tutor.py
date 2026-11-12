@@ -30,6 +30,10 @@ def _name_pattern(name, plural=True):
     return rf"(?<![a-z0-9]){re.escape(_normalise(name))}{'s?' if plural else ''}(?![a-z0-9])"
 
 
+_QUIZ_SUBJECT = re.compile(r"(?<![a-z0-9])(?:on|about|for)\s+([a-z0-9][a-z0-9 ]{0,60}?)\s*$")
+_QUIZ_GENERIC = frozenset({"the", "this", "that", "these", "those", "a", "an", "it", "my", "me", "all", "everything", "paper", "papers", "concept",
+                           "concepts", "topic", "topics", "so", "far", "here", "now", "today", "again", "more", "some", "of", "in"})
+
 _CONCEPT_POINTER = re.compile(r"\b(this|that|the) concept\b|\b(explain|describe) it\b", re.IGNORECASE)
 
 
@@ -182,6 +186,11 @@ class RuleBasedTutor(BaseTutor):
 
         # the session's topic (ask --topic / the `topic` field) scopes the quiz like it scopes every other answer
         topic = getattr(session, "active_concept", None)
+
+        # "Quiz me on Quantum Gravity": a topic PreReqAI does not know is not answered with questions about other concepts
+        wanted = _QUIZ_SUBJECT.search(text)
+        if wanted and not named and not topic and set(wanted.group(1).split()) - _QUIZ_GENERIC:
+            return f"I can't quiz you on '{wanted.group(1)}': it is not a concept PreReqAI supports. Ask for a quiz on a concept from the study plan, or say 'quiz me'."
 
         if topic and not named:
             if topic not in QUIZ_BANK:
