@@ -39,7 +39,7 @@ def test_pdf_to_study_plan_stages_agree_with_each_other(tmp_path, capsys):
     # plan: exactly the prerequisites the paper does not cover, numbered from 1, whose hours add up to the study time
     missing = {m["concept"] for m in report["missing_prerequisites"] if not m["satisfied"]}
     plan = report["learning_plan"]
-    assert {s["concept"] for s in plan} == missing and "Attention" not in missing  # Attention is covered within the paper
+    assert {s["concept"] for s in plan} == missing and "Attention" in missing  # mentioned only once (in the title): not enough to count as covered, so it stays in the plan
     assert [s["step"] for s in plan] == list(range(1, len(plan) + 1))
     assert sum(s["estimated_hours"] for s in plan) == report["study_time"]["total_hours"] > 0
     assert [p["concept"] for p in report["study_progress"]] == [s["concept"] for s in plan]

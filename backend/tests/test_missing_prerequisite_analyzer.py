@@ -21,7 +21,7 @@ def test_missing_prerequisite_analysis():
         DetectedConcept(
             name="Attention",
             domain="transformers",
-            occurrences=2,
+            occurrences=3,  # three mentions count as covered (COVERAGE_MIN_MENTIONS)
         )
     )
 

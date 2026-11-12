@@ -35,6 +35,6 @@ def test_every_prerequisite_in_the_tree_is_planned_or_satisfied(name, tmp_path):
         # a paper concept is covered by the paper; anything else must be in the plan (or marked satisfied)
         assert node["concept"] in detected or node["concept"] in planned or node["satisfied"], \
             f"{node['concept']} is in the prerequisite tree of the {name} paper but not in its study plan"
-    assert planned == {p["concept"] for p in report["prerequisites"] if p["concept"] not in detected}
-    assert {j["concept"] for j in report["prerequisite_justifications"]} == planned | {
-        p["concept"] for p in report["prerequisites"] if p["concept"] in detected}
+    # a prerequisite is planned unless the paper covers it (3+ mentions) or the learner knows it; a mere mention does not cover it
+    assert planned == {m["concept"] for m in report["missing_prerequisites"] if not m["satisfied"]}
+    assert {j["concept"] for j in report["prerequisite_justifications"]} == {p["concept"] for p in report["prerequisites"]}

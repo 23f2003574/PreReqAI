@@ -16,7 +16,7 @@ PAPERS = {
     "rl": ("Policy Optimization with Value Baselines",
            "We train a policy gradient agent with a value function in a Markov decision process, using reinforcement "
            "learning with a reward signal. Policy gradient variance is reduced by a baseline. "
-           "The Markov decision process has states and actions.",
+           "The Markov decision process has states and actions. A Markov decision process is solved by dynamic programming.",
            {"Markov Decision Process", "Policy Gradient", "Value Function"}, ["Probability", "Calculus"], 20),
     "graph": ("Message Passing on Graphs",
               "A graph neural network aggregates messages over a graph. The graph convolutional network uses a graph "
