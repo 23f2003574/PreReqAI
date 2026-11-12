@@ -79,7 +79,7 @@ Releasing? Follow [docs/release-checklist.md](docs/release-checklist.md). Run `p
 
 - If a line inside a section looks like a heading the parser did not recognise (a short title-cased line after a sentence end), the analysis adds a `warnings` entry naming it and the section it sits in. The text is still analysed; it is only filed under the previous section. Single-word headings are not reported.
 - Pages with two or three columns whose lines were written alternately are read column by column; a full-width line (title, abstract, caption) separates runs. Four or more columns are not handled.
-- A PDF with no extractable text (a scan) is reported in `warnings`; there is no OCR.
+- A PDF with no extractable text (a scan) is reported in `warnings`; pages that are scans are read with OCR when Tesseract is installed (PyMuPDF's OCR; the warning says which pages were recognised, and which could not be read when it is missing or fails). Recognition errors are possible, and OCR is not run on pages that already have text.
 - When the PDF metadata has no author, the author block on page one is read, including blocks with affiliation lines between authors; it is a heuristic and may answer "Unknown Author".
 
 ## Prerequisite Explorer

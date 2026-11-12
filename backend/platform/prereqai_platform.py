@@ -97,6 +97,24 @@ def _repair_warning(file_path) -> list:
     ] if repaired else []
 
 
+def _page_list(numbers) -> str:
+    return ", ".join(str(n) for n in numbers)
+
+
+def _ocr_warning(paper) -> list:
+    """Pages whose text came from OCR (recognition errors are possible) and scanned pages that could not be read at all."""
+    pages = paper.pages or []
+    used = [p.page_number for p in pages if getattr(p, "ocr", False)]
+    failed = [(p.page_number, p.ocr_error) for p in pages if getattr(p, "ocr_error", "")]
+    notes = []
+    if used:
+        notes.append(f"Pages {_page_list(used)} are scans; their text was recognised by OCR, so words may be misread and some concepts missed or wrongly detected.")
+    if failed:
+        reasons = sorted({reason for _, reason in failed})
+        notes.append(f"Scanned pages {_page_list(n for n, _ in failed)} could not be read and are missing from this analysis ({'; '.join(reasons)}).")
+    return notes
+
+
 def _caused_by(exc: BaseException, types) -> bool:
     """Whether `exc` is, or was caused by, an exception of `types`. A stage may
     wrap an error in its own ("raise ... from", or as its first argument)."""
@@ -406,7 +424,7 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=unsaved + _repair_warning(file_path) + _absorbed_heading_warning(result.paper) + no_concepts + [f"{known_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
+            warnings=unsaved + _repair_warning(file_path) + _absorbed_heading_warning(result.paper) + _ocr_warning(result.paper) + no_concepts + [f"{known_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
             + [f"{studied_label} {name!r} was ignored because you also said you already know it, so it is not in the study plan" for name in also_known]
             + [f"{studied_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in not_studied],
         )

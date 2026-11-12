@@ -15,6 +15,8 @@ fitz.TOOLS.mupdf_display_warnings(False)
 class RawPage:
     page_number: int
     text: str
+    ocr: bool = False  # the text was recognised from a scanned page image, not read from the PDF's text layer
+    ocr_error: str = ""  # a scanned page whose text could not be recognised, and why
 
 
 @dataclass
@@ -114,11 +116,59 @@ def _page_text(page) -> str:
     return _lines_in_column_order(page) or page.get_text("text")
 
 
+MIN_TEXT_CHARS = 25  # fewer letters and digits than this on a page is "no usable text layer"
+MIN_IMAGE_COVER = 0.25  # a scan is a page image covering a good part of the page, not a small logo
+
+
+def needs_ocr(page, text) -> bool:
+    """A page with almost no extractable text whose images cover a meaningful part of it (a scan). A blank page, or a page of
+    text with a figure, is not: ordinary text PDFs are never sent to OCR."""
+    if sum(char.isalnum() for char in text) >= MIN_TEXT_CHARS:
+        return False
+    area = page.rect.width * page.rect.height
+    if area <= 0:
+        return False
+    covered = sum(max(0.0, (box[2] - box[0]) * (box[3] - box[1])) for box in (info["bbox"] for info in page.get_image_info()))
+    return covered / area >= MIN_IMAGE_COVER
+
+
+def default_ocr(page) -> str:
+    """Recognise a page's text with PyMuPDF's OCR, which needs a system Tesseract (and its language data). Raises RuntimeError
+    with the reason when OCR cannot run, so the caller can report it instead of returning an empty page."""
+    try:
+        if not fitz.get_tessdata():
+            raise RuntimeError("Tesseract language data was not found")
+        textpage = page.get_textpage_ocr(language="eng", dpi=300, full=True)
+        return page.get_text("text", textpage=textpage)
+    except RuntimeError:
+        raise
+    except Exception as error:  # PyMuPDF raises various types when Tesseract is missing or fails
+        raise RuntimeError(f"{type(error).__name__}: {error}") from error
+
+
+def read_page(page, page_number, ocr) -> RawPage:
+    """One page in the ingestion format: its text layer when it has one, else (for a scan) OCR output. Never raises for OCR: a
+    scan that could not be recognised keeps empty text and says why in `ocr_error`."""
+    text = clean_pdf_text(_page_text(page))
+    if not needs_ocr(page, text):
+        return RawPage(page_number=page_number, text=text)
+    try:
+        recognised = clean_pdf_text(ocr(page)).strip()
+    except Exception as error:
+        return RawPage(page_number=page_number, text=text, ocr_error=f"OCR could not run: {error}")
+    if not recognised:
+        return RawPage(page_number=page_number, text=text, ocr_error="OCR found no text on this scanned page")
+    return RawPage(page_number=page_number, text=recognised, ocr=True)
+
+
 class PDFIngestionEngine:
     """
     Reads a research paper PDF and converts it into
     PreReqAI's raw internal document representation.
     """
+
+    def __init__(self, ocr=None):
+        self.ocr = ocr or default_ocr  # callable(page) -> text; replaceable so scanned-page handling is testable without Tesseract
 
     def ingest(self, file_path: str) -> RawDocument:
         from .document_metadata_extractor import DocumentMetadataExtractor
@@ -128,13 +178,7 @@ class PDFIngestionEngine:
 
             metadata = DocumentMetadataExtractor().extract_from(pdf)
 
-            pages = [
-                RawPage(
-                    page_number=page_number,
-                    text=clean_pdf_text(_page_text(page)),
-                )
-                for page_number, page in enumerate(pdf, start=1)
-            ]
+            pages = [read_page(page, page_number, self.ocr) for page_number, page in enumerate(pdf, start=1)]
 
         return RawDocument(
             source_path=file_path,
