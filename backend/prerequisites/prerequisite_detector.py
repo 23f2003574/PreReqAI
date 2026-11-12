@@ -301,7 +301,19 @@ class PrerequisiteDetector:
                         if concept not in needed_by.setdefault(deeper, []):
                             needed_by[deeper].append(concept)
                 pending.extend(self.PREREQUISITE_RULES.get(deeper, []))
+        # Importance comes only from dependency evidence, with no tuned weights. `confidence` is the share of the paper's
+        # rule-bearing concepts (those with at least one prerequisite) that need the prerequisite, directly or through
+        # another prerequisite: a measured fraction, not a certainty. A prerequisite needed by at least half of them
+        # (dependents * 2 >= total) is "essential", otherwise "supporting". The mentions of the dependent concepts break
+        # ties when ranking (see rank_prerequisites); the list itself keeps the rule order.
+        occurrences = {concept.name: concept.occurrences for concept in paper.concepts}
+        total = sum(1 for concept in paper.concepts if self.PREREQUISITE_RULES.get(concept.name))
+
         for prerequisite, concepts in needed_by.items():
+
+            share = len(concepts) / total if total else 0.0
+            essential = bool(total) and len(concepts) * 2 >= total
+            mentions = sum(occurrences.get(name, 0) for name in concepts)
 
             paper.prerequisites.append(
 
@@ -314,8 +326,23 @@ class PrerequisiteDetector:
                         f"{', '.join(concepts)}"
                     ),
 
-                    confidence=1.0,
+                    confidence=round(share, 2),
+
+                    importance="essential" if essential else "supporting",
+
+                    importance_reason=(
+                        f"Needed by {len(concepts)} of the paper's {total} concepts that have prerequisites "
+                        f"({mentions} mentions): {'essential' if essential else 'supporting'}."
+                    ),
+
+                    dependent_mentions=mentions,
                 )
             )
 
         return paper
+
+
+def rank_prerequisites(prerequisites):
+    """Prerequisites most-needed first: by number of dependent concepts (taken from the reason), then by the mentions of those
+    concepts, then by name, so equal evidence always ranks the same way."""
+    return sorted(prerequisites, key=lambda p: (-(p.reason.count(",") + 1), -p.dependent_mentions, p.concept))

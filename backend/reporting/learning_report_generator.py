@@ -177,6 +177,8 @@ class LearningReportGenerator:
                     "concept": prerequisite.concept,
                     "reason": prerequisite.reason,
                     "confidence": prerequisite.confidence,
+                    "importance": prerequisite.importance,
+                    "importance_reason": prerequisite.importance_reason,
                 }
 
                 for prerequisite in paper.prerequisites

@@ -97,7 +97,10 @@ class ConceptExplanation:
 class Prerequisite:
     concept: str
     reason: str
-    confidence: float
+    confidence: float  # the share of the paper's rule-bearing concepts that need this prerequisite (see PrerequisiteDetector)
+    importance: str = ""  # "essential" or "supporting"
+    importance_reason: str = ""
+    dependent_mentions: int = 0  # mentions in the paper of the concepts that need it
 
 
 @dataclass
