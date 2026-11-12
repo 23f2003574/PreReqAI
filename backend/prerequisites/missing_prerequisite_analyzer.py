@@ -4,6 +4,11 @@ from backend.models import (
 )
 
 
+# A prerequisite counts as covered by the paper only when it is discussed, not merely named: at least this many mentions
+# (bibliography excluded, as in concept detection). Fewer is "mentioned only" and the learner still studies it.
+COVERAGE_MIN_MENTIONS = 3
+
+
 class MissingPrerequisiteAnalyzer:
     """
     Determines whether detected prerequisites
@@ -20,17 +25,24 @@ class MissingPrerequisiteAnalyzer:
 
         paper.missing_prerequisites.clear()
 
-        detected = {
-            concept.name
+        mentions = {
+            concept.name: concept.occurrences
             for concept in paper.concepts
         }
 
         for prerequisite in paper.prerequisites:
 
-            satisfied = (
-                prerequisite.concept
-                in detected
-            )
+            count = mentions.get(prerequisite.concept, 0)
+
+            satisfied = count >= COVERAGE_MIN_MENTIONS
+
+            if satisfied:
+                reason = f"Covered within the paper ({count} mentions)"
+            elif count:
+                reason = (f"Mentioned {count} time{'s' if count != 1 else ''} in the paper, "
+                          f"too little to count as covered; requires external study")
+            else:
+                reason = "Requires external study"
 
             paper.missing_prerequisites.append(
 
@@ -40,11 +52,7 @@ class MissingPrerequisiteAnalyzer:
 
                     satisfied=satisfied,
 
-                    reason=(
-                        "Covered within the paper"
-                        if satisfied
-                        else "Requires external study"
-                    ),
+                    reason=reason,
                 )
             )
 
