@@ -14,5 +14,5 @@ def test_every_boundary_maps_to_one_level(missing, level):
 
 def test_the_most_a_paper_can_miss_is_expert_and_all_levels_are_reachable():
     maximum = len({p for rule in PrerequisiteDetector.PREREQUISITE_RULES.values() for p in rule})
-    assert maximum == 8 and difficulty_level(maximum) == "Expert"
+    assert maximum == 9 and difficulty_level(maximum) == "Expert"
     assert {difficulty_level(n) for n in range(maximum + 1)} == {"Beginner", "Intermediate", "Advanced", "Expert"}

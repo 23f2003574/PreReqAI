@@ -79,7 +79,7 @@ def test_the_bundled_sample_paper_report_is_consistent(capsys):
 FIXTURE_FINGERPRINTS = {
     "diffusion": "83367cee9807da9f",
     "graph": "2bc6e429a0b2c915",
-    "rl": "2262fa20f97e006a",
+    "rl": "be2d5c6f5c36cebd",
 }
 
 

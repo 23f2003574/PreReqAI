@@ -4,8 +4,8 @@ from backend.models import (
 )
 
 
-# Upper bound of missing prerequisite subjects for each level. The rule table has only 8 distinct prerequisite subjects, so 8 is the
-# most a paper can miss; the bands 0-2, 3-4, 5-6 and 7-8 make every level reachable (the old 6-8 / "more than 8" split never produced Expert).
+# Upper bound of missing prerequisite subjects for each level. The rule table has only 9 distinct prerequisite subjects (Transformer joined the 8 base ones as a prerequisite of Vision Transformer), so 9 is the
+# most a paper can miss; the bands 0-2, 3-4, 5-6 and 7-9 make every level reachable (the old 6-8 / "more than 8" split never produced Expert).
 LEVEL_BANDS = (("Beginner", 2), ("Intermediate", 4), ("Advanced", 6))
 
 
