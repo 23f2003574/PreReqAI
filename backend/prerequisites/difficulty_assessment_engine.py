@@ -16,6 +16,9 @@ def difficulty_level(missing: int) -> str:
     return "Expert"
 
 
+UNKNOWN_LEVEL = "Unknown"  # no concept was detected: the paper's difficulty cannot be judged, which is not the same as easy
+
+
 class DifficultyAssessmentEngine:
     """
     Estimates the overall difficulty of a
@@ -26,6 +29,19 @@ class DifficultyAssessmentEngine:
         self,
         paper: Paper,
     ) -> Paper:
+
+        if not paper.concepts and not paper.missing_prerequisites:  # nothing was detected, so "0 missing prerequisites" says nothing about the paper
+
+            paper.difficulty = PaperDifficulty(
+                level=UNKNOWN_LEVEL,
+                score=0.0,
+                explanation=(
+                    "Not enough evidence to rate the difficulty: no known concepts were detected in this paper "
+                    "(it may be outside the supported topics, or its text could not be read)."
+                ),
+            )
+
+            return paper
 
         missing = sum(
             1

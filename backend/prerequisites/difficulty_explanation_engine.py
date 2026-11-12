@@ -23,6 +23,18 @@ class DifficultyExplanationEngine:
             if not prerequisite.satisfied
         )
 
+        if not paper.concepts and not paper.missing_prerequisites:
+
+            paper.difficulty_explanations.append(
+
+                DifficultyExplanation(
+
+                    title="Insufficient Evidence",
+
+                    description="No known concepts were detected, so the difficulty could not be assessed.",
+                )
+            )
+
         if missing:
 
             paper.difficulty_explanations.append(
