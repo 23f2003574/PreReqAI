@@ -100,7 +100,9 @@ class Prerequisite:
     confidence: float  # the share of the paper's rule-bearing concepts that need this prerequisite (see PrerequisiteDetector)
     importance: str = ""  # "essential" or "supporting"
     importance_reason: str = ""
-    dependent_mentions: int = 0  # mentions in the paper of the concepts that need it
+    dependent_mentions: int = 0  # mentions in the paper of the concepts that need it (concepts without a count add nothing)
+    evidence: list = field(default_factory=list)  # [{concept, relation: direct|indirect, occurrences: int|None}] per dependent concept
+    evidence_note: str = ""  # what the evidence does and does not show
 
 
 @dataclass
@@ -108,6 +110,8 @@ class MissingPrerequisite:
     concept: str
     satisfied: bool
     reason: str
+    status: str = ""  # covered | mentioned_only | not_mentioned | unknown (no mention count available)
+    mentions: "int | None" = None  # the paper's mentions of this concept; None when no count is available
 
 
 @dataclass

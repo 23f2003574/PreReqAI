@@ -344,14 +344,23 @@ class PrerequisiteDetector:
         # another prerequisite: a measured fraction, not a certainty. A prerequisite needed by at least half of them
         # (dependents * 2 >= total) is "essential", otherwise "supporting". The mentions of the dependent concepts break
         # ties when ranking (see rank_prerequisites); the list itself keeps the rule order.
-        occurrences = {concept.name: concept.occurrences for concept in paper.concepts}
+        occurrences = {}
+        for concept in paper.concepts:  # a missing or non-positive count is "unknown", never an invented zero
+            count = getattr(concept, "occurrences", None)
+            occurrences[concept.name] = count if isinstance(count, int) and count > 0 else None
         total = sum(1 for concept in paper.concepts if self.PREREQUISITE_RULES.get(concept.name))
 
         for prerequisite, concepts in needed_by.items():
 
             share = len(concepts) / total if total else 0.0
             essential = bool(total) and len(concepts) * 2 >= total
-            mentions = sum(occurrences.get(name, 0) for name in concepts)
+            mentions = sum(occurrences.get(name) or 0 for name in concepts)
+            unknown = [name for name in concepts if occurrences.get(name) is None]
+            evidence = [
+                {"concept": name, "relation": "direct" if prerequisite in self.PREREQUISITE_RULES.get(name, ()) else "indirect",
+                 "occurrences": occurrences.get(name)}
+                for name in concepts
+            ]
 
             paper.prerequisites.append(
 
@@ -370,10 +379,18 @@ class PrerequisiteDetector:
 
                     importance_reason=(
                         f"Needed by {len(concepts)} of the paper's {total} concepts that have prerequisites "
-                        f"({mentions} mentions): {'essential' if essential else 'supporting'}."
+                        f"({mentions} mentions{f'; no mention count for {len(unknown)}' if unknown else ''}): "
+                        f"{'essential' if essential else 'supporting'}."
                     ),
 
                     dependent_mentions=mentions,
+
+                    evidence=evidence,
+
+                    evidence_note=(
+                        f"This is an association from PreReqAI's built-in prerequisite table, not something the paper states. "
+                        f"The paper was only checked for mentions of {', '.join(concepts)}."
+                    ),
                 )
             )
 

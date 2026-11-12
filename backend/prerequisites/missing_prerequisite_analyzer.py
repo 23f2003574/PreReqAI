@@ -26,17 +26,32 @@ class MissingPrerequisiteAnalyzer:
         paper.missing_prerequisites.clear()
 
         mentions = {
-            concept.name: concept.occurrences
+            concept.name: getattr(concept, "occurrences", None)
             for concept in paper.concepts
         }
 
         for prerequisite in paper.prerequisites:
 
-            count = mentions.get(prerequisite.concept, 0)
+            # Detected but with no usable count is missing evidence, which is not the same as the paper never mentioning it.
+            detected = prerequisite.concept in mentions
+            count = mentions.get(prerequisite.concept)
+            count = count if isinstance(count, int) and count > 0 else (None if detected else 0)
 
-            satisfied = count >= COVERAGE_MIN_MENTIONS
+            satisfied = bool(count) and count >= COVERAGE_MIN_MENTIONS
 
-            if satisfied:
+            if count is None:
+                status = "unknown"
+                reason = "No mention count is available for this concept, so coverage cannot be judged; requires external study"
+            elif satisfied:
+                status = "covered"
+            elif count:
+                status = "mentioned_only"
+            else:
+                status = "not_mentioned"
+
+            if count is None:
+                pass
+            elif satisfied:
                 reason = f"Covered within the paper ({count} mentions)"
             elif count:
                 reason = (f"Mentioned {count} time{'s' if count != 1 else ''} in the paper, "
@@ -53,6 +68,10 @@ class MissingPrerequisiteAnalyzer:
                     satisfied=satisfied,
 
                     reason=reason,
+
+                    status=status,
+
+                    mentions=count,
                 )
             )
 

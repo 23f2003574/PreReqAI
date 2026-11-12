@@ -11,6 +11,8 @@ from backend.graph import (
 )
 
 
+KNOWN_REASON = "Already known (reported by the learner)"  # same text as the platform's, which imports this module's package
+
 _ALIASES = {concept.name: concept.aliases for concept in ConceptRegistry().all()}
 
 
@@ -144,6 +146,8 @@ class LearningReportGenerator:
                 for concept in paper.concepts
             ],
 
+            "concepts_without_prerequisite_rules": list(paper.concepts_without_rules),  # their prerequisites are unknown, not absent
+
             "equations": self._equations(paper),
 
             "concept_evidence": self._concept_evidence(paper),
@@ -179,6 +183,8 @@ class LearningReportGenerator:
                     "confidence": prerequisite.confidence,
                     "importance": prerequisite.importance,
                     "importance_reason": prerequisite.importance_reason,
+                    "evidence": prerequisite.evidence,
+                    "evidence_note": prerequisite.evidence_note,
                 }
 
                 for prerequisite in paper.prerequisites
@@ -190,6 +196,8 @@ class LearningReportGenerator:
                     "concept": prerequisite.concept,
                     "satisfied": prerequisite.satisfied,
                     "reason": prerequisite.reason,
+                    "status": "known" if prerequisite.reason == KNOWN_REASON else prerequisite.status,
+                    "mentions": prerequisite.mentions,
                 }
 
                 for prerequisite in paper.missing_prerequisites
