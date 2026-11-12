@@ -202,6 +202,44 @@ class PrerequisiteDetector:
             "Neural Networks",
         ],
 
+        "Parameter-Efficient Fine-Tuning": [
+            "Neural Networks",
+            "Linear Algebra",
+        ],
+
+        "LoRA": [
+            "Linear Algebra",
+            "Neural Networks",
+        ],
+
+        "Reinforcement Learning from Human Feedback": [
+            "Markov Decision Process",
+            "Probability",
+            "Neural Networks",
+        ],
+
+        "Proximal Policy Optimization": [
+            "Markov Decision Process",
+            "Probability",
+            "Calculus",
+        ],
+
+        "Contrastive Learning": [
+            "Neural Networks",
+            "Probability",
+            "Information Theory",
+        ],
+
+        "Tokenization": [
+            "Probability",
+        ],
+
+        "Vision Transformer": [
+            "Transformer",
+            "Linear Algebra",
+            "Neural Networks",
+        ],
+
         "Reverse Process": [
             "Probability",
             "Information Theory",

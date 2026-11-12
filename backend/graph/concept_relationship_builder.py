@@ -91,6 +91,30 @@ class ConceptRelationshipBuilder:
             "Noise Schedule",
         ],
 
+        "Vision Transformer": [
+            "Transformer",
+            "Self-Attention",
+            "Positional Encoding",
+        ],
+
+        "LoRA": [
+            "Parameter-Efficient Fine-Tuning",
+            "Fine-Tuning",
+        ],
+
+        "Parameter-Efficient Fine-Tuning": [
+            "Fine-Tuning",
+        ],
+
+        "Reinforcement Learning from Human Feedback": [
+            "Proximal Policy Optimization",
+            "Reinforcement Learning",
+        ],
+
+        "Proximal Policy Optimization": [
+            "Policy Gradient",
+        ],
+
         "Reverse Process": [
             "Forward Process",
         ],

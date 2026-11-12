@@ -206,4 +206,60 @@ QUIZ_BANK = {
                 "Medium",
         },
     ],
+
+    "LoRA": [
+
+        {
+            "question":
+                "What does LoRA train instead of the full pretrained weights?",
+
+            "answer":
+                "Two small low-rank matrices whose product is added to a frozen weight matrix.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Proximal Policy Optimization": [
+
+        {
+            "question":
+                "Why does PPO clip its objective?",
+
+            "answer":
+                "To stop a single update from moving the policy too far from the one that collected the data, which keeps training stable.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+    "Tokenization": [
+
+        {
+            "question":
+                "Why do language models use subword tokenization such as byte-pair encoding instead of whole words?",
+
+            "answer":
+                "It keeps the vocabulary small while still representing rare and unseen words as sequences of known pieces.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+    "Vision Transformer": [
+
+        {
+            "question":
+                "How does a Vision Transformer turn an image into a sequence?",
+
+            "answer":
+                "It cuts the image into fixed-size patches and embeds each patch as one token.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
 }

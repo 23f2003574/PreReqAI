@@ -202,6 +202,41 @@ class ConceptExplanationEngine:
             "Intermediate",
         ),
 
+        "Parameter-Efficient Fine-Tuning": (
+            "Adapting a large pretrained model to a new task by training only a small number of added or selected parameters while the original weights stay frozen.",
+            "Intermediate",
+        ),
+
+        "LoRA": (
+            "A parameter-efficient method that freezes the pretrained weights and learns a low-rank update to each weight matrix, so only two small matrices are trained.",
+            "Advanced",
+        ),
+
+        "Reinforcement Learning from Human Feedback": (
+            "Aligning a model with human preferences by training a reward model on human comparisons and then optimising the model against that reward with reinforcement learning.",
+            "Advanced",
+        ),
+
+        "Proximal Policy Optimization": (
+            "A policy-gradient algorithm that limits how far each update can move the policy, using a clipped objective, so training stays stable.",
+            "Advanced",
+        ),
+
+        "Contrastive Learning": (
+            "Learning representations by pulling embeddings of related examples together and pushing unrelated examples apart, usually with a loss such as InfoNCE.",
+            "Intermediate",
+        ),
+
+        "Tokenization": (
+            "Splitting raw text into the discrete units, such as words or subword pieces, that a language model reads, for example with byte-pair encoding.",
+            "Beginner",
+        ),
+
+        "Vision Transformer": (
+            "A transformer applied to images by cutting an image into fixed-size patches and treating each patch embedding as a token of the input sequence.",
+            "Intermediate",
+        ),
+
         "Monte Carlo Method": (
             "Estimating a quantity by averaging over many random samples, as in sampling-based inference (MCMC) and return estimation in reinforcement learning.",
             "Intermediate",

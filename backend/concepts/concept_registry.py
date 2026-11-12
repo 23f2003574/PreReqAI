@@ -56,6 +56,16 @@ class ConceptRegistry:
             Concept("Generative Adversarial Network", "deep_learning", aliases=('GAN',)),
             Concept("Variational Inference", "probability", aliases=('ELBO', 'evidence lower bound', 'variational lower bound', 'variational bound')),
 
+            # Added: parameter-efficient adaptation, alignment, representation learning, tokenisation, vision transformers
+
+            Concept("Parameter-Efficient Fine-Tuning", "transformers", aliases=('PEFT', 'parameter efficient fine-tuning', 'parameter-efficient finetuning')),
+            Concept("LoRA", "transformers", aliases=('low-rank adaptation', 'low rank adaptation')),
+            Concept("Reinforcement Learning from Human Feedback", "rl", aliases=('RLHF',)),
+            Concept("Proximal Policy Optimization", "rl", aliases=('PPO',)),
+            Concept("Contrastive Learning", "deep_learning", aliases=('contrastive loss', 'InfoNCE')),
+            Concept("Tokenization", "transformers", aliases=('tokenisation', 'tokenizer', 'tokeniser', 'byte-pair encoding', 'byte pair encoding', 'BPE', 'WordPiece')),
+            Concept("Vision Transformer", "transformers", aliases=('ViT',)),
+
             # Diffusion
 
             Concept("Diffusion Model", "diffusion", aliases=('DDPM', 'denoising diffusion', 'diffusion probabilistic model')),
