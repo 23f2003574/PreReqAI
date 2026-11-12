@@ -1,0 +1,58 @@
+{
+  "fixtures": [
+    {
+      "id": "transformer",
+      "title": "Attention-only sequence transduction (Transformer)",
+      "source": "Original summary written for this repository of Vaswani et al., 2017 (arXiv:1706.03762); not the paper's text.",
+      "text": "We propose a sequence transduction model based solely on attention, the Transformer, which dispenses with recurrence and convolutions. Multi-head attention lets the model attend to information from different representation subspaces. Because the model has no recurrence, positional encoding injects token order. Each layer also contains a feed forward network, residual connections and layer normalization. Self-attention connects all positions in a constant number of steps. Training uses the Adam optimizer and dropout, and a softmax output gives probabilities over the vocabulary.",
+      "expected_concepts": ["Transformer", "Attention", "Multi-Head Attention", "Positional Encoding", "Feed Forward Network", "Residual Connection", "Layer Normalization", "Self-Attention", "Adam Optimizer", "Dropout", "Softmax"],
+      "expected_prerequisites": ["Linear Algebra", "Probability", "Neural Networks", "Calculus"],
+      "out_of_registry": ["sequence transduction", "recurrence"]
+    },
+    {
+      "id": "lora",
+      "title": "Low-rank adaptation of language models",
+      "source": "Original summary written for this repository of Hu et al., 2021 (arXiv:2106.09685); not the paper's text.",
+      "text": "Adapting a large language model (LLM) to each task by full fine-tuning is costly. We freeze the pretrained weights and train a low-rank update to each weight matrix, a method we call low-rank adaptation (LoRA). This parameter-efficient fine-tuning needs far fewer trainable parameters and adds no inference latency. We apply it to the attention weights of a Transformer and train with gradient descent and the Adam optimizer. Overfitting is limited by the small number of trainable parameters.",
+      "expected_concepts": ["Large Language Model", "Fine-Tuning", "LoRA", "Parameter-Efficient Fine-Tuning", "Transformer", "Attention", "Gradient Descent", "Adam Optimizer", "Overfitting"],
+      "expected_prerequisites": ["Linear Algebra", "Neural Networks", "Calculus", "Attention"],
+      "out_of_registry": ["low-rank matrix", "inference latency"]
+    },
+    {
+      "id": "rlhf_ppo",
+      "title": "Aligning a language model with human feedback",
+      "source": "Original summary written for this repository, in the spirit of Ouyang et al., 2022 (arXiv:2203.02155) and Schulman et al., 2017 (arXiv:1707.06347); not their text.",
+      "text": "We fine-tune a language model with reinforcement learning from human feedback (RLHF). Human comparisons train a reward model. The policy is then optimised with proximal policy optimization (PPO), a policy gradient method whose clipped objective keeps updates small. The task is a Markov decision process in which each generated token is an action, and a value function estimates the expected reward.",
+      "expected_concepts": ["Reinforcement Learning from Human Feedback", "Proximal Policy Optimization", "Policy Gradient", "Markov Decision Process", "Value Function", "Fine-Tuning"],
+      "expected_prerequisites": ["Markov Decision Process", "Probability", "Calculus", "Neural Networks"],
+      "out_of_registry": ["reward model"]
+    },
+    {
+      "id": "gat",
+      "title": "Graph attention networks",
+      "source": "Original summary written for this repository of Velickovic et al., 2018 (arXiv:1710.10903); not the paper's text.",
+      "text": "We present graph attention networks (GATs), neural network architectures for graph-structured data. Each node attends over its neighbours with masked self-attention, a form of message passing, so no costly matrix operation or knowledge of the graph structure is needed. The layers are trained with backpropagation and dropout. Compared with a graph convolutional network, a GAT assigns different importance to different neighbours.",
+      "expected_concepts": ["Graph Attention Network", "Self-Attention", "Message Passing", "Backpropagation", "Dropout", "Graph Convolution"],
+      "expected_prerequisites": ["Graphs", "Linear Algebra", "Neural Networks", "Calculus", "Attention"],
+      "out_of_registry": ["graph-structured data"]
+    },
+    {
+      "id": "ddpm",
+      "title": "Denoising diffusion probabilistic models",
+      "source": "Original summary written for this repository of Ho et al., 2020 (arXiv:2006.11239); not the paper's text.",
+      "text": "Denoising diffusion probabilistic models generate images by reversing a gradual noising process. The forward process adds Gaussian noise according to a noise schedule, and the reverse process is learned by a neural network, a U-Net, that predicts the noise. Training optimises a variational bound related to score matching. We report sample quality on image datasets.",
+      "expected_concepts": ["Diffusion Model", "Forward Process", "Noise Schedule", "Reverse Process", "U-Net", "Variational Inference", "Score Matching"],
+      "expected_prerequisites": ["Probability", "Information Theory", "Calculus", "Neural Networks"],
+      "out_of_registry": ["Gaussian noise"]
+    },
+    {
+      "id": "out_of_scope",
+      "title": "Thermal conductivity of graphene nanoribbons",
+      "source": "Original text written for this repository as an out-of-scope negative example.",
+      "text": "We study the thermal conductivity of graphene nanoribbons using molecular dynamics. Heat flux is computed from atomic trajectories at several temperatures, and the results agree with experiment.",
+      "expected_concepts": [],
+      "expected_prerequisites": [],
+      "out_of_registry": ["molecular dynamics"]
+    }
+  ]
+}
