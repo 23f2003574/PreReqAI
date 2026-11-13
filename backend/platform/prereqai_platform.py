@@ -116,6 +116,13 @@ def _ocr_warning(paper) -> list:
     return notes
 
 
+def _running_text_warning(paper) -> list:
+    """Repeated header, footer and page-number lines that were removed before analysis (so they were not counted as mentions)."""
+    removed = sum(getattr(page, "removed_lines", 0) for page in (paper.pages or []))
+    return [f"Removed {removed} repeated header, footer or page-number line{'s' if removed != 1 else ''} (lines that open or close many pages) "
+            "before analysis, so they were not counted as mentions of concepts."] if removed else []
+
+
 def _caused_by(exc: BaseException, types) -> bool:
     """Whether `exc` is, or was caused by, an exception of `types`. A stage may
     wrap an error in its own ("raise ... from", or as its first argument)."""
@@ -430,7 +437,7 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=unsaved + _repair_warning(file_path) + _absorbed_heading_warning(result.paper) + _ocr_warning(result.paper) + no_concepts + [f"{known_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
+            warnings=unsaved + _repair_warning(file_path) + _absorbed_heading_warning(result.paper) + _ocr_warning(result.paper) + _running_text_warning(result.paper) + no_concepts + [f"{known_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
             + [f"{studied_label} {name!r} was ignored because you also said you already know it, so it is not in the study plan" for name in also_known]
             + [f"{studied_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in not_studied],
         )

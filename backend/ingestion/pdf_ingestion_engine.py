@@ -3,7 +3,7 @@ import pymupdf as fitz  # PyMuPDF; "import fitz" prints a deprecation notice to 
 from dataclasses import dataclass, field
 
 from .document_metadata_extractor import DocumentMetadata
-from .text_cleaning import clean_pdf_text  # noqa: F401  (re-exported)
+from .text_cleaning import clean_pdf_text, drop_repeated_page_lines  # noqa: F401  (clean_pdf_text is re-exported)
 
 # MuPDF prints its repair diagnostics ("syntax error in array") to stdout, which corrupts `analyze --json` for a damaged PDF. The
 # damage is still reported (to the learner, as a warning) through `pdf.is_repaired`, so the raw messages add nothing.
@@ -17,6 +17,7 @@ class RawPage:
     text: str
     ocr: bool = False  # the text was recognised from a scanned page image, not read from the PDF's text layer
     ocr_error: str = ""  # a scanned page whose text could not be recognised, and why
+    removed_lines: int = 0  # running header, footer and page-number lines taken out of `text` (they repeat on many pages)
 
 
 @dataclass
@@ -179,6 +180,10 @@ class PDFIngestionEngine:
             metadata = DocumentMetadataExtractor().extract_from(pdf)
 
             pages = [read_page(page, page_number, self.ocr) for page_number, page in enumerate(pdf, start=1)]
+
+        cleaned, removed = drop_repeated_page_lines([page.text for page in pages])  # before any concept is counted
+        for page, text, count in zip(pages, cleaned, removed):
+            page.text, page.removed_lines = text, count
 
         return RawDocument(
             source_path=file_path,
