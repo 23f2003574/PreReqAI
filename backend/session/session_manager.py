@@ -68,12 +68,12 @@ class SessionManager:
 
     # A long-running server must not hold every analysed paper forever: past this many sessions in memory the
     # oldest are dropped from memory (saved ones can still be restored from PREREQAI_SESSION_DIR on request).
-    # Format of the saved files. 1: written before versions existed (no `schema_version`). 2: stamped on every save. A file is upgraded on
+    # Format of the saved files. 1: written before versions existed (no `schema_version`). 2: stamped on every save. 3: adds the quiz attempts. A file is upgraded on
     # load by giving objects the fields added since it was written (`_fill_new_fields`), which covers every change that only adds fields
     # with defaults; a change that renames, removes or retypes a field must bump this number and add its own step to `_migrate`. A file
     # from a newer version, or one that cannot be upgraded, reads as unreadable (404 "Session could not be restored"), never as a
     # session that fails later with an AttributeError.
-    SCHEMA_VERSION = 2
+    SCHEMA_VERSION = 3
 
     MAX_SESSIONS_IN_MEMORY = 500
 
@@ -410,7 +410,7 @@ class SessionManager:
 
             return False
 
-        if version < cls.SCHEMA_VERSION:  # 1 -> 2: only fields with defaults were added since
+        if version < cls.SCHEMA_VERSION:  # 1 -> 2 -> 3: only fields with defaults were added since
 
             if not _fill_new_fields(session):
 

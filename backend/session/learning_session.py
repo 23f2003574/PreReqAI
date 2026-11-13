@@ -66,6 +66,11 @@ class LearningSession:
 
     created_at: float = field(default_factory=time.time)
 
+    # Interactive quiz (backend.tutor.quiz_session): attempts recorded so far, and the served questions still awaiting their outcome.
+    quiz_attempts: list = field(default_factory=list)
+
+    quiz_pending: dict = field(default_factory=dict)
+
     # The format of the saved file (see SessionManager.SCHEMA_VERSION). A file written before versions existed has no such attribute, so it
     # reads this class default: 1, the legacy format.
     schema_version: int = 1

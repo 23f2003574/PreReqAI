@@ -36,6 +36,7 @@ def rewrite(path, change):
 def make_legacy(session):
     """What a file written before the late fields existed holds: no schema_version, and no attribute for fields with default factories."""
     del session.__dict__["schema_version"]
+    del session.__dict__["quiz_attempts"], session.__dict__["quiz_pending"]
     seen = set()
 
     def strip(item):
@@ -77,7 +78,7 @@ def test_an_older_file_is_upgraded_and_keeps_working(saved):
     assert session_manager.get(sid) is not None
     migrated = session_manager.get(sid)
     assert migrated.schema_version == SessionManager.SCHEMA_VERSION and migrated.paper.prerequisites[0].evidence == []
-    assert migrated.paper.unrecognised_terms == [] and migrated.paper.study_time.schedule == []
+    assert migrated.quiz_attempts == [] and migrated.quiz_pending == {} and migrated.paper.unrecognised_terms == [] and migrated.paper.study_time.schedule == []
     assert client.post(f"/api/prerequisites/sessions/{sid}/studied", params={"concept": "Probability"}).status_code == 200
     assert client.post(f"/api/prerequisites/sessions/{sid}/known", params={"concept": "Calculus"}).status_code == 200
     assert client.post(f"/api/session/{sid}/question", json={"question": "What should I learn first?"}).status_code == 200
@@ -95,7 +96,7 @@ def test_a_migrated_session_still_exports_and_resumes_its_plan(saved, tmp_path):
     assert {s["concept"] for s in resumed.json()["report"]["study_progress"] if s["completed"]} == {"Probability"}
 
 
-@pytest.mark.parametrize("version", [0, 3, 99, -1, "2", None, True, 1.5])
+@pytest.mark.parametrize("version", [0, SessionManager.SCHEMA_VERSION + 1, 99, -1, "2", None, True, 1.5])
 def test_an_unsupported_version_is_unreadable_with_a_clear_error(saved, version):
     sid, path = saved
     rewrite(path, lambda session: setattr(session, "schema_version", version))

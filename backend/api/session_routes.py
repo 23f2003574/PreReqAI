@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from backend.platform.prereqai_platform import _concept_key
 from backend.study_plan_markdown import plan_markdown, studied_concepts
+from backend.tutor import quiz_session
 from backend.tutor.rule_based_tutor import ANSWERABLE_HINT
 
 from backend.api.workflow_result import (
@@ -124,6 +125,8 @@ def get_session(session_id: str):
 
         "study_time": session.report.get("study_time"),
 
+        "quiz_progress": quiz_session.progress(session),
+
         "prerequisite_tree": session.report.get("prerequisite_tree", []),
 
         "active_concept": session.active_concept,
@@ -216,6 +219,70 @@ def resolve_topic(session, topic):
                       + ". Omit `topic` to ask without one.")
 
     return known[_concept_key(topic)], None
+
+
+class QuizReveal(BaseModel):
+
+    question_id: str
+
+
+class QuizOutcome(BaseModel):
+
+    question_id: str
+
+    outcome: str
+
+
+_QUIZ_STATUS = {"unsupported": 422, "unknown": 404, "state": 409, "outcome": 422}
+
+
+def _quiz(session_id, action, saves=True):
+    """Run one quiz operation on the session and save it; a refused one is a failure body with a status that says why."""
+    session = session_manager.get(session_id)
+
+    if session is None:
+
+        return session_not_found(session_id)
+
+    try:
+
+        result = action(session)
+
+    except quiz_session.QuizError as error:
+
+        return failure_response(_QUIZ_STATUS[error.kind], "quiz", str(error), hint=error.hint)
+
+    if saves:
+
+        session.report["quiz_progress"] = quiz_session.progress(session)  # the session's report keeps the latest mastery summary
+
+        session_manager.save(session)
+
+    return success_body("Interactive Quiz", "quiz", session_id=session_id, **result)
+
+
+@router.get("/{session_id}/quiz/question")
+def quiz_question(session_id: str, concept: str | None = None):
+    """One practice question without its answer: for `concept`, or the paper's concept that needs practice most."""
+    return _quiz(session_id, lambda session: quiz_session.next_question(session, concept))
+
+
+@router.post("/{session_id}/quiz/reveal")
+def quiz_reveal(session_id: str, body: QuizReveal):
+    """The answer to a question that was served."""
+    return _quiz(session_id, lambda session: quiz_session.reveal(session, body.question_id))
+
+
+@router.post("/{session_id}/quiz/outcome")
+def quiz_outcome(session_id: str, body: QuizOutcome):
+    """Record `knew` or `missed` for a served question (once); answers with the updated per-concept mastery."""
+    return _quiz(session_id, lambda session: {"progress": quiz_session.record(session, body.question_id, body.outcome)})
+
+
+@router.get("/{session_id}/quiz/progress")
+def quiz_progress(session_id: str):
+    """Attempts and mastery per concept."""
+    return _quiz(session_id, lambda session: {"progress": quiz_session.progress(session)}, saves=False)
 
 
 @router.post("/{session_id}/question")
