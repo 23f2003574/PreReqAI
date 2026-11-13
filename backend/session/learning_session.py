@@ -65,3 +65,7 @@ class LearningSession:
     status: str = "active"
 
     created_at: float = field(default_factory=time.time)
+
+    # The format of the saved file (see SessionManager.SCHEMA_VERSION). A file written before versions existed has no such attribute, so it
+    # reads this class default: 1, the legacy format.
+    schema_version: int = 1

@@ -1,6 +1,8 @@
 import os
 import io
 import pickle
+import copy
+import dataclasses
 import threading
 import time
 from pathlib import Path
@@ -25,6 +27,34 @@ class _SessionUnpickler(pickle.Unpickler):
         raise pickle.UnpicklingError(f"refused to load {module}.{name} from a saved session")
 
 
+def _fill_new_fields(root) -> bool:
+    """Give every dataclass object reachable from `root` the fields that were added to its class after the file was written (an
+    unpickled object restores only the attributes the file held, and a field with a default factory is not a class attribute, so reading
+    it later raised AttributeError). Each gets its declared default. False when a missing field has no default: the file cannot be upgraded."""
+    seen, pending = set(), [root]
+    while pending:
+        item = pending.pop()
+        if id(item) in seen:
+            continue
+        seen.add(id(item))
+        if dataclasses.is_dataclass(item) and not isinstance(item, type):
+            for field in dataclasses.fields(item):
+                if field.name in item.__dict__:
+                    continue
+                if field.default is not dataclasses.MISSING:
+                    item.__dict__[field.name] = copy.copy(field.default)
+                elif field.default_factory is not dataclasses.MISSING:
+                    item.__dict__[field.name] = field.default_factory()
+                else:
+                    return False
+            pending.extend(item.__dict__.values())
+        elif isinstance(item, (list, tuple, set)):
+            pending.extend(item)
+        elif isinstance(item, dict):
+            pending.extend(item.values())
+    return True
+
+
 class SessionManager:
     """
     Manages active learning sessions. Sessions live in memory; when the PREREQAI_SESSION_DIR environment
@@ -38,6 +68,13 @@ class SessionManager:
 
     # A long-running server must not hold every analysed paper forever: past this many sessions in memory the
     # oldest are dropped from memory (saved ones can still be restored from PREREQAI_SESSION_DIR on request).
+    # Format of the saved files. 1: written before versions existed (no `schema_version`). 2: stamped on every save. A file is upgraded on
+    # load by giving objects the fields added since it was written (`_fill_new_fields`), which covers every change that only adds fields
+    # with defaults; a change that renames, removes or retypes a field must bump this number and add its own step to `_migrate`. A file
+    # from a newer version, or one that cannot be upgraded, reads as unreadable (404 "Session could not be restored"), never as a
+    # session that fails later with an AttributeError.
+    SCHEMA_VERSION = 2
+
     MAX_SESSIONS_IN_MEMORY = 500
 
     # Creating a session sweeps expired files from the session directory, which lists and stats every saved file;
@@ -202,6 +239,8 @@ class SessionManager:
 
                 path.parent.mkdir(parents=True, exist_ok=True)
 
+                session.schema_version = self.SCHEMA_VERSION
+
                 temp.write_bytes(pickle.dumps(session))
 
                 with temp.open("rb+") as written:  # on disk before the swap: a power loss must not leave an empty file under the real name
@@ -354,9 +393,32 @@ class SessionManager:
 
             return None
 
+        if not SessionManager._migrate(session):
+
+            return None
+
         SessionManager._reconcile_known_and_studied(session)
 
         return session
+
+    @classmethod
+    def _migrate(cls, session: LearningSession) -> bool:
+        """Bring a loaded session to the current format; False when it is from a newer or unknown version or cannot be upgraded."""
+        version = session.schema_version
+
+        if isinstance(version, bool) or not isinstance(version, int) or not 1 <= version <= cls.SCHEMA_VERSION:
+
+            return False
+
+        if version < cls.SCHEMA_VERSION:  # 1 -> 2: only fields with defaults were added since
+
+            if not _fill_new_fields(session):
+
+                return False
+
+            session.schema_version = cls.SCHEMA_VERSION
+
+        return True
 
     @staticmethod
     def _reconcile_known_and_studied(session: LearningSession) -> None:
