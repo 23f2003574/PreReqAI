@@ -276,6 +276,10 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         explained = [text for count, text in ((covered, f"{covered} covered in the paper"), (known, f"{known} marked known") ) if count]
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "
               f"missing: {len(missing)}" + (f" ({', '.join(explained)})" if explained else ""))
+        terms = report.get("not_analysed_terms") or []
+        if terms:  # defined in the paper but outside the registry: say so, or the summary reads as a complete analysis
+            more = report["not_analysed_total"] - len(terms)
+            print(f"  not analysed (detected but unsupported, so no prerequisites for them): {', '.join(terms)}" + (f" and {more} more" if more > 0 else ""))
         done = studied_concepts(report)
         if report["learning_plan"]:  # one line: what to study, in order (the summary stays at most 5 lines)
             print("  study plan: " + " -> ".join(

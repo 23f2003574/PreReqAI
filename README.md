@@ -98,8 +98,10 @@ Upload a research paper to receive:
 
 > **Current limitation:** PreReqAI recognises only the concepts in its built-in registry (`backend/concepts/concept_registry.py`) and the
 > prerequisite rules written for them. A concept a paper uses that is not in the registry is not detected, gets no prerequisites and does not
-> appear in the study plan, and no warning is raised for it: an empty or short plan means "nothing registered was found", not "the paper needs
-> nothing else". The only related warning is the one for a paper in which no concept at all is detected.
+> appear in the study plan: an empty or short plan means "nothing registered was found", not "the paper needs nothing else". A term the
+> paper defines with an acronym ("Graph Isomorphism Network (GIN)") that the registry does not know is listed in the report's `not_analysed_terms`
+> (at most 20; `not_analysed_total` counts them all), in the CLI summary and on the web page, as detected but unsupported. Other unregistered
+> concepts are not found. A paper in which no concept at all is detected gets its own warning.
 
 ## Interactive Learning
 

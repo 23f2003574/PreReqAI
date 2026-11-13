@@ -46,6 +46,7 @@
   <div id="results" hidden>
     <section><h2>Paper</h2><dl id="meta"></dl></section>
     <section><h2>Detected concepts</h2><div id="concepts"></div></section>
+    <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
     <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
     <section><h2>Study plan</h2><div id="plan"></div></section>
   </div>
@@ -107,6 +108,15 @@ function render(body) {
         return [c.concept, c.domain, c.occurrences + (c.mentioned_once ? " (mentioned once)" : "")];
       }))
     : el("p", "No known concepts were detected in this paper, so there is nothing to plan.", "msg warn"));
+
+  var terms = report.not_analysed_terms || [];
+  $("notanalysed").hidden = !terms.length;
+  fill("notanalysedbody", terms.length ? el("div", null) : el("p", ""));
+  if (terms.length) {
+    var more = (report.not_analysed_total || terms.length) - terms.length;
+    $("notanalysedbody").appendChild(el("p", report.not_analysed_note, "msg warn"));
+    $("notanalysedbody").appendChild(el("p", terms.join("; ") + (more > 0 ? " and " + more + " more" : "")));
+  }
 
   var prerequisites = report.missing_prerequisites || [];
   fill("gaps", prerequisites.length

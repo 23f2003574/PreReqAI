@@ -55,6 +55,20 @@ class LearningReportGenerator:
             LearningPathGenerator()
         )
 
+    NOT_ANALYSED_LIMIT = 20  # the report names at most this many; `not_analysed_total` says how many were found
+    NOT_ANALYSED_NOTE = ("These terms look like technical concepts the paper defines, but PreReqAI does not support them: they get no prerequisites "
+                         "and are not part of the study plan. The analysis is therefore incomplete for them.")
+
+    @classmethod
+    def _not_analysed(cls, paper: Paper) -> list:
+        """The paper's detected but unsupported terms, without duplicates (case-insensitive), in order of first appearance."""
+        seen, terms = set(), []
+        for term in getattr(paper, "unrecognised_terms", None) or []:
+            if term.lower() not in seen:
+                seen.add(term.lower())
+                terms.append(term)
+        return terms
+
     @staticmethod
     def _concept_evidence(paper: Paper) -> list:
         """Why each concept was detected, so the detection can be checked against the paper: how many times the
@@ -112,6 +126,7 @@ class LearningReportGenerator:
         # Prerequisites are listed most-needed first (the study plan keeps its own pedagogical order: foundations before what builds on them).
         from backend.prerequisites.prerequisite_detector import rank_prerequisites
 
+        not_analysed = self._not_analysed(paper)
         ranked = rank_prerequisites(paper.prerequisites)
         position = {prerequisite.concept: index for index, prerequisite in enumerate(ranked)}
         importance = {prerequisite.concept: prerequisite.importance for prerequisite in ranked}
@@ -158,6 +173,10 @@ class LearningReportGenerator:
             "equations": self._equations(paper),
 
             "concept_evidence": self._concept_evidence(paper),
+
+            "not_analysed_terms": not_analysed[:self.NOT_ANALYSED_LIMIT],
+            "not_analysed_total": len(not_analysed),
+            "not_analysed_note": self.NOT_ANALYSED_NOTE if not_analysed else "",
 
             "prerequisite_tree": _prerequisite_tree(paper),
 
