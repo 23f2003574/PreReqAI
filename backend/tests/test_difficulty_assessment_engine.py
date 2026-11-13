@@ -15,13 +15,14 @@ def test_difficulty_assessment():
         metadata=None,
     )
 
-    for index in range(6):
+    # six real subjects, 52 curated hours (placeholder names would count at the 5-hour fallback and rate lower)
+    for name in ["Graphs", "Information Theory", "Markov Decision Process", "Attention", "Probability", "Calculus"]:
 
         paper.missing_prerequisites.append(
 
             MissingPrerequisite(
 
-                concept=f"C{index}",
+                concept=name,
 
                 satisfied=False,
 

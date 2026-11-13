@@ -8,10 +8,15 @@ from backend.prerequisites.difficulty_assessment_engine import UNKNOWN_LEVEL, di
 pytestmark = pytest.mark.prereqai
 
 
+# Real subjects in this order add 8, 8, 8, 8, 10, 10, 10, 12 and 15 curated hours, so n missing subjects total about n average subjects.
+SUBJECTS = ["Graphs", "Information Theory", "Markov Decision Process", "Attention", "Probability", "Calculus", "Transformer",
+            "Linear Algebra", "Neural Networks"]
+
+
 def _paper(concepts=0, missing=0, satisfied=0):
     paper = Paper(source_path="p.pdf", metadata=None)
     paper.concepts = [DetectedConcept(name=f"K{i}", domain="d", occurrences=3) for i in range(concepts)]
-    paper.missing_prerequisites = [MissingPrerequisite(concept=f"M{i}", satisfied=False, reason="r") for i in range(missing)]
+    paper.missing_prerequisites = [MissingPrerequisite(concept=SUBJECTS[i], satisfied=False, reason="r") for i in range(missing)]
     paper.missing_prerequisites += [MissingPrerequisite(concept=f"S{i}", satisfied=True, reason="r") for i in range(satisfied)]
     return paper
 

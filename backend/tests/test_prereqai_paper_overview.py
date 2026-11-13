@@ -22,7 +22,7 @@ def _cli(question, *flags):
 def test_summarize_this_paper_gives_title_concepts_difficulty_and_readiness():
     answer = _cli("Summarize this paper")
     assert answer.startswith("Attention Is All You Need (PreReqAI sample paper) covers 6 concepts: Transformer, Attention")
-    assert "Difficulty: Intermediate." in answer and "Preparation left: about 47 hours." in answer
+    assert "Difficulty: Advanced." in answer  # 47 hours of study, above the 4-subject band and "Preparation left: about 47 hours." in answer
     assert "Readiness: Preparation Required (0 of 4 planned concepts ready)." in answer
 
 

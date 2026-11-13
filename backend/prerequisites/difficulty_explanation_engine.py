@@ -1,3 +1,4 @@
+from backend.prerequisites.difficulty_assessment_engine import describe_contributors, prerequisite_effort
 from backend.models import (
     Paper,
     DifficultyExplanation,
@@ -17,11 +18,8 @@ class DifficultyExplanationEngine:
 
         paper.difficulty_explanations.clear()
 
-        missing = sum(
-            1
-            for prerequisite in paper.missing_prerequisites
-            if not prerequisite.satisfied
-        )
+        effort = prerequisite_effort(paper)
+        missing = len(effort)
 
         if not paper.concepts and not paper.missing_prerequisites:
 
@@ -44,8 +42,8 @@ class DifficultyExplanationEngine:
                     title="Missing Prerequisites",
 
                     description=(
-                        f"{missing} prerequisite concepts "
-                        "require external study."
+                        f"{missing} prerequisite concepts require external study, about {sum(entry[1] for entry in effort):g} hours: "
+                        f"{describe_contributors(effort)}."
                     ),
                 )
             )
