@@ -205,3 +205,20 @@ class RuleBasedConceptDetector:
         paper.concept_coverage = concept_detection_coverage(len(concepts), len(paper.concepts))
 
         return paper
+
+
+def section_mentions(paper):
+    """{section title: {"concepts": {registry concept: mentions}, "subjects": {prerequisite subject: mentions}}} for the sections that
+    mention anything, in the order the sections appear. Bibliography and other back-matter sections are empty, like in detect()."""
+    from backend.models import Paper
+
+    titles = list(dict.fromkeys(paragraph.section_title or "" for paragraph in getattr(paper, "paragraphs", [])))
+    found = {}
+    for title in titles:
+        part = Paper(source_path=getattr(paper, "source_path", ""), metadata=None)
+        part.paragraphs = [p for p in paper.paragraphs if (p.section_title or "") == title]
+        concepts = {c.name: c.occurrences for c in RuleBasedConceptDetector().detect(part).concepts}
+        subjects = {name: count for name, count in subject_mentions(part).items() if count}
+        if concepts or subjects:
+            found[title] = {"concepts": concepts, "subjects": subjects}
+    return found

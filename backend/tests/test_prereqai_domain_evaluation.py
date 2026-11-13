@@ -14,7 +14,7 @@ from backend.cli import main
 
 PAPERS = {
     "rl": ("Policy Optimization with Value Baselines",
-           "We train a policy gradient agent with a value function in a Markov decision process, using reinforcement "
+           "2 Method\nWe train a policy gradient agent with a value function in a Markov decision process, using reinforcement "
            "learning with a reward signal. Policy gradient variance is reduced by a baseline. "
            "The Markov decision process has states and actions. A Markov decision process is solved by dynamic programming.",
            {"Markov Decision Process", "Policy Gradient", "Value Function"}, ["Probability", "Calculus"], 20),
@@ -79,7 +79,7 @@ def test_the_bundled_sample_paper_report_is_consistent(capsys):
 FIXTURE_FINGERPRINTS = {
     "diffusion": "6793d082558cfdc5",
     "graph": "2bc6e429a0b2c915",
-    "rl": "be2d5c6f5c36cebd",
+    "rl": "8776d30ff079f849",
 }
 
 

@@ -107,6 +107,11 @@ Upload a research paper to receive:
 > (at most 20; `not_analysed_total` counts them all), in the CLI summary and on the web page, as detected but unsupported. Other unregistered
 > concepts are not found. A paper in which no concept at all is detected gets its own warning.
 
+A prerequisite is reported as covered by the paper only when it has at least three mentions and at least one of them is in a section where
+a paper teaches what it builds on (Background, Preliminaries, Notation, Problem setup, Method, Approach, Model, Architecture, Theory). Mentions in
+Related Work, References and acknowledgements are not counted, and a section with an unrecognised or missing title can add mentions but never makes
+a prerequisite covered by itself. Each entry of `missing_prerequisites` lists where the mentions are in `sections`.
+
 ## Interactive Learning
 
 > **Current limitation:** no tutoring model is configured in this release. A question about a concept of the paper is answered

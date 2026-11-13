@@ -224,6 +224,7 @@ class LearningReportGenerator:
                     "reason": prerequisite.reason,
                     "status": "known" if prerequisite.reason == KNOWN_REASON else prerequisite.status,
                     "mentions": prerequisite.mentions,
+                    "sections": getattr(prerequisite, "sections", []),
                     "importance": importance.get(prerequisite.concept, ""),
                 }
 

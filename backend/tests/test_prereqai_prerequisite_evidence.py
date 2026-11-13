@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from backend.models import DetectedConcept, Paper
+from backend.models import DetectedConcept, Paper, Paragraph
 from backend.prerequisites.missing_prerequisite_analyzer import MissingPrerequisiteAnalyzer
 from backend.prerequisites.prerequisite_detector import PrerequisiteDetector
 from backend.reporting.learning_report_generator import KNOWN_REASON
@@ -66,7 +66,9 @@ def test_unsupported_concepts_are_listed_and_have_no_invented_prerequisites():
 
 
 def _statuses(**counts):
-    paper = PrerequisiteDetector().detect(_paper(Transformer=2, **counts))
+    paper = _paper(Transformer=2, **counts)
+    paper.paragraphs = [Paragraph(1, "2 Method", " ".join(f"{c.name.lower()}." for c in paper.concepts for _ in range(c.occurrences)))]
+    paper = PrerequisiteDetector().detect(paper)
     paper = MissingPrerequisiteAnalyzer().analyze(paper)
     return {m.concept: m for m in paper.missing_prerequisites}
 

@@ -1,7 +1,7 @@
 """A prerequisite is covered by the paper only when it is discussed (3+ mentions); a passing mention keeps it in the plan."""
 import pytest
 
-from backend.models import DetectedConcept, Paper, Prerequisite
+from backend.models import DetectedConcept, Paper, Paragraph, Prerequisite
 from backend.prerequisites.missing_prerequisite_analyzer import COVERAGE_MIN_MENTIONS, MissingPrerequisiteAnalyzer
 
 pytestmark = pytest.mark.prereqai
@@ -10,6 +10,7 @@ pytestmark = pytest.mark.prereqai
 def _analyse(occurrences):
     paper = Paper.__new__(Paper)
     paper.concepts = [DetectedConcept(name="Attention", domain="transformers", occurrences=occurrences)] if occurrences else []
+    paper.paragraphs = [Paragraph(1, "2 Method", "attention. " * occurrences)]  # where the mentions are: coverage needs them in a teaching section
     paper.prerequisites = [Prerequisite(concept="Attention", reason="r", confidence=1.0)]
     paper.missing_prerequisites = []
     return MissingPrerequisiteAnalyzer().analyze(paper).missing_prerequisites[0]

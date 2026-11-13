@@ -4,6 +4,7 @@ from backend.prerequisites import (
 
 from backend.models import (
     Paper,
+    Paragraph,
     DetectedConcept,
     Prerequisite,
 )
@@ -15,6 +16,8 @@ def test_missing_prerequisite_analysis():
         source_path="paper.pdf",
         metadata=None,
     )
+
+    paper.paragraphs.append(Paragraph(1, "2 Method", "attention. attention. attention."))  # coverage needs mentions in a teaching section
 
     paper.concepts.append(
 

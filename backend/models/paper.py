@@ -112,6 +112,7 @@ class MissingPrerequisite:
     reason: str
     status: str = ""  # covered | mentioned_only | not_mentioned | unknown (no mention count available)
     mentions: "int | None" = None  # the paper's mentions of this concept; None when no count is available
+    sections: list = field(default_factory=list)  # [{section, mentions, role}]: where the mentions are; role: instructional | related | other
 
 
 @dataclass
