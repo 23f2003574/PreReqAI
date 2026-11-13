@@ -17,6 +17,52 @@ from .unrecognised_term_diagnostics import find_unrecognised_terms
 _BACK_MATTER = re.compile(r"^[\dIVXLivxl.]*\s*(references|bibliography|works cited|acknowledge?ments?)\b", re.IGNORECASE)
 
 
+def body_text(paper):
+    """The paper's paragraphs without back matter (references, acknowledgements): what a paper says, not what it cites."""
+    return "\n".join(
+        paragraph.content
+        for paragraph in getattr(paper, "paragraphs", [])
+        if not _BACK_MATTER.match((paragraph.section_title or "").strip())
+    )
+
+
+def normalise_text(text):
+    """Lower-case text with ligatures (LaTeX PDFs encode "ff", "fi"... as single characters; NFKC expands them), soft hyphens and the
+    en/em dashes and non-breaking hyphens of typeset papers (the registry has a plain hyphen) normalised."""
+    text = unicodedata.normalize("NFKC", text.lower()).replace("\u00ad", "")
+    return re.sub("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-", text)
+
+
+# Terms that show a paper mentions each prerequisite subject, independent of the concept registry (most subjects have no entry in it).
+# Technical phrases only: a bare "graph" (a plot), "probability" (likelihood in everyday speech) or "gradient" is ordinary language, so
+# it is not counted ("scaled dot-product attention" is an attention term, so "dot product" is not Linear Algebra). Each pattern is one alternation, so overlapping terms ("multi-head attention mechanism") count once.
+_SUBJECT_TERMS = {
+    "Linear Algebra": r"linear algebra|matri(?:x|ces) (?:multiplication|product|factori[sz]ation|decomposition|inverse)|eigen(?:value|vector|decomposition)s?"
+                      r"|singular value decomposition|svd|vector spaces?|linear (?:transformation|map)s?",
+    "Probability": r"probability (?:theory|distributions?|densit(?:y|ies)|mass(?: functions?)?)|(?:conditional|joint|marginal|prior|posterior) (?:probabilit(?:y|ies)|distributions?)"
+                   r"|random variables?|bayes['\u2019]? (?:rule|theorem)|bayesian inference|law of total probability",
+    "Calculus": r"calculus|partial derivatives?|chain rule|jacobians?|hessians?|taylor (?:expansion|series)|definite integrals?|integration by parts",
+    "Information Theory": r"information theory|(?<!cross-)(?<!cross )entropy|kl[ -]divergence|kullback[ -]leibler|mutual information|shannon",
+    "Neural Networks": r"neural net(?:work)?s?|multi-?layer perceptrons?|mlps?|feed-?forward (?:neural )?networks?|deep learning",
+    "Graphs": r"graph theory|adjacency (?:matri(?:x|ces)|lists?)|(?:directed|undirected|bipartite|weighted|acyclic|connected) graphs?|dags?|graph laplacians?"
+              r"|nodes and edges|vertices and edges|knowledge graphs?|spanning trees?|shortest paths?",
+    "Attention": r"attention (?:mechanisms?|layers?|heads?|weights?|scores?|maps?)|(?:self|cross|multi[ -]?head|scaled dot-product)[ -]attention|attention is all you need",
+    "Transformer": r"transformers?",
+    "Markov Decision Process": r"partially observable markov decision process(?:es)?|markov decision process(?:es)?|pomdps?|mdps?",
+}
+
+_SUBJECT_PATTERNS = {
+    subject: re.compile(rf"(?<![a-z0-9])(?:{terms})(?![a-z0-9])") for subject, terms in _SUBJECT_TERMS.items()
+}
+
+
+def subject_mentions(paper):
+    """{prerequisite subject: number of mentions in the paper's body text (back matter excluded)} for every subject, 0 when absent."""
+    text = normalise_text(body_text(paper))
+    text = re.sub(r"\s+", " ", re.sub(r"-[ \t]*\n\s*", "-", text))  # hard-wrapped lines: "multi-\nhead attention"
+    return {subject: len(pattern.findall(text)) for subject, pattern in _SUBJECT_PATTERNS.items()}
+
+
 @lru_cache(maxsize=None)
 def _word_in(inner, outer):
     """Whether `inner` occurs in `outer` as whole words. Registry terms never change, and detect() asks this for every pair of
@@ -80,20 +126,9 @@ class RuleBasedConceptDetector:
         paper.concepts.clear()
         paper.unrecognised_terms = []
 
-        original_text = "\n".join(
-            paragraph.content
-            for paragraph in paper.paragraphs
-            if not _BACK_MATTER.match((paragraph.section_title or "").strip())
-        )
+        original_text = body_text(paper)
         paper.unrecognised_terms = find_unrecognised_terms(original_text, self.registry)
-        full_text = original_text.lower()
-
-        # LaTeX PDFs encode "ff", "fi", "fl"... as ligature characters ("Di\ufb00usion") and may hold soft hyphens;
-        # NFKC turns the ligatures (and full-width letters) into plain text.
-        full_text = unicodedata.normalize("NFKC", full_text).replace("\u00ad", "")
-
-        # Typeset papers use en/em dashes and non-breaking hyphens where the registry has a plain hyphen.
-        full_text = re.sub("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-", full_text)
+        full_text = normalise_text(original_text)
 
         concepts = self.registry.all()
 

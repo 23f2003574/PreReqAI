@@ -1,3 +1,4 @@
+from backend.concepts.rule_based_concept_detector import subject_mentions
 from backend.models import (
     Paper,
     MissingPrerequisite,
@@ -30,12 +31,18 @@ class MissingPrerequisiteAnalyzer:
             for concept in paper.concepts
         }
 
+        subjects = None  # subject-level mention counts, computed once and only when a prerequisite is not a detected concept
+
         for prerequisite in paper.prerequisites:
 
             # Detected but with no usable count is missing evidence, which is not the same as the paper never mentioning it.
             detected = prerequisite.concept in mentions
             count = mentions.get(prerequisite.concept)
             count = count if isinstance(count, int) and count > 0 else (None if detected else 0)
+
+            if not detected:  # most subjects (Linear Algebra, Calculus...) are not registry concepts: count their own terms in the text
+                subjects = subject_mentions(paper) if subjects is None else subjects
+                count = subjects.get(prerequisite.concept, 0)
 
             satisfied = bool(count) and count >= COVERAGE_MIN_MENTIONS
 
