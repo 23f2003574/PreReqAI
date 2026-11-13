@@ -22,13 +22,13 @@ def _cli(question, *flags):
 def test_summarize_this_paper_gives_title_concepts_difficulty_and_readiness():
     answer = _cli("Summarize this paper")
     assert answer.startswith("Attention Is All You Need (PreReqAI sample paper) covers 6 concepts: Transformer, Attention")
-    assert "Difficulty: Advanced." in answer  # 47 hours of study, above the 4-subject band and "Preparation left: about 47 hours." in answer
-    assert "Readiness: Preparation Required (0 of 4 planned concepts ready)." in answer
+    assert "Difficulty: Advanced." in answer and "Preparation left: about 55 hours." in answer  # 55 hours, above the 4-subject band
+    assert "Readiness: Preparation Required (0 of 5 planned concepts ready)." in answer
 
 
 def test_the_overview_follows_the_learners_progress():
     answer = _cli("Give me an overview", "--studied", "Probability")
-    assert "Preparation left: about 37 hours." in answer and "(1 of 4 planned concepts ready)" in answer
+    assert "Preparation left: about 45 hours." in answer and "(1 of 5 planned concepts ready)" in answer
 
 
 def test_a_named_concept_still_gets_its_definition_and_the_suggested_followup_is_no_longer_a_dead_end():

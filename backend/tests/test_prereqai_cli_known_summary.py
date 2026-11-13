@@ -10,14 +10,14 @@ def _summary(capsys, *flags):
 
 
 def test_known_concepts_are_not_reported_as_covered_in_the_paper(capsys):
-    line = _summary(capsys, "--known", "Linear Algebra,Probability,Calculus,Neural Networks")
-    assert line.endswith("missing: 0 (1 covered in the paper, 4 marked known)")
+    line = _summary(capsys, "--known", "Linear Algebra,Probability,Calculus,Optimization,Neural Networks")
+    assert line.endswith("missing: 0 (1 covered in the paper, 5 marked known)")
     assert "5 covered in the paper" not in line
 
 
 def test_summary_without_known_is_unchanged(capsys):
-    assert _summary(capsys).endswith("missing: 4 (1 covered in the paper)")
+    assert _summary(capsys).endswith("missing: 5 (1 covered in the paper)")
 
 
 def test_only_known_concepts_are_described_as_known(capsys):
-    assert _summary(capsys, "--known", "Calculus").endswith("missing: 3 (1 covered in the paper, 1 marked known)")
+    assert _summary(capsys, "--known", "Calculus").endswith("missing: 4 (1 covered in the paper, 1 marked known)")

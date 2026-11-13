@@ -24,7 +24,7 @@ PAPERS = {
               {"Graph Neural Network", "Message Passing", "Graph Convolution"}, ["Linear Algebra", "Graphs", "Neural Networks"], 35),
     "diffusion": ("Denoising Diffusion",
                   "We train a diffusion model with score matching, a noise schedule and a U-Net over the forward process.",
-                  {"Diffusion Model", "Score Matching"}, ["Probability", "Information Theory", "Calculus", "Neural Networks"], 43),
+                  {"Diffusion Model", "Score Matching"}, ["Probability", "Information Theory", "Calculus", "Stochastic Processes", "Neural Networks"], 53),
 }
 
 
@@ -77,7 +77,7 @@ def test_the_bundled_sample_paper_report_is_consistent(capsys):
 # Fingerprints of the synthetic fixtures (title, text, expected concepts, expected plan, expected hours): changing a fixture or
 # its expectation changes the digest, so a different evaluation input cannot pass for the recorded one unnoticed.
 FIXTURE_FINGERPRINTS = {
-    "diffusion": "83367cee9807da9f",
+    "diffusion": "6793d082558cfdc5",
     "graph": "2bc6e429a0b2c915",
     "rl": "be2d5c6f5c36cebd",
 }

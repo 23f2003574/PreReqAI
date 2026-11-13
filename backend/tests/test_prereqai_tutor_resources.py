@@ -27,5 +27,5 @@ def test_no_concept_named_lists_what_is_left_in_study_order_and_skips_studied():
 
 
 def test_everything_studied_falls_back_to_the_existing_answer():
-    out = _ask("What resources do you recommend?", "--studied", "Linear Algebra,Probability,Calculus,Neural Networks")
+    out = _ask("What resources do you recommend?", "--studied", "Linear Algebra,Probability,Calculus,Optimization,Neural Networks")
     assert "Suggested resources" not in out

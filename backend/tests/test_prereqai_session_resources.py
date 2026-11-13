@@ -18,13 +18,13 @@ def _analyze(**data):
 def test_report_and_session_list_resources_in_plan_order_and_drop_studied_ones():
     body = _analyze(known="Linear Algebra")
     plan = [step["concept"] for step in body["report"]["learning_plan"]]
-    assert [r["concept"] for r in body["report"]["learning_resources"]] == plan == ["Probability", "Calculus", "Neural Networks"]
+    assert [r["concept"] for r in body["report"]["learning_resources"]] == plan == ["Probability", "Calculus", "Optimization", "Neural Networks"]
 
     sid = body["session_id"]
     assert [r["concept"] for r in client.get(f"/api/session/{sid}").json()["next_resources"]] == plan
     assert client.post(f"/api/prerequisites/sessions/{sid}/studied", params={"concept": "Calculus"}).status_code == 200
     after = client.get(f"/api/session/{sid}").json()["next_resources"]
-    assert [r["concept"] for r in after] == ["Probability", "Neural Networks"] and after[0]["url"].startswith("https://")
+    assert [r["concept"] for r in after] == ["Probability", "Optimization", "Neural Networks"] and after[0]["url"].startswith("https://")
 
 
 def test_session_without_a_report_has_no_resources_and_unknown_session_is_404():

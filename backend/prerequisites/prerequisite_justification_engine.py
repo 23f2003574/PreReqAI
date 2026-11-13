@@ -24,6 +24,15 @@ class PrerequisiteJustificationEngine:
         "Information Theory":
             "Diffusion training objectives are written with entropy and KL divergence, which measure how far one distribution is from another.",
 
+        "Optimization":
+            "Training methods such as gradient descent and Adam are optimisation algorithms, so their convergence and step-size behaviour are assumed.",
+
+        "Statistics":
+            "Likelihood estimation, overfitting and Monte Carlo sampling are statistical ideas about learning from finite data.",
+
+        "Stochastic Processes":
+            "Diffusion models describe noise added and removed over many steps, which is a stochastic process.",
+
         "Graphs":
             "Graph neural networks operate on nodes, edges and adjacency structure, so graph basics are assumed.",
 

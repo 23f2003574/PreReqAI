@@ -16,16 +16,16 @@ def _run(*args):
 
 def test_comma_separated_concepts_work_for_known_studied_and_ask():
     out = _run("analyze", SAMPLE, "--known", "Linear Algebra, ", "--studied", "probability,Calculus")
-    assert "1. Probability (10h, studied) -> 2. Calculus (10h, studied) -> 3. Neural Networks (15h)" in out
-    assert "warning" not in out and "(2/3 concepts ready)" in out
+    assert "1. Probability (10h, studied) -> 2. Calculus (10h, studied) -> 3. Optimization (8h) -> 4. Neural Networks (15h)" in out
+    assert "warning" not in out and "(2/4 concepts ready)" in out
     asked = _run("ask", SAMPLE, "What should I learn first?", "--studied", "Linear Algebra,Probability")
     assert "Already studied: Linear Algebra, Probability" in asked
 
 
 def test_empty_plan_readiness_reads_naturally_and_separate_flags_still_work():
-    out = _run("analyze", SAMPLE, "--known", "Linear Algebra,Probability", "--known", "Calculus", "--known", "Neural Networks")
+    out = _run("analyze", SAMPLE, "--known", "Linear Algebra,Probability", "--known", "Calculus", "--known", "Optimization", "--known", "Neural Networks")
     assert "Ready to Read (no concepts left to study)" in out and "0/0" not in out
-    assert "(1/4 concepts ready)" in _run("analyze", SAMPLE, "--studied", "Calculus")
+    assert "(1/5 concepts ready)" in _run("analyze", SAMPLE, "--studied", "Calculus")
 
 
 def test_comma_lists_behave_the_same_over_http_and_python(tmp_path):
@@ -36,8 +36,8 @@ def test_comma_lists_behave_the_same_over_http_and_python(tmp_path):
     sample = ROOT / SAMPLE
     body = TestClient(app).post("/api/prerequisites/analyze", files={"paper": ("p.pdf", sample.read_bytes(), "application/pdf")},
                                 data={"known": "Linear Algebra, Probability", "studied": "Calculus,Nonsense"}).json()
-    assert [s["concept"] for s in body["report"]["learning_plan"]] == ["Calculus", "Neural Networks"]
+    assert [s["concept"] for s in body["report"]["learning_plan"]] == ["Calculus", "Optimization", "Neural Networks"]
     assert body["report"]["readiness"]["completed_concepts"] == 1
     assert body["warnings"] == ["`studied` 'Nonsense' is not in this paper's study plan and was ignored"]
     direct = platform.analyze(str(sample), known=["Linear Algebra,Probability"])
-    assert [s["concept"] for s in direct["report"]["learning_plan"]] == ["Calculus", "Neural Networks"]
+    assert [s["concept"] for s in direct["report"]["learning_plan"]] == ["Calculus", "Optimization", "Neural Networks"]

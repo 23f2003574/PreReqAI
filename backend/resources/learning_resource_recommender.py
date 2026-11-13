@@ -41,6 +41,27 @@ class LearningResourceRecommender:
             PrerequisiteLearningPlanner.STUDY_TIME["Information Theory"],  # one source of study hours: the planner's
         ),
 
+        "Optimization": (
+            "Convex Optimization (Boyd and Vandenberghe)",
+            "Stanford University",
+            "https://web.stanford.edu/~boyd/cvxbook/",
+            PrerequisiteLearningPlanner.STUDY_TIME["Optimization"],  # one source of study hours: the planner's
+        ),
+
+        "Statistics": (
+            "An Introduction to Statistical Learning",
+            "James, Witten, Hastie and Tibshirani",
+            "https://www.statlearning.com/",
+            PrerequisiteLearningPlanner.STUDY_TIME["Statistics"],  # one source of study hours: the planner's
+        ),
+
+        "Stochastic Processes": (
+            "6.262 Discrete Stochastic Processes",
+            "MIT OpenCourseWare",
+            "https://ocw.mit.edu/courses/6-262-discrete-stochastic-processes-spring-2011/",
+            PrerequisiteLearningPlanner.STUDY_TIME["Stochastic Processes"],  # one source of study hours: the planner's
+        ),
+
         "Neural Networks": (
             "Neural Networks and Deep Learning",
             "Coursera",

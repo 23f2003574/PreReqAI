@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-ALL = "Linear Algebra,Probability,Calculus,Neural Networks"
+ALL = "Linear Algebra,Probability,Calculus,Optimization,Neural Networks"
 
 
 def _ask(flag):

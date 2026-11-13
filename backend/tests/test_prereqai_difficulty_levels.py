@@ -14,7 +14,7 @@ def test_every_boundary_maps_to_one_level(missing, level):
 
 def test_the_most_a_paper_can_miss_is_expert_and_all_levels_are_reachable():
     maximum = len({p for rule in PrerequisiteDetector.PREREQUISITE_RULES.values() for p in rule})
-    assert maximum == 9 and difficulty_level(maximum) == "Expert"
+    assert maximum == 12 and difficulty_level(maximum) == "Expert"
     assert {difficulty_level(n) for n in range(maximum + 1)} == {"Beginner", "Intermediate", "Advanced", "Expert"}
 
 
@@ -60,7 +60,7 @@ def test_explanation_names_the_biggest_contributors_deterministically():
 
 
 def test_a_missing_hour_estimate_counts_at_the_fallback_and_is_flagged(monkeypatch):
-    paper = paper_missing("Optimization")
+    paper = paper_missing("Topology")
     entry, = prerequisite_effort(paper)
     assert entry[1] == PrerequisiteLearningPlanner.FALLBACK_HOURS and entry[3] is False and "estimated" in describe_contributors([entry])
     monkeypatch.setitem(PrerequisiteLearningPlanner.STUDY_TIME, "Graphs", float("nan"))

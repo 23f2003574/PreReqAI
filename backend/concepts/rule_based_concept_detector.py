@@ -43,6 +43,9 @@ _SUBJECT_TERMS = {
                    r"|random variables?|bayes['\u2019]? (?:rule|theorem)|bayesian inference|law of total probability",
     "Calculus": r"calculus|partial derivatives?|chain rule|jacobians?|hessians?|taylor (?:expansion|series)|definite integrals?|integration by parts",
     "Information Theory": r"information theory|(?<!cross-)(?<!cross )entropy|kl[ -]divergence|kullback[ -]leibler|mutual information|shannon",
+    "Optimization": r"optimi[sz]ation (?:problems?|algorithms?|methods?|landscapes?)|convex (?:optimi[sz]ation|functions?)|learning rate schedules?|local minim(?:a|um)|saddle points?|stochastic optimi[sz]ation",
+    "Statistics": r"statistical (?:learning|inference|estimation|models?)|hypothesis tests?|confidence intervals?|bias-variance|sample (?:mean|variance)|maximum a posteriori",
+    "Stochastic Processes": r"stochastic (?:processes|process|differential equations?)|markov chains?|brownian motion|wiener process|random walks?|langevin dynamics",
     "Neural Networks": r"neural net(?:work)?s?|multi-?layer perceptrons?|mlps?|feed-?forward (?:neural )?networks?|deep learning",
     "Graphs": r"graph theory|adjacency (?:matri(?:x|ces)|lists?)|(?:directed|undirected|bipartite|weighted|acyclic|connected) graphs?|dags?|graph laplacians?"
               r"|nodes and edges|vertices and edges|knowledge graphs?|spanning trees?|shortest paths?",

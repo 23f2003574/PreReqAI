@@ -32,7 +32,7 @@ def test_exported_plan_keeps_progress_across_a_restart_and_ends_with_the_session
     session_manager.sessions.clear()  # a restart: only the saved file remains
     restored = client.get(f"/api/session/{session_id}/plan")
     assert restored.status_code == 200
-    assert _ticked(restored.text) == ["Probability"] and "- [ ] 3. Neural Networks" in restored.text
+    assert _ticked(restored.text) == ["Probability"] and "- [ ] 4. Neural Networks" in restored.text
 
     assert client.delete(f"/api/session/{session_id}").status_code == 200
     assert client.get(f"/api/session/{session_id}/plan").status_code == 404

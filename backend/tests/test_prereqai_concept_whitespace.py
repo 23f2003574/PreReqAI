@@ -21,7 +21,7 @@ def _cli(*flags):
 
 def test_known_and_studied_ignore_repeated_whitespace():
     out = _cli("--known", "  linear   algebra ", "--studied", "Neural\t Networks")
-    assert "1. Probability (10h) -> 2. Calculus (10h) -> 3. Neural Networks (15h, studied)" in out
+    assert "1. Probability (10h) -> 2. Calculus (10h) -> 3. Optimization (8h) -> 4. Neural Networks (15h, studied)" in out
     assert "warning" not in out
 
 

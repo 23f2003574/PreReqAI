@@ -59,6 +59,7 @@ class PrerequisiteDetector:
             "Probability",
             "Information Theory",
             "Neural Networks",
+            "Stochastic Processes",
         ],
 
         "Information Theory": [
@@ -67,10 +68,12 @@ class PrerequisiteDetector:
 
         "Forward Process": [
             "Probability",
+            "Stochastic Processes",
         ],
 
         "Noise Schedule": [
             "Probability",
+            "Stochastic Processes",
         ],
 
         "Score Matching": [
@@ -110,6 +113,7 @@ class PrerequisiteDetector:
         "Gradient Descent": [
             "Calculus",
             "Linear Algebra",
+            "Optimization",
         ],
 
         "Backpropagation": [
@@ -156,11 +160,13 @@ class PrerequisiteDetector:
         "Maximum Likelihood Estimation": [
             "Probability",
             "Calculus",
+            "Statistics",
         ],
 
         "Overfitting": [
             "Probability",
             "Neural Networks",
+            "Statistics",
         ],
 
         "Embedding": [
@@ -176,6 +182,7 @@ class PrerequisiteDetector:
         "Monte Carlo Method": [
             "Probability",
             "Calculus",
+            "Statistics",
         ],
 
         "Variational Autoencoder": [
@@ -200,6 +207,7 @@ class PrerequisiteDetector:
             "Calculus",
             "Probability",
             "Neural Networks",
+            "Optimization",
         ],
 
         "Parameter-Efficient Fine-Tuning": [
@@ -240,11 +248,27 @@ class PrerequisiteDetector:
             "Neural Networks",
         ],
 
+        # Subjects that are only ever prerequisites (like Information Theory above): what each one itself builds on.
+        "Optimization": [
+            "Calculus",
+            "Linear Algebra",
+        ],
+
+        "Statistics": [
+            "Probability",
+        ],
+
+        "Stochastic Processes": [
+            "Probability",
+            "Calculus",
+        ],
+
         "Reverse Process": [
             "Probability",
             "Information Theory",
             "Neural Networks",
             "Calculus",
+            "Stochastic Processes",
         ],
 
         "Markov Decision Process": [

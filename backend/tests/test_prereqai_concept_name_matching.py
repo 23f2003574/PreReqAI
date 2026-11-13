@@ -14,7 +14,7 @@ def test_known_and_studied_accept_hyphen_and_underscore_spellings():
     assert outcome["warnings"] == []
     assert "Linear Algebra" not in [step["concept"] for step in report["learning_plan"]]
     assert {item["concept"]: item["completed"] for item in report["study_progress"]} == {
-        "Probability": True, "Calculus": False, "Neural Networks": True}
+        "Probability": True, "Calculus": False, "Optimization": False, "Neural Networks": True}
 
 
 def test_session_endpoints_accept_the_same_spellings():

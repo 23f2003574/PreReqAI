@@ -107,7 +107,7 @@ def test_the_plan_file_lists_the_daily_schedule_and_resume_still_works(tmp_path,
     assert main(["prerequisites", "analyze", SAMPLE, "--hours-per-day", "2", "--plan-file", str(target)]) == 0
     capsys.readouterr()
     text = target.read_text(encoding="utf-8")
-    assert is_saved_plan(text) and "Daily schedule (2h per day, 24 days):" in text and "- Day 1 (2h): " in text
+    assert is_saved_plan(text) and "Daily schedule (2h per day, 28 days):" in text and "- Day 1 (2h): " in text
     assert studied_from_plan(text) == []
     assert main(["prerequisites", "analyze", SAMPLE, "--resume", str(target), "--json"]) == 0
 

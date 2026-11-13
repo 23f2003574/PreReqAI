@@ -13,8 +13,8 @@ def test_the_cli_journey_example_carries_a_ticked_concept_into_the_next_run():
     assert run.returncode == 0, run.stderr
     out = run.stdout
     before, after = out.split("3. Re-run with --resume")
-    assert "study plan: 1. Linear Algebra (12h) -> 2. Probability (10h) -> 3. Neural Networks (15h)" in before
-    assert "(0/3 concepts ready)" in before and "  - Why: Probability is required" in before
-    assert "1. Linear Algebra (12h, studied) -> 2. Probability (10h)" in after and "(1/3 concepts ready)" in after
-    assert "(25h left)" in after
-    assert "Study these in order before the paper: 2. Probability (~10 h); 3. Neural Networks (~15 h). Already studied: Linear Algebra." in after
+    assert "study plan: 1. Linear Algebra (12h) -> 2. Probability (10h) -> 3. Optimization (8h) -> 4. Neural Networks (15h)" in before
+    assert "(0/4 concepts ready)" in before and "  - Why: Probability is required" in before
+    assert "1. Linear Algebra (12h, studied) -> 2. Probability (10h)" in after and "(1/4 concepts ready)" in after
+    assert "(33h left)" in after
+    assert "Study these in order before the paper: 2. Probability (~10 h); 3. Optimization (~8 h); 4. Neural Networks (~15 h). Already studied: Linear Algebra." in after

@@ -18,9 +18,9 @@ def _summary(*flags):
 
 
 def test_a_single_preparation_day_is_not_pluralised():
-    line = _summary("--known", "Linear Algebra", "--known", "Probability", "--known", "Calculus", "--known", "Neural Networks")
+    line = _summary("--known", "Linear Algebra", "--known", "Probability", "--known", "Calculus", "--known", "Optimization", "--known", "Neural Networks")
     assert "over 1 day" in line and "1 days" not in line
 
 
 def test_several_days_stay_plural():
-    assert "over 16 days" in _summary()
+    assert "over 19 days" in _summary()

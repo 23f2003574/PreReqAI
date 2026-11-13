@@ -38,4 +38,4 @@ def test_a_paper_without_detected_concepts_gets_an_honest_answer(bees, question)
 def test_a_normal_paper_is_unchanged():
     assert _ask(SAMPLE, "Am I ready?").startswith("You are not ready to read the paper yet.")
     assert _ask(SAMPLE, "What should I study first?").startswith("Study these in order")
-    assert _ask(SAMPLE, "How long will it take?").startswith("Plan about 47 hours")
+    assert _ask(SAMPLE, "How long will it take?").startswith("Plan about 55 hours")

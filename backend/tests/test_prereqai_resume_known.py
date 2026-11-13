@@ -35,4 +35,4 @@ def test_resume_keeps_a_known_concept_out_of_the_plan(tmp_path):
     assert "warning" not in resumed.stdout
 
     answer = _run("ask", PAPER, "How long will this take?", "--resume", str(plan))
-    assert answer.stdout.splitlines()[0] == "Plan about 27 hours of preparation, roughly 10 days at 2.8 hours a day."
+    assert answer.stdout.splitlines()[0] == "Plan about 35 hours of preparation, roughly 12 days at 3 hours a day."

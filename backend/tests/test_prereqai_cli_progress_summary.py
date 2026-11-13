@@ -16,8 +16,8 @@ def _summary(*flags):
 
 def test_studied_steps_are_marked_and_remaining_hours_shown():
     out = _summary("--studied", "Probability", "--studied", "Calculus")
-    assert "2. Probability (10h, studied) -> 3. Calculus (10h, studied) -> 4. Neural Networks (15h)" in out
-    assert "preparation: ~47h over 16 days (27h left)" in out
+    assert "2. Probability (10h, studied) -> 3. Calculus (10h, studied) -> 4. Optimization (8h) -> 5. Neural Networks (15h)" in out
+    assert "preparation: ~55h over 19 days (35h left)" in out
     assert len(out.splitlines()) <= 5
 
 
@@ -26,5 +26,5 @@ def test_without_progress_the_summary_is_unchanged_and_a_finished_plan_shows_not
     assert "studied" not in out and "left)" not in out
     assert "1. Linear Algebra (12h) -> 2. Probability (10h)" in out
     done = _summary("--studied", "Linear Algebra", "--studied", "Probability", "--studied", "Calculus",
-                    "--studied", "Neural Networks")
+                    "--studied", "Optimization", "--studied", "Neural Networks")
     assert "Ready to Read" in done and "(0h left)" in done

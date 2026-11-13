@@ -24,6 +24,9 @@ def counts(*paragraphs):
     ("Attention", "The attention mechanism uses self-attention."),
     ("Transformer", "The transformer is a model."),
     ("Markov Decision Process", "A Markov decision process, or MDP, models the task."),
+    ("Optimization", "A convex optimization problem has no bad local minima."),
+    ("Statistics", "Statistical inference gives a confidence interval."),
+    ("Stochastic Processes", "A Markov chain is a stochastic process; so is Brownian motion."),
 ])
 def test_every_subject_is_detected_by_its_own_terms(subject, text):
     found = counts(("Method", text))
@@ -34,7 +37,7 @@ def test_every_subject_is_detected_by_its_own_terms(subject, text):
 def test_all_nine_subjects_are_reported_even_when_absent():
     assert counts(("Method", "Nothing relevant here.")) == dict.fromkeys(
         ["Linear Algebra", "Probability", "Calculus", "Information Theory", "Neural Networks", "Graphs", "Attention", "Transformer",
-         "Markov Decision Process"], 0)
+         "Markov Decision Process", "Optimization", "Statistics", "Stochastic Processes"], 0)
 
 
 def test_aliases_hyphenation_and_repeats_are_counted():

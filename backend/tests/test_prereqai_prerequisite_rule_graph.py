@@ -9,7 +9,8 @@ pytestmark = pytest.mark.prereqai
 RULES = PrerequisiteDetector.PREREQUISITE_RULES
 REGISTRY = {c.name for c in ConceptRegistry().all()}
 # Foundational subjects: valid prerequisites (and, for Information Theory, a rule key) without being detectable registry concepts.
-BASE_SUBJECTS = {"Linear Algebra", "Probability", "Calculus", "Information Theory", "Graphs", "Neural Networks"}
+BASE_SUBJECTS = {"Linear Algebra", "Probability", "Calculus", "Information Theory", "Graphs", "Neural Networks",
+                 "Optimization", "Statistics", "Stochastic Processes"}
 KNOWN = REGISTRY | BASE_SUBJECTS
 
 

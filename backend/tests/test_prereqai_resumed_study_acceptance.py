@@ -45,6 +45,7 @@ def test_a_learner_works_through_the_plan_across_a_server_restart(tmp_path, monk
     assert "Study Probability" not in [a["title"] for a in session_manager.get(sid).report["study_actions"]]
 
     assert _studied(sid, "Neural Networks").status_code == 200
+    assert _studied(sid, "Optimization").status_code == 200
     assert "ready to read the paper" in _ask(sid, "What should I learn first?")
     assert client.get(f"/api/session/{sid}").json()["readiness"]["ready_to_read"] is True
 

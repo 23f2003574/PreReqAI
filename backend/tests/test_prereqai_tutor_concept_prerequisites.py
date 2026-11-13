@@ -29,8 +29,8 @@ def test_a_why_question_still_gets_the_definition():
 
 def test_progress_question_reports_studied_count_and_names():
     assert _ask("How much have I completed?", "--studied", "Probability,Calculus") == \
-        "You have studied 2 of 4 planned prerequisites (50%). Studied: Probability, Calculus."
-    assert _ask("What is my progress?") == "You have studied 0 of 4 planned prerequisites (0%)."
+        "You have studied 2 of 5 planned prerequisites (40%). Studied: Probability, Calculus."
+    assert _ask("What is my progress?") == "You have studied 0 of 5 planned prerequisites (0%)."
 
 
 def test_concepts_question_lists_detected_concepts_most_mentioned_first():

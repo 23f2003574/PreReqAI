@@ -24,7 +24,7 @@ def test_diffusion_paper_plans_information_theory_after_probability(tmp_path):
     _, body = _session(tmp_path, DIFFUSION)
     report = body["report"]
     plan = [(step["concept"], step["estimated_hours"]) for step in report["learning_plan"]]
-    assert plan == [("Probability", 10), ("Information Theory", 8), ("Calculus", 10), ("Neural Networks", 15)]
+    assert plan == [("Probability", 10), ("Information Theory", 8), ("Calculus", 10), ("Stochastic Processes", 10), ("Neural Networks", 15)]
     resource = next(r for r in report["learning_resources"] if r["concept"] == "Information Theory")
     assert resource["url"] == "https://www.inference.org.uk/mackay/itila/"
     reason = next(j for j in report["prerequisite_justifications"] if j["concept"] == "Information Theory")
@@ -37,7 +37,7 @@ def test_tutor_defines_it_and_known_skips_it(tmp_path):
     assert answer.startswith("Information Theory: The mathematics of information: entropy and KL divergence")
     assert "Why it is needed here: Diffusion training objectives" in answer
     _, known = _session(tmp_path, DIFFUSION, {"known": "information theory"})
-    assert [s["concept"] for s in known["report"]["learning_plan"]] == ["Probability", "Calculus", "Neural Networks"]
+    assert [s["concept"] for s in known["report"]["learning_plan"]] == ["Probability", "Calculus", "Stochastic Processes", "Neural Networks"]
     assert known["warnings"] == []
 
 

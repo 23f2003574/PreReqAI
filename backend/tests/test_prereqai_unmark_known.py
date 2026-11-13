@@ -28,7 +28,7 @@ def test_other_known_concepts_and_studied_progress_survive_the_undo():
     sid = platform.analyze(SAMPLE, known=["Calculus", "Probability"])["session_id"]
     platform.mark_concept_studied(sid, "Neural Networks")
     report = platform.unmark_concept_known(sid, "Calculus")
-    assert [name for name, _ in _plan(report)] == ["Linear Algebra", "Calculus", "Neural Networks"]  # Probability stays known
+    assert [name for name, _ in _plan(report)] == ["Linear Algebra", "Calculus", "Optimization", "Neural Networks"]  # Probability stays known
     assert {s["concept"] for s in report["study_progress"] if s["completed"]} == {"Neural Networks"}
     assert platform.mark_concept_known(sid, "Calculus")["learning_plan"][-1]["concept"] == "Neural Networks"  # and it can be marked again
 

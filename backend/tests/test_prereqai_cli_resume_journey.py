@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SAMPLE = "examples/prerequisites/sample-paper.pdf"
-PLAN = ["Linear Algebra", "Probability", "Calculus", "Neural Networks"]
+PLAN = ["Linear Algebra", "Probability", "Calculus", "Optimization", "Neural Networks"]
 
 
 def _run(*args):
@@ -30,14 +30,14 @@ def test_learner_works_through_the_plan_from_the_command_line():
         run = _run("analyze", SAMPLE, "--resources", *_studied_flags(done))
         assert run.returncode == 0 and run.stderr == ""
         assert _links(run.stdout) == remaining                     # links shrink in plan order
-        assert f"({len(done)}/4 concepts ready)" in run.stdout
+        assert f"({len(done)}/5 concepts ready)" in run.stdout
         asked = _run("ask", SAMPLE, "What should I learn first?", *_studied_flags(done))
         assert asked.returncode == 0 and asked.stdout.splitlines()[0].startswith(f"Study these in order before the paper: {step}. {concept}")
         done.append(concept)
 
     finished = _run("analyze", SAMPLE, "--resources", *_studied_flags(done), "--json")
     report = json.loads(finished.stdout)["report"]
-    assert report["readiness"]["ready_to_read"] is True and report["readiness"]["completed_concepts"] == 4
+    assert report["readiness"]["ready_to_read"] is True and report["readiness"]["completed_concepts"] == 5
     plain = _run("analyze", SAMPLE, "--resources", *_studied_flags(done))
     assert "Ready to Read" in plain.stdout and "resources: none left to study" in plain.stdout and "(0h left)" in plain.stdout
     assert "ready to read the paper" in _run("ask", SAMPLE, "What should I learn first?", *_studied_flags(done)).stdout

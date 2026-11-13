@@ -53,7 +53,7 @@ def test_known_and_studied_personalize_the_answer_and_unmatched_names_are_report
 
 def test_studying_the_whole_plan_says_the_learner_is_ready():
     code, out, _ = _ask(SAMPLE, "What do I need to know first?", "--studied", "Linear Algebra", "--studied",
-                        "Probability", "--studied", "Calculus", "--studied", "Neural Networks")
+                        "Probability", "--studied", "Calculus", "--studied", "Optimization", "--studied", "Neural Networks")
     assert code == 0 and "ready to read the paper" in out
 
 
