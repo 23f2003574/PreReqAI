@@ -398,6 +398,6 @@ class PrerequisiteDetector:
 
 
 def rank_prerequisites(prerequisites):
-    """Prerequisites most-needed first: by number of dependent concepts (taken from the reason), then by the mentions of those
-    concepts, then by name, so equal evidence always ranks the same way."""
-    return sorted(prerequisites, key=lambda p: (-(p.reason.count(",") + 1), -p.dependent_mentions, p.concept))
+    """Prerequisites most-needed first: by the number of dependent concepts (the length of `evidence`, one entry per dependent), then by
+    the mentions of those concepts, then by name, so equal evidence always ranks the same way."""
+    return sorted(prerequisites, key=lambda p: (-len(p.evidence), -p.dependent_mentions, p.concept))

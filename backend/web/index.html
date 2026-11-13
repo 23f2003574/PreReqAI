@@ -110,8 +110,9 @@ function render(body) {
 
   var prerequisites = report.missing_prerequisites || [];
   fill("gaps", prerequisites.length
-    ? table(["Prerequisite", "Status", "Why"], prerequisites.map(function (p) {
-        return [p.concept, el("span", p.satisfied ? "Covered or known" : "Gap", p.satisfied ? "covered" : "gap"), p.reason];
+    ? table(["Prerequisite", "Importance", "Status", "Why"], prerequisites.map(function (p) {
+        return [p.concept, p.importance === "essential" ? "Essential" : p.importance === "supporting" ? "Supporting" : "-",
+                el("span", p.satisfied ? "Covered or known" : "Gap", p.satisfied ? "covered" : "gap"), p.reason];
       }))
     : el("p", "This paper has no prerequisites to check.", "msg info"));
 

@@ -109,6 +109,13 @@ class LearningReportGenerator:
 
         study_order = {step.concept: step.order for step in paper.learning_plan}  # resources follow the plan
 
+        # Prerequisites are listed most-needed first (the study plan keeps its own pedagogical order: foundations before what builds on them).
+        from backend.prerequisites.prerequisite_detector import rank_prerequisites
+
+        ranked = rank_prerequisites(paper.prerequisites)
+        position = {prerequisite.concept: index for index, prerequisite in enumerate(ranked)}
+        importance = {prerequisite.concept: prerequisite.importance for prerequisite in ranked}
+
         return {
 
             "paper": {
@@ -187,7 +194,7 @@ class LearningReportGenerator:
                     "evidence_note": prerequisite.evidence_note,
                 }
 
-                for prerequisite in paper.prerequisites
+                for prerequisite in ranked
             ],
 
             "missing_prerequisites": [
@@ -198,9 +205,10 @@ class LearningReportGenerator:
                     "reason": prerequisite.reason,
                     "status": "known" if prerequisite.reason == KNOWN_REASON else prerequisite.status,
                     "mentions": prerequisite.mentions,
+                    "importance": importance.get(prerequisite.concept, ""),
                 }
 
-                for prerequisite in paper.missing_prerequisites
+                for prerequisite in sorted(paper.missing_prerequisites, key=lambda item: position.get(item.concept, len(position)))
             ],
 
             "learning_plan": [
