@@ -22,6 +22,8 @@
   .table-wrap { overflow-x: auto; } table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
   .gap { color: var(--bad); font-weight: 600; } .covered { color: var(--ok); font-weight: 600; }
   dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: 0; } dt { color: var(--muted); } dd { margin: 0; overflow-wrap: anywhere; }
+  select { width: 100%; padding: .5rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: .75rem 1rem; margin: .75rem 0; } .card p { margin: .4rem 0; } .meta { color: var(--muted); font-size: .9rem; }
   button.small { margin: 0; padding: .2rem .6rem; font-size: .9rem; font-weight: 500; }
   input[type=checkbox] { width: 1.2rem; height: 1.2rem; }
   .actions { margin-top: .5rem; } .known-list { margin-top: .75rem; color: var(--muted); }
@@ -52,6 +54,24 @@
     <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
     <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
     <section><h2>Study plan</h2><div id="plan"></div><div class="actions"><button id="download" type="button" class="small" hidden>Download study plan (Markdown)</button></div></section>
+    <section id="tutor"><h2>Ask a question</h2>
+      <p class="lead">No tutoring model is configured in this release: answers are built-in definitions and facts from your analysis, not generated explanations.</p>
+      <form id="askForm" novalidate>
+        <label for="question">Your question <small>(for example: What is attention? What should I study first?)</small></label>
+        <input id="question" type="text" maxlength="2000" autocomplete="off">
+        <button id="askBtn" type="submit">Ask</button>
+      </form>
+      <div id="askMsg" role="status" aria-live="polite"></div>
+      <div id="answers"></div>
+    </section>
+    <section id="quizpanel"><h2>Practice quiz</h2>
+      <label for="quizConcept">Concept</label>
+      <select id="quizConcept"><option value="">Choose for me (the one that needs the most practice)</option></select>
+      <button id="quizNext" type="button">Get a question</button>
+      <div id="quizMsg" role="status" aria-live="polite"></div>
+      <div id="quizCard"></div>
+      <h2>Mastery</h2><div id="mastery"></div>
+    </section>
   </div>
 </main>
 <script>
@@ -67,8 +87,8 @@ function el(tag, text, className) {
 
 function safeUrl(url) { return /^https?:\/\//i.test(String(url)) ? url : null; }
 
-function showStatus(kind, text, extra) {
-  var box = $("status");
+function showStatus(kind, text, extra, boxId) {
+  var box = $(boxId || "status");
   box.textContent = "";
   if (!text) return;
   var node = el("div", text, "msg " + kind);
@@ -96,7 +116,7 @@ function table(headers, rows) {
 function fill(id, node) { var box = $(id); box.textContent = ""; box.appendChild(node); }
 
 var KEY = "prereqai.session";  // the browser remembers only the session id; the server holds the progress
-var state = { sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false };
+var state = { sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
 
 function remember(sid) { try { if (sid) localStorage.setItem(KEY, sid); else localStorage.removeItem(KEY); } catch (e) { /* storage unavailable: no restore */ } }
 function recall() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
@@ -175,7 +195,8 @@ function render(body) {
       }))
     : el("p", "This paper has no prerequisites to check.", "msg info"));
 
-  renderPlan();
+  state.concepts = (report.concepts || []).filter(function (c) { return typeof c === "string"; });
+  renderPlan(); renderQuizSetup(); renderAnswers(); renderMastery();
   $("results").hidden = false;
   var warnings = body.warnings || [];
   if (warnings.length) showStatus("warn", "Notes about this analysis:", warnings.join(" "));
@@ -249,6 +270,142 @@ async function downloadPlan() {
   }
 }
 
+// ---- tutor: questions about the paper (POST /api/session/{id}/question) ----
+function renderAnswers() {
+  var box = el("div");
+  state.answers.forEach(function (a) {
+    var card = el("div", null, "card");
+    card.appendChild(el("p", a.question, "meta"));
+    card.appendChild(el("p", a.text));
+    if (a.concepts && a.concepts.length) card.appendChild(el("p", "Concepts: " + a.concepts.join(", "), "meta"));
+    if (a.sections && a.sections.length) card.appendChild(el("p", "Found in sections: " + a.sections.join("; "), "meta"));
+    (a.warnings || []).forEach(function (w) { card.appendChild(el("p", w, "msg warn")); });
+    (a.followups || []).forEach(function (f) {
+      var b = el("button", f, "small"); b.type = "button"; b.disabled = state.tutorBusy;
+      b.addEventListener("click", function () { $("question").value = f; ask(f); });
+      card.appendChild(b); card.appendChild(document.createTextNode(" "));
+    });
+    box.appendChild(card);
+  });
+  fill("answers", box);
+  $("askBtn").disabled = state.tutorBusy;
+}
+
+async function ask(question) {
+  question = String(question || "").trim();
+  if (state.tutorBusy) return;
+  if (!state.sid) return showStatus("error", "Analyse a paper first: questions are answered about an analysed paper.", null, "askMsg");
+  if (!question) return showStatus("error", "Type a question first.", null, "askMsg");
+  if (question.length > 2000) return showStatus("error", "That question is too long (2000 characters at most).", "Ask about one thing at a time.", "askMsg");
+  state.tutorBusy = true; renderAnswers(); showStatus("info", "Thinking...", null, "askMsg");
+  try {
+    var response = await fetch("/api/session/" + encodeURIComponent(state.sid) + "/question", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: question }) });
+    var body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (!response.ok || !body || body.status !== "success" || !(body.responses || []).length) {
+      var text = failureText(body, response.status);
+      showStatus("error", text[0], text[1], "askMsg");
+    } else {
+      var r = body.responses[0];
+      state.answers.unshift({ question: question, text: r.answer, concepts: r.supporting_concepts, sections: r.supporting_sections,
+                              warnings: body.warnings || [], followups: r.suggested_followups });
+      $("question").value = ""; showStatus("info", "", null, "askMsg");
+    }
+  } catch (error) {
+    showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "askMsg");
+  } finally {
+    state.tutorBusy = false; renderAnswers();
+  }
+}
+
+// ---- quiz: one question without its answer, a reveal, a recorded outcome (GET /quiz/question, POST /quiz/reveal, POST /quiz/outcome) ----
+function quizUrl(tail) { return "/api/session/" + encodeURIComponent(state.sid) + "/quiz/" + tail; }
+
+function renderQuizSetup() {
+  var select = $("quizConcept"), keep = select.value;
+  while (select.options.length > 1) select.remove(1);
+  state.concepts.forEach(function (name) { var o = el("option", name); o.value = name; select.appendChild(o); });
+  select.value = keep;
+  $("quizNext").disabled = state.quizBusy; select.disabled = state.quizBusy;
+}
+
+function renderMastery() {
+  var rows = (state.quiz.concepts || []).map(function (c) {
+    return [c.concept, c.attempts, c.knew, c.missed, Math.round(c.mastery * 100) + "%", c.status.replace("_", " ")];
+  });
+  fill("mastery", rows.length ? table(["Concept", "Attempts", "Knew", "Missed", "Mastery", "Status"], rows)
+                              : el("p", "No questions answered yet.", "msg info"));
+}
+
+function renderCard() {
+  var box = el("div"), c = state.card;
+  if (c) {
+    var card = el("div", null, "card");
+    card.appendChild(el("p", c.concept + " (" + c.difficulty + ")", "meta"));
+    card.appendChild(el("p", c.question));
+    if (c.answer === null) {
+      var show = el("button", "Show answer", "small"); show.type = "button"; show.disabled = state.quizBusy;
+      show.addEventListener("click", reveal); card.appendChild(show);
+    } else {
+      card.appendChild(el("p", "Answer: " + c.answer));
+      card.appendChild(el("p", "How did you do?", "meta"));
+      [["knew", "I knew it"], ["missed", "I missed it"]].forEach(function (o) {
+        var b = el("button", o[1], "small"); b.type = "button"; b.disabled = state.quizBusy;
+        b.addEventListener("click", function () { record(o[0]); }); card.appendChild(b); card.appendChild(document.createTextNode(" "));
+      });
+    }
+    box.appendChild(card);
+  }
+  fill("quizCard", box);
+  renderQuizSetup();
+}
+
+// One quiz request at a time; a failure leaves the question as it was.
+async function quizCall(label, request, onOk) {
+  if (state.quizBusy) return;
+  if (!state.sid) return showStatus("error", "Analyse a paper first.", null, "quizMsg");
+  state.quizBusy = true; renderCard(); showStatus("info", label + "...", null, "quizMsg");
+  try {
+    var response = await request(), body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (!response.ok || !body || body.status !== "success") {
+      var text = failureText(body, response.status);
+      showStatus("error", text[0], text[1], "quizMsg");
+    } else {
+      showStatus("info", "", null, "quizMsg"); onOk(body);
+    }
+  } catch (error) {
+    showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "quizMsg");
+  } finally {
+    state.quizBusy = false; renderCard();
+  }
+}
+
+function nextQuestion() {
+  var concept = $("quizConcept").value;
+  quizCall("Getting a question", function () { return fetch(quizUrl("question") + (concept ? "?concept=" + encodeURIComponent(concept) : "")); },
+    function (body) { state.card = { id: body.question_id, concept: body.concept, difficulty: body.difficulty, question: body.question, answer: null }; });
+}
+
+function reveal() {
+  var card = state.card;
+  quizCall("Getting the answer", function () {
+    return fetch(quizUrl("reveal"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question_id: card.id }) });
+  }, function (body) { card.answer = body.answer; });
+}
+
+function record(outcome) {
+  var card = state.card;
+  quizCall("Recording your answer", function () {
+    return fetch(quizUrl("outcome"), { method: "POST", headers: { "Content-Type": "application/json" },
+                                       body: JSON.stringify({ question_id: card.id, outcome: outcome }) });
+  }, function (body) {
+    state.quiz = body.progress; state.card = null; renderMastery();
+    showStatus("info", "Recorded: " + (outcome === "knew" ? "you knew it" : "you missed it") + ". Ask for another question to keep practising.", null, "quizMsg");
+  });
+}
+
 async function restore() {
   var sid = recall();
   if (!sid) return;
@@ -279,7 +436,16 @@ async function restore() {
     renderMeta();
     fill("concepts", el("p", "Restored session: analyse the paper again to see its detected concepts.", "msg info"));
     fill("gaps", el("p", "Restored session: your plan and progress are below.", "msg info"));
-    renderPlan();
+    state.quiz = body.quiz_progress || { attempts: 0, concepts: [] }; state.card = null; state.concepts = []; state.answers = [];
+    var asked = {};
+    (body.conversation_history || []).forEach(function (entry) {
+      var d = entry.data || {};
+      if (entry.type === "question") asked[d.question_id] = d.question;
+      else if (entry.type === "answer" && asked[d.question_id] !== undefined && (d.answers || []).length) {
+        state.answers.unshift({ question: asked[d.question_id], text: d.answers[0], concepts: d.supporting_concepts || [], sections: [], warnings: [], followups: [] });
+      }
+    });
+    renderPlan(); renderQuizSetup(); renderAnswers(); renderMastery(); renderCard();
     $("results").hidden = false;
     showStatus("info", "Restored your saved session.");
   } catch (error) {
@@ -311,7 +477,8 @@ async function submit(event) {
       var text = failureText(body, response.status);
       showStatus("error", text[0], text[1]);
     } else {
-      render(body);
+      state.answers = []; state.quiz = { attempts: 0, concepts: [] }; state.card = null; showStatus("info", "", null, "askMsg"); showStatus("info", "", null, "quizMsg");
+      render(body); renderCard();
     }
   } catch (error) {
     showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.");
@@ -322,6 +489,8 @@ async function submit(event) {
 
 $("form").addEventListener("submit", submit);
 $("download").addEventListener("click", downloadPlan);
+$("askForm").addEventListener("submit", function (event) { event.preventDefault(); ask($("question").value); });
+$("quizNext").addEventListener("click", nextQuestion);
 restore();
 </script>
 </body>
