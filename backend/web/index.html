@@ -22,6 +22,9 @@
   .table-wrap { overflow-x: auto; } table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
   .gap { color: var(--bad); font-weight: 600; } .covered { color: var(--ok); font-weight: 600; }
   dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: 0; } dt { color: var(--muted); } dd { margin: 0; overflow-wrap: anywhere; }
+  button.small { margin: 0; padding: .2rem .6rem; font-size: .9rem; font-weight: 500; }
+  input[type=checkbox] { width: 1.2rem; height: 1.2rem; }
+  .actions { margin-top: .5rem; } .known-list { margin-top: .75rem; color: var(--muted); }
   [hidden] { display: none !important; }
   @media (max-width: 520px) { main { padding: .5rem; } dl { grid-template-columns: 1fr; } }
 </style>
@@ -48,7 +51,7 @@
     <section><h2>Detected concepts</h2><div id="concepts"></div></section>
     <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
     <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
-    <section><h2>Study plan</h2><div id="plan"></div></section>
+    <section><h2>Study plan</h2><div id="plan"></div><div class="actions"><button id="download" type="button" class="small" hidden>Download study plan (Markdown)</button></div></section>
   </div>
 </main>
 <script>
@@ -92,15 +95,61 @@ function table(headers, rows) {
 
 function fill(id, node) { var box = $(id); box.textContent = ""; box.appendChild(node); }
 
+var KEY = "prereqai.session";  // the browser remembers only the session id; the server holds the progress
+var state = { sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false };
+
+function remember(sid) { try { if (sid) localStorage.setItem(KEY, sid); else localStorage.removeItem(KEY); } catch (e) { /* storage unavailable: no restore */ } }
+function recall() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+function sessionUrl(tail) { return "/api/prerequisites/sessions/" + encodeURIComponent(state.sid) + tail + "?concept="; }
+
+function renderMeta() {
+  var meta = $("meta"), paper = state.paper || {};
+  meta.textContent = "";
+  var facts = [["Title", paper.title]];
+  if (paper.author !== undefined) facts.push(["Author", paper.author], ["Pages", paper.pages]);
+  if (state.difficulty) facts.push(["Difficulty", state.difficulty.level + " - " + state.difficulty.explanation]);
+  if (state.studyTime) facts.push(["Preparation", state.studyTime.total_hours + " h over about " + state.studyTime.recommended_days + " days"]);
+  if (state.readiness) facts.push(["Readiness", state.readiness.status + " (" + state.readiness.progress_percent + "%)"]);
+  facts.forEach(function (f) { meta.appendChild(el("dt", f[0])); meta.appendChild(el("dd", f[1])); });
+}
+
+function renderPlan() {
+  var box = el("div");
+  if (!state.steps.length) box.appendChild(el("p", "Nothing left to study: no planned prerequisites.", "msg info"));
+  else box.appendChild(table(["Studied", "#", "Study", "Hours", "Resource", ""], state.steps.map(function (s) {
+    var tick = el("input"), r = state.links[s.concept], cell = "", known = el("button", "I already know this", "small");
+    tick.type = "checkbox"; tick.checked = !!state.studied[s.concept]; tick.disabled = state.busy;
+    tick.setAttribute("aria-label", "Studied " + s.concept);
+    tick.addEventListener("change", function () { setStudied(s.concept, tick.checked); });
+    known.type = "button"; known.disabled = state.busy;
+    known.addEventListener("click", function () { setKnown(s.concept, true); });
+    if (r && safeUrl(r.url)) { cell = el("a", r.title); cell.href = r.url; cell.rel = "noopener noreferrer"; cell.target = "_blank"; }
+    return [tick, s.step, s.concept, s.hours, cell, known];
+  })));
+  if (state.known.length) {
+    var list = el("div", "Marked as known: ", "known-list");
+    state.known.forEach(function (name) {
+      var undo = el("button", "Undo " + name, "small");
+      undo.type = "button"; undo.disabled = state.busy;
+      undo.addEventListener("click", function () { setKnown(name, false); });
+      list.appendChild(undo); list.appendChild(document.createTextNode(" "));
+    });
+    box.appendChild(list);
+  }
+  fill("plan", box);
+  $("download").hidden = !state.sid; $("download").disabled = state.busy;
+}
+
 function render(body) {
   var report = body.report || {}, paper = report.paper || {};
-  var meta = $("meta");
-  meta.textContent = "";
-  var facts = [["Title", paper.title], ["Author", paper.author], ["Pages", paper.pages]];
-  if (report.paper_difficulty) facts.push(["Difficulty", report.paper_difficulty.level + " - " + report.paper_difficulty.explanation]);
-  if (report.study_time) facts.push(["Preparation", report.study_time.total_hours + " h over about " + report.study_time.recommended_days + " days"]);
-  if (report.readiness) facts.push(["Readiness", report.readiness.status + " (" + report.readiness.progress_percent + "%)"]);
-  facts.forEach(function (f) { meta.appendChild(el("dt", f[0])); meta.appendChild(el("dd", f[1])); });
+  state.sid = body.session_id || state.sid; remember(state.sid);
+  state.paper = paper; state.difficulty = report.paper_difficulty || null;
+  state.studyTime = report.study_time || null; state.readiness = report.readiness || null;
+  state.studied = {}; (report.study_progress || []).forEach(function (p) { if (p.completed) state.studied[p.concept] = true; });
+  state.steps = (report.learning_plan || []).map(function (s) { return { step: s.step, concept: s.concept, hours: s.estimated_hours }; });
+  state.links = {}; (report.learning_resources || []).forEach(function (r) { state.links[r.concept] = r; });
+  state.known = (report.missing_prerequisites || []).filter(function (p) { return p.status === "known"; }).map(function (p) { return p.concept; });
+  renderMeta();
 
   var evidence = report.concept_evidence || [];
   fill("concepts", evidence.length
@@ -126,21 +175,116 @@ function render(body) {
       }))
     : el("p", "This paper has no prerequisites to check.", "msg info"));
 
-  var links = {};
-  (report.learning_resources || []).forEach(function (r) { links[r.concept] = r; });
-  var plan = report.learning_plan || [];
-  fill("plan", plan.length
-    ? table(["#", "Study", "Hours", "Resource"], plan.map(function (s) {
-        var r = links[s.concept], cell = "";
-        if (r && safeUrl(r.url)) { cell = el("a", r.title); cell.href = r.url; cell.rel = "noopener noreferrer"; cell.target = "_blank"; }
-        return [s.step, s.concept, s.estimated_hours, cell];
-      }))
-    : el("p", "Nothing left to study: no planned prerequisites.", "msg info"));
-
+  renderPlan();
   $("results").hidden = false;
   var warnings = body.warnings || [];
   if (warnings.length) showStatus("warn", "Notes about this analysis:", warnings.join(" "));
   else showStatus("info", "");
+}
+
+// One request at a time: while one is running every control is disabled, and a second call is ignored. A failed request leaves the
+// state as it was, and the re-render puts a ticked box back.
+async function act(label, request, onOk) {
+  if (state.busy) return;
+  state.busy = true; renderPlan();
+  showStatus("info", label + "...");
+  try {
+    var response = await request();
+    var body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (!response.ok || !body || body.status !== "success") {
+      var text = failureText(body, response.status);
+      showStatus("error", text[0], text[1]);
+    } else {
+      onOk(body);
+      var warnings = body.warnings || [];
+      if (warnings.length) showStatus("warn", "Saved, with a note:", warnings.join(" ")); else showStatus("info", "Saved.");
+    }
+  } catch (error) {
+    showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.");
+  } finally {
+    state.busy = false; renderPlan();
+  }
+}
+
+function setStudied(concept, studied) {
+  act(studied ? "Saving progress" : "Undoing progress",
+      function () { return fetch(sessionUrl("/studied") + encodeURIComponent(concept), { method: studied ? "POST" : "DELETE" }); },
+      function (body) {
+        state.studied = {}; (body.study_progress || []).forEach(function (p) { if (p.completed) state.studied[p.concept] = true; });
+        state.readiness = body.readiness || state.readiness; state.studyTime = body.study_time || state.studyTime;
+        renderMeta();
+      });
+}
+
+function setKnown(concept, known) {
+  act(known ? "Removing " + concept + " from your plan" : "Putting " + concept + " back in your plan",
+      function () { return fetch(sessionUrl("/known") + encodeURIComponent(concept), { method: known ? "POST" : "DELETE" }); },
+      function (body) { render({ session_id: state.sid, report: body.report, warnings: body.warnings }); });
+}
+
+async function downloadPlan() {
+  if (state.busy || !state.sid) return;
+  state.busy = true; renderPlan();
+  showStatus("info", "Preparing the study plan...");
+  try {
+    var response = await fetch("/api/session/" + encodeURIComponent(state.sid) + "/plan");
+    if (!response.ok) {
+      var body = null;
+      try { body = await response.json(); } catch (e) { body = null; }
+      var text = failureText(body, response.status);
+      showStatus("error", text[0], text[1]);
+    } else {
+      var link = el("a");
+      link.href = URL.createObjectURL(new Blob([await response.text()], { type: "text/markdown" }));
+      link.download = "study-plan.md";
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
+      showStatus("info", "Downloaded study-plan.md.");
+    }
+  } catch (error) {
+    showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.");
+  } finally {
+    state.busy = false; renderPlan();
+  }
+}
+
+async function restore() {
+  var sid = recall();
+  if (!sid) return;
+  showStatus("info", "Restoring your saved session...");
+  try {
+    var response = await fetch("/api/session/" + encodeURIComponent(sid)), body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (response.status === 404) {
+      remember(null);
+      return showStatus("info", "Your earlier session is no longer on the server, so its progress cannot be restored.", "Analyse the paper again.");
+    }
+    if (!response.ok || !body || !body.session_id) {
+      var text = failureText(body, response.status);
+      return showStatus("error", text[0], text[1]);
+    }
+    var hours = {};
+    ((body.study_time || {}).schedule || []).forEach(function (day) {
+      day.items.forEach(function (item) { hours[item.concept] = (hours[item.concept] || 0) + item.hours; });
+    });
+    state.sid = sid; state.paper = { title: body.paper_title }; state.difficulty = null;
+    state.studyTime = body.study_time; state.readiness = body.readiness; state.known = [];
+    state.studied = {}; state.links = {};
+    state.steps = (body.study_progress || []).map(function (p, index) {
+      if (p.completed) state.studied[p.concept] = true;
+      return { step: index + 1, concept: p.concept, hours: Math.round((hours[p.concept] || 0) * 100) / 100 };
+    });
+    (body.next_resources || []).forEach(function (r) { state.links[r.concept] = r; });
+    renderMeta();
+    fill("concepts", el("p", "Restored session: analyse the paper again to see its detected concepts.", "msg info"));
+    fill("gaps", el("p", "Restored session: your plan and progress are below.", "msg info"));
+    renderPlan();
+    $("results").hidden = false;
+    showStatus("info", "Restored your saved session.");
+  } catch (error) {
+    showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then reload the page.");
+  }
 }
 
 function failureText(body, status) {
@@ -177,6 +321,8 @@ async function submit(event) {
 }
 
 $("form").addEventListener("submit", submit);
+$("download").addEventListener("click", downloadPlan);
+restore();
 </script>
 </body>
 </html>
