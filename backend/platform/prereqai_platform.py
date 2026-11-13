@@ -11,6 +11,7 @@ import urllib3
 
 from backend.ingestion.arxiv_resolver import RETRY_COUNTER
 from backend.parsing.scientific_section_parser import absorbed_heading_candidates
+from backend.prerequisites.study_time_estimator import parse_hours_per_day
 
 from backend.api.workflow_result import (
     REQUIRED_REPORT_KEYS,
@@ -285,12 +286,13 @@ class PreReqAIPlatform:
             InteractiveLearningPipeline()
         )
 
-    def analyze(self, file_path: str, diagnostics: bool = False, should_cancel=None, limits=None, known=(), studied=(), labels=("--known", "--studied")) -> dict:
+    def analyze(self, file_path: str, diagnostics: bool = False, should_cancel=None, limits=None, known=(), studied=(), labels=("--known", "--studied"), hours_per_day=None) -> dict:
         """The workflow's public entry point: _analyze() plus the final-state guard. A result that is
         not a valid terminal state (see workflow_result.terminal_violations) is never returned as it
         is -- it becomes a failure at stage "finalization"."""
         started = perf_counter()
-        outcome = self._analyze(file_path, diagnostics, should_cancel, limits, _split_names(known), _split_names(studied), labels)
+        hours_per_day = parse_hours_per_day(hours_per_day) if hours_per_day is not None else None  # ValueError: the caller names the input
+        outcome = self._analyze(file_path, diagnostics, should_cancel, limits, _split_names(known), _split_names(studied), labels, hours_per_day)
         self._log_unsuccessful(outcome, perf_counter() - started)
         problems = terminal_violations(outcome)
         if problems:
@@ -316,7 +318,7 @@ class PreReqAIPlatform:
             outcome.get("status"), outcome.get("stage"), failed_stage, (outcome.get("error") or {}).get("type"), elapsed,
         )
 
-    def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits, known=(), studied=(), labels=("--known", "--studied")) -> dict:
+    def _analyze(self, file_path: str, diagnostics: bool, should_cancel, limits, known=(), studied=(), labels=("--known", "--studied"), hours_per_day=None) -> dict:
         """Run the analysis pipeline on a paper PDF and open a learning
         session for it. Returns the public workflow result envelope
         (backend.api.workflow_result): a success body carrying session_id and
@@ -388,6 +390,10 @@ class PreReqAIPlatform:
                 "finalization", f"The analysis did not complete: {', '.join(incomplete)}",
                 error=RuntimeError("incomplete analysis"), hint="This is a bug in the workflow; report it.",
             ), result.timings)
+        if hours_per_day is not None:  # the learner's daily study time: rebuild the estimate and its schedule (also used by every later rebuild)
+            result.paper.hours_per_day = hours_per_day
+            self.analysis.study_time_estimator.estimate(result.paper)
+            result.report["study_time"] = self.analysis.report_generator.generate(result.paper)["study_time"]
         known_label, studied_label = labels  # how the caller names these inputs: CLI flags by default, form fields over HTTP
         concept_names = [item["concept"] for item in result.report.get("missing_prerequisites", [])]
         in_plan = {_concept_key(step.concept) for step in result.paper.learning_plan}

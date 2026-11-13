@@ -133,6 +133,8 @@ class StudyTimeEstimate:
     total_hours: int
     recommended_days: int
     average_hours_per_day: float
+    daily_hours: float = 3.0  # the learner's available hours per day the schedule was built for
+    schedule: list = field(default_factory=list)  # [{day, hours, items: [{concept, hours}]}]; sessions saved earlier lack it
 
 
 @dataclass
@@ -251,6 +253,8 @@ class Paper:
     difficulty: PaperDifficulty | None = None
 
     study_time: StudyTimeEstimate | None = None
+
+    hours_per_day: float = 3.0  # the learner's daily study time; sessions saved before it existed read the class default
 
     difficulty_explanations: list[
         DifficultyExplanation

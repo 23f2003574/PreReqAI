@@ -29,6 +29,16 @@ def _finite_number(value):
     return number
 
 
+def _hours_per_day(value):
+    """argparse type for --hours-per-day: a number of hours above 0 and at most 24 (the default is 3)."""
+    from backend.prerequisites.study_time_estimator import parse_hours_per_day
+
+    try:
+        return parse_hours_per_day(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(str(error)) from None
+
+
 def _nonblank(value):
     """argparse type for flags that take a name or path: an empty or blank value (typically an unset shell variable such as
     --resume "$PLAN") is a usage error naming the flag, never silently treated as "flag not given"."""
@@ -60,6 +70,8 @@ def add_prerequisites_parser(subparsers):
     analyze.add_argument("--studied", type=_nonblank, action="append", default=[], metavar="CONCEPT",
                          help="A planned concept you have finished studying; it counts toward readiness "
                               "(repeat for several; re-run with more as you progress)")
+    analyze.add_argument("--hours-per-day", type=_hours_per_day, default=None, metavar="HOURS", dest="hours_per_day",
+                         help="Hours you can study per day (above 0, at most 24; default 3): sets the recommended days and the day-by-day schedule")
     analyze.add_argument("--resume", type=_nonblank, default=None, metavar="PLAN_FILE",
                          help="Mark as studied every concept ticked in a plan saved earlier with --plan-file, "
                               "so progress carries over between runs (add --studied for newly finished concepts)")
@@ -232,7 +244,8 @@ def run_prerequisites_analyze(args, platform=None) -> int:
     try:
         outcome = platform.analyze(args.paper, diagnostics=args.diagnose, should_cancel=cancelled.is_set, limits=limits,
                                     **({'known': args.known} if args.known else {}),
-                                    **({'studied': args.studied} if args.studied else {}))
+                                    **({'studied': args.studied} if args.studied else {}),
+                                    **({'hours_per_day': args.hours_per_day} if args.hours_per_day is not None else {}))
     finally:
         if previous is not None:
             signal.signal(signal.SIGINT, previous)

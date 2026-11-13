@@ -265,6 +265,10 @@ class LearningReportGenerator:
                     "hours_per_day":
                         paper.study_time.average_hours_per_day,
 
+                    "daily_hours": getattr(paper.study_time, "daily_hours", 3.0),
+
+                    "schedule": getattr(paper.study_time, "schedule", []),
+
                     "remaining_hours": sum(
                         step.estimated_hours
                         for step in paper.learning_plan

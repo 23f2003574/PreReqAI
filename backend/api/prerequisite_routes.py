@@ -38,6 +38,8 @@ from backend.platform import (
     platform,
 )
 
+from backend.prerequisites.study_time_estimator import parse_hours_per_day
+
 router = APIRouter(
     prefix="/api/prerequisites",
     tags=["Prerequisite Explorer"],
@@ -91,7 +93,7 @@ def _server_limits():
     return AnalysisLimits(max_seconds=seconds)
 
 
-def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], diagnostics: bool = False) -> dict:
+def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], diagnostics: bool = False, hours_per_day=None) -> dict:
     """Blocking work (copy the upload, run the analysis): called off the event loop."""
 
     temp_file = tempfile.NamedTemporaryFile(
@@ -130,6 +132,7 @@ def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], dia
             **({'diagnostics': True} if diagnostics else {}),
             **({'known': known} if known else {}),
             **({'studied': studied} if studied else {}),
+            **({'hours_per_day': hours_per_day} if hours_per_day is not None else {}),
         )
 
         return _hide_server_path(outcome, temp_path, Path(paper.filename or "").name or "the uploaded paper")
@@ -141,7 +144,7 @@ def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], dia
         )
 
 
-def _analyze_source(source: str, known: list[str], studied: list[str], diagnostics: bool):
+def _analyze_source(source: str, known: list[str], studied: list[str], diagnostics: bool, hours_per_day=None):
     """Analyse an arXiv link or DOI. Only those are accepted: a server file path in `source` must never be read."""
 
     try:
@@ -168,6 +171,7 @@ def _analyze_source(source: str, known: list[str], studied: list[str], diagnosti
         **({'diagnostics': True} if diagnostics else {}),
         **({'known': known} if known else {}),
         **({'studied': studied} if studied else {}),
+            **({'hours_per_day': hours_per_day} if hours_per_day is not None else {}),
     )
 
     if outcome["status"] != SUCCESS:
@@ -186,6 +190,7 @@ async def analyze_prerequisites(
     studied: list[str] = Form(default=[]),
     diagnostics: bool = Form(default=False),
     resume: UploadFile | None = File(default=None),
+    hours_per_day: str | None = Form(default=None),
 ):
     """Analyse an uploaded PDF (`paper`) or, instead, an arXiv link or DOI (`source`). `resume` is a plan saved earlier
     (the Markdown from GET /api/session/{id}/plan): its ticked concepts are added to `studied` and its "Already known"
@@ -209,6 +214,19 @@ async def analyze_prerequisites(
             "input",
             f"A `known` or `studied` name is too long ({len(too_long[0])} characters; the limit is {MAX_CONCEPT_NAME_CHARS}).",
             hint="Send concept names as listed in the study plan, one per `known` / `studied` field; nothing was analysed.",
+        )
+
+    try:
+
+        hours = parse_hours_per_day(hours_per_day) if hours_per_day is not None else None
+
+    except ValueError as error:
+
+        return failure_response(
+            422,
+            "input",
+            f"Invalid `hours_per_day`: {error}.",
+            hint="Send the hours you can study per day as a number above 0 and at most 24, or omit it for the default of 3; nothing was analysed.",
         )
 
     if resume is not None:
@@ -237,7 +255,7 @@ async def analyze_prerequisites(
 
     if source is not None:
 
-        outcome = await run_in_threadpool(_analyze_source, source, known, studied, diagnostics)
+        outcome = await run_in_threadpool(_analyze_source, source, known, studied, diagnostics, hours)
 
         return _with_request_warnings(outcome, plan_text)
 
@@ -249,6 +267,7 @@ async def analyze_prerequisites(
         known,
         studied,
         diagnostics,
+        hours,
     )
 
     if outcome["status"] != SUCCESS:

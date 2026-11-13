@@ -67,6 +67,10 @@ The `--json` report's `concept_evidence` shows why each concept was detected (`{
 
 The `--json` report also lists each extracted equation under `equations`, with the detected concepts discussed just before it (`{id, expression, section, concepts}`), so you can see which concepts to know before the mathematics.
 
+Tell PreReqAI how long you can study each day with `--hours-per-day 2` (CLI) or the `hours_per_day` form field (HTTP): a number above 0 and
+at most 24, default 3. The recommended days and a day-by-day `study_time.schedule` follow it (the saved plan lists the schedule too); the schedule
+puts essential prerequisites before supporting ones, but never before a subject they depend on in the prerequisite rule table.
+
 To keep the plan, add `--plan-file plan.md` to `analyze`: it saves a Markdown checklist (studied concepts ticked, with study links and a one-line reason each concept is needed). Progress then carries over between runs: `--resume plan.md` marks every concept ticked in that saved plan as studied and keeps the concepts it records as already known (`--known`) out of the plan (it combines with `--studied`, and `--resume plan.md --plan-file plan.md` updates the same file). Over HTTP, `GET /api/session/{session_id}/plan` returns the same checklist as `text/markdown`, and uploading that file as the `resume` form field of `POST /api/prerequisites/analyze` restores the progress (a file that is not a saved plan is rejected with 422).
 
 To ask a question without running a server, use `python -m backend.cli prerequisites ask paper.pdf "Why do I need calculus?"`

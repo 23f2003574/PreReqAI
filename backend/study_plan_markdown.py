@@ -31,6 +31,13 @@ def plan_markdown(report):
     known = [item["concept"] for item in report.get("missing_prerequisites", []) if item.get("reason") == KNOWN_REASON]
     if known:  # kept in the file so `--resume` does not put concepts the learner already knows back into the plan
         lines += [f"Already known: {'; '.join(_one_line(name) for name in known)}", ""]
+    study_time = report.get("study_time") or {}
+    if study_time.get("schedule"):  # day by day, essential subjects first; plain lines (no tick boxes), so --resume ignores them
+        days = study_time["schedule"]
+        lines += [f"Daily schedule ({study_time['daily_hours']:g}h per day, {len(days)} day{'s' if len(days) != 1 else ''}):", ""]
+        lines += [f"- Day {day['day']} ({day['hours']:g}h): " + "; ".join(f"{_one_line(item['concept'])} {item['hours']:g}h" for item in day["items"])
+                  for day in days]
+        lines.append("")
     for step in steps:
         concept = step["concept"]
         line = f"- [{'x' if concept in done else ' '}] {step['step']}. {_one_line(concept)} (~{step['estimated_hours']}h)"
