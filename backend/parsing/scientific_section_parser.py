@@ -65,6 +65,49 @@ SECTION_PATTERN = re.compile(rf"^(?:(?i:{_KNOWN}):?|{_NUMBERED}|{_ROMAN_CAPS}|{_
 _INLINE_ABSTRACT = re.compile(r"^(?P<title>(?i:abstract))[ \t]*[\u2014\u2013:][ \t]*(?=\S)", re.MULTILINE)
 
 
+# A bibliography whose heading is missing, split across pages or not recognised ("Cited Literature") was filed under the section before it, and
+# its titles ("Graph attention networks") were counted as the paper's own concepts. Without relying on a heading, the tail of a section is
+# taken as references only when it is made of many entries that each start like one and carry a year, all the way to the section's end.
+_ENTRY_START = re.compile(r"^[ \t]*(?:\[\d{1,3}\][ \t]*\S|\d{1,3}[.)][ \t]+[A-Z]|[A-Z][A-Za-z'\u2019\-]+,[ \t]+(?:[A-Z]\.[ \t]?){1,3})")
+_ENTRY_YEAR = re.compile(r"\b(?:19|20)\d{2}[a-z]?\b|arXiv:\d{4}\.\d{4,5}")
+MIN_REFERENCES = 5  # fewer entries than this is not evidence of a bibliography
+MAX_ENTRY_CHARS = 500  # a longer "entry" is running text that merely starts like one
+
+
+def _reference_block_start(content):
+    """Offset in `content` where a trailing run of reference entries begins, or None. Every entry of the run (a line that starts like a
+    reference plus the lines that continue it) must carry a year and be short, the run must reach the end of the text and hold at least
+    MIN_REFERENCES entries; any other text after it, or an entry that fails the test, ends the run before it."""
+    entries, offset = [], 0
+    for line in content.splitlines(keepends=True):
+        if _ENTRY_START.match(line):
+            entries.append([offset, line])
+        elif entries:
+            entries[-1][1] += line
+        offset += len(line)
+    run = 0
+    for _, text in reversed(entries):
+        if not _ENTRY_YEAR.search(text) or len(text) > MAX_ENTRY_CHARS:
+            break
+        run += 1
+    return entries[len(entries) - run][0] if run >= MIN_REFERENCES else None
+
+
+def split_reference_blocks(sections):
+    """The sections with every unlabelled trailing bibliography moved into its own "References" section, which the concept detector then
+    leaves out like any labelled one. Sections already titled as back matter, and everything before the bibliography, are unchanged."""
+    result = []
+    for section in sections:
+        start = None if _BACK_MATTER_HEADING.match(section.title.strip()) else _reference_block_start(section.content)
+        if start is None:
+            result.append(section)
+            continue
+        if section.content[:start].strip():
+            result.append(PaperSection(title=section.title, content=section.content[:start].strip()))
+        result.append(PaperSection(title="References", content=section.content[start:].strip()))
+    return result
+
+
 class ScientificSectionParser:
     """
     Detects high-level scientific paper sections
@@ -123,7 +166,7 @@ class ScientificSectionParser:
             source_path=document.source_path,
             metadata=document.metadata,
             pages=document.pages,
-            sections=sections,
+            sections=split_reference_blocks(sections),
         )
 
 
