@@ -14,7 +14,7 @@
   p.lead { color: var(--muted); margin-top: .25rem; }
   section, form { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 1rem; margin: 1rem 0; }
   label { display:block; font-weight:600; margin: .75rem 0 .25rem; } small { color: var(--muted); font-weight: 400; }
-  input[type=text], input[type=file] { width: 100%; padding: .5rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; }
+  input[type=text], input[type=number], input[type=file] { width: 100%; padding: .5rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; }
   button { margin-top: 1rem; padding: .6rem 1.2rem; border: 0; border-radius: 6px; background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
   button:disabled { opacity: .6; cursor: progress; }
   .msg { padding: .75rem 1rem; border-radius: 6px; border: 1px solid var(--line); margin: 1rem 0; }
@@ -43,6 +43,8 @@
     <input id="source" name="source" type="text" autocomplete="off" placeholder="https://arxiv.org/abs/1706.03762">
     <label for="known">Concepts you already know <small>(optional, comma separated, e.g. Linear Algebra, Probability)</small></label>
     <input id="known" name="known" type="text" autocomplete="off">
+    <label for="hours">Hours you can study per day <small>(optional: above 0 and at most 24; 3 if left empty)</small></label>
+    <input id="hours" name="hours_per_day" type="number" min="0.1" max="24" step="any" inputmode="decimal" placeholder="3">
     <button id="submit" type="submit">Analyse paper</button>
   </form>
 
@@ -54,6 +56,7 @@
     <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
     <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
     <section><h2>Study plan</h2><div id="plan"></div><div class="actions"><button id="download" type="button" class="small" hidden>Download study plan (Markdown)</button></div></section>
+    <section id="schedulebox"><h2>Study schedule</h2><p id="schedulesummary" class="lead"></p><div id="schedule"></div></section>
     <section id="tutor"><h2>Ask a question</h2>
       <p class="lead">No tutoring model is configured in this release: answers are built-in definitions and facts from your analysis, not generated explanations.</p>
       <form id="askForm" novalidate>
@@ -128,9 +131,35 @@ function renderMeta() {
   var facts = [["Title", paper.title]];
   if (paper.author !== undefined) facts.push(["Author", paper.author], ["Pages", paper.pages]);
   if (state.difficulty) facts.push(["Difficulty", state.difficulty.level + " - " + state.difficulty.explanation]);
-  if (state.studyTime) facts.push(["Preparation", state.studyTime.total_hours + " h over about " + state.studyTime.recommended_days + " days"]);
+  var st = state.studyTime;
+  if (st) facts.push(["Preparation", st.remaining_hours === undefined ? st.total_hours + " h over about " + st.recommended_days + " days"
+    : st.total_hours + " h in total, " + st.remaining_hours + " h left (about " + st.recommended_days + " days to go)"]);
   if (state.readiness) facts.push(["Readiness", state.readiness.status + " (" + state.readiness.progress_percent + "%)"]);
   facts.forEach(function (f) { meta.appendChild(el("dt", f[0])); meta.appendChild(el("dd", f[1])); });
+  renderSchedule();
+}
+
+// The day-by-day schedule exactly as the server built it (study_time.schedule); nothing is calculated here. It is redrawn with the meta
+// facts, so it follows every progress change and a restored session. The hours box shows the server's saved setting.
+function renderSchedule() {
+  var st = state.studyTime, box = $("schedule"), summary = $("schedulesummary");
+  box.textContent = ""; summary.textContent = "";
+  if (!st) { box.appendChild(el("p", "No schedule is available for this session. Analyse the paper again.", "msg info")); return; }
+  if (typeof st.daily_hours === "number" && document.activeElement !== $("hours")) $("hours").value = st.daily_hours;
+  var days = Array.isArray(st.schedule) ? st.schedule : null;
+  var line = ["At " + (typeof st.daily_hours === "number" ? st.daily_hours : 3) + " h per day"];
+  if (st.remaining_hours !== undefined) line.push(st.remaining_hours + " h left of " + st.total_hours + " h (" + st.completed_hours + " h studied)");
+  if (days && days.length) line.push("about " + st.recommended_days + (st.recommended_days === 1 ? " day" : " days") + " to go");
+  summary.textContent = line[0] + (line.length > 1 ? ": " + line.slice(1).join(", ") : "") + ".";
+  if (days && days.length) {
+    box.appendChild(table(["Day", "Hours", "Study"], days.map(function (day) {
+      return [String(day.day), String(day.hours), day.items.map(function (item) { return item.concept + " " + item.hours + " h"; }).join("; ")];
+    })));
+  } else if (days) {
+    box.appendChild(el("p", st.total_hours > 0 ? "Everything in your plan is studied: nothing is left to schedule." : "Nothing to schedule: no prerequisites are planned.", "msg info"));
+  } else {
+    box.appendChild(el("p", "This session was saved by an older version and has no schedule. Analyse the paper again to get one.", "msg info"));
+  }
 }
 
 function renderPlan() {
@@ -461,11 +490,15 @@ function failureText(body, status) {
 
 async function submit(event) {
   event.preventDefault();
-  var file = $("paper").files[0], source = $("source").value.trim(), known = $("known").value;
+  var file = $("paper").files[0], source = $("source").value.trim(), known = $("known").value, hours = $("hours").value.trim();
   $("results").hidden = true;
   if (!file && !source) return showStatus("error", "Choose a PDF or enter an arXiv link or DOI.");
   if (file && source) return showStatus("error", "Use either a PDF or an arXiv link / DOI, not both.");
+  if (hours !== "" && !(isFinite(Number(hours)) && Number(hours) > 0 && Number(hours) <= 24)) {  // the server checks again; this saves the round trip
+    return showStatus("error", "Daily study hours must be a number above 0 and at most 24.", "Enter, for example, 2 or 1.5, or leave the box empty for 3 hours a day.");
+  }
   var data = new FormData();
+  if (hours !== "") data.append("hours_per_day", hours);
   if (file) data.append("paper", file); else data.append("source", source);
   known.split(",").map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (k) { data.append("known", k); });
   $("submit").disabled = true;
