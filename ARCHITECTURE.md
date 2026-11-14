@@ -13,7 +13,7 @@
 
 **Intended user.** An individual self-learner (e.g. someone with a general ML background opening a paper outside their sub-field). There is no user study, persona research, or usage data in the repository; this is inferred from the README and the CLI/HTTP surfaces.
 
-**Stated scope limits (README / `docs/release-checklist.md`):** focused on four areas — transformers, diffusion, RL, graph ML; text-based PDFs only (no OCR); English keyword matching only.
+**Stated scope limits (README / `docs/release-checklist.md`):** focused on four areas — transformers, diffusion, RL, graph ML; text-based PDFs (OCR for scanned pages is implemented but its real Tesseract path is unverified); English keyword matching only.
 
 **Secondary, unrelated product lines** that share the repository (see §3.5–3.6): a notebook-to-FastAPI generator, and a large "agent task recovery / policy governance" service layer. Neither addresses the learning problem above.
 
@@ -222,7 +222,7 @@ Code that implements the learning-assistance idea (ingestion, parsing, concepts,
 - **Never run on a real published paper** by the project's own account (`docs/release-checklist.md`, 2026-10-11: "NOT release-ready … every test input is a generated PDF or the bundled sample"). Inputs in the repo are the one-page generated `sample-paper.pdf` and programmatically generated PDFs in tests. I could not independently run a real paper either: network access to arXiv is restricted in this environment.
 - Keyword counts ≠ comprehension demands; an acronym alias (e.g. "GPT" → Large Language Model, "GRU/LSTM" → RNN) can mis-assign concepts.
 - Difficulty is a function of a count of missing prerequisites; hours are fixed per subject, independent of paper or learner.
-- English only; PDFs only; no OCR.
+- English only; PDFs only; OCR implemented but unverified with real Tesseract.
 - JSON session files (older pickle files are migrated on load); no multi-process safety.
 - Python 3.10: CI runs it, and it was also run in a clean venv from a fresh clone on 2026-11-04 (978 passed; see the release checklist).
 - Dates/figures in `docs/release-checklist.md` are the author's self-reports at specific commits and have not been re-verified here except as noted in §8.

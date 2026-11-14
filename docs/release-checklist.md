@@ -1,14 +1,14 @@
 # Release checklist
 
 PreReqAI ships as its source tree (no wheel, no package metadata): the release is what `git archive HEAD`
-exports. Run from the repository root on Python 3.10+. Last verified on Python 3.13; CI runs Python 3.10, 3.12 and 3.13 (3.12 also run locally 2026-11-08: `pytest -m prereqai` 1092 passed, 1 skipped).
+exports. Run from the repository root on Python 3.10+. CI runs Python 3.10, 3.12 and 3.13. Last run locally (Python 3.13, 2026-11-14): `pytest -m prereqai backend/tests` 1814 passed, 1 skipped; see "Current status" below, which supersedes the dated sections after it where they disagree.
 
 1. **Version.** Set `__version__` in `backend/version.py` (the one source for the API and `--version`).
 2. **Clean install.** In a fresh virtualenv: `pip install -r requirements.txt` (what users run), then
    `pip install -r requirements-dev.txt` for the test tools (pytest, httpx2).
-3. **Release checks** (about 1 minute, offline; must all pass):
+3. **Release checks** (about 4 minutes, offline; must all pass):
    ```bash
-   python -m pytest -q -m prereqai   # the PreReqAI tests only (same files as test_prereqai_*.py + test_prerequisite_endpoint.py); about 3 minutes
+   python -m pytest -q -m prereqai   # the PreReqAI tests only (same files as test_prereqai_*.py + test_prerequisite_endpoint.py); about 4 minutes
    python -m pytest -q backend/tests/test_api_generation_*.py backend/tests/test_generated_project_*.py
    ```
    These include the `git archive HEAD` check (`test_prereqai_release_artifact.py`), so commit everything first.
@@ -20,6 +20,28 @@ exports. Run from the repository root on Python 3.10+. Last verified on Python 3
    uvicorn backend.main:app --port 8000   # then the curl commands in examples/prerequisites/README.md
    ```
 5. **Docs.** `README.md` quickstart, exit codes and HTTP section still match what step 4 printed.
+
+## Current status (2026-11-14; supersedes the dated sections below where they disagree)
+
+Each line says what exists and what backs it. "Unverified" means no test or run shows it working for real.
+
+| Capability | Status | Evidence / limit |
+|---|---|---|
+| Web page: analysis form with known concepts and daily hours, details, concepts, gaps, study plan, schedule | Implemented | `backend/web/index.html`; `test_prereqai_web_*.py` check the page text and the API it calls, plus a JavaScript syntax check. **Not run in a real browser by any automated test.** |
+| Web progress: Studied checkbox and undo, "I already know this" and undo, plan download, restore after reload | Implemented | `test_prereqai_web_progress.py`; unmarking a studied concept is `DELETE .../studied` (it is no longer "optional/missing") |
+| Web tutor and interactive quiz, mastery table, "you may already know this" suggestions | Implemented | `test_prereqai_web_tutor_quiz.py`, `test_prereqai_interactive_quiz.py`, `test_prereqai_subject_quiz.py`, `test_prereqai_quiz_known_suggestion.py`. The quiz is self-graded, so a suggestion is the learner's own evidence. |
+| Study schedule: daily hours, remaining-work schedule, hours kept across `--resume` | Implemented | `test_prereqai_study_schedule.py`, `test_prereqai_remaining_schedule.py`, `test_prereqai_web_schedule.py` |
+| Session persistence (`PREREQAI_SESSION_DIR`) | Implemented | Versioned JSON files (`docs/session-format.md`, `test_prereqai_session_json.py`), atomic writes, 30-day expiry, pickle files from earlier versions are migrated, malformed or hostile files are refused. Single process only; no locking across processes. (Replaces the "pickle files, no expiry" rows below.) |
+| Direct PDF links | Implemented | `test_prereqai_pdf_url_source.py` with mocked HTTP only; **never run against a live site**. Needs a direct (not proxied) connection. |
+| OCR for scanned pages | Implemented, **real Tesseract path unverified** | `pdf_ingestion_engine.py` (`needs_ocr`, `default_ocr`); tests inject a fake recogniser; CI installs no Tesseract; no real scan has been analysed. Replaces "there is still no OCR" below. |
+| Concept coverage | 60 registry concepts (transformers, deep learning, diffusion, RL, graphs, classical ML) | A concept outside the registry gets no prerequisites; it is listed under "not analysed". |
+| Tutor | Built-in rule-based answers only | **No tutoring model is wired in** (needs a provider decision); every answer says so. |
+| Detection evaluation | Synthetic only | `backend/prereqai_eval/README.md`: six short written texts, text mode only; it bypasses PDF reading, header removal, the section parser and section-aware coverage. Not evidence about real papers. |
+| Real published paper | **Not done: release blocker** | `real-paper-live.yml` (manual) has never been run. |
+| Python 3.10 / 3.12 / 3.13 | CI matrix | Local runs on 3.13 only today; CI results for the 2026-11-14 commits had not been checked when this was written. |
+| Known flaky test | `test_prereqai_diagnostic_mode.py::test_diagnostic_mode_adds_a_concise_summary_to_the_human_output` | Failed once on an unchanged tree and passed on re-run (timing-dependent). |
+
+Release readiness is unchanged: **not release-ready** until a real paper has been run end to end.
 
 ## Last verified (release candidate, 2026-10-09)
 
@@ -50,14 +72,14 @@ workspace/projection failures plus the 2 network tests listed below, nothing new
 | Class | Item |
 |---|---|
 | Blocker before release | Run at least one real published paper (e.g. an arXiv PDF) end to end and fix what it exposes. |
-| Done | Session persistence: opt-in `PREREQAI_SESSION_DIR` (pickle files; single-process, no locking or expiry/cleanup). Default stays in-memory. Verified with a real `uvicorn` stop/start in `test_prereqai_restart_acceptance.py`. |
+| Done (**superseded 2026-11-14**: JSON files, atomic writes and expiry now) | Session persistence: opt-in `PREREQAI_SESSION_DIR` (pickle files; single-process, no locking or expiry/cleanup). Default stays in-memory. Verified with a real `uvicorn` stop/start in `test_prereqai_restart_acceptance.py`. |
 | Done (documented) | Tutor answers are a placeholder: stated in the README, and every question response carries a warning. Wiring a real model remains open and needs a provider decision. |
 | Resolved (2026-10-30; re-run 2026-11-06) | The 44 workspace/projection test failures: fixed, see "Status as of 2026-11-06" at the end. |
 | Required before January | Section parser: numbered title-case headings and IEEE-style roman-numbered all-caps headings (`II. PROPOSED METHOD`) now split; unnumbered headings outside the fixed list (and roman-numbered title-case ones) still fold into the previous section. |
 | Optional | Concepts outside the registry (e.g. Calculus) have no rules, resources or explanations. |
-| Optional | Unmark a studied concept (HTTP analyze form now accepts `studied`, matching the CLI). |
+| Done | Unmark a studied concept: `DELETE .../studied`, tested. (HTTP analyze form also accepts `studied`, matching the CLI.) |
 | Optional | Author extraction now reads a plain name-list line on page one; multi-line, affiliation-interleaved or single-name author blocks still show "Unknown Author". |
-| Optional | A scanned PDF now warns that it has no extractable text; there is still no OCR, so such papers cannot be analysed. |
+| Optional | A scanned PDF now warns that it has no extractable text; there is still no OCR, so such papers cannot be analysed. **[Superseded 2026-11-14: see Current status.]** |
 
 ## Known open items (not release gates today)
 
@@ -94,7 +116,7 @@ Order of work, most consequential first. Everything the product's documented wor
    Next step: decide per file whether the test or the code is wrong (start with `fingerprinting`, one `_make_policy` fix covers 11), or move the subsystem
    out of the `backend.session` import path and out of the release test target.
 4. **Optional, ordered by user impact:** unnumbered-heading detection; unmark a studied concept; OCR for scanned PDFs;
-   resources/explanations for concepts outside the registry.
+   resources/explanations for concepts outside the registry. **[Superseded 2026-11-14: see Current status.]**
 
 ## Release readiness decision (2026-10-11)
 
@@ -111,7 +133,7 @@ Evidence at this commit: release checks (PreReqAI, endpoint, API generation, gen
 | Required before January | Tutoring model (placeholder is disclosed; a model-backed tutor needs a provider decision). |
 | Resolved (2026-10-30; re-run 2026-11-06) | The 44 workspace/projection test failures: see "Status as of 2026-11-06" at the end. |
 | Required before January | Python versions: 3.11 verified (quickstart + 303 PreReqAI tests, 2026-10-11); 3.12 verified (fresh venv from requirements-dev.txt on Python 3.12.3: the README quickstart analysis, then `pytest -m prereqai` = 534 passed, 11747 deselected, 0 failed, 2026-10-27); 3.10 verified 2026-11-04 (see "Clean-environment verification on every supported Python" below). Older interpreters are refused with a clear message; all sources parse under the 3.10 grammar. |
-| Optional | unnumbered-heading detection, unmark a studied concept, OCR, multi-line authors, concepts outside the registry. |
+| Optional | unnumbered-heading detection, unmark a studied concept, OCR, multi-line authors, concepts outside the registry. **[Superseded 2026-11-14: see Current status.]** |
 
 ## Calculus prerequisite (2026-10-12)
 
@@ -264,7 +286,7 @@ Still open, in priority order:
 1. **Release blocker:** run one real published paper end to end (CLI and HTTP) with network access and fix what it exposes.
 2. **Required before January:** a model-backed tutor (provider decision); the rule-based tutor discloses that it is a placeholder for free-form questions.
 3. **Required before January:** broader detector coverage. Information Theory (entropy, KL divergence) is now a prerequisite of Diffusion Model, Score Matching and Reverse Process (2026-10-27); other gaps remain (for example variational inference, optimisation beyond gradient descent, sequence models).
-4. **Optional:** OCR for scanned PDFs, author-year bibliographies, concepts outside the registry, a dependency lockfile, Windows and macOS CI.
+4. **Optional [superseded 2026-11-14: see Current status]:** OCR for scanned PDFs, author-year bibliographies, concepts outside the registry, a dependency lockfile, Windows and macOS CI.
 
 ## CI regression found and fixed (2026-10-28)
 
@@ -497,7 +519,7 @@ Still unrecognised on purpose: `Summary`, `Motivation`, `Contributions`, `Setup`
 1. **Real published paper never run (release blocker).** `analyze arXiv:1706.03762` cannot be attempted here: no outbound network. Everything else (HTML and URL links, damaged-PDF warning, typeset text, venue headings) is verified on generated PDFs only.
 2. **Tutor is a rule-based placeholder.** Needs a provider and key decision; plan in item 2 of the order of work above.
 3. **Python 3.10** is exercised only by CI (matrix) and never run locally; 3.11/3.12/3.13 were run.
-4. **Two-column text order, multi-line author blocks and scanned PDFs (no OCR)** are untested/unsupported on real layouts.
+4. **Two-column text order, multi-line author blocks and scanned PDFs (OCR exists but its real Tesseract path is unverified; see Current status)** are untested/unsupported on real layouts.
 The 44 workspace/projection failures are gone (4112 passed when last re-checked on 2026-10-30).
 
 ## Truncated cached PDFs are replaced (2026-11-01)
