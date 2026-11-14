@@ -145,7 +145,7 @@ def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], dia
 
 
 def _analyze_source(source: str, known: list[str], studied: list[str], diagnostics: bool, hours_per_day=None):
-    """Analyse an arXiv link or DOI. Only those are accepted: a server file path in `source` must never be read."""
+    """Analyse an arXiv link, a DOI or a direct PDF link. Only those are accepted: a server file path in `source` must never be read."""
 
     try:
 
@@ -155,12 +155,12 @@ def _analyze_source(source: str, known: list[str], studied: list[str], diagnosti
 
         detected = None
 
-    if detected is None or detected.source_type not in ("arxiv", "doi"):
+    if detected is None or detected.source_type not in ("arxiv", "doi", "pdf_url"):
 
         return failure_response(
             422,
             "analysis",
-            f"`source` must be an arXiv link or a DOI, not: {source}",
+            f"`source` must be an arXiv link, a DOI or a direct https link to a PDF, not: {source}",
             hint="Upload a PDF as `paper` instead.",
         )
 

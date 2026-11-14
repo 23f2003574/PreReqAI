@@ -43,7 +43,7 @@ def test_a_link_pasted_with_wrapper_characters_is_downloaded_and_analysed(client
 
 
 def test_a_non_arxiv_link_is_still_refused(client):
-    response = client.post("/api/prerequisites/analyze", data={"source": "<https://example.com/paper.pdf>"})
+    response = client.post("/api/prerequisites/analyze", data={"source": "<ftp://example.com/paper.pdf>"})
     assert response.status_code == 422
 
 

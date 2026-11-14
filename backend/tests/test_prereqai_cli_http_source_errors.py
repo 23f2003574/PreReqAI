@@ -12,7 +12,7 @@ from backend.main import app
 client = TestClient(app)
 
 
-@pytest.mark.parametrize("source", ["https://example.com/paper.pdf", "not-a-source"])
+@pytest.mark.parametrize("source", ["ftp://example.com/paper.pdf", "not-a-source"])
 def test_an_invalid_source_fails_at_the_analysis_stage_on_both_interfaces(source, capsys):
     response = client.post("/api/prerequisites/analyze", data={"source": source})
     http = response.json()

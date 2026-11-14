@@ -1,4 +1,4 @@
-"""A URL that is not an arXiv or DOI link is refused as an unsupported source, not misread as a local file path."""
+"""A URL that is not a downloadable source is refused as unsupported, not misread as a local file path; other http(s) links are direct PDF links."""
 import pytest
 
 from backend.ingestion.research_source_detector import ResearchSourceDetector
@@ -7,14 +7,19 @@ from backend.platform.prereqai_platform import PreReqAIPlatform
 pytestmark = pytest.mark.prereqai
 
 
-@pytest.mark.parametrize("url", ["https://example.com/paper.pdf", "http://host/a/b.PDF", "ftp://host/paper.pdf", "file:///tmp/paper.pdf"])
+@pytest.mark.parametrize("url", ["ftp://host/paper.pdf", "file:///tmp/paper.pdf", "https://arxiv.org/abs/", "https://doi.org/not-a-doi"])
 def test_other_urls_are_unsupported_sources(url):
     with pytest.raises(ValueError, match="Unsupported research source"):
         ResearchSourceDetector().detect(url)
 
 
+@pytest.mark.parametrize("url", ["https://example.com/paper.pdf", "http://host/a/b.PDF"])
+def test_other_http_links_are_direct_pdf_links(url):
+    assert ResearchSourceDetector().detect(url).source_type == "pdf_url"
+
+
 def test_the_user_is_told_to_give_an_arxiv_link_or_doi_not_that_a_file_is_missing():
-    outcome = PreReqAIPlatform().analyze("https://example.com/paper.pdf")
+    outcome = PreReqAIPlatform().analyze("ftp://example.com/paper.pdf")
     assert outcome["status"] == "failure"
     assert "no such file" not in outcome["detail"] and "arXiv" in outcome["hint"]
 

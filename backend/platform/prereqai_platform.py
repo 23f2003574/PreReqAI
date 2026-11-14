@@ -10,6 +10,7 @@ import requests
 import urllib3
 
 from backend.ingestion.arxiv_resolver import RETRY_COUNTER
+from backend.ingestion.pdf_url_resolver import PdfUrlError
 from backend.parsing.scientific_section_parser import absorbed_heading_candidates
 from backend.prerequisites.study_time_estimator import parse_hours_per_day
 
@@ -164,6 +165,12 @@ def _stopped_outcome(exc: Exception, exceeded_limits=None) -> dict:
             "analysis", "Analysis was cancelled before it finished.",
             hint="Run the analysis again to start over; nothing was kept.",
         )
+    if isinstance(exc, PdfUrlError):  # a direct PDF link that could not be used: say why and what to do
+        if exc.kind == "too_large":
+            return limit_exceeded_body("analysis", str(exc), hint=exc.hint)
+        if exc.kind == "timeout":
+            return timeout_body("analysis", str(exc), error=exc, hint=exc.hint)
+        return failure_body("analysis", str(exc), error=exc, hint=exc.hint)
     if isinstance(exc, PaperTooLarge):
         return limit_exceeded_body("analysis", str(exc), hint="Raise the file size limit or analyse a smaller paper.")
     if _is_timeout(exc):

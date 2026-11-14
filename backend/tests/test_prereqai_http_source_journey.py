@@ -45,4 +45,4 @@ def test_exactly_one_of_paper_and_source_is_required(data, fetched):
 @pytest.mark.parametrize("source", ["/etc/passwd", SAMPLE, "paper.pdf", "just some text"])
 def test_a_server_path_or_other_text_is_never_read_as_a_source(source, fetched):
     response = client.post("/api/prerequisites/analyze", data={"source": source})
-    assert response.status_code == 422 and "arXiv link or a DOI" in response.json()["detail"] and fetched == []
+    assert response.status_code == 422 and "arXiv link, a DOI or a direct https link" in response.json()["detail"] and fetched == []

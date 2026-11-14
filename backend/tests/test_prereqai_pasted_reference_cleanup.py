@@ -25,7 +25,7 @@ def test_pasted_references_are_recognised(text, kind, identifier):
     assert (found.source_type, found.identifier) == (kind, identifier)
 
 
-@pytest.mark.parametrize("text", ["<https://example.com/paper.pdf>", "notes.txt.", "see arXiv:1706.03762 for details", "1706.03762"])
+@pytest.mark.parametrize("text", ["<ftp://example.com/paper.pdf>", "notes.txt.", "see arXiv:1706.03762 for details", "1706.03762"])
 def test_other_input_is_still_rejected(text):
     with pytest.raises(ValueError):
         ResearchSourceDetector().detect(text)
@@ -36,3 +36,7 @@ def test_an_existing_local_pdf_is_still_a_local_pdf(tmp_path):
     pdf.write_bytes(b"%PDF-1.4")
     found = ResearchSourceDetector().detect(str(pdf))
     assert (found.source_type, found.identifier) == ("pdf", str(pdf))
+
+
+def test_a_pasted_direct_pdf_link_is_unwrapped_and_read_as_one():
+    assert ResearchSourceDetector().detect("<https://example.com/paper.pdf>.").identifier == "https://example.com/paper.pdf"

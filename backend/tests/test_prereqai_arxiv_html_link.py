@@ -19,8 +19,12 @@ def test_html_links_resolve_to_the_arxiv_identifier(link, identifier):
 @pytest.mark.parametrize("link", [
     "https://arxiv.org/html/",                      # no identifier
     "https://arxiv.org/html/not-an-id",
-    "https://alphaxiv.org/html/1706.03762",         # another site
 ])
 def test_html_look_alikes_are_still_rejected(link):
     with pytest.raises(ValueError):
         ResearchSourceDetector().detect(link)
+
+
+def test_another_site_is_not_read_as_arxiv_but_as_a_direct_link_that_must_prove_to_be_a_pdf():
+    source = ResearchSourceDetector().detect("https://alphaxiv.org/html/1706.03762")
+    assert source.source_type == "pdf_url"  # never the arXiv id; the download is accepted only if its content is a PDF

@@ -53,12 +53,12 @@ def add_prerequisites_parser(subparsers):
     analyze = commands.add_parser(
         "analyze",
         help="Analyse a paper PDF into concepts, prerequisites and a learning plan",
-        description="Runs the paper analysis pipeline on a PDF file (or an arXiv link, arXiv:ID or DOI, which is downloaded first) and opens a learning session in this process "
+        description="Runs the paper analysis pipeline on a PDF file (or an arXiv link, arXiv:ID, DOI or direct https PDF link, which is downloaded first) and opens a learning session in this process "
                     "(sessions are in memory and end with the command). Same workflow as POST /api/prerequisites/analyze.",
         epilog="Example: python -m backend.cli prerequisites analyze paper.pdf --json. "
                "Exit codes: 0 success; 1 analysis failed; 2 usage error; 123 a resource limit was reached; 124 an operation timed out; 130 cancelled (Ctrl-C).",
     )
-    analyze.add_argument("paper", help="Path to the paper PDF, or an arXiv link / arXiv:ID, or a DOI (downloaded for you)")
+    analyze.add_argument("paper", help="Path to the paper PDF, or an arXiv link / arXiv:ID, a DOI or a direct https link to a PDF (downloaded for you)")
     analyze.add_argument("--tree", action="store_true",
                          help="Also print the prerequisite tree: each paper concept expanded into what it needs "
                               "(known/covered and studied concepts are marked)")
@@ -128,7 +128,7 @@ def add_prerequisites_ask_parser(commands):
                "No tutoring model is configured in this release: answers are built-in definitions, prerequisite reasons and study-plan figures. "
                "Exit codes: 0 success; 1 analysis or answer failed; 2 usage error.",
     )
-    ask.add_argument("paper", help="Path to the paper PDF, or an arXiv link / arXiv:ID, or a DOI (downloaded for you)")
+    ask.add_argument("paper", help="Path to the paper PDF, or an arXiv link / arXiv:ID, a DOI or a direct https link to a PDF (downloaded for you)")
     ask.add_argument("question", help="The question to ask about the paper")
     ask.add_argument("--topic", type=_nonblank, default=None, metavar="CONCEPT",
                      help="Focus the answer on one concept detected in the paper (as the API's `topic` field)")

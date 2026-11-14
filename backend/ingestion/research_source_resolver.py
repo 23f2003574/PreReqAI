@@ -15,6 +15,10 @@ from .doi_resolver import (
     DoiResolver,
 )
 
+from .pdf_url_resolver import (
+    PdfUrlResolver,
+)
+
 
 class PDFResolver(BaseSourceResolver):
 
@@ -38,6 +42,7 @@ class ResearchSourceResolver:
             "pdf": PDFResolver(),
             "arxiv": ArxivResolver(),
             "doi": DoiResolver(),
+            "pdf_url": PdfUrlResolver(),
         }
 
     def resolve(

@@ -2,6 +2,7 @@ import re
 
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 # Each pattern must match the whole (stripped) input: a reference inside other
@@ -22,6 +23,9 @@ ARXIV_ID_PATTERN = re.compile(
     re.IGNORECASE,
 )
 URL_SCHEME = re.compile(r"[a-z][a-z0-9+.\-]*://", re.IGNORECASE)
+# arXiv and DOI links have their own resolvers: one of their forms that was not recognised above stays an error, it is not fetched as a PDF.
+_OWN_RESOLVER_HOST = re.compile(r"(?:^|\.)(?:arxiv\.org|doi\.org)$", re.IGNORECASE)
+DIRECT_URL = re.compile(r"https?://[^\s/?#]+(?:[/?#]\S*)?", re.IGNORECASE)  # one http(s) link, no spaces
 DOI_PATTERN = re.compile(
     r"(?:doi:?\s*|(?:https?://)?(?:www\.|dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
     re.IGNORECASE,
@@ -78,6 +82,7 @@ class ResearchSourceDetector:
     - Local PDF
     - arXiv URL
     - DOI
+    - direct PDF URL (any other http(s) link)
     """
 
     def detect(
@@ -129,10 +134,20 @@ class ResearchSourceDetector:
                 original_input=source,
             )
 
+        if DIRECT_URL.fullmatch(source) and not _OWN_RESOLVER_HOST.search(urlsplit(source).hostname or ""):
+
+            # Any other http(s) link is taken as a direct PDF link: it is downloaded under the PdfUrlResolver's checks and accepted only if
+            # the content is a PDF, whatever the address ends in.
+            return ResearchSource(
+                source_type="pdf_url",
+                identifier=source,
+                original_input=source,
+            )
+
         if URL_SCHEME.match(source):
 
-            # Only arXiv and DOI links are downloaded. Any other URL would otherwise be read as a local file path
-            # (Path collapses "//": "https:/example.com/p.pdf") and fail as a confusing "no such file".
+            # Other schemes are not downloaded. Such a URL would otherwise be read as a local file path
+            # (Path collapses "//": "ftp:/example.com/p.pdf") and fail as a confusing "no such file".
             raise ValueError(f"Unsupported research source: {source}")
 
         path = Path(source)
