@@ -68,7 +68,8 @@ def next_question(session, concept=None):
     identifier = question_id(chosen, number)
     session.quiz_pending[identifier] = session.quiz_pending.get(identifier) or {"revealed": False}
     item = ASKABLE[chosen][number - 1]
-    return {"question_id": identifier, "concept": chosen, "difficulty": item["difficulty"], "question": item["question"]}
+    return {"question_id": identifier, "concept": chosen, "difficulty": item["difficulty"], "question": item["question"],
+            "number": number, "of": len(ASKABLE[chosen])}  # which of the concept's questions this is, and how many it has
 
 
 def reveal(session, identifier):
@@ -143,4 +144,29 @@ def known_suggestions(session):
                           "distinct_questions": distinct,
                           "reason": f"You said you knew {entry['knew']} of your {entry['attempts']} {name} answers, including the last {MASTERY_STREAK} in a row "
                                     f"and {distinct} different questions."})
+    return found
+
+
+def topics(session):
+    """[{concept, kind, questions}]: what the learner can be quizzed on in this session, so a page offers only topics that have questions. "paper": a
+    detected concept with questions; "prerequisite": a subject or concept in the study plan with questions (a known concept has left the plan). One
+    entry per name, paper concepts first. Any other name is refused by next_question as before."""
+    paper = getattr(session, "paper", None)
+    found = [{"concept": name, "kind": "paper", "questions": len(ASKABLE[name])} for name in dict.fromkeys(_paper_topics(session))]
+    for item in getattr(paper, "study_progress", []):
+        if item.concept in ASKABLE and all(entry["concept"] != item.concept for entry in found):
+            found.append({"concept": item.concept, "kind": "prerequisite", "questions": len(ASKABLE[item.concept])})
+    return found
+
+
+def pending(session):
+    """The questions served but not yet answered (no answers): [{question_id, concept, difficulty, question, revealed}], so a reloaded page can continue."""
+    found = []
+    for identifier, state in getattr(session, "quiz_pending", {}).items():
+        try:
+            concept, _, item = _lookup(identifier)
+        except QuizError:
+            continue
+        found.append({"question_id": identifier, "concept": concept, "difficulty": item["difficulty"], "question": item["question"],
+                      "revealed": bool(state.get("revealed"))})
     return found

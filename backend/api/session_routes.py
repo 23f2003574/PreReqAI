@@ -130,6 +130,10 @@ def get_session(session_id: str):
 
         "suggest_known": quiz_session.known_suggestions(session),
 
+        "quiz_topics": quiz_session.topics(session),
+
+        "quiz_pending": quiz_session.pending(session),
+
         "prerequisite_tree": session.report.get("prerequisite_tree", []),
 
         "active_concept": session.active_concept,
@@ -280,13 +284,14 @@ def quiz_reveal(session_id: str, body: QuizReveal):
 def quiz_outcome(session_id: str, body: QuizOutcome):
     """Record `knew` or `missed` for a served question (once); answers with the updated per-concept mastery."""
     return _quiz(session_id, lambda session: {"progress": quiz_session.record(session, body.question_id, body.outcome),
-                                              "suggest_known": quiz_session.known_suggestions(session)})  # offered, never applied
+                                              "suggest_known": quiz_session.known_suggestions(session), "topics": quiz_session.topics(session)})  # offered, never applied
 
 
 @router.get("/{session_id}/quiz/progress")
 def quiz_progress(session_id: str):
     """Attempts and mastery per concept."""
-    return _quiz(session_id, lambda session: {"progress": quiz_session.progress(session), "suggest_known": quiz_session.known_suggestions(session)}, saves=False)
+    return _quiz(session_id, lambda session: {"progress": quiz_session.progress(session), "suggest_known": quiz_session.known_suggestions(session),
+                                               "topics": quiz_session.topics(session)}, saves=False)
 
 
 @router.post("/{session_id}/question")
