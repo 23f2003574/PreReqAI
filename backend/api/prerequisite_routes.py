@@ -10,7 +10,7 @@ from fastapi import (
     Form,
 )
 
-from backend.study_plan_markdown import is_saved_plan, known_from_plan, resume_mismatch_warning, studied_from_plan
+from backend.study_plan_markdown import hours_per_day_from_plan, is_saved_plan, known_from_plan, resume_mismatch_warning, studied_from_plan
 from starlette.concurrency import run_in_threadpool
 
 from fastapi.responses import (
@@ -250,6 +250,8 @@ async def analyze_prerequisites(
 
         known = [*known, *known_from_plan(text)]
         studied = [*studied, *studied_from_plan(text)]
+        if hours is None:
+            hours = hours_per_day_from_plan(text)  # the saved plan's daily hours, unless the request sets them
 
     plan_text = text if resume is not None else None
 

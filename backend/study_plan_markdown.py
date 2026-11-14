@@ -38,6 +38,8 @@ def plan_markdown(report):
         lines += [f"- Day {day['day']} ({day['hours']:g}h): " + "; ".join(f"{_one_line(item['concept'])} {item['hours']:g}h" for item in day["items"])
                   for day in days]
         lines.append("")
+    elif study_time and study_time.get("daily_hours", 3.0) != 3.0:  # everything studied: keep the learner's setting for a later resume
+        lines += [f"Daily schedule ({study_time['daily_hours']:g}h per day, 0 days):", ""]
     for step in steps:
         concept = step["concept"]
         line = f"- [{'x' if concept in done else ' '}] {step['step']}. {_one_line(concept)} (~{step['estimated_hours']}h)"
@@ -79,6 +81,19 @@ def known_from_plan(text):
     names with commas, as the `--known` flag does."""
     match = _KNOWN.search(text)
     return [name.strip() for name in re.split(r"[;,]", match.group(1)) if name.strip()] if match else []
+
+
+_DAILY = re.compile(r"^[ \t]*Daily schedule \(([0-9.]+)h per day", re.MULTILINE)
+
+
+def hours_per_day_from_plan(text):
+    """The daily study hours a plan written by plan_markdown was built for, or None when it records none or an unusable value."""
+    match = _DAILY.search(text)
+    try:
+        from backend.prerequisites.study_time_estimator import parse_hours_per_day
+        return parse_hours_per_day(match.group(1)) if match else None
+    except ValueError:
+        return None
 
 
 def resume_mismatch_warning(plan_text, paper_title):

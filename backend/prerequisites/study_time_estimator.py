@@ -105,9 +105,14 @@ class StudyTimeEstimator:
 
         importance = {item.concept: item.importance for item in getattr(paper, "prerequisites", [])}
 
-        schedule = build_schedule(paper.learning_plan, hours_per_day, importance)
+        # What the learner still has to do: a step marked studied stays in the plan (and in total_hours) but is no longer scheduled.
+        done = {item.concept for item in getattr(paper, "study_progress", []) if item.completed}
+        remaining = [step for step in paper.learning_plan if step.concept not in done]
+        remaining_hours = sum(step.estimated_hours for step in remaining)
 
-        recommended_days = max(1, len(schedule))
+        schedule = build_schedule(remaining, hours_per_day, importance)
+
+        recommended_days = len(schedule) if schedule else (0 if total_hours else 1)  # all studied: no days left; empty plan: the old 1
 
         paper.study_time = StudyTimeEstimate(
 
@@ -117,12 +122,12 @@ class StudyTimeEstimator:
 
             average_hours_per_day=round(
 
-                total_hours /
+                remaining_hours /
 
                 recommended_days,
 
                 1,
-            ),
+            ) if recommended_days else 0.0,
 
             daily_hours=hours_per_day,
 

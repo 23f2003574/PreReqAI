@@ -475,6 +475,7 @@ class PreReqAIPlatform:
         generated report that depend on it into `report`; returns the fresh report. The one place that
         knows which report keys follow progress (analysis-time --studied and the session endpoints share it)."""
         self.analysis.readiness_engine.evaluate(paper)
+        self.analysis.study_time_estimator.estimate(paper)  # the schedule covers what is still unstudied
         fresh = self.analysis.report_generator.generate(paper)
         for key in PROGRESS_REPORT_KEYS:
             report[key] = fresh[key]
@@ -565,6 +566,8 @@ class PreReqAIPlatform:
         pipeline.study_roadmap_generator.generate(paper)
         pipeline.progress_tracker.initialize(paper)
         missing = self._complete_studied(paper, studied)  # before the one evaluation and report below
+        if studied:
+            pipeline.study_time_estimator.estimate(paper)  # the schedule leaves out what is already studied
         if not_studied is not None:
             not_studied.extend(missing)
         pipeline.readiness_engine.evaluate(paper)

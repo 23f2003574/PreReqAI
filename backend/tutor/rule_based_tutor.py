@@ -454,10 +454,7 @@ class RuleBasedTutor(BaseTutor):
             if estimate.total_hours == 0 or (plan and all(step.concept in done for step in plan)):
                 return "You have studied every planned prerequisite; no preparation time is left."
             hours = sum(step.estimated_hours for step in plan if step.concept not in done) if plan else estimate.total_hours
-            if hours == estimate.total_hours:
-                days = estimate.recommended_days
-            else:  # progress was made: re-plan the remaining hours at the same daily pace
-                days = max(1, -(-hours // max(estimate.average_hours_per_day, 1)))
+            days = max(1, estimate.recommended_days)  # the estimate already schedules only the steps that are not studied
             return (
                 f"Plan about {hours} hours of preparation, roughly "
                 f"{int(days)} {'day' if int(days) == 1 else 'days'} at {estimate.average_hours_per_day:g} hours a day."

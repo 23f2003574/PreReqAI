@@ -56,10 +56,8 @@ def test_a_reload_restores_progress_and_readiness_from_the_session(sid):
     restored = client.get(f"/api/session/{sid}").json()  # what the page's restore() reads
     assert restored["paper_title"] and restored["readiness"]["progress_percent"] > before
     assert {p["concept"]: p["completed"] for p in restored["study_progress"]}["Probability"] is True
-    hours = {}
-    for day in restored["study_time"]["schedule"]:  # the page rebuilds each step's hours from the schedule
-        for item in day["items"]:
-            hours[item["concept"]] = hours.get(item["concept"], 0) + item["hours"]
+    hours = {item["concept"]: item["hours"] for item in restored["study_time"]["step_hours"]}  # the page rebuilds each step's hours from these
+    assert "Probability" not in {item["concept"] for day in restored["study_time"]["schedule"] for item in day["items"]}  # studied: not scheduled
     assert set(hours) == {p["concept"] for p in restored["study_progress"]}
     assert all(r["url"].startswith("https://") for r in restored["next_resources"]) and "Probability" not in [r["concept"] for r in restored["next_resources"]]
 

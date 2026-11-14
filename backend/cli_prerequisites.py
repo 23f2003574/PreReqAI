@@ -12,7 +12,7 @@ import sys
 import threading
 from pathlib import Path
 
-from backend.study_plan_markdown import PLAN_HEADING, is_saved_plan, known_from_plan, plan_markdown, resume_mismatch_warning, studied_concepts, studied_from_plan
+from backend.study_plan_markdown import PLAN_HEADING, hours_per_day_from_plan, is_saved_plan, known_from_plan, plan_markdown, resume_mismatch_warning, studied_concepts, studied_from_plan
 from backend.cli_common import EXIT_CANCELLED, EXIT_FAILURE, EXIT_LIMIT_EXCEEDED, EXIT_OK, EXIT_TIMEOUT, EXIT_USAGE
 
 
@@ -194,6 +194,8 @@ def _apply_resume(args):
         args.resume_text = text
         args.studied = list(args.studied) + studied_from_plan(text)
         args.known = list(args.known) + known_from_plan(text)
+        if getattr(args, "hours_per_day", None) is None and (saved := hours_per_day_from_plan(text)) is not None:
+            args.hours_per_day = saved  # the learner's daily hours survive a resume unless --hours-per-day says otherwise
     except (OSError, UnicodeDecodeError) as exc:
         print(f"error: cannot read the saved plan {args.resume}: {getattr(exc, 'strerror', None) or exc}", file=sys.stderr)
         print("  hint: pass a file written earlier with --plan-file; nothing was analysed", file=sys.stderr)
@@ -306,10 +308,10 @@ def run_prerequisites_analyze(args, platform=None) -> int:
                          if readiness["total_concepts"] else "no concepts left to study")
                 print(f"  readiness: {readiness['status']} ({ready}); "
                   f"difficulty: {report['paper_difficulty']['level']}; "
-                  f"preparation: ~{study_time['total_hours']}h over {study_time['recommended_days']} "
-                  f"{'day' if study_time['recommended_days'] == 1 else 'days'}"
-                  + (f" ({left}h left)" if done and (left := sum(step["estimated_hours"] for step in report["learning_plan"]
-                                                               if step["concept"] not in done)) != study_time["total_hours"] else ""))
+                  f"preparation: ~{study_time['total_hours']}h "
+                  + (f"in total, {study_time['recommended_days']} {'day' if study_time['recommended_days'] == 1 else 'days'} to go ({left}h left)"
+                     if done and (left := sum(step["estimated_hours"] for step in report["learning_plan"] if step["concept"] not in done)) != study_time["total_hours"]
+                     else f"over {study_time['recommended_days']} {'day' if study_time['recommended_days'] == 1 else 'days'}"))
         if args.resources:
             order = {step["concept"]: step["step"] for step in report["learning_plan"]}  # list them in study order
             pending = sorted((item for item in report.get("learning_resources", []) if item["concept"] not in done),

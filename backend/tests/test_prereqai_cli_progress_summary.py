@@ -17,7 +17,7 @@ def _summary(*flags):
 def test_studied_steps_are_marked_and_remaining_hours_shown():
     out = _summary("--studied", "Probability", "--studied", "Calculus")
     assert "2. Probability (10h, studied) -> 3. Calculus (10h, studied) -> 4. Optimization (8h) -> 5. Neural Networks (15h)" in out
-    assert "preparation: ~55h over 19 days (35h left)" in out
+    assert "preparation: ~55h in total, 12 days to go (35h left)"  # the days cover what is left, not the studied steps in out
     assert len(out.splitlines()) <= 5
 
 

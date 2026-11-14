@@ -422,9 +422,10 @@ async function restore() {
       return showStatus("error", text[0], text[1]);
     }
     var hours = {};
-    ((body.study_time || {}).schedule || []).forEach(function (day) {
+    ((body.study_time || {}).schedule || []).forEach(function (day) {  // sessions saved earlier have no step_hours: the schedule is the fallback
       day.items.forEach(function (item) { hours[item.concept] = (hours[item.concept] || 0) + item.hours; });
     });
+    ((body.study_time || {}).step_hours || []).forEach(function (item) { hours[item.concept] = item.hours; });  // all planned steps, studied ones too
     state.sid = sid; state.paper = { title: body.paper_title }; state.difficulty = null;
     state.studyTime = body.study_time; state.readiness = body.readiness; state.known = [];
     state.studied = {}; state.links = {};

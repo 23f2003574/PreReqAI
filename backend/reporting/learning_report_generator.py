@@ -270,6 +270,18 @@ class LearningReportGenerator:
 
                     "schedule": getattr(paper.study_time, "schedule", []),
 
+                    "step_hours": [{"concept": step.concept, "hours": step.estimated_hours} for step in paper.learning_plan],
+
+                    "completed_hours": paper.study_time.total_hours - sum(
+                        step.estimated_hours
+                        for step in paper.learning_plan
+                        if step.concept not in {
+                            item.concept
+                            for item in paper.study_progress
+                            if item.completed
+                        }
+                    ),
+
                     "remaining_hours": sum(
                         step.estimated_hours
                         for step in paper.learning_plan
