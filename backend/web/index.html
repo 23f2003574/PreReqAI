@@ -73,6 +73,7 @@
       <button id="quizNext" type="button">Get a question</button>
       <div id="quizMsg" role="status" aria-live="polite"></div>
       <div id="quizCard"></div>
+      <div id="suggest"></div>
       <h2>Mastery</h2><div id="mastery"></div>
     </section>
   </div>
@@ -119,7 +120,7 @@ function table(headers, rows) {
 function fill(id, node) { var box = $(id); box.textContent = ""; box.appendChild(node); }
 
 var KEY = "prereqai.session";  // the browser remembers only the session id; the server holds the progress
-var state = { sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
+var state = { suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
 
 function remember(sid) { try { if (sid) localStorage.setItem(KEY, sid); else localStorage.removeItem(KEY); } catch (e) { /* storage unavailable: no restore */ } }
 function recall() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
@@ -268,7 +269,7 @@ function setStudied(concept, studied) {
 }
 
 function setKnown(concept, known) {
-  act(known ? "Removing " + concept + " from your plan" : "Putting " + concept + " back in your plan",
+  return act(known ? "Removing " + concept + " from your plan" : "Putting " + concept + " back in your plan",
       function () { return fetch(sessionUrl("/known") + encodeURIComponent(concept), { method: known ? "POST" : "DELETE" }); },
       function (body) { render({ session_id: state.sid, report: body.report, warnings: body.warnings }); });
 }
@@ -359,7 +360,29 @@ function renderQuizSetup() {
   $("quizNext").disabled = state.quizBusy; select.disabled = state.quizBusy;
 }
 
+// "You may already know this": offered from the server's suggest_known list, never applied. Accepting uses the same known endpoint as the plan's
+// "I already know this" button; "Not now" hides it until the page is reloaded. Nothing here changes a quiz score.
+function renderSuggestions() {
+  var box = $("suggest"); box.textContent = "";
+  (state.suggestions || []).filter(function (s) { return !state.dismissed[s.concept]; }).forEach(function (s) {
+    var card = el("div", null, "msg info");
+    card.appendChild(el("p", "Suggestion: you may already know " + s.concept + ". " + s.reason + " It is your call: marking it as known removes it from your study plan."));
+    var yes = el("button", "Mark " + s.concept + " as known"); yes.type = "button";
+    yes.addEventListener("click", function () { acceptSuggestion(s.concept); });
+    var no = el("button", "Not now", "small"); no.type = "button";
+    no.addEventListener("click", function () { state.dismissed[s.concept] = true; renderSuggestions(); });
+    card.appendChild(yes); card.appendChild(document.createTextNode(" ")); card.appendChild(no); box.appendChild(card);
+  });
+}
+
+async function acceptSuggestion(concept) {
+  await setKnown(concept, true);  // the existing known endpoint; a failure leaves the plan and the suggestion as they were
+  if (state.known.indexOf(concept) >= 0) state.suggestions = (state.suggestions || []).filter(function (s) { return s.concept !== concept; });
+  renderSuggestions();
+}
+
 function renderMastery() {
+  renderSuggestions();
   var rows = (state.quiz.concepts || []).map(function (c) {
     return [c.concept, c.attempts, c.knew, c.missed, Math.round(c.mastery * 100) + "%", c.status.replace("_", " ")];
   });
@@ -430,7 +453,7 @@ function record(outcome) {
     return fetch(quizUrl("outcome"), { method: "POST", headers: { "Content-Type": "application/json" },
                                        body: JSON.stringify({ question_id: card.id, outcome: outcome }) });
   }, function (body) {
-    state.quiz = body.progress; state.card = null; renderMastery();
+    state.quiz = body.progress; state.suggestions = body.suggest_known || []; state.card = null; renderMastery();
     showStatus("info", "Recorded: " + (outcome === "knew" ? "you knew it" : "you missed it") + ". Ask for another question to keep practising.", null, "quizMsg");
   });
 }
@@ -466,7 +489,7 @@ async function restore() {
     renderMeta();
     fill("concepts", el("p", "Restored session: analyse the paper again to see its detected concepts.", "msg info"));
     fill("gaps", el("p", "Restored session: your plan and progress are below.", "msg info"));
-    state.quiz = body.quiz_progress || { attempts: 0, concepts: [] }; state.card = null; state.concepts = []; state.answers = [];
+    state.suggestions = body.suggest_known || []; state.quiz = body.quiz_progress || { attempts: 0, concepts: [] }; state.card = null; state.concepts = []; state.answers = [];
     var asked = {};
     (body.conversation_history || []).forEach(function (entry) {
       var d = entry.data || {};
@@ -511,7 +534,7 @@ async function submit(event) {
       var text = failureText(body, response.status);
       showStatus("error", text[0], text[1]);
     } else {
-      state.answers = []; state.quiz = { attempts: 0, concepts: [] }; state.card = null; showStatus("info", "", null, "askMsg"); showStatus("info", "", null, "quizMsg");
+      state.answers = []; state.suggestions = []; state.dismissed = {}; state.quiz = { attempts: 0, concepts: [] }; state.card = null; showStatus("info", "", null, "askMsg"); showStatus("info", "", null, "quizMsg");
       render(body); renderCard();
     }
   } catch (error) {

@@ -113,3 +113,34 @@ def progress(session):
             "status": "mastered" if streak >= MASTERY_STREAK else "progressing" if outcomes[-1] == "knew" else "needs_practice",
         })
     return {"attempts": len(_attempts(session)), "concepts": concepts}
+
+
+# A "you may already know this" suggestion is evidence, not a verdict: the quiz is self-graded, so it asks for more than the "mastered" streak. All must hold
+# for a subject that is still in the study plan and not studied: at least SUGGEST_MIN_ATTEMPTS answers, a "knew" share of at least SUGGEST_MIN_SHARE, the
+# "mastered" streak (MASTERY_STREAK "knew" in a row, latest last) and "knew" on at least SUGGEST_MIN_DISTINCT different questions (so repeating one
+# question cannot do it). The learner always decides: nothing is marked known here; the page offers the existing /known endpoint.
+SUGGEST_MIN_ATTEMPTS = 3
+SUGGEST_MIN_SHARE = 0.75
+SUGGEST_MIN_DISTINCT = 2
+
+
+def known_suggestions(session):
+    """[{concept, attempts, knew, mastery, distinct_questions, reason}] for the planned, unstudied subjects whose quiz results meet the thresholds above,
+    by concept name, one entry each. A concept the learner already knows is not in the plan, so it is never suggested again; neither is a studied one.
+    Reads the quiz attempts only: scores, mastery and the plan are not changed."""
+    paper = getattr(session, "paper", None)
+    planned = {item.concept for item in getattr(paper, "study_progress", []) if not item.completed}
+    knew_on = {}
+    for attempt in _attempts(session):
+        if attempt["outcome"] == "knew":
+            knew_on.setdefault(attempt["concept"], set()).add(attempt["question_id"])
+    found = []
+    for entry in progress(session)["concepts"]:
+        name, distinct = entry["concept"], len(knew_on.get(entry["concept"], ()))
+        if (name in planned and entry["status"] == "mastered" and entry["attempts"] >= SUGGEST_MIN_ATTEMPTS
+                and entry["mastery"] >= SUGGEST_MIN_SHARE and distinct >= SUGGEST_MIN_DISTINCT):
+            found.append({"concept": name, "attempts": entry["attempts"], "knew": entry["knew"], "mastery": entry["mastery"],
+                          "distinct_questions": distinct,
+                          "reason": f"You said you knew {entry['knew']} of your {entry['attempts']} {name} answers, including the last {MASTERY_STREAK} in a row "
+                                    f"and {distinct} different questions."})
+    return found
