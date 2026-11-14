@@ -311,6 +311,36 @@ class ConceptExplanationEngine:
             "Estimating how well a model generalises by repeatedly training on part of the data and testing on the held-out part, as in k-fold cross-validation.",
             "Beginner",
         ),
+
+        "Knowledge Distillation": (
+            "Training a small student model to reproduce the output distribution of a larger teacher model, usually with a softened softmax and a KL-divergence loss, so the student keeps most of the teacher's accuracy.",
+            "Intermediate",
+        ),
+
+        "Retrieval-Augmented Generation": (
+            "Generating text with a language model that is first given passages retrieved from an external corpus (found by embedding similarity) so that its answer can use up-to-date or private knowledge.",
+            "Intermediate",
+        ),
+
+        "Beam Search": (
+            "A decoding method that keeps the few most probable partial output sequences (the beam) at each step instead of only the single best one, trading extra computation for a higher-probability result than greedy decoding.",
+            "Beginner",
+        ),
+
+        "Autoencoder": (
+            "A neural network that compresses its input into a smaller code with an encoder and rebuilds the input from that code with a decoder, trained to minimise the reconstruction error.",
+            "Beginner",
+        ),
+
+        "Self-Supervised Learning": (
+            "Learning representations from unlabelled data by solving a task built from the data itself, such as predicting masked words or matching two views of one image, before using them for a labelled task.",
+            "Intermediate",
+        ),
+
+        "Transfer Learning": (
+            "Reusing a model trained on one task or dataset as the starting point for another, so the new task needs less data and training time.",
+            "Beginner",
+        ),
     }
 
     def explain(

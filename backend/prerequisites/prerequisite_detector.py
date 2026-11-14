@@ -349,6 +349,31 @@ class PrerequisiteDetector:
             "Probability",
             "Statistics",
         ],
+
+        # Representation learning and AI systems: subjects (and Transformer) that already carry hours, a resource and a justification; no link is added
+        # only to connect the graph (a concept that needs little, such as Transfer Learning or Self-Supervised Learning, lists little).
+        "Knowledge Distillation": [
+            "Neural Networks",
+            "Probability",
+            "Information Theory",
+        ],
+        "Retrieval-Augmented Generation": [
+            "Transformer",
+            "Linear Algebra",
+        ],
+        "Beam Search": [
+            "Probability",
+        ],
+        "Autoencoder": [
+            "Neural Networks",
+            "Linear Algebra",
+        ],
+        "Self-Supervised Learning": [
+            "Neural Networks",
+        ],
+        "Transfer Learning": [
+            "Neural Networks",
+        ],
     }
 
     def detect(

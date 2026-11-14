@@ -103,6 +103,15 @@ class ConceptRegistry:
             Concept("Logistic Regression", "classical_ml"),
             Concept("Regularization", "classical_ml", aliases=('regularisation', 'weight decay', 'L1 penalty', 'L2 penalty')),
             Concept("Cross-Validation", "classical_ml", aliases=('cross validation', 'k-fold cross-validation', 'k-fold cross validation')),
+
+            # Representation learning and modern AI systems (no bare 'distillation', 'SSL' or 'retrieval': each also means something else)
+
+            Concept("Knowledge Distillation", "deep_learning", aliases=('model distillation', 'teacher-student distillation', 'distilling knowledge')),
+            Concept("Retrieval-Augmented Generation", "transformers", aliases=('RAG', 'retrieval augmented generation')),
+            Concept("Beam Search", "deep_learning", aliases=('beam decoding',)),
+            Concept("Autoencoder", "deep_learning", aliases=('auto-encoder', 'denoising autoencoder', 'sparse autoencoder')),
+            Concept("Self-Supervised Learning", "deep_learning", aliases=('self supervised learning', 'self-supervised', 'self supervised')),
+            Concept("Transfer Learning", "deep_learning"),
         ]
 
     def all(self):

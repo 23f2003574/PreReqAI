@@ -81,3 +81,82 @@ def test_classical_ml_terms_are_detected_in_a_representative_paper():
 def test_classical_ml_names_do_not_match_ordinary_words():
     assert not set(_detect("The principal component of the plan was a support group; a tree of decisions in a forest, "
                            "a regular logistics model, and a validation of crosses.")) & set(CLASSICAL)
+
+
+REPRESENTATION = ["Knowledge Distillation", "Retrieval-Augmented Generation", "Beam Search", "Autoencoder", "Self-Supervised Learning", "Transfer Learning"]
+ALIASES = {"model distillation": "Knowledge Distillation", "teacher-student distillation": "Knowledge Distillation", "distilling knowledge": "Knowledge Distillation",
+           "RAG": "Retrieval-Augmented Generation", "retrieval augmented generation": "Retrieval-Augmented Generation", "beam decoding": "Beam Search",
+           "auto-encoder": "Autoencoder", "denoising autoencoder": "Autoencoder", "sparse autoencoder": "Autoencoder",
+           "self supervised learning": "Self-Supervised Learning", "self-supervised": "Self-Supervised Learning", "self supervised": "Self-Supervised Learning"}
+
+
+@pytest.mark.parametrize("name", REPRESENTATION)
+def test_each_representation_concept_is_registered_once_and_wired_like_the_earlier_expansions(name):
+    from backend.prerequisites.prerequisite_learning_planner import PrerequisiteLearningPlanner as Planner
+    concepts = [c for c in ConceptRegistry().all() if c.name == name]
+    assert len(concepts) == 1 and concepts[0].domain in {"deep_learning", "transformers"}  # a stable name, listed once
+    assert name in ConceptExplanationEngine.EXPLANATIONS and name in QUIZ_BANK
+    needs = PrerequisiteDetector.PREREQUISITE_RULES[name]
+    assert needs and len(set(needs)) == len(needs)
+    assert all(subject in Planner.STUDY_TIME and subject in Planner.STUDY_ORDER for subject in needs)  # only subjects with hours, resources and justifications
+
+
+def test_the_registry_order_and_the_earlier_concepts_are_unchanged():
+    names = [c.name for c in ConceptRegistry().all()]
+    assert names[:52] == [n for n in names[:52]] and len(names) == len(set(names)) == 66
+    assert names[52:60] == CLASSICAL and names[60:] == REPRESENTATION  # appended: no existing concept moved
+    assert {"Variational Autoencoder", "Fine-Tuning", "Contrastive Learning", "Embedding", "Large Language Model"} <= set(names)
+
+
+def test_every_alias_resolves_to_its_concept_and_to_no_other():
+    owners = {}
+    for concept in ConceptRegistry().all():
+        for term in (concept.name, *concept.aliases):
+            owners.setdefault(term.lower(), set()).add(concept.name)
+    for alias, concept in ALIASES.items():
+        assert owners[alias.lower()] == {concept}
+        assert concept in _detect(f"We rely on {alias} throughout.")
+
+
+def test_prerequisite_relationships_resolve_and_the_rule_graph_stays_acyclic():
+    rules = PrerequisiteDetector.PREREQUISITE_RULES
+    state = {}
+
+    def visit(name, trail):
+        assert state.get(name) != "open", f"cycle: {' -> '.join([*trail, name])}"
+        if state.get(name) == "done":
+            return
+        state[name] = "open"
+        for target in rules.get(name, ()):
+            visit(target, [*trail, name])
+        state[name] = "done"
+
+    for name in rules:
+        visit(name, [])
+    for name in REPRESENTATION:
+        assert all(target in NAMES or target in rules or target in {t for v in rules.values() for t in v} for target in rules[name])
+    assert "Transformer" in rules["Retrieval-Augmented Generation"] and rules["Self-Supervised Learning"] == ["Neural Networks"]
+
+
+def test_representative_paper_text_triggers_the_right_concepts():
+    paper = ("We train a compact student with knowledge distillation from a larger teacher. Our retrieval-augmented generation (RAG) system retrieves "
+             "passages before answering, and decodes with beam search. A denoising autoencoder is pre-trained by self-supervised learning on unlabelled "
+             "text, then transfer learning adapts it to the labelled task.")
+    found = _detect(paper)
+    assert set(REPRESENTATION) <= set(found)
+    # each term counted once, as for every other concept; the name and its acronym written together are two mentions, like "graph neural network (GNN)"
+    assert {name: found[name] for name in REPRESENTATION} == {**{n: 1 for n in REPRESENTATION}, "Retrieval-Augmented Generation": 2}, found
+
+
+def test_ambiguous_and_incidental_wording_is_not_detected():
+    text = ("Water distillation removes salt in a refinery column. A beam of light crossed the search area. The SSL certificate expired. "
+            "The retrieval of a lost file and the transfer of funds were supervised by the teacher; the student learned alone. An encoder with auto gain "
+            "handles the self-contained unit. Learning from transfer rates is unrelated.")
+    assert not set(_detect(text)) & set(REPRESENTATION)
+
+
+def test_existing_detection_is_unaffected_by_the_new_autoencoder_and_self_supervised_terms():
+    found = _detect("A variational autoencoder and a VAE are trained with contrastive learning, fine-tuning and an embedding layer.")
+    assert {"Variational Autoencoder", "Contrastive Learning", "Fine-Tuning", "Embedding"} <= set(found) and "Autoencoder" not in found
+    assert found["Variational Autoencoder"] == 2
+    assert "Self-Supervised Learning" in _detect("Self-supervised contrastive learning is used.") and "Contrastive Learning" in _detect("Self-supervised contrastive learning is used.")

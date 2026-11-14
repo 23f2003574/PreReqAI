@@ -801,8 +801,96 @@ QUIZ_BANK = {
                 "Easy",
         },
     ],
-}
 
+    "Knowledge Distillation": [
+
+        {
+            "question":
+                "Why does knowledge distillation train the student on the teacher's softened probabilities instead of only the hard labels?",
+
+            "answer":
+                "The soft probabilities show how the teacher ranks the wrong classes too, which carries more information per example than a single label.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+
+    "Retrieval-Augmented Generation": [
+
+        {
+            "question":
+                "What does the retrieval step add in retrieval-augmented generation?",
+
+            "answer":
+                "It finds passages relevant to the query in an external corpus and adds them to the model's input, so the answer can use knowledge the model was not trained on.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+
+    "Beam Search": [
+
+        {
+            "question":
+                "How does beam search differ from greedy decoding?",
+
+            "answer":
+                "It keeps the several most probable partial sequences at each step instead of only the best one, so it can find a sequence with a higher total probability.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+
+    "Autoencoder": [
+
+        {
+            "question":
+                "What is an autoencoder trained to minimise?",
+
+            "answer":
+                "The reconstruction error between its input and the output the decoder rebuilds from the compressed code.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+
+    "Self-Supervised Learning": [
+
+        {
+            "question":
+                "Where do the training labels come from in self-supervised learning?",
+
+            "answer":
+                "They are built from the unlabelled data itself, for example the words hidden in a masked sentence, so no human annotation is needed.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+
+    "Transfer Learning": [
+
+        {
+            "question":
+                "Why does transfer learning need less data on the new task?",
+
+            "answer":
+                "The model starts from features already learned on a large source task, so only the differences for the new task have to be learned.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+}
 
 # Questions for the foundational prerequisite subjects of the study plans (not registry concepts, so they are kept apart from QUIZ_BANK).
 # Same schema as QUIZ_BANK: an answer states the correct answer and why. They are served only when a subject is asked for by name.
