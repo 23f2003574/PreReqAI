@@ -1,26 +1,25 @@
 """A slow save that pickled an older state must not overwrite the file after a later save wrote the newer state."""
-import pickle
 import sys
 import threading
 
-from backend.session import session_manager
+from backend.session import session_codec, session_manager
 
 
 def test_a_stale_save_cannot_overwrite_a_newer_one(tmp_path, monkeypatch):
     monkeypatch.setenv("PREREQAI_SESSION_DIR", str(tmp_path))
     session = session_manager.create("Ordering", {"version": 1})
-    real_dumps = pickle.dumps
+    real_dumps = session_codec.dumps
     started, release = threading.Event(), threading.Event()
 
     def dumps(obj, *args, **kwargs):
         data = real_dumps(obj, *args, **kwargs)
-        if threading.current_thread().name == "slow":  # this save pickled version 1 and is then held up
+        if threading.current_thread().name == "slow":  # this save serialized version 1 and is then held up
             started.set()
             release.wait(timeout=1)
         return data
 
     patch = monkeypatch.context()
-    patch.__enter__().setattr(sys.modules["backend.session.session_manager"].pickle, "dumps", dumps)
+    patch.__enter__().setattr(sys.modules["backend.session.session_manager"].session_codec, "dumps", dumps)
     slow = threading.Thread(target=session_manager.save, args=(session,), name="slow")
     slow.start()
     assert started.wait(timeout=5)

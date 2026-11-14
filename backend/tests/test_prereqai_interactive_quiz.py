@@ -112,7 +112,7 @@ def test_a_session_saved_before_the_quiz_existed_still_quizzes(sid, tmp_path):
     import pickle
 
     path = tmp_path / f"{sid}.session"
-    session = pickle.loads(path.read_bytes())
+    session = session_manager.get(sid)  # the saved file is JSON now; an older server left a pickle without the quiz fields
     session.schema_version = 2
     del session.__dict__["quiz_attempts"], session.__dict__["quiz_pending"]
     path.write_bytes(pickle.dumps(session))

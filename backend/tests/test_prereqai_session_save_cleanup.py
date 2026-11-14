@@ -1,5 +1,5 @@
 """A failed session save (disk full, rename refused) leaves no half-written temp file, keeps the last good file, and a retry succeeds."""
-import pickle
+from backend.session import session_codec
 from pathlib import Path
 
 from backend.session import session_manager
@@ -31,7 +31,7 @@ def test_failed_write_removes_the_partial_temp_file_and_a_retry_succeeds(monkeyp
     assert saved.read_bytes() == good  # the previous good copy is intact
 
     assert session_manager.save(session) is True  # the retry works
-    assert pickle.loads(saved.read_bytes()).report == {"a": 2}
+    assert session_codec.loads(saved.read_bytes())[1].report == {"a": 2}
 
 
 def test_failed_rename_also_cleans_up(monkeypatch, tmp_path):

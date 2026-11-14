@@ -15,7 +15,8 @@ def test_the_temp_file_is_synced_before_it_replaces_the_session_file(monkeypatch
 
     session.report["a"] = 2
     assert session_manager.save(session) is True
-    assert events == ["fsync", "replace"]
+    assert events[:2] == ["fsync", "replace"]  # the file is on disk before the swap
+    assert events[2:] == ["fsync"]  # then the directory entry of the swap is synced too
 
 
 def test_a_failed_sync_keeps_the_last_good_file_and_leaves_no_temp_file(monkeypatch, tmp_path):

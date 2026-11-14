@@ -51,7 +51,7 @@ flowchart TD
         PIPE --> SM
     end
 
-    SM[("SessionManager<br/>in-memory dict (max 500)<br/>optional pickle files in PREREQAI_SESSION_DIR")]
+    SM[("SessionManager<br/>in-memory dict (max 500)<br/>optional JSON files in PREREQAI_SESSION_DIR")]
 
     HTTP -->|"POST /api/session/{id}/question"| ILP
     CLI -->|"ask"| ILP
@@ -117,7 +117,7 @@ A fixed list of 30 stages executed sequentially with per-stage wall-clock timing
 
 | Module | Role |
 |---|---|
-| `backend/session/session_manager.py`, `learning_session.py` | In-memory sessions (cap 500, idlest evicted). With `PREREQAI_SESSION_DIR` set, each session is also written as a **pickle** file (atomic temp-file swap, per-writer temp names, 30-day expiry, id must be a canonical UUID and match the file). Loading uses a restricted unpickler (commit `eda9b88`) that refuses classes outside `backend.*`; still keep the directory private. |
+| `backend/session/session_manager.py`, `learning_session.py` | In-memory sessions (cap 500, idlest evicted). With `PREREQAI_SESSION_DIR` set, each session is also written as a versioned **JSON** file (`session_codec.py`, `docs/session-format.md`; atomic temp-file swap, per-writer temp names, 30-day expiry, id must be a canonical UUID and match the file). A file can only name dataclasses of `backend.*` that are already loaded; malformed, hostile or unsupported files read as unreadable; older pickle files (versions 1-3) are read through the restricted unpickler and rewritten as JSON. |
 | `backend/pipeline/interactive_learning_pipeline.py` | For a question: keyword `LearningIntentDetector` → `LearningWorkflowPlanner` (maps an intent to 1–3 workflow types) → `ContextRetriever` (lower-cased substring match of concept names in the question, then sections containing them) → `RuleBasedTutor`; duplicate replies are removed. |
 | `backend/tutor/rule_based_tutor.py` (540 lines) | Self-described as "Temporary tutor used before the LLM tutor is introduced." Answers via ordered regex rules: quiz (12-concept `quiz_bank`), per-concept time, resources, "which prerequisites does X need", built-in definitions/justifications, paper overview, study-plan questions ("what first / how long / how hard / am I ready"). Alias spellings (SGD, RNN, backprop) are rewritten to canonical names. **Anything else returns the literal string "A tutoring model has not yet been configured."** and the response carries a `warnings` entry saying so. `TutorPromptBuilder` builds an LLM prompt string (stored as `last_prompt`) that is never sent anywhere. |
 
@@ -168,7 +168,7 @@ Code that implements the learning-assistance idea (ingestion, parsing, concepts,
 | CLI | stdlib `argparse` |
 | NLP / ML | **None.** Regular expressions, dictionaries, `difflib` for "did you mean" |
 | Models / external APIs | **None called at runtime.** arXiv and Crossref over HTTP for link inputs. Provider adapters for OpenAI / Gemini / local server exist but are not wired and their client libraries are not in requirements |
-| Storage | In-memory dict; optional pickle files per session (`PREREQAI_SESSION_DIR`); download cache on disk (`PREREQAI_CACHE_DIR` or `./cache/`); Markdown plan files. Other JSON/in-memory stores exist inside unwired packages. No database |
+| Storage | In-memory dict; optional JSON files per session (`PREREQAI_SESSION_DIR`); download cache on disk (`PREREQAI_CACHE_DIR` or `./cache/`); Markdown plan files. Other JSON/in-memory stores exist inside unwired packages. No database |
 | Deployment | Run from source (no wheel/package metadata; "the release is what `git archive HEAD` exports"). No Dockerfile for PreReqAI itself; the API generator emits Dockerfiles for *generated* projects. No hosted deployment. |
 | CI | One GitHub Actions workflow: product tests and the rest of the backend suite on 3.10, 3.12 and 3.13, API-generation tests, the README quickstart, a runtime-only-dependency install, and a live `uvicorn` + `curl` smoke test |
 | Test tooling | pytest, `httpx2` (for Starlette `TestClient`) |
@@ -182,7 +182,7 @@ Code that implements the learning-assistance idea (ingestion, parsing, concepts,
 3. **LLM tutoring deferred behind a placeholder.** The README, every response's `warnings`, and the release checklist all disclose this honestly. The prompt builder and provider adapters were built ahead of any integration. Trade-off: the "Interactive Learning" feature list in the README (Socratic questioning, adaptive quizzes, multiple teaching strategies) is mostly aspirational relative to what answers are produced.
 4. **Single mutable `Paper` through a staged pipeline** with type checks, cancellation points, timings and a diagnostics mode. Good for debuggability and for reporting which stage failed; not designed for streaming or very large documents.
 5. **Uniform failure envelope and extensive input-error UX** (hints, did-you-mean, exit codes, limits). A large share of the commit history is this kind of hardening.
-6. **Sessions in memory, optional pickle persistence.** Simple, but session files are pickles: loading uses a restricted unpickler (`_SessionUnpickler`, commit `eda9b88`) that refuses any class outside `backend.*`, which blocks the obvious code-execution payloads but is not a substitute for keeping the directory private; and storage is single-process with no locking beyond atomic file replacement.
+6. **Sessions in memory, optional JSON persistence.** Session files are a versioned JSON envelope (`docs/session-format.md`) that loading checks and cannot use to run code; the older pickle files are only read, through the restricted unpickler, to be migrated. Keep the directory private all the same; storage is single-process with no locking beyond atomic file replacement.
 7. **Lazy imports for start-up time** (`backend.session` exports ~2,000 names through PEP 562 lazy loading; CLI defers recovery and API-generation modules). A symptom of the codebase's size; the release checklist notes the product still loads ~1,260 modules in the worst case.
 8. **SSRF guard on downloads** — only public HTTPS hosts are fetched for DOI-derived PDF links.
 9. **Breadth over depth in architecture.** Many subsystems (workspace, policy governance, LLM ops) were built as complete-looking service layers with their own tests but without an end-user path. This is the main maturity risk for anyone evaluating the repo.
@@ -223,7 +223,7 @@ Code that implements the learning-assistance idea (ingestion, parsing, concepts,
 - Keyword counts ≠ comprehension demands; an acronym alias (e.g. "GPT" → Large Language Model, "GRU/LSTM" → RNN) can mis-assign concepts.
 - Difficulty is a function of a count of missing prerequisites; hours are fixed per subject, independent of paper or learner.
 - English only; PDFs only; no OCR.
-- Pickle-based session files; trusted-environment only; no multi-process safety.
+- JSON session files (older pickle files are migrated on load); no multi-process safety.
 - Python 3.10: CI runs it, and it was also run in a clean venv from a fresh clone on 2026-11-04 (978 passed; see the release checklist).
 - Dates/figures in `docs/release-checklist.md` are the author's self-reports at specific commits and have not been re-verified here except as noted in §8.
 

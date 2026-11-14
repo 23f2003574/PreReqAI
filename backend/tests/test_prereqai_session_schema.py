@@ -1,4 +1,5 @@
 """Saved sessions carry a schema version; older files are upgraded on load and unusable ones read as unreadable, never as an AttributeError later."""
+import json
 import pickle
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from fastapi.testclient import TestClient
 from backend.main import app
 from backend.models import Prerequisite
 from backend.platform import platform
-from backend.session import session_manager
+from backend.session import session_codec, session_manager
 from backend.session.session_manager import SessionManager, _fill_new_fields
 
 pytestmark = pytest.mark.prereqai
@@ -26,8 +27,14 @@ def saved(tmp_path, monkeypatch):
     session_manager.sessions.clear()
 
 
+def load_saved(path):
+    raw = path.read_bytes()
+    return session_codec.loads(raw)[1] if raw.lstrip()[:1] == b"{" else pickle.loads(raw)
+
+
 def rewrite(path, change):
-    session = pickle.loads(path.read_bytes())
+    """Change the saved session and write it back as an older-format (pickle) file, as one saved by an earlier version would be."""
+    session = load_saved(path)
     change(session)
     path.write_bytes(pickle.dumps(session))
     session_manager.sessions.clear()
@@ -57,7 +64,7 @@ def make_legacy(session):
 
 def test_a_saved_session_is_stamped_with_the_current_version_and_loads(saved):
     sid, path = saved
-    assert pickle.loads(path.read_bytes()).schema_version == SessionManager.SCHEMA_VERSION
+    assert json.loads(path.read_bytes())["schema_version"] == SessionManager.SCHEMA_VERSION == 4 and load_saved(path).schema_version == 4
     session_manager.sessions.clear()
     assert session_manager.get(sid).session_id == sid and not session_manager.is_unreadable(sid)
 
@@ -66,7 +73,7 @@ def test_the_older_file_format_lacks_the_new_fields_that_later_requests_read(sav
     """The reproduction: a session saved before `evidence` existed raised AttributeError (HTTP 500) when its progress changed."""
     sid, path = saved
     rewrite(path, make_legacy)
-    session = pickle.loads(path.read_bytes())
+    session = load_saved(path)
     assert "schema_version" not in session.__dict__ and "evidence" not in session.paper.prerequisites[0].__dict__
     with pytest.raises(AttributeError):
         session.paper.prerequisites[0].evidence

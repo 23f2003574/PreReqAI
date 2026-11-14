@@ -1,5 +1,6 @@
 import os
 import io
+import logging
 import pickle
 import copy
 import dataclasses
@@ -8,11 +9,16 @@ import time
 from pathlib import Path
 from uuid import UUID
 
+from . import session_codec
+
 from backend.models import Paper
 
 from .learning_session import (
     LearningSession,
 )
+
+
+_log = logging.getLogger("prereqai.session")
 
 
 class _SessionUnpickler(pickle.Unpickler):
@@ -68,12 +74,13 @@ class SessionManager:
 
     # A long-running server must not hold every analysed paper forever: past this many sessions in memory the
     # oldest are dropped from memory (saved ones can still be restored from PREREQAI_SESSION_DIR on request).
-    # Format of the saved files. 1: written before versions existed (no `schema_version`). 2: stamped on every save. 3: adds the quiz attempts. A file is upgraded on
+    # Format of the saved files. 1: written before versions existed (no `schema_version`). 2: stamped on every save. 3: adds the quiz attempts. 4: a JSON envelope (see session_codec) instead of a pickle, the only format written now; files of versions 1-3 are pickles, read
+    # only through the restricted unpickler and rewritten as version 4 when they are loaded. A file is upgraded on
     # load by giving objects the fields added since it was written (`_fill_new_fields`), which covers every change that only adds fields
     # with defaults; a change that renames, removes or retypes a field must bump this number and add its own step to `_migrate`. A file
     # from a newer version, or one that cannot be upgraded, reads as unreadable (404 "Session could not be restored"), never as a
     # session that fails later with an AttributeError.
-    SCHEMA_VERSION = 3
+    SCHEMA_VERSION = 4
 
     MAX_SESSIONS_IN_MEMORY = 500
 
@@ -241,7 +248,7 @@ class SessionManager:
 
                 session.schema_version = self.SCHEMA_VERSION
 
-                temp.write_bytes(pickle.dumps(session))
+                temp.write_bytes(session_codec.dumps(session, self.SCHEMA_VERSION))
 
                 with temp.open("rb+") as written:  # on disk before the swap: a power loss must not leave an empty file under the real name
 
@@ -250,6 +257,8 @@ class SessionManager:
                     os.fsync(written.fileno())
 
                 temp.replace(path)
+
+                self._sync_directory(path.parent)
 
             self.last_save_ok = True
 
@@ -353,7 +362,7 @@ class SessionManager:
 
                 return None
 
-            session = self._read(path)
+            session, legacy = self._read_file(path)
 
             if session is None:
 
@@ -365,6 +374,10 @@ class SessionManager:
                 # every request works on (and saves) the same session instead of each on its own copy.
                 session = self.sessions.setdefault(session_id, session)
 
+            if legacy:
+
+                self._rewrite_as_json(session)
+
         if session is not None:
 
             with self._lock:
@@ -375,44 +388,102 @@ class SessionManager:
 
         return session
 
+    def _rewrite_as_json(self, session: LearningSession) -> None:
+        """Replace an older pickle file by the JSON one, but only after the JSON is shown to hold the same session (it is read back and written out
+        again identically); otherwise the old file stays as it is, and the session keeps working from memory."""
+        try:
+            first = session_codec.dumps(session, self.SCHEMA_VERSION)
+            _, again = session_codec.loads(first)
+            if session_codec.dumps(again, self.SCHEMA_VERSION) != first:
+                raise ValueError("the JSON does not reproduce the session")
+        except Exception as error:
+            _log.warning("saved session %s could not be converted to JSON, so its old file is kept: %s", session.session_id, error)
+            return
+        self.save(session)
+
+    @staticmethod
+    def _sync_directory(directory: Path) -> None:
+        """Make the rename itself durable (best effort: not every platform can open a directory)."""
+        try:
+            handle = os.open(directory, os.O_RDONLY)
+        except OSError:
+            return
+        try:
+            os.fsync(handle)
+        except OSError:
+            pass
+        finally:
+            os.close(handle)
+
     @staticmethod
     def _read(path: Path) -> LearningSession | None:
         """The session saved in `path`; None when it is unreadable, from an incompatible version, not a session, or saved under another session's id."""
+        return SessionManager._read_file(path)[0]
+
+    @staticmethod
+    def _read_file(path: Path):
+        """(session or None, legacy): the session in `path` and whether the file is an older pickle (to be rewritten as JSON). A file that cannot be
+        used reads as None and the reason is logged, never raised."""
 
         try:
 
-            session = _SessionUnpickler(io.BytesIO(path.read_bytes())).load()
+            raw = path.read_bytes()
 
-        except Exception:
+            legacy = raw.lstrip()[:1] != b"{"
 
-            return None
+            if legacy:  # versions 1-3 were pickles; only the restricted unpickler may read one, and only to migrate it
+
+                session = _SessionUnpickler(io.BytesIO(raw)).load()
+
+                version = getattr(session, "schema_version", 1)
+
+            else:
+
+                version, session = session_codec.loads(raw)
+
+                session.schema_version = version
+
+        except Exception as error:
+
+            _log.warning("saved session %s is unreadable: %s", path.name, error)
+
+            return None, False
 
         # A file renamed or copied under another id must not load as that id: the copy would answer for one id while
         # saving over the file of the session it really is.
         if not isinstance(session, LearningSession) or session.session_id != path.stem:
 
-            return None
+            _log.warning("saved session %s is unreadable: it holds another session", path.name)
 
-        if not SessionManager._migrate(session):
+            return None, False
 
-            return None
+        if not SessionManager._migrate(session, legacy):
+
+            _log.warning("saved session %s is unreadable: unsupported version %r or fields that cannot be restored", path.name, version)
+
+            return None, False
 
         SessionManager._reconcile_known_and_studied(session)
 
-        return session
+        return session, legacy
 
     @classmethod
-    def _migrate(cls, session: LearningSession) -> bool:
-        """Bring a loaded session to the current format; False when it is from a newer or unknown version or cannot be upgraded."""
+    def _migrate(cls, session: LearningSession, legacy: bool = False) -> bool:
+        """Bring a loaded session to the current format; False when it is from a version this one cannot read or cannot be upgraded. Pickle
+        files are versions 1-3 only (none was ever written as 4); a JSON file is the current version (a newer one is unreadable)."""
         version = session.schema_version
 
-        if isinstance(version, bool) or not isinstance(version, int) or not 1 <= version <= cls.SCHEMA_VERSION:
+        if isinstance(version, bool) or not isinstance(version, int):
+
+            return False
+
+        if not (1 <= version <= 3 if legacy else version == cls.SCHEMA_VERSION):
 
             return False
 
         # Fields added to a model after a file was written are filled on every load, whatever version the file claims: a field added without
         # a version bump (MissingPrerequisite.sections, added while the schema was still 3) left such files without the attribute, and the
-        # next report rebuild failed with an AttributeError.
+        # next report rebuild failed with an AttributeError. Attributes of the file that the model no longer has are left in place.
         if not _fill_new_fields(session):
 
             return False
