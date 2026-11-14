@@ -6,6 +6,7 @@ from backend.session import (
 )
 
 from backend.tutor import (
+    ConfiguredTutor,
     RuleBasedTutor,
     TutorResponse,
     LearningGapAnalyzer,
@@ -41,7 +42,7 @@ class InteractiveLearningPipeline:
 
         self.context_manager = ContextManager()
 
-        self.tutor = RuleBasedTutor()
+        self.tutor = ConfiguredTutor()  # the built-in tutor unless PREREQAI_TUTOR_PROVIDER=gemini
 
         self.gap_analyzer = LearningGapAnalyzer()
 
@@ -202,10 +203,13 @@ class InteractiveLearningPipeline:
 
         if paper is not None:
 
+            model_tutor = self.tutor.model_enabled()  # a configured model answers once per question; the workflow templates are then skipped
             for planned_workflow in plan.workflows:
-
+                if model_tutor and result.responses:
+                    break
                 try:
-
+                    if model_tutor:
+                        raise NotImplementedError("the model tutor answers this question")
                     response = (
 
                         self.workflow_router.execute(

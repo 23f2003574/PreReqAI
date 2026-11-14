@@ -117,11 +117,28 @@ a prerequisite covered by itself. Each entry of `missing_prerequisites` lists wh
 
 ## Interactive Learning
 
-> **Current limitation:** no tutoring model is configured in this release. A question about a concept of the paper is answered
+> **Current limitation:** no tutoring model is configured by default (the optional Gemini tutor below is off until you enable it). A question about a concept of the paper is answered
 > with that concept's built-in definition and, for a prerequisite, why it is needed; a question about what a paper concept needs ("Which prerequisites does Softmax need?") lists what it builds on; a question about the paper's concepts ("Which concepts does this paper cover?") , the extracted equations ("Which equations are in the paper?") or your progress ("How much have I completed?") is answered from the analysis; a practice request ("Quiz me on Softmax", or just "Quiz me") returns the built-in practice questions with answers (every registry concept has them, the nine prerequisite subjects do not: those are quizzed only through the interactive quiz; any other topic says there are none); a paper-level study question ("What should I learn first?", "How long will this take?", "How difficult is it?", "Am I ready to read this?") is answered from the learning plan, study-time estimate and difficulty; any other question gets the placeholder
 > "A tutoring model has not yet been configured." Either way the response says so in `warnings`, and `supporting_concepts` /
 > `supporting_sections` show where the paper covers the question. From the command line:
 > `python -m backend.cli prerequisites ask paper.pdf "What is attention?"`.
+
+### Optional Gemini tutor (off by default)
+
+The built-in tutor above is the default and the fallback; nothing changes unless you opt in. To let Google's Gemini explain a question from the analysis:
+
+```bash
+pip install google-genai                      # optional: not in requirements.txt; the official SDK (not the deprecated google-generativeai)
+export GEMINI_API_KEY=...                     # the only place the credential is read; it is never logged, stored or returned
+export PREREQAI_TUTOR_PROVIDER=gemini         # a key alone never turns it on
+# optional: PREREQAI_GEMINI_MODEL (default gemini-2.5-flash), PREREQAI_TUTOR_TIMEOUT_SECONDS (default 20), PREREQAI_TUTOR_MAX_OUTPUT_TOKENS (default 600, 64-4096)
+```
+
+- **What is sent to Google:** the question, the paper's title and concept names, built-in definitions and prerequisites of the concepts the question names, at most four excerpts of 600 characters from the sections that discuss them, and the study plan's step names. Not the whole paper, and no session history. A quiz request ("Quiz me on ...") is always answered from the quiz bank.
+- **Cost and data use:** Gemini API use may be charged. Google's terms say content sent on the free tier may be used to improve its products and content sent on a paid tier is not; check Google's current terms and do not send confidential or sensitive papers or learner data without a deployment decision.
+- **Safety:** the paper is treated as untrusted text. It reaches the model only as quoted data after fixed instructions, the model is given no tools, and its reply must be one JSON object that passes validation (bounded text, only offered concept names) before it is shown. A malformed reply is rejected. This reduces, but cannot eliminate, the chance that a hostile paper steers a model's wording; every generated answer carries a warning to check it against the paper.
+- **Failures:** a missing key or package, a rate limit (HTTP 429), a timeout, an authorisation error, a provider error or a malformed reply falls back to the built-in tutor's answer, and the response's `warnings` and the answer's `notes` say why. Each response has a `provider` field (`built-in` or `gemini:<model>`).
+- **Verification status:** implemented and tested with a fake client only (`test_prereqai_gemini_tutor.py`: no network, no key). **No live Gemini request has been made**, so the SDK call (`generate_content` with a dict config and `http_options={"timeout": ms}`), the response handling and the default model name `gemini-2.5-flash` are unverified against the live service; the model name was confirmed only from a search-result snippet of Google's model page, not from the current model list (the documentation site was not reachable), so check it and set `PREREQAI_GEMINI_MODEL` if Google has replaced it.
 
 After prerequisite analysis, learners can begin an interactive tutoring session.
 

@@ -6,6 +6,11 @@ from .rule_based_tutor import (
     RuleBasedTutor,
 )
 
+from .provider_tutor import (
+    ConfiguredTutor,
+    ProviderTutor,
+)
+
 from .tutor_response import (
     TutorResponse,
 )
