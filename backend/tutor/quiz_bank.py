@@ -802,3 +802,54 @@ QUIZ_BANK = {
         },
     ],
 }
+
+
+# Questions for the foundational prerequisite subjects of the study plans (not registry concepts, so they are kept apart from QUIZ_BANK).
+# Same schema as QUIZ_BANK: an answer states the correct answer and why. They are served only when a subject is asked for by name.
+SUBJECT_QUIZ_BANK = {
+    "Linear Algebra": [
+        {"question": "What does multiplying a vector by a matrix do geometrically?", "answer": "It applies a linear transformation to the vector, such as a rotation, scaling or projection, because each output entry is a weighted sum of the input entries.", "difficulty": "Easy"},
+        {"question": "What is an eigenvector of a matrix A?", "answer": "A non-zero vector whose direction is unchanged by A, which only scales it by a factor called the eigenvalue, so that Av equals lambda times v.", "difficulty": "Medium"},
+        {"question": "What does the rank of a matrix tell you?", "answer": "It is the number of linearly independent rows or columns, which equals the dimension of the space the matrix can map onto.", "difficulty": "Medium"},
+    ],
+    "Probability": [
+        {"question": "What is the difference between a joint and a conditional probability?", "answer": "The joint probability P(A, B) is that both events happen, while the conditional P(A | B) is the probability of A given that B is already known to have happened.", "difficulty": "Easy"},
+        {"question": "What does Bayes' rule compute?", "answer": "It computes the posterior P(A | B) from the likelihood P(B | A), the prior P(A) and the evidence P(B), as P(B | A) P(A) divided by P(B).", "difficulty": "Medium"},
+        {"question": "What is the expected value of a random variable?", "answer": "It is the probability-weighted average of all its possible values, the long-run mean over many independent draws.", "difficulty": "Easy"},
+    ],
+    "Calculus": [
+        {"question": "What does the derivative of a function at a point measure?", "answer": "It measures the instantaneous rate of change of the function there, which is the slope of the tangent line at that point.", "difficulty": "Easy"},
+        {"question": "What does the chain rule say about the derivative of f(g(x))?", "answer": "It equals the derivative of f evaluated at g(x) multiplied by the derivative of g at x, which is how gradients are passed back through layers.", "difficulty": "Medium"},
+        {"question": "What is a partial derivative?", "answer": "It is the derivative of a function of several variables with respect to one of them while all the other variables are held fixed.", "difficulty": "Easy"},
+    ],
+    "Information Theory": [
+        {"question": "What does the entropy of a distribution measure?", "answer": "It measures the average uncertainty or surprise of its outcomes, which is the expected number of bits needed to encode a draw from it.", "difficulty": "Medium"},
+        {"question": "What does KL divergence measure between two distributions P and Q?", "answer": "It measures how much extra information is needed to encode samples from P using a code built for Q, and it is zero only when the two distributions are identical.", "difficulty": "Medium"},
+        {"question": "What is mutual information between two variables?", "answer": "It is the reduction in uncertainty about one variable gained by knowing the other, and it is zero exactly when they are independent.", "difficulty": "Hard"},
+    ],
+    "Optimization": [
+        {"question": "Why does gradient descent move against the gradient?", "answer": "The gradient points in the direction of steepest increase of the function, so stepping the opposite way decreases it most quickly for a small enough step.", "difficulty": "Easy"},
+        {"question": "What goes wrong if the learning rate is too large?", "answer": "The steps overshoot the minimum, so the loss can oscillate or diverge instead of decreasing steadily.", "difficulty": "Easy"},
+        {"question": "Why is a convex function easy to minimise?", "answer": "Every local minimum of a convex function is also a global minimum, so a descent method cannot get stuck in a worse local minimum.", "difficulty": "Medium"},
+    ],
+    "Statistics": [
+        {"question": "What does a 95 percent confidence interval mean?", "answer": "The procedure that produced the interval would contain the true parameter in about 95 percent of repeated samples, not that the parameter has a 95 percent chance of lying in one interval.", "difficulty": "Hard"},
+        {"question": "What is the bias-variance trade-off?", "answer": "A simpler model tends to have high bias and low variance while a flexible one has low bias and high variance, so expected error is balanced between the two.", "difficulty": "Medium"},
+        {"question": "What does a p-value represent in a hypothesis test?", "answer": "It is the probability of seeing data at least as extreme as observed if the null hypothesis were true, so a small value is evidence against that hypothesis.", "difficulty": "Medium"},
+    ],
+    "Stochastic Processes": [
+        {"question": "What is the Markov property of a process?", "answer": "The future of the process depends only on its present state and not on how it arrived there, so the history adds no further information.", "difficulty": "Easy"},
+        {"question": "What is a random walk?", "answer": "A process whose position changes at each step by a random increment, so its position is the running sum of independent random steps.", "difficulty": "Easy"},
+        {"question": "What does the stationary distribution of a Markov chain describe?", "answer": "It is a distribution over states that stays unchanged after one more transition, and the long-run fraction of time spent in each state of a well-behaved chain converges to it.", "difficulty": "Hard"},
+    ],
+    "Neural Networks": [
+        {"question": "Why does a neural network need non-linear activation functions?", "answer": "Without them a stack of layers collapses into a single linear map, so the network could not represent non-linear relationships.", "difficulty": "Easy"},
+        {"question": "What does a single neuron compute?", "answer": "It computes a weighted sum of its inputs plus a bias and passes the result through an activation function.", "difficulty": "Easy"},
+        {"question": "What is one training step of a neural network?", "answer": "It runs a forward pass to get the loss, backpropagates the gradient of the loss to every weight, and then updates the weights with an optimiser step.", "difficulty": "Medium"},
+    ],
+    "Graphs": [
+        {"question": "What do the nodes and edges of a graph represent?", "answer": "Nodes represent entities and edges represent relationships between pairs of them, which may be directed or undirected.", "difficulty": "Easy"},
+        {"question": "What does the adjacency matrix of a graph store?", "answer": "Entry (i, j) records whether, or with what weight, there is an edge from node i to node j, so the whole graph structure is one matrix.", "difficulty": "Easy"},
+        {"question": "What is the degree of a node?", "answer": "It is the number of edges attached to the node, counted as in-degree and out-degree for a directed graph.", "difficulty": "Easy"},
+    ],
+}

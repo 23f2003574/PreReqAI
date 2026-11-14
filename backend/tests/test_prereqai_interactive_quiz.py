@@ -89,7 +89,7 @@ def test_repeated_submissions_are_counted_once(sid):
 
 def test_invalid_requests_are_refused_without_changing_anything(sid):
     served = ask(sid, "Softmax").json()["question_id"]
-    assert ask(sid, "Quantum Gravity").status_code == 422 and ask(sid, "Calculus").status_code == 422
+    assert ask(sid, "Quantum Gravity").status_code == 422 and ask(sid, "Chemistry").status_code == 422  # Calculus is a prerequisite subject with questions since the subject quiz
     assert post(sid, "reveal", question_id="Softmax:99").status_code == 404 and post(sid, "reveal", question_id="nonsense").status_code == 404
     assert post(sid, "reveal", question_id="Dropout:1").status_code == 409  # valid id that was never served
     assert post(sid, "outcome", question_id=served, outcome="maybe").status_code == 422

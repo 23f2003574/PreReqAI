@@ -4,7 +4,9 @@ text-based quiz of the tutor ("Quiz me on Softmax") is separate and unchanged.""
 
 import re
 
-from .quiz_bank import QUIZ_BANK
+from .quiz_bank import QUIZ_BANK, SUBJECT_QUIZ_BANK
+
+ASKABLE = {**QUIZ_BANK, **SUBJECT_QUIZ_BANK}  # questions that can be served by name; the default pick still uses QUIZ_BANK (paper concepts) only
 
 OUTCOMES = ("knew", "missed")
 MASTERY_STREAK = 2  # this many "knew" in a row, most recent last, is "mastered"
@@ -30,8 +32,8 @@ def question_id(concept, number):
 def _lookup(identifier):
     """(concept, number, item) for a question id such as "Softmax:2"; QuizError("unknown") for anything else."""
     concept, _, number = str(identifier).rpartition(":")
-    if concept in QUIZ_BANK and number.isdigit() and 1 <= int(number) <= len(QUIZ_BANK[concept]):
-        return concept, int(number), QUIZ_BANK[concept][int(number) - 1]
+    if concept in ASKABLE and number.isdigit() and 1 <= int(number) <= len(ASKABLE[concept]):
+        return concept, int(number), ASKABLE[concept][int(number) - 1]
     raise QuizError("unknown", f"There is no quiz question {identifier!r}.",
                     "Use the question_id from GET /quiz/question; ids look like 'Softmax:1'.")
 
@@ -48,7 +50,7 @@ def next_question(session, concept=None):
     """Serve one question without its answer. With a concept: its least-practised question (ties: the first). Without: among the paper's
     concepts with questions, the one with the lowest mastery (least attempted, then fewest "knew"), then by name. Marks it as served."""
     if concept is not None:
-        named = {_key(name): name for name in QUIZ_BANK}.get(_key(concept))
+        named = {_key(name): name for name in ASKABLE}.get(_key(concept))
         if named is None:
             raise QuizError("unsupported", f"PreReqAI has no practice questions for {concept!r}.",
                             "Name a concept with questions, for example one listed in the session's concepts.")
@@ -62,10 +64,10 @@ def next_question(session, concept=None):
     taken = {}
     for attempt in _attempts(session):
         taken[attempt["question_id"]] = taken.get(attempt["question_id"], 0) + 1
-    number = min(range(1, len(QUIZ_BANK[chosen]) + 1), key=lambda n: (taken.get(question_id(chosen, n), 0), n))
+    number = min(range(1, len(ASKABLE[chosen]) + 1), key=lambda n: (taken.get(question_id(chosen, n), 0), n))
     identifier = question_id(chosen, number)
     session.quiz_pending[identifier] = session.quiz_pending.get(identifier) or {"revealed": False}
-    item = QUIZ_BANK[chosen][number - 1]
+    item = ASKABLE[chosen][number - 1]
     return {"question_id": identifier, "concept": chosen, "difficulty": item["difficulty"], "question": item["question"]}
 
 
