@@ -410,13 +410,14 @@ class SessionManager:
 
             return False
 
-        if version < cls.SCHEMA_VERSION:  # 1 -> 2 -> 3: only fields with defaults were added since
+        # Fields added to a model after a file was written are filled on every load, whatever version the file claims: a field added without
+        # a version bump (MissingPrerequisite.sections, added while the schema was still 3) left such files without the attribute, and the
+        # next report rebuild failed with an AttributeError.
+        if not _fill_new_fields(session):
 
-            if not _fill_new_fields(session):
+            return False
 
-                return False
-
-            session.schema_version = cls.SCHEMA_VERSION
+        session.schema_version = cls.SCHEMA_VERSION
 
         return True
 
