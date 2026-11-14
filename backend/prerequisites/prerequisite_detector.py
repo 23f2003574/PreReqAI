@@ -314,6 +314,41 @@ class PrerequisiteDetector:
             "Graphs",
             "Linear Algebra",
         ],
+
+        # Classical machine learning and statistics: built only on subjects that already have hours, resources and justifications.
+        "Principal Component Analysis": [
+            "Linear Algebra",
+            "Statistics",
+        ],
+        "Support Vector Machine": [
+            "Linear Algebra",
+            "Optimization",
+        ],
+        "K-Means Clustering": [
+            "Linear Algebra",
+            "Statistics",
+        ],
+        "Decision Tree": [
+            "Probability",
+            "Information Theory",
+        ],
+        "Random Forest": [
+            "Probability",
+            "Statistics",
+        ],
+        "Logistic Regression": [
+            "Probability",
+            "Calculus",
+            "Optimization",
+        ],
+        "Regularization": [
+            "Statistics",
+            "Optimization",
+        ],
+        "Cross-Validation": [
+            "Probability",
+            "Statistics",
+        ],
     }
 
     def detect(

@@ -271,6 +271,46 @@ class ConceptExplanationEngine:
             "A low-dimensional vector representation of a graph node that preserves information about its neighbourhood and role in the graph.",
             "Intermediate",
         ),
+
+        "Principal Component Analysis": (
+            "Projecting data onto the few orthogonal directions of greatest variance (the leading eigenvectors of its covariance matrix) to reduce dimension while keeping as much variation as possible.",
+            "Intermediate",
+        ),
+
+        "Support Vector Machine": (
+            "A classifier that finds the separating boundary with the largest margin between classes, using only the nearest training points (support vectors) and, with kernels, non-linear boundaries.",
+            "Intermediate",
+        ),
+
+        "K-Means Clustering": (
+            "Grouping data into k clusters by alternately assigning each point to its nearest centre and moving each centre to the mean of its points.",
+            "Beginner",
+        ),
+
+        "Decision Tree": (
+            "A model that predicts by asking a sequence of questions about the input features, choosing each split to reduce impurity such as entropy or Gini.",
+            "Beginner",
+        ),
+
+        "Random Forest": (
+            "An ensemble of decision trees trained on random resamples of the data and features whose predictions are averaged or voted, which lowers the variance of a single tree.",
+            "Intermediate",
+        ),
+
+        "Logistic Regression": (
+            "A linear classifier that passes a weighted sum of the features through the sigmoid function to give a class probability, fitted by maximising likelihood.",
+            "Beginner",
+        ),
+
+        "Regularization": (
+            "Adding a penalty on model complexity, such as the L1 or L2 norm of the weights, to the training objective so the model fits the data without overfitting it.",
+            "Intermediate",
+        ),
+
+        "Cross-Validation": (
+            "Estimating how well a model generalises by repeatedly training on part of the data and testing on the held-out part, as in k-fold cross-validation.",
+            "Beginner",
+        ),
     }
 
     def explain(

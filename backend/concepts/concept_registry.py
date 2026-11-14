@@ -92,6 +92,17 @@ class ConceptRegistry:
             Concept("Graph Convolution", "graph_ml", aliases=('GCN', 'GCNs', 'graph convolutional', 'graph convolutional network')),
             Concept("Graph Attention Network", "graph_ml", aliases=('GAT', 'GATs')),
             Concept("Node Embedding", "graph_ml"),
+
+            # Classical machine learning and statistics
+
+            Concept("Principal Component Analysis", "classical_ml", aliases=('PCA',)),
+            Concept("Support Vector Machine", "classical_ml", aliases=('SVM',)),
+            Concept("K-Means Clustering", "classical_ml", aliases=('k-means', 'k means', 'kmeans')),
+            Concept("Decision Tree", "classical_ml"),
+            Concept("Random Forest", "classical_ml"),
+            Concept("Logistic Regression", "classical_ml"),
+            Concept("Regularization", "classical_ml", aliases=('regularisation', 'weight decay', 'L1 penalty', 'L2 penalty')),
+            Concept("Cross-Validation", "classical_ml", aliases=('cross validation', 'k-fold cross-validation', 'k-fold cross validation')),
         ]
 
     def all(self):

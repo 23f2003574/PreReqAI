@@ -57,3 +57,27 @@ def test_longer_concepts_do_not_also_count_their_parts():
 
 def test_ordinary_words_are_not_detected():
     assert not set(_detect("A token of appreciation; the vision of a contrast; policy optimization of proximal gains.")) & set(ADDED)
+
+
+CLASSICAL = ["Principal Component Analysis", "Support Vector Machine", "K-Means Clustering", "Decision Tree", "Random Forest",
+             "Logistic Regression", "Regularization", "Cross-Validation"]
+
+
+@pytest.mark.parametrize("name", CLASSICAL)
+def test_each_classical_ml_concept_has_rules_on_known_subjects_an_explanation_and_a_quiz(name):
+    from backend.prerequisites.prerequisite_learning_planner import PrerequisiteLearningPlanner as Planner
+    from backend.resources.learning_resource_recommender import LearningResourceRecommender  # noqa: F401
+    assert name in NAMES and name in ConceptExplanationEngine.EXPLANATIONS and name in QUIZ_BANK
+    needs = PrerequisiteDetector.PREREQUISITE_RULES[name]
+    assert needs and all(subject in Planner.STUDY_TIME and subject in Planner.STUDY_ORDER for subject in needs)
+
+
+def test_classical_ml_terms_are_detected_in_a_representative_paper():
+    found = _detect("We reduce dimension with PCA, then train an SVM and k-means baseline. A random forest and a decision tree use "
+                    "L2 regularisation chosen by k-fold cross-validation; logistic regression is the linear baseline.")
+    assert set(CLASSICAL) <= set(found)
+
+
+def test_classical_ml_names_do_not_match_ordinary_words():
+    assert not set(_detect("The principal component of the plan was a support group; a tree of decisions in a forest, "
+                           "a regular logistics model, and a validation of crosses.")) & set(CLASSICAL)

@@ -682,4 +682,123 @@ QUIZ_BANK = {
                 "Easy",
         },
     ],
+
+    "Principal Component Analysis": [
+
+        {
+            "question":
+                "What does the first principal component of a dataset represent?",
+
+            "answer":
+                "The direction along which the data varies the most.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+
+    "Support Vector Machine": [
+
+        {
+            "question":
+                "What is the margin that a support vector machine maximises?",
+
+            "answer":
+                "The distance between the separating boundary and the nearest training points of each class.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+
+    "K-Means Clustering": [
+
+        {
+            "question":
+                "What two steps does k-means repeat until the clusters stop changing?",
+
+            "answer":
+                "It assigns each point to its nearest centre and then moves each centre to the mean of its points.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+
+    "Decision Tree": [
+
+        {
+            "question":
+                "What does a decision tree choose when it splits a node?",
+
+            "answer":
+                "The feature and threshold that most reduce impurity, such as entropy or Gini, in the child nodes.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+
+    "Random Forest": [
+
+        {
+            "question":
+                "Why does averaging many trees in a random forest help?",
+
+            "answer":
+                "It lowers the variance of a single overfitted tree because the trees, trained on different samples, make different errors.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+
+    "Logistic Regression": [
+
+        {
+            "question":
+                "What does logistic regression output for an input?",
+
+            "answer":
+                "The probability of the positive class, found by passing a weighted sum of the features through the sigmoid function.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
+
+
+    "Regularization": [
+
+        {
+            "question":
+                "Why does an L2 penalty on the weights reduce overfitting?",
+
+            "answer":
+                "It discourages large weights, which limits the model's complexity so it fits noise in the training data less.",
+
+            "difficulty":
+                "Medium",
+        },
+    ],
+
+
+    "Cross-Validation": [
+
+        {
+            "question":
+                "In k-fold cross-validation, what is each fold used for?",
+
+            "answer":
+                "Each fold is held out once as the test set while the model is trained on the other folds.",
+
+            "difficulty":
+                "Easy",
+        },
+    ],
 }
