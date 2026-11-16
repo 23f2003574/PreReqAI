@@ -349,6 +349,15 @@ def run_prerequisites_analyze(args, platform=None) -> int:
                 print("    skipped: " + ", ".join(f"{e['concept']} ({e['why']})" for e in paths["excluded"]))
             for text in paths.get("problems") or []:
                 print(f"    note: {text}")
+        plan = (report.get("personalised_plan") or {}) if run is not None else {}
+        if plan:
+            work = plan["workload"]
+            print(f"  for you (learner profile {args.profile}): {work['remaining_hours']}h left of {work['without_your_knowledge_hours']}h for a newcomer "
+                  f"(known {work['known_hours']}h, studied {work['studied_hours']}h), about {work['remaining_days']} days")
+            for item in plan["covered"]:
+                print(f"    covered: {item['concept']} ({item['status']}, from {item['from']})")
+            for item in plan["outstanding"]:
+                print(f"    {item['priority']}. {item['concept']} (~{item['estimated_hours']}h): {item['why']}")
         if args.tree:
             tree = report.get("prerequisite_tree") or []
             print("  prerequisite tree:" if tree else "  prerequisite tree: no concept of this paper has prerequisites")

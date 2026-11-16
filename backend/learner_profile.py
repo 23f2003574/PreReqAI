@@ -151,6 +151,18 @@ class ProfileRun:
                 self.warnings.append(f"{label} {name!r} is not a subject PreReqAI knows, so it was not saved to the learner profile")
         return kept
 
+    def _personalise(self, outcome):
+        """Attach the personalised plan to the report and the session (only runs that use a profile have one; the paper's own analysis is unchanged)."""
+        from backend.prerequisites.personalised_plan import build_plan
+        from backend.session import session_manager
+
+        session = session_manager.get(outcome.get("session_id") or "")
+        if session is None:
+            return
+        plan = build_plan(session.paper, {"known": self.profile_known, "studied": self.profile_studied})
+        outcome["report"]["personalised_plan"] = session.report["personalised_plan"] = plan
+        session_manager.save(session)
+
     def finish(self, outcome):
         implicit = {key(n) for n in (*self.profile_known, *self.profile_studied)} - {key(n) for n in (*self.explicit_known, *self.explicit_studied)}
         if isinstance(outcome, dict):
@@ -177,5 +189,6 @@ class ProfileRun:
                 outcome["warnings"].append(f"the learner profile {self.path} could not be saved ({getattr(error, 'strerror', None) or error}); "
                                            "the previous profile is unchanged")
                 return outcome
+        self._personalise(outcome)
         outcome["profile"] = {"path": str(self.path), "known": known, "studied": [n for n in studied if key(n) not in {key(k) for k in known}]}
         return outcome

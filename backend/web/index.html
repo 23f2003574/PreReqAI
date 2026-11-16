@@ -45,6 +45,8 @@
     <input id="known" name="known" type="text" autocomplete="off">
     <label for="hours">Hours you can study per day <small>(optional: above 0 and at most 24; 3 if left empty)</small></label>
     <input id="hours" name="hours_per_day" type="number" min="0.1" max="24" step="any" inputmode="decimal" placeholder="3">
+    <label for="profile">Learner profile <small>(optional: a name such as "me"; the server keeps what you know across papers when it has PREREQAI_PROFILE_DIR set)</small></label>
+    <input id="profile" name="profile" type="text" autocomplete="off" maxlength="64" pattern="[A-Za-z0-9_\-]*">
     <button id="submit" type="submit">Analyse paper</button>
   </form>
 
@@ -56,6 +58,7 @@
     <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
     <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
     <section><h2>Study plan</h2><div id="plan"></div><div class="actions"><button id="download" type="button" class="small" hidden>Download study plan (Markdown)</button></div></section>
+    <section id="mineBox" hidden><h2>Your study plan</h2><div id="mine"></div></section>
     <section id="pathsbox"><h2>Learning paths</h2><div id="paths"></div></section>
     <section id="schedulebox"><h2>Study schedule</h2><p id="schedulesummary" class="lead"></p><div id="schedule"></div></section>
     <section id="tutor"><h2>Ask a question</h2>
@@ -122,7 +125,7 @@ function table(headers, rows) {
 function fill(id, node) { var box = $(id); box.textContent = ""; box.appendChild(node); }
 
 var KEY = "prereqai.session";  // the browser remembers only the session id; the server holds the progress
-var state = { paths: null, quizTopics: [], round: null, suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
+var state = { mine: null, paths: null, quizTopics: [], round: null, suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
 
 function remember(sid) { try { if (sid) localStorage.setItem(KEY, sid); else localStorage.removeItem(KEY); } catch (e) { /* storage unavailable: no restore */ } }
 function recall() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
@@ -165,6 +168,21 @@ function renderSchedule() {
   }
 }
 
+// The plan for this learner, exactly as the server built it from the learner profile (report.personalised_plan); nothing is calculated here.
+function renderMine() {
+  var plan = state.mine, box = el("div");
+  $("mineBox").hidden = !plan;
+  if (!plan) return;
+  var w = plan.workload;
+  box.appendChild(el("p", w.remaining_hours + " h left of the " + w.without_your_knowledge_hours + " h a newcomer would need (" + w.known_hours + " h known, " + w.studied_hours + " h studied)" +
+                          (w.remaining_days ? ", about " + w.remaining_days + " days." : "."), "lead"));
+  if ((plan.covered || []).length) box.appendChild(el("p", "Already covered: " + plan.covered.map(function (c) { return c.concept + " (" + c.status + ", from " + c.from + ")"; }).join("; "), "meta"));
+  box.appendChild((plan.outstanding || []).length
+    ? table(["Priority", "Study", "Hours", "Why"], plan.outstanding.map(function (o) { return [String(o.priority), o.concept, o.estimated_hours === null ? "-" : String(o.estimated_hours), o.why]; }))
+    : el("p", "Nothing outstanding: your profile and progress cover this paper's prerequisites.", "msg info"));
+  fill("mine", box);
+}
+
 // The ordered learning paths exactly as the server built them (report.study_paths): foundations first, why each subject is needed, a resource.
 function renderPaths() {
   var paths = state.paths, box = el("div"), steps = (paths && paths.combined) || [];
@@ -185,6 +203,7 @@ function renderPaths() {
 function refreshPaths() {
   fetch("/api/session/" + encodeURIComponent(state.sid)).then(function (r) { return r.ok ? r.json() : null; }).then(function (body) {
     if (body && body.study_paths) { state.paths = body.study_paths; renderPaths(); }
+    if (body && body.personalised_plan) { state.mine = body.personalised_plan; renderMine(); }
   }).catch(function () { /* the paths stay as they were; the next full render refreshes them */ });
 }
 
@@ -229,6 +248,7 @@ function render(body) {
   loadQuizTopics();
   state.paper = paper; state.difficulty = report.paper_difficulty || null;
   state.paths = report.study_paths || null; renderPaths();
+  state.mine = report.personalised_plan || null; renderMine();
   state.studyTime = report.study_time || null; state.readiness = report.readiness || null;
   state.studied = {}; (report.study_progress || []).forEach(function (p) { if (p.completed) state.studied[p.concept] = true; });
   state.steps = (report.learning_plan || []).map(function (s) { return { step: s.step, concept: s.concept, hours: s.estimated_hours }; });
@@ -603,6 +623,7 @@ async function submit(event) {
   }
   var data = new FormData();
   if (hours !== "") data.append("hours_per_day", hours);
+  if ($("profile").value.trim() !== "") data.append("profile", $("profile").value.trim());
   if (file) data.append("paper", file); else data.append("source", source);
   known.split(",").map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (k) { data.append("known", k); });
   $("submit").disabled = true;
