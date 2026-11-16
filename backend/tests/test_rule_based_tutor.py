@@ -1,3 +1,4 @@
+from backend.prerequisites.study_time_estimator import StudyTimeEstimator
 from backend.tutor import (
     RuleBasedTutor,
 )
@@ -113,7 +114,8 @@ def test_time_answer_follows_study_progress_and_an_empty_plan():
 
     paper = _planned_paper()  # 4 h + 3 h over 2 days at 3.5 h/day
     paper.study_progress = [StudyProgress("Linear Algebra", True, 100), StudyProgress("Probability", False, 0)]
-    assert _ask(paper, "How long will this take?").answer == "Plan about 3 hours of preparation, roughly 1 day at 3.5 hours a day."
+    StudyTimeEstimator().estimate(paper)  # marking a step studied re-estimates the schedule, as the platform does: 3 h left fits one 3 h day
+    assert _ask(paper, "How long will this take?").answer == "Plan about 3 hours of preparation, roughly 1 day at 3 hours a day."
     assert "Already studied: Linear Algebra" in _ask(paper, "What should I learn first?").answer
 
     paper.study_progress = [StudyProgress("Linear Algebra", True, 100), StudyProgress("Probability", True, 100)]
