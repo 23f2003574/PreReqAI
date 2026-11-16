@@ -5,6 +5,7 @@ from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
 from backend.platform.prereqai_platform import _concept_key
+from backend.prerequisites.prerequisite_paths import build_paths
 from backend.study_plan_markdown import plan_markdown, studied_concepts
 from backend.tutor import quiz_session
 from backend.tutor.tutor_provider import TutorConfig
@@ -135,6 +136,7 @@ def get_session(session_id: str):
         "quiz_pending": quiz_session.pending(session),
 
         "prerequisite_tree": session.report.get("prerequisite_tree", []),
+        "study_paths": build_paths(session.paper),  # built from the session's current progress, so it follows studied and known concepts
 
         "active_concept": session.active_concept,
 

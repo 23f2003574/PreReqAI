@@ -605,7 +605,8 @@ class PreReqAIPlatform:
         paper = result.paper
         missing = self._complete_studied(paper, studied)
         if len([name for name in studied if name and name.strip()]) > len(missing):  # nothing completed: the report is already current
-            self._refresh_progress(paper, result.report)
+            fresh = self._refresh_progress(paper, result.report)
+            result.report["study_paths"] = fresh["study_paths"]  # analysis-time progress shapes the paths; later changes are read from GET /api/session/{id}
         return missing
 
 

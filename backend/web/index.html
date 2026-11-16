@@ -56,6 +56,7 @@
     <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
     <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
     <section><h2>Study plan</h2><div id="plan"></div><div class="actions"><button id="download" type="button" class="small" hidden>Download study plan (Markdown)</button></div></section>
+    <section id="pathsbox"><h2>Learning paths</h2><div id="paths"></div></section>
     <section id="schedulebox"><h2>Study schedule</h2><p id="schedulesummary" class="lead"></p><div id="schedule"></div></section>
     <section id="tutor"><h2>Ask a question</h2>
       <p class="lead">No tutoring model is configured in this release: answers are built-in definitions and facts from your analysis, not generated explanations.</p>
@@ -121,7 +122,7 @@ function table(headers, rows) {
 function fill(id, node) { var box = $(id); box.textContent = ""; box.appendChild(node); }
 
 var KEY = "prereqai.session";  // the browser remembers only the session id; the server holds the progress
-var state = { quizTopics: [], round: null, suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
+var state = { paths: null, quizTopics: [], round: null, suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
 
 function remember(sid) { try { if (sid) localStorage.setItem(KEY, sid); else localStorage.removeItem(KEY); } catch (e) { /* storage unavailable: no restore */ } }
 function recall() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
@@ -164,6 +165,29 @@ function renderSchedule() {
   }
 }
 
+// The ordered learning paths exactly as the server built them (report.study_paths): foundations first, why each subject is needed, a resource.
+function renderPaths() {
+  var paths = state.paths, box = el("div"), steps = (paths && paths.combined) || [];
+  if (!paths) box.appendChild(el("p", "No learning paths are available for this session. Analyse the paper again.", "msg info"));
+  else if (!steps.length) box.appendChild(el("p", "Nothing left to study: no prerequisite paths remain.", "msg info"));
+  else box.appendChild(table(["#", "Study", "Needed by", "Hours", "Resource"], steps.map(function (s) {
+    var cell = "", r = s.resource;
+    if (r && safeUrl(r.url)) { cell = el("a", r.title); cell.href = r.url; cell.rel = "noopener noreferrer"; cell.target = "_blank"; }
+    var by = (s.direct_for || []).concat((s.transitive_for || []).map(function (n) { return n + " (through other prerequisites)"; }));
+    return [String(s.order), s.concept, by.join("; "), s.estimated_hours === null || s.estimated_hours === undefined ? "-" : String(s.estimated_hours), cell];
+  })));
+  if (paths && (paths.excluded || []).length) box.appendChild(el("p", "Skipped: " + paths.excluded.map(function (e) { return e.concept + " (" + e.why + ")"; }).join(", "), "meta"));
+  if (paths) (paths.problems || []).forEach(function (t) { box.appendChild(el("p", t, "msg warn")); });
+  fill("paths", box);
+}
+
+// Studying a step changes the paths, which only the server builds: read them again (the other progress endpoints answer with their own fixed keys).
+function refreshPaths() {
+  fetch("/api/session/" + encodeURIComponent(state.sid)).then(function (r) { return r.ok ? r.json() : null; }).then(function (body) {
+    if (body && body.study_paths) { state.paths = body.study_paths; renderPaths(); }
+  }).catch(function () { /* the paths stay as they were; the next full render refreshes them */ });
+}
+
 function renderPlan() {
   var box = el("div");
   if (!state.steps.length) box.appendChild(el("p", "Nothing left to study: no planned prerequisites.", "msg info"));
@@ -204,6 +228,7 @@ function render(body) {
   state.sid = body.session_id || state.sid; remember(state.sid);
   loadQuizTopics();
   state.paper = paper; state.difficulty = report.paper_difficulty || null;
+  state.paths = report.study_paths || null; renderPaths();
   state.studyTime = report.study_time || null; state.readiness = report.readiness || null;
   state.studied = {}; (report.study_progress || []).forEach(function (p) { if (p.completed) state.studied[p.concept] = true; });
   state.steps = (report.learning_plan || []).map(function (s) { return { step: s.step, concept: s.concept, hours: s.estimated_hours }; });
@@ -275,7 +300,7 @@ function setStudied(concept, studied) {
       function (body) {
         state.studied = {}; (body.study_progress || []).forEach(function (p) { if (p.completed) state.studied[p.concept] = true; });
         state.readiness = body.readiness || state.readiness; state.studyTime = body.study_time || state.studyTime;
-        renderMeta();
+        renderMeta(); refreshPaths();
       });
 }
 

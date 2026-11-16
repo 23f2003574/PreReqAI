@@ -43,6 +43,9 @@ def _prerequisite_tree(paper: Paper) -> list:
     return [node(concept.name, frozenset()) for concept in paper.concepts if rules.get(concept.name)]
 
 
+from backend.prerequisites.prerequisite_paths import build_paths  # noqa: E402
+
+
 class LearningReportGenerator:
     """
     Produces a user-facing learning report
@@ -180,6 +183,8 @@ class LearningReportGenerator:
             "not_analysed_note": self.NOT_ANALYSED_NOTE if not_analysed else "",
 
             "prerequisite_tree": _prerequisite_tree(paper),
+
+            "study_paths": build_paths(paper),
 
             "learning_paths": {
 

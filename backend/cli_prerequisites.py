@@ -78,6 +78,8 @@ def add_prerequisites_parser(subparsers):
     analyze.add_argument("--resume", type=_nonblank, default=None, metavar="PLAN_FILE",
                          help="Mark as studied every concept ticked in a plan saved earlier with --plan-file, "
                               "so progress carries over between runs (add --studied for newly finished concepts)")
+    analyze.add_argument("--paths", action="store_true",
+                         help="Show the ordered learning paths: what to study first, why each subject is needed, and a resource for it")
     analyze.add_argument("--resources", action="store_true",
                          help="Also list a curated course or article (with link) for each concept still to study")
     analyze.add_argument("--plan-file", type=_nonblank, default=None, metavar="PATH", dest="plan_file",
@@ -335,6 +337,18 @@ def run_prerequisites_analyze(args, platform=None) -> int:
                 print("  resources: none left to study")
             else:
                 print("  resources: none available for this paper's concepts")
+        if getattr(args, "paths", False):
+            paths = report.get("study_paths") or {}
+            combined = paths.get("combined") or []
+            print("  learning paths (foundations first):" if combined else "  learning paths: nothing left to study")
+            for item in combined:
+                needed = ", ".join([*item["direct_for"], *(f"{n} (through other prerequisites)" for n in item["transitive_for"])])
+                resource = item["resource"]
+                print(f"    {item['order']}. {item['concept']} (~{item['estimated_hours']}h): needed by {needed}" + (f"; {resource['title']} {resource['url']}" if resource else ""))
+            if paths.get("excluded"):
+                print("    skipped: " + ", ".join(f"{e['concept']} ({e['why']})" for e in paths["excluded"]))
+            for text in paths.get("problems") or []:
+                print(f"    note: {text}")
         if args.tree:
             tree = report.get("prerequisite_tree") or []
             print("  prerequisite tree:" if tree else "  prerequisite tree: no concept of this paper has prerequisites")
