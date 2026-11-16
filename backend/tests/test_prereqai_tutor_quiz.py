@@ -19,9 +19,10 @@ def _ask(question):
 
 
 def test_quiz_me_on_a_concept_returns_its_questions_and_answers():
-    assert _ask("Quiz me on Softmax") == (
+    answer = _ask("Quiz me on Softmax")
+    assert answer.startswith(  # the first question is unchanged; the second one was added later
         "Softmax Q1 (Easy): Why does Softmax produce probabilities instead of raw scores? "
-        "Answer: Because it normalizes values into a probability distribution.")
+        "Answer: Because it normalizes values into a probability distribution. Softmax Q2 (Medium):")
 
 
 def test_quiz_with_no_concept_named_covers_the_paper_concepts_that_have_questions():

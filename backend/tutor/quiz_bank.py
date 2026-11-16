@@ -941,3 +941,65 @@ SUBJECT_QUIZ_BANK = {
         {"question": "What is the degree of a node?", "answer": "It is the number of edges attached to the node, counted as in-degree and out-degree for a directed graph.", "difficulty": "Easy"},
     ],
 }
+
+
+# Further questions, each on a different aspect of its concept (not a rewording). They are appended to the concept's list, so the ids of the
+# questions above ("Softmax:1") never change; a concept needs at least two to reach mastery, which asks for two different questions.
+def _q(question, answer, difficulty):
+    return {"question": question, "answer": answer, "difficulty": difficulty}
+
+
+_MORE_QUESTIONS = {
+    "Attention": [_q("In attention, what do the weights applied to the values depend on?",
+                     "On how well each key matches the query: the scores of the query against every key are normalised (usually with a softmax) and "
+                     "used to take a weighted average of the values.", "Medium")],
+    "Transformer": [
+        _q("What replaces recurrence in a Transformer, and what does that allow during training?",
+           "Attention layers: every position is computed from all others at once, so a whole sequence is processed in parallel instead of step by step.", "Medium"),
+        _q("What are the two sub-layers of a Transformer encoder block, and what keeps them trainable when stacked deeply?",
+           "A self-attention layer and a position-wise feed-forward network; residual connections and layer normalization around each sub-layer.", "Hard"),
+    ],
+    "Markov Decision Process": [
+        _q("Which elements define a Markov decision process?",
+           "States, actions, transition probabilities between states given an action, a reward function, and usually a discount factor.", "Easy"),
+        _q("What does the discount factor control in a Markov decision process?",
+           "How much future rewards count against immediate ones: a value near 0 makes the agent short-sighted, near 1 makes it value the long run.", "Medium"),
+    ],
+    "Softmax": [_q("What happens to the output of a softmax when one input score is much larger than the others?",
+                   "Almost all the probability mass goes to that entry and the rest approach zero, so the output becomes close to a one-hot choice.", "Medium")],
+    "Backpropagation": [_q("Why does backpropagation work backwards from the loss instead of computing each weight's gradient separately?",
+                           "The chain rule lets each layer reuse the gradient already computed for the layer after it, so all gradients cost about one extra pass.", "Medium")],
+    "Cross-Entropy Loss": [_q("Why is cross-entropy usually paired with a softmax output in classification?",
+                              "The softmax gives a probability distribution over classes, and cross-entropy compares it with the true label, penalising confident wrong predictions heavily.", "Medium")],
+    "Reinforcement Learning": [_q("What is the exploration-exploitation trade-off?",
+                                  "The agent must choose between trying actions it is unsure about, to learn more, and repeating the best action it knows, to collect reward now.", "Medium")],
+    "Diffusion Model": [_q("What do the forward and reverse processes of a diffusion model do?",
+                           "The forward process gradually adds noise to data until it is nearly pure noise; the reverse process is learned and removes the noise step by step to generate data.", "Medium")],
+    "Positional Encoding": [_q("Why are positional encodings added to the token embeddings rather than left out of an attention model?",
+                               "Attention treats its input as a set and is blind to order, so without them the model could not tell 'dog bites man' from 'man bites dog'.", "Easy")],
+    "Multi-Head Attention": [_q("How is the output of the separate attention heads combined?",
+                                "The heads' outputs are concatenated and passed through a learned linear projection back to the model dimension.", "Medium")],
+    "Layer Normalization": [_q("Why is layer normalization preferred to batch normalization in Transformers?",
+                               "It normalises over the features of each example, so it does not depend on batch size or on other sequences in the batch and behaves the same in training and inference.", "Medium")],
+    "Dropout": [_q("How does dropout behave at inference time?",
+                   "It is switched off: all units are used, with activations scaled (or trained scaled) so their expected size matches training.", "Medium")],
+    "Embedding": [_q("How is an embedding table used for a token?",
+                     "The token's integer id selects one row of a learned matrix, giving a dense vector that is trained with the rest of the model.", "Easy")],
+    "Fine-Tuning": [_q("Why is fine-tuning a pre-trained model usually done with a small learning rate?",
+                       "A large rate would quickly overwrite the general features learned during pre-training; small steps adapt them to the new task without forgetting them.", "Medium")],
+    "Policy Gradient": [_q("Why do policy gradient methods subtract a baseline from the return?",
+                           "It reduces the variance of the gradient estimate without changing its expected value, which makes learning more stable.", "Hard")],
+    "Graph Neural Network": [_q("What does one message-passing layer let a node learn about?",
+                                "Its neighbours: each node aggregates messages from adjacent nodes, so after k layers it has information from nodes up to k hops away.", "Medium")],
+    "Large Language Model": [_q("What does next-token prediction training teach a large language model, and what does it not guarantee?",
+                                "It teaches the statistical structure of text well enough to continue it fluently; it does not guarantee that the generated statements are true.", "Medium")],
+    "Convolutional Neural Network": [_q("What does pooling do in a convolutional network?",
+                                        "It summarises small neighbourhoods of a feature map, reducing its size and giving some tolerance to small shifts of the input.", "Easy")],
+    "Recurrent Neural Network": [_q("Why do plain recurrent networks struggle with long-range dependencies?",
+                                    "Gradients are multiplied through many time steps and tend to vanish (or explode), so early inputs barely influence learning.", "Medium")],
+    "Maximum Likelihood Estimation": [_q("Why is the log-likelihood maximised instead of the likelihood?",
+                                         "The log turns a product over examples into a sum, which is numerically stable and easier to differentiate, and has the same maximiser.", "Medium")],
+}
+
+for _name, _items in _MORE_QUESTIONS.items():
+    QUIZ_BANK[_name].extend(_items)

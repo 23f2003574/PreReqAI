@@ -9,7 +9,8 @@ from .quiz_bank import QUIZ_BANK, SUBJECT_QUIZ_BANK
 ASKABLE = {**QUIZ_BANK, **SUBJECT_QUIZ_BANK}  # questions that can be served by name; the default pick still uses QUIZ_BANK (paper concepts) only
 
 OUTCOMES = ("knew", "missed")
-MASTERY_STREAK = 2  # this many "knew" in a row, most recent last, is "mastered"
+MASTERY_STREAK = 2  # this many "knew" in a row, most recent last, is "mastered" ...
+MASTERY_DISTINCT = 2  # ... when that run covers at least this many different questions: repeating one question is practice, not mastery
 
 
 class QuizError(Exception):
@@ -32,7 +33,7 @@ def question_id(concept, number):
 def _lookup(identifier):
     """(concept, number, item) for a question id such as "Softmax:2"; QuizError("unknown") for anything else."""
     concept, _, number = str(identifier).rpartition(":")
-    if concept in ASKABLE and number.isdigit() and 1 <= int(number) <= len(ASKABLE[concept]):
+    if concept in ASKABLE and re.fullmatch(r"[0-9]+", number) and 1 <= int(number) <= len(ASKABLE[concept]):
         return concept, int(number), ASKABLE[concept][int(number) - 1]
     raise QuizError("unknown", f"There is no quiz question {identifier!r}.",
                     "Use the question_id from GET /quiz/question; ids look like 'Softmax:1'.")
@@ -64,7 +65,8 @@ def next_question(session, concept=None):
     taken = {}
     for attempt in _attempts(session):
         taken[attempt["question_id"]] = taken.get(attempt["question_id"], 0) + 1
-    number = min(range(1, len(ASKABLE[chosen]) + 1), key=lambda n: (taken.get(question_id(chosen, n), 0), n))
+    last = _attempts(session)[-1]["question_id"] if _attempts(session) else None  # the question answered last is not served again while another exists
+    number = min(range(1, len(ASKABLE[chosen]) + 1), key=lambda n: (taken.get(question_id(chosen, n), 0), question_id(chosen, n) == last, n))
     identifier = question_id(chosen, number)
     session.quiz_pending[identifier] = session.quiz_pending.get(identifier) or {"revealed": False}
     item = ASKABLE[chosen][number - 1]
@@ -74,7 +76,8 @@ def next_question(session, concept=None):
 
 def reveal(session, identifier):
     """The answer to a question that was served; remembered so the outcome can be recorded after it."""
-    _, _, item = _lookup(identifier)
+    concept, number, item = _lookup(identifier)
+    identifier = question_id(concept, number)  # "Softmax:01" is the question "Softmax:1", never a second one
     if identifier not in session.quiz_pending:
         raise QuizError("state", f"Question {identifier!r} has not been asked in this session (or its outcome is already recorded).",
                         "Request a question with GET /quiz/question first.")
@@ -85,7 +88,8 @@ def reveal(session, identifier):
 def record(session, identifier, outcome):
     """Record `knew` or `missed` for a served question, once: the question is then no longer pending, so a repeated submission is refused
     instead of counted twice."""
-    concept, _, _ = _lookup(identifier)
+    concept, number, _ = _lookup(identifier)
+    identifier = question_id(concept, number)  # one identity per question, however the id was written
     if outcome not in OUTCOMES:
         raise QuizError("outcome", f"outcome must be 'knew' or 'missed', not {outcome!r}.", "Send {\"outcome\": \"knew\"} or {\"outcome\": \"missed\"}.")
     if identifier not in session.quiz_pending:
@@ -100,18 +104,20 @@ def progress(session):
     """{"attempts", "concepts": [{concept, attempts, knew, missed, mastery, status}]} for the concepts attempted so far, by name.
     mastery is the share of attempts that were "knew". status: "mastered" after MASTERY_STREAK "knew" in a row, "progressing" when the
     latest attempt was "knew", "needs_practice" when it was "missed"."""
-    by_concept = {}
+    by_concept, questions = {}, {}
     for attempt in _attempts(session):
         by_concept.setdefault(attempt["concept"], []).append(attempt["outcome"])
+        questions.setdefault(attempt["concept"], []).append(attempt["question_id"])
     concepts = []
     for name in sorted(by_concept):
         outcomes = by_concept[name]
         streak = next((i for i, o in enumerate(reversed(outcomes)) if o != "knew"), len(outcomes))  # trailing "knew" run
         knew = outcomes.count("knew")
+        run = len(set(questions[name][len(outcomes) - streak:])) if streak else 0  # different questions in the trailing "knew" run
         concepts.append({
             "concept": name, "attempts": len(outcomes), "knew": knew, "missed": len(outcomes) - knew,
             "mastery": round(knew / len(outcomes), 2),
-            "status": "mastered" if streak >= MASTERY_STREAK else "progressing" if outcomes[-1] == "knew" else "needs_practice",
+            "status": "mastered" if streak >= MASTERY_STREAK and run >= MASTERY_DISTINCT else "progressing" if outcomes[-1] == "knew" else "needs_practice",
         })
     return {"attempts": len(_attempts(session)), "concepts": concepts}
 
@@ -123,6 +129,11 @@ def progress(session):
 SUGGEST_MIN_ATTEMPTS = 3
 SUGGEST_MIN_SHARE = 0.75
 SUGGEST_MIN_DISTINCT = 2
+
+
+def distinct_knew(session, concept):
+    """How many different questions of `concept` the learner answered "knew" (a repeated question counts once)."""
+    return len({a["question_id"] for a in _attempts(session) if a["concept"] == concept and a["outcome"] == "knew"})
 
 
 def known_suggestions(session):
