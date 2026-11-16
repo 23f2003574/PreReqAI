@@ -72,6 +72,9 @@ def add_prerequisites_parser(subparsers):
                               "(repeat for several; re-run with more as you progress)")
     analyze.add_argument("--hours-per-day", type=_hours_per_day, default=None, metavar="HOURS", dest="hours_per_day",
                          help="Hours you can study per day (above 0, at most 24; default 3): sets the recommended days and the day-by-day schedule")
+    analyze.add_argument("--profile", type=_nonblank, default=None, metavar="FILE",
+                         help="A learner profile (JSON) that keeps the subjects you know or have studied across papers: its subjects are used "
+                              "with --known/--studied (explicit values add to it) and your progress is saved to it after a successful analysis; created if missing")
     analyze.add_argument("--resume", type=_nonblank, default=None, metavar="PLAN_FILE",
                          help="Mark as studied every concept ticked in a plan saved earlier with --plan-file, "
                               "so progress carries over between runs (add --studied for newly finished concepts)")
@@ -237,6 +240,12 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             print(f"error: required package '{exc.name}' is not installed", file=sys.stderr)
             print("  hint: run `pip install -r requirements.txt` in this environment", file=sys.stderr)
             return EXIT_FAILURE
+    run = None
+    if getattr(args, "profile", None):
+        from backend.learner_profile import ProfileRun
+
+        run = ProfileRun(args.profile, args.known, args.studied)
+        args.known, args.studied = run.known, run.studied
     limits = _limits_from(args)
     cancelled = threading.Event()
     try:  # Ctrl-C asks the analysis to stop before its next stage; a second Ctrl-C interrupts immediately
@@ -252,6 +261,8 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         if previous is not None:
             signal.signal(signal.SIGINT, previous)
     _note_resume_mismatch(args, outcome)
+    if run is not None:
+        outcome = run.finish(outcome)
     was_cancelled = outcome["status"] == "cancelled"
     limit_hit = outcome["status"] == "limit_exceeded"
     timed_out = outcome["status"] == "timeout"

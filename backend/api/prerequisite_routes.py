@@ -21,6 +21,7 @@ from backend.api.session_routes import (
     session_not_found,
 )
 
+from backend import learner_profile
 from backend.api.workflow_result import (
     HTTP_STATUS,
     failure_response,
@@ -191,6 +192,7 @@ async def analyze_prerequisites(
     diagnostics: bool = Form(default=False),
     resume: UploadFile | None = File(default=None),
     hours_per_day: str | None = Form(default=None),
+    profile: str | None = Form(default=None),
 ):
     """Analyse an uploaded PDF (`paper`) or, instead, an arXiv link or DOI (`source`). `resume` is a plan saved earlier
     (the Markdown from GET /api/session/{id}/plan): its ticked concepts are added to `studied` and its "Already known"
@@ -255,11 +257,44 @@ async def analyze_prerequisites(
 
     plan_text = text if resume is not None else None
 
+    run, profile_warnings = None, []  # the optional learner profile: only with PREREQAI_PROFILE_DIR, otherwise `profile` is ignored with a note
+
+    if learner_profile.configured_directory():
+
+        path = learner_profile.profile_path(learner_profile.configured_directory(), profile)
+
+        if path is None:
+
+            return failure_response(
+                422,
+                "input",
+                "Invalid `profile`: a profile name is 1 to 64 letters, digits, hyphens or underscores.",
+                hint="Choose a simple name such as `default`, or omit `profile`; nothing was analysed.",
+            )
+
+        run = learner_profile.ProfileRun(path, known, studied)
+
+        known, studied = run.known, run.studied
+
+    elif profile is not None:
+
+        profile_warnings = [f"`profile` was ignored: persistent learner profiles are off ({learner_profile.PROFILE_DIR_ENV} is not set)."]
+
+    def finish(outcome):
+
+        if isinstance(outcome, dict):
+
+            outcome = run.finish(outcome) if run is not None else outcome
+
+            outcome["warnings"] = [*(outcome.get("warnings") or []), *profile_warnings] if profile_warnings else outcome.get("warnings", [])
+
+        return outcome
+
     if source is not None:
 
         outcome = await run_in_threadpool(_analyze_source, source, known, studied, diagnostics, hours)
 
-        return _with_request_warnings(outcome, plan_text)
+        return _with_request_warnings(finish(outcome), plan_text)
 
     # The analysis is blocking and CPU-bound: run on a worker thread so one
     # upload never stalls every other request the server is handling.
@@ -279,7 +314,7 @@ async def analyze_prerequisites(
             content=outcome,
         )
 
-    return _with_request_warnings(outcome, plan_text)
+    return _with_request_warnings(finish(outcome), plan_text)
 
 
 def _limit_misconfiguration():
