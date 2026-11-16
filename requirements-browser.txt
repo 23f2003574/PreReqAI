@@ -1,0 +1,3 @@
+# Browser tests of the web page (python -m pytest -m browser backend/tests/test_browser_web_workflow.py); not needed to run or test the rest of PreReqAI.
+-r requirements-dev.txt
+playwright>=1.40,<2
