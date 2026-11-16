@@ -229,8 +229,9 @@ function render(body) {
 
   var prerequisites = report.missing_prerequisites || [];
   fill("gaps", prerequisites.length
-    ? table(["Prerequisite", "Importance", "Status", "Why"], prerequisites.map(function (p) {
+    ? table(["Prerequisite", "Importance", "Evidence in the paper", "Status", "Why"], prerequisites.map(function (p) {
         return [p.concept, p.importance === "essential" ? "Essential" : p.importance === "supporting" ? "Supporting" : "-",
+                p.evidence_strength ? p.evidence_strength.charAt(0).toUpperCase() + p.evidence_strength.slice(1) : "-",
                 el("span", p.satisfied ? "Covered or known" : "Gap", p.satisfied ? "covered" : "gap"), p.reason];
       }))
     : el("p", "This paper has no prerequisites to check.", "msg info"));

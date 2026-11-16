@@ -103,6 +103,10 @@ class Prerequisite:
     dependent_mentions: int = 0  # mentions in the paper of the concepts that need it (concepts without a count add nothing)
     evidence: list = field(default_factory=list)  # [{concept, relation: direct|indirect, occurrences: int|None}] per dependent concept
     evidence_note: str = ""  # what the evidence does and does not show
+    # How well the paper itself supports this recommendation: "strong", "moderate" or "weak" ("" in sessions saved before it existed). It is a
+    # rule-based grading of the dependent concepts' mentions and sections (see PrerequisiteDetector.grade), not a probability.
+    evidence_strength: str = ""
+    strength_reasons: list = field(default_factory=list)  # concise reasons for the grade, one per dependent concept
 
 
 @dataclass

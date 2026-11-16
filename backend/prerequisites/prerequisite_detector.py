@@ -1,5 +1,6 @@
 import logging
 
+from backend.concepts.concept_registry import ConceptRegistry
 from backend.models import (
     Paper,
     Prerequisite,
@@ -434,17 +435,38 @@ class PrerequisiteDetector:
             occurrences[concept.name] = count if isinstance(count, int) and count > 0 else None
         total = sum(1 for concept in paper.concepts if self.PREREQUISITE_RULES.get(concept.name))
 
+        # Where each dependent concept is discussed: its sections, and the instructional ones among them (from the paper's own paragraphs).
+        where = {}
+        if paper.concepts and getattr(paper, "paragraphs", None):
+            from backend.concepts.rule_based_concept_detector import section_mentions
+            from backend.prerequisites.missing_prerequisite_analyzer import section_role
+
+            for title, found in section_mentions(paper).items():
+                for name in found["concepts"]:
+                    where.setdefault(name, []).append((title, section_role(title)))
+        ambiguous = {c.name for c in ConceptRegistry().all() if c.ambiguous}
+
         for prerequisite, concepts in needed_by.items():
 
             share = len(concepts) / total if total else 0.0
             essential = bool(total) and len(concepts) * 2 >= total
             mentions = sum(occurrences.get(name) or 0 for name in concepts)
             unknown = [name for name in concepts if occurrences.get(name) is None]
+            reasons = []
             evidence = [
                 {"concept": name, "relation": "direct" if prerequisite in self.PREREQUISITE_RULES.get(name, ()) else "indirect",
                  "occurrences": occurrences.get(name)}
                 for name in concepts
             ]
+
+            graded = []
+            for item in evidence:
+                places = where.get(item["concept"], [])
+                grade, why = grade_concept(item["occurrences"], [t for t, role in places if role == "instructional"], len(places),
+                                           item["concept"] in ambiguous, item["relation"] == "indirect")
+                graded.append((grade, item["relation"] == "direct"))
+                reasons.append(f"{item['concept']}: {why}")
+            strength = grade_prerequisite(graded)
 
             paper.prerequisites.append(
 
@@ -471,6 +493,10 @@ class PrerequisiteDetector:
 
                     evidence=evidence,
 
+                    evidence_strength=strength,
+
+                    strength_reasons=reasons,
+
                     evidence_note=(
                         f"This is an association from PreReqAI's built-in prerequisite table, not something the paper states. "
                         f"The paper was only checked for mentions of {', '.join(concepts)}."
@@ -479,6 +505,49 @@ class PrerequisiteDetector:
             )
 
         return paper
+
+
+# The evidence grade of a dependent concept (the concept whose prerequisite table entry produced a recommendation), from what the paper shows:
+#   mentions   MIN_REPEATED or more counted mentions are "repeated"; one or two are "isolated"; no usable count is unknown and earns nothing.
+#   sections   a mention in an instructional section (Background, Preliminaries, Method...) or mentions in two or more sections show the paper
+#              works with the concept, not merely names it. Without section data (no paragraphs) only the mentions are used.
+#   strong     repeated and (taught or spread out); moderate: repeated, or taught; weak: anything else.
+#   ambiguous  a concept that is also an everyday word (see Concept.ambiguous) is weak unless repeated.
+#   indirect   a prerequisite reached only through another prerequisite grades at most moderate.
+# A recommendation is strong with a strong direct dependent, or with two dependents graded moderate or better when one of them is direct;
+# moderate with any dependent graded moderate or better; otherwise weak. One incidental mention can therefore never make it strong.
+MIN_REPEATED = 3
+_RANK = {"weak": 0, "moderate": 1, "strong": 2}
+
+
+def grade_concept(mentions, instructional, sections, ambiguous=False, indirect=False):
+    """(grade, reason) for one dependent concept; see the rules above."""
+    repeated = isinstance(mentions, int) and mentions >= MIN_REPEATED
+    taught = bool(instructional)
+    spread = sections >= 2
+    if mentions is None:
+        grade, why = "weak", "no mention count"
+    elif ambiguous and not repeated:
+        grade, why = "weak", f"{mentions} mention{'s' if mentions != 1 else ''} of a word that is also everyday language"
+    elif repeated and (taught or spread):
+        grade, why = "strong", f"{mentions} mentions, " + ("in " + ", ".join(instructional) if taught else f"across {sections} sections")
+    elif repeated:
+        grade, why = "moderate", f"{mentions} mentions, none in a Background or Method-like section"
+    elif taught:
+        grade, why = "moderate", f"{mentions} mention{'s' if mentions != 1 else ''}, in {', '.join(instructional)}"
+    else:
+        grade, why = "weak", f"{mentions} mention{'s' if mentions != 1 else ''}, an incidental mention"
+    if indirect and grade == "strong":
+        grade, why = "moderate", why + "; needed only through another prerequisite"
+    return grade, why
+
+
+def grade_prerequisite(grades):
+    """'strong', 'moderate' or 'weak' from [(grade, direct)] of the dependent concepts."""
+    good = [direct for grade, direct in grades if _RANK[grade] >= 1]
+    if any(grade == "strong" and direct for grade, direct in grades) or (len(good) >= 2 and any(good)):
+        return "strong"
+    return "moderate" if good else "weak"
 
 
 def rank_prerequisites(prerequisites):
