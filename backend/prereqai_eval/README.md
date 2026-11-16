@@ -1,6 +1,6 @@
-# PreReqAI detection evaluation (synthetic fixtures, text mode only)
+# PreReqAI detection evaluation (synthetic fixtures: text mode and PDF mode)
 
-**Read this first.** This harness scores PreReqAI's detectors on six short texts written for this repository. It does **not** read PDFs and it is
+**Read this first.** This harness scores PreReqAI's detectors on six short texts written for this repository. In its default text mode it does **not** read PDFs, and it is
 **not** evidence about how PreReqAI behaves on real academic papers. No real published paper has been evaluated or validated yet.
 
 ## How to run it
@@ -16,7 +16,24 @@ python -m backend.prereqai_eval --fixtures my-annotations.json   # your own anno
 Exit code 2 means the annotation file is malformed (the message names the fixture and field). The harness is tested by
 `backend/tests/test_prereqai_eval_harness.py` and `test_prereqai_domain_evaluation.py`.
 
-## What it measures
+## PDF mode (`--pdf`)
+
+```bash
+python -m backend.prereqai_eval --pdf          # readable report; add --json for the full report (needs PyMuPDF, offline, deterministic)
+```
+
+Three PDFs are generated with PyMuPDF from `pdf_fixtures.py` (numbered headings, unnumbered headings, and a two-column page with Roman-numbered
+headings; each has a running header and page numbers on 3+ pages) and run through the real `ResearchPaperPipeline`: PDF ingestion (header and
+footer removal, column order), section parsing, concept and prerequisite detection and section-aware coverage. Annotations say which headings
+and roles a reader sees, which registry concepts the text discusses, and which prerequisite subjects it *teaches* in a Background or Method-like
+section. The report gives per fixture and in total: heading detection, section-role accuracy, concept precision/recall, coverage
+precision/recall, and how many fixtures the pipeline analysed. Annotations were written from the texts' design, never adjusted to a run.
+
+**These PDFs are synthetic, written for this repository. A score on them is not validation on real published papers**, which has still not been done.
+On 2026-11-16 the run exposes two real findings (kept visible, not annotated away): `4 Experiments on CIFAR-10` is not recognised as a heading, so
+its text is filed under Method and Probability is reported covered; and "Graph Neural Network" counts as Neural Networks subject mentions.
+
+## What it measures (text mode)
 
 For each fixture it builds one paper whose paragraphs all carry the section title `Body`, runs the real `RuleBasedConceptDetector`,
 `PrerequisiteDetector` and `MissingPrerequisiteAnalyzer` on that text, and compares the result with the annotations:
@@ -66,5 +83,4 @@ hand-made inputs, which show the logic works as designed, not that it works on p
 - **One annotator.** The author of the fixtures labelled them, with no second reviewer; the prerequisite labels are judgement calls (for example,
   whether Probability is needed for a graph-attention paper), so the prerequisite score is indicative only.
 - **Six fixtures** are far too few for statistics. Detection rules are never tuned to these fixtures.
-- **No PDF mode.** An evaluation that renders the fixtures as PDFs and runs the whole pipeline (ingestion, section parsing, coverage) is not
-  implemented; until it exists, nothing in this directory validates those stages.
+- **PDF mode is synthetic.** `--pdf` exercises ingestion, section parsing and coverage on three generated PDFs only; no published paper is used.
