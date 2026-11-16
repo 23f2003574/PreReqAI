@@ -8,7 +8,7 @@ from backend.platform.prereqai_platform import _concept_key
 from backend.study_plan_markdown import plan_markdown, studied_concepts
 from backend.tutor import quiz_session
 from backend.tutor.tutor_provider import TutorConfig
-from backend.tutor.rule_based_tutor import ANSWERABLE_HINT
+from backend.tutor.rule_based_tutor import ANSWERABLE_HINT, EXTRACTIVE_PREFIX
 
 from backend.api.workflow_result import (
     REQUEST_FAILURES,
@@ -377,6 +377,9 @@ def ask_question(
         warnings = ["No tutoring model is configured in this release: the answer is a placeholder; "
                     "supporting_concepts and supporting_sections show where the paper covers the question. "
                     + ANSWERABLE_HINT]
+    elif any(str(getattr(response, "answer", "")).startswith(EXTRACTIVE_PREFIX) for response in responses):
+        warnings = ["No tutoring model is configured in this release: this answer quotes passages of the paper that match your question; "
+                    "the quotations are the paper's own words and are not an explanation or a check of the paper's claims."]
     elif built_in:
         warnings = ["No tutoring model is configured in this release: answers are the built-in definitions "
                     "prerequisite reasons and study plan from the analysis, not generated explanations."]

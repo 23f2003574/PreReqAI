@@ -26,4 +26,4 @@ def test_registered_concept_keeps_its_built_in_answer():
 
 def test_other_unanswerable_questions_keep_the_plain_placeholder():
     response = _ask("Tell me a joke")
-    assert response.answer == "A tutoring model has not yet been configured."
+    assert response.answer.startswith("I could not find a passage in this paper") and response.confidence == 0.0

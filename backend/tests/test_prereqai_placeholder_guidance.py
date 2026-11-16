@@ -25,7 +25,7 @@ def _cli(question):
 
 def test_an_unanswerable_question_lists_what_can_be_asked_in_the_cli_and_the_api():
     out = _cli("Why is the sky blue?")
-    assert "A tutoring model has not yet been configured." in out and ANSWERABLE_HINT in out
+    assert "I could not find a passage in this paper" in out and "A tutoring model has not yet been configured" in out and ANSWERABLE_HINT in out
     client = TestClient(app)
     with open(ROOT / SAMPLE, "rb") as handle:
         sid = client.post("/api/prerequisites/analyze", files={"paper": ("p.pdf", handle, "application/pdf")}).json()["session_id"]

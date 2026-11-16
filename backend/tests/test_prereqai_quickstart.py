@@ -180,7 +180,7 @@ def test_the_documented_question_behaves_as_the_examples_readme_describes():
     assert body["responses"][0]["supporting_concepts"] == ["Attention"]
     assert "A tutoring model has not yet been configured." in guide  # the placeholder case is still documented
     unrelated = client.post(f"/api/session/{sid}/question", json={"question": "hello"}).json()
-    assert unrelated["responses"][0]["answer"] == "A tutoring model has not yet been configured."
+    assert unrelated["responses"][0]["answer"].startswith("I could not find a passage in this paper")  # declined: no passage of the paper matches
 
     readme = (ROOT / "README.md").read_text()
     assert 'prerequisites ask paper.pdf "What is attention?"' in readme and "built-in definition" in readme

@@ -141,20 +141,19 @@ class RuleBasedTutor(BaseTutor):
             or (self._name_a_concept_answer(paper) if pointer and not topic else "")
         )
 
-        unsupported = "" if answer else self._unsupported_concept_answer(question)
+        passages = [] if answer else list(getattr(context, "passages", None) or [])
+        extractive = self._extractive_answer(passages) if passages else ""
+        unsupported = "" if answer or extractive else self._unsupported_concept_answer(question)
+        sections = list(context.sections)
+        if extractive:  # the sections the quoted passages come from, after any the retriever already named
+            sections += [p["section"] for p in passages if p["section"] and p["section"] not in sections]
 
         return TutorResponse(
-
-            answer=answer or unsupported or (
-                "A tutoring model has not yet "
-                "been configured."
-            ),
-
-            confidence=0.5 if answer else 0.0,
-
+            answer=answer or extractive or unsupported or NO_EVIDENCE_ANSWER,
+            confidence=0.5 if answer else (round(min(0.6, 0.3 + 0.3 * passages[0]["coverage"]), 2) if extractive else 0.0),
             supporting_concepts=context.concepts,
 
-            supporting_sections=context.sections,
+            supporting_sections=sections,
 
             suggested_followups=[
 
@@ -165,6 +164,17 @@ class RuleBasedTutor(BaseTutor):
                 "Summarize this paper",
             ],
         )
+
+    @staticmethod
+    def _extractive_answer(passages):
+        """The retrieved passages quoted word for word, each with the section and paragraph it comes from. Only the framing line and the
+        labels are the tutor's own words: everything inside the quotation marks is the paper's, and no explanation is added to it."""
+        lines = [EXTRACTIVE_PREFIX + ", so here is what the paper itself says that matches your question. "
+                 "The quotations are the paper's own words, not an explanation by the tutor; check them in context."]
+        for number, passage in enumerate(passages, start=1):
+            where = f"section \"{passage['section']}\"" if passage["section"] else "an untitled section"
+            lines.append(f"{number}. From {where}, paragraph {passage['paragraph_id']}: \u201c{passage['text']}\u201d")
+        return "\n".join(lines)
 
     @staticmethod
     def _quiz_answer(paper, session, question):
@@ -530,6 +540,13 @@ class RuleBasedTutor(BaseTutor):
 # Study, time and readiness questions about a paper in which no known concept was found: say so instead of a verdict or a placeholder.
 NO_CONCEPTS_ANSWER = ("No concepts this release knows were detected in this paper, so there is no study plan and I cannot say "
                       "whether you are ready; check that the PDF has selectable text, or try a paper in a covered area (machine learning).")
+
+
+EXTRACTIVE_PREFIX = "I could not answer this with a prepared explanation"
+
+# No prepared answer and no paragraph of the paper holds evidence for the question. The closing sentence is kept because clients recognise it.
+NO_EVIDENCE_ANSWER = ("I could not find a passage in this paper that answers that question, so I will not guess. "
+                      "A tutoring model has not yet been configured, so I can only answer from the paper's text.")
 
 
 # Shown with a placeholder answer: the question matched nothing the built-in tutor can answer, so say what it can.
