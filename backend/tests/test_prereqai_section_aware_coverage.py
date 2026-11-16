@@ -18,7 +18,7 @@ def analyse(*sections, subject="Attention", detected=True):
     return MissingPrerequisiteAnalyzer().analyze(paper).missing_prerequisites[0]
 
 
-THREE = "attention. attention. attention."
+THREE = "attention heads. attention heads. attention heads."
 
 
 @pytest.mark.parametrize("title, role", [
@@ -40,26 +40,26 @@ def test_three_mentions_in_a_teaching_section_are_coverage(title):
 
 
 def test_repeated_mentions_inside_one_section_count_together():
-    assert analyse(("Method", "attention. " * 7)).sections[0]["mentions"] == 7
+    assert analyse(("Method", "attention heads. " * 7)).sections[0]["mentions"] == 7
 
 
 def test_mentions_only_in_related_work_are_not_coverage():
-    item = analyse(("2 Related Work", "attention. " * 6), ("References", "attention. " * 6))
+    item = analyse(("2 Related Work", "attention heads. " * 6), ("References", "attention heads. " * 6))
     assert not item.satisfied and item.status == "mentioned_only" and "only where other work is cited" in item.reason and item.mentions >= 1
 
 
 def test_related_work_mentions_do_not_help_a_single_method_mention():
-    item = analyse(("2 Related Work", "attention. attention."), ("3 Method", "attention."))
+    item = analyse(("2 Related Work", "attention heads. attention heads."), ("3 Method", "attention heads."))
     assert not item.satisfied and item.status == "mentioned_only" and "too little" in item.reason
 
 
 def test_mentions_spread_across_sections_cover_when_one_of_them_teaches():
-    item = analyse(("Abstract", "attention."), ("1 Introduction", "attention."), ("3 Method", "attention."))
+    item = analyse(("Abstract", "attention heads."), ("1 Introduction", "attention heads."), ("3 Method", "attention heads."))
     assert item.satisfied and [s["role"] for s in item.sections] == ["other", "other", "instructional"]
 
 
 def test_enough_mentions_but_none_where_it_is_taught_is_not_coverage():
-    item = analyse(("Abstract", "attention."), ("1 Introduction", "attention. attention."), ("Experiments", "attention."))
+    item = analyse(("Abstract", "attention heads."), ("1 Introduction", "attention heads. attention heads."), ("Experiments", "attention heads."))
     assert not item.satisfied and item.status == "mentioned_only" and "none in a Background, Preliminaries or Method section" in item.reason
 
 

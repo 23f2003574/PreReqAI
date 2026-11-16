@@ -17,7 +17,7 @@ def test_missing_prerequisite_analysis():
         metadata=None,
     )
 
-    paper.paragraphs.append(Paragraph(1, "2 Method", "attention. attention. attention."))  # coverage needs mentions in a teaching section
+    paper.paragraphs.append(Paragraph(1, "2 Method", "attention heads. attention heads. attention heads."))  # coverage needs mentions in a teaching section
 
     paper.concepts.append(
 

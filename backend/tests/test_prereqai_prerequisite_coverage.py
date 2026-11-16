@@ -10,7 +10,7 @@ pytestmark = pytest.mark.prereqai
 def _analyse(occurrences):
     paper = Paper.__new__(Paper)
     paper.concepts = [DetectedConcept(name="Attention", domain="transformers", occurrences=occurrences)] if occurrences else []
-    paper.paragraphs = [Paragraph(1, "2 Method", "attention. " * occurrences)]  # where the mentions are: coverage needs them in a teaching section
+    paper.paragraphs = [Paragraph(1, "2 Method", "attention heads. " * occurrences)]  # where the mentions are: coverage needs them in a teaching section
     paper.prerequisites = [Prerequisite(concept="Attention", reason="r", confidence=1.0)]
     paper.missing_prerequisites = []
     return MissingPrerequisiteAnalyzer().analyze(paper).missing_prerequisites[0]

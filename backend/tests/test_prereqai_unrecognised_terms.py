@@ -18,7 +18,7 @@ def _detect(text):
 
 
 def test_unmatched_defined_term_is_reported_but_not_detected():
-    paper = _detect("We use a Graph Isomorphism Network (GIN) layer. Attention helps.")
+    paper = _detect("We use a Graph Isomorphism Network (GIN) layer. Attention layers help.")
     assert paper.unrecognised_terms == ["Graph Isomorphism Network (GIN)"]
     assert [c.name for c in paper.concepts] == ["Attention"]
 

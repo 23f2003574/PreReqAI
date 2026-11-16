@@ -109,6 +109,30 @@ def _shadowing_terms(concepts):
     return shadowing
 
 
+# Shared vocabulary that shows the text is about machine learning; an ambiguous concept's own `context` patterns add to it. It names no
+# ambiguous concept (attention, dropout, embedding, overfitting), so two everyday words cannot vouch for each other.
+_ML_CONTEXT = (
+    r"neural net(?:work)?s?", r"deep learning", r"machine learning", r"transformers?", r"gradient", r"backprop", r"classifiers?",
+    r"softmax", r"loss function", r"fine-?tun", r"language models?", r"convolution", r"recurrent", r"stochastic",
+)
+
+
+@lru_cache(maxsize=None)
+def _technical_pattern(concept):
+    """One compiled alternation of a concept's technical phrases: a mention inside one is technical wherever it occurs."""
+    return re.compile(rf"(?<![a-z0-9])(?:{'|'.join(concept.technical) or '(?!)'})(?![a-z0-9])")
+
+
+@lru_cache(maxsize=None)
+def _context_pattern(concept):
+    return re.compile(rf"(?<![a-z0-9])(?:{'|'.join((*_ML_CONTEXT, *concept.context))})")
+
+
+def _corroborated(concept, evidence):
+    """Whether `evidence` (lower-cased paper text) is technical enough for a bare mention of an ambiguous concept to count."""
+    return _context_pattern(concept).search(evidence) is not None
+
+
 class RuleBasedConceptDetector:
     """
     Detects known concepts using exact,
@@ -124,6 +148,7 @@ class RuleBasedConceptDetector:
     def detect(
         self,
         paper: Paper,
+        context_text: str = None,
     ) -> Paper:
 
         paper.concepts.clear()
@@ -160,6 +185,10 @@ class RuleBasedConceptDetector:
             if " " in term and hyphenated not in terms and hyphenated in full_text:
                 full_text = re.sub(rf"\b{re.escape(hyphenated)}\b", term, full_text)
 
+        # What the surrounding paper says: an ambiguous concept's bare mention counts only when this holds technical evidence for it. A caller
+        # that detects part of a paper (one section) passes the whole body as `context_text`, so a section keeps the evidence of its paper.
+        evidence = normalise_text(context_text) if context_text is not None else full_text
+
         counts = {}
 
         def count(term, plural):
@@ -185,15 +214,32 @@ class RuleBasedConceptDetector:
 
         shadowing = _shadowing_terms(tuple(concepts))
 
+        pending, found = [], []
+
         for concept in concepts:
 
             inside_longer = sum(count(term, True) for term in shadowing[concept])
 
             occurrences = mentions(concept) - inside_longer
 
+            if occurrences > 0 and concept.ambiguous and not _corroborated(concept, evidence):
+                pending.append((concept, occurrences))  # decided below, once the unambiguous concepts are known
+                continue
+
             if occurrences <= 0:
                 continue
 
+            found.append((concept, occurrences))
+
+        # An unambiguous concept found in the same text (Self-Attention, Transformer...) is also technical evidence for a bare mention.
+        anchored = any(not concept.ambiguous for concept, _ in found)
+        for concept, occurrences in pending:
+            if not anchored:
+                occurrences = min(occurrences, len(_technical_pattern(concept).findall(full_text)))
+            if occurrences > 0:
+                found.append((concept, occurrences))
+
+        for concept, occurrences in sorted(found, key=lambda item: concepts.index(item[0])):
             paper.concepts.append(
                 DetectedConcept(
                     name=concept.name,
@@ -214,10 +260,11 @@ def section_mentions(paper):
 
     titles = list(dict.fromkeys(paragraph.section_title or "" for paragraph in getattr(paper, "paragraphs", [])))
     found = {}
+    whole = body_text(paper)  # the evidence an ambiguous concept's mentions in a section are judged against
     for title in titles:
         part = Paper(source_path=getattr(paper, "source_path", ""), metadata=None)
         part.paragraphs = [p for p in paper.paragraphs if (p.section_title or "") == title]
-        concepts = {c.name: c.occurrences for c in RuleBasedConceptDetector().detect(part).concepts}
+        concepts = {c.name: c.occurrences for c in RuleBasedConceptDetector().detect(part, context_text=whole).concepts}
         subjects = {name: count for name, count in subject_mentions(part).items() if count}
         if concepts or subjects:
             found[title] = {"concepts": concepts, "subjects": subjects}
