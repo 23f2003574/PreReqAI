@@ -1,3 +1,5 @@
+from time import perf_counter
+
 import pymupdf as fitz  # PyMuPDF; "import fitz" prints a deprecation notice to stdout
 
 from dataclasses import dataclass, field
@@ -17,6 +19,7 @@ class RawPage:
     text: str
     ocr: bool = False  # the text was recognised from a scanned page image, not read from the PDF's text layer
     ocr_error: str = ""  # a scanned page whose text could not be recognised, and why
+    ocr_stopped: bool = False  # a scanned page left unread because the OCR time or page budget ran out (ocr_error says which)
     removed_lines: int = 0  # running header, footer and page-number lines taken out of `text` (they repeat on many pages)
 
 
@@ -29,6 +32,11 @@ class RawDocument:
     @property
     def full_text(self) -> str:
         return "\n".join(page.text for page in self.pages)
+
+    @property
+    def ocr_complete(self) -> bool:
+        """False when scanned pages were left unread because the OCR budget ran out: the document is a partial result."""
+        return not any(page.ocr_stopped for page in self.pages)
 
     @property
     def page_count(self) -> int:
@@ -121,16 +129,40 @@ MIN_TEXT_CHARS = 25  # fewer letters and digits than this on a page is "no usabl
 MIN_IMAGE_COVER = 0.25  # a scan is a page image covering a good part of the page, not a small logo
 
 
+MIN_USABLE_CHARS = 200  # this much text is a real text layer whatever the page also holds (a scan with hidden text, a page with figures)
+SCAN_IMAGE_COVER = 0.85  # an image this large is the page itself, not a figure on it
+STAMP_MAX_HEIGHT = 0.15  # a stamp, watermark or running header fills a band of the page; text over a larger share is page text
+
+
+def _text_height_share(page):
+    """The share of the page height spanned by its text blocks, or None when the page offers no block geometry."""
+    try:
+        blocks = page.get_text("blocks")
+        spans = [(block[1], block[3]) for block in blocks if len(block) > 4 and str(block[4]).strip()]
+    except Exception:
+        return None
+    if not isinstance(blocks, list) or not spans or page.rect.height <= 0:
+        return None
+    return (max(end for _, end in spans) - min(start for start, _ in spans)) / page.rect.height
+
+
 def needs_ocr(page, text) -> bool:
-    """A page with almost no extractable text whose images cover a meaningful part of it (a scan). A blank page, or a page of
-    text with a figure, is not: ordinary text PDFs are never sent to OCR."""
-    if sum(char.isalnum() for char in text) >= MIN_TEXT_CHARS:
+    """Whether a page is a scan whose text must be recognised. A blank page, a page of text with a figure and a page with a real text
+    layer (MIN_USABLE_CHARS or more) are not, so ordinary text PDFs are never sent to OCR. A page with almost no text whose images cover
+    a meaningful part of it is. A page-sized image (SCAN_IMAGE_COVER) with a short text layer confined to a narrow band (a stamp, watermark,
+    page number or running header, STAMP_MAX_HEIGHT) is a scan too; without block geometry a short text layer counts as usable text."""
+    letters = sum(char.isalnum() for char in text)
+    if letters >= MIN_USABLE_CHARS:
         return False
     area = page.rect.width * page.rect.height
     if area <= 0:
         return False
     covered = sum(max(0.0, (box[2] - box[0]) * (box[3] - box[1])) for box in (info["bbox"] for info in page.get_image_info()))
-    return covered / area >= MIN_IMAGE_COVER
+    share = covered / area
+    if letters < MIN_TEXT_CHARS:
+        return share >= MIN_IMAGE_COVER
+    height = _text_height_share(page)
+    return share >= SCAN_IMAGE_COVER and height is not None and height <= STAMP_MAX_HEIGHT
 
 
 def default_ocr(page) -> str:
@@ -147,12 +179,16 @@ def default_ocr(page) -> str:
         raise RuntimeError(f"{type(error).__name__}: {error}") from error
 
 
-def read_page(page, page_number, ocr) -> RawPage:
+def read_page(page, page_number, ocr, stop=None) -> RawPage:
     """One page in the ingestion format: its text layer when it has one, else (for a scan) OCR output. Never raises for OCR: a
-    scan that could not be recognised keeps empty text and says why in `ocr_error`."""
+    scan that could not be recognised keeps empty text and says why in `ocr_error`. `stop` (optional) is asked before a scan is
+    recognised and returns why OCR must stop ("" to go on); the page then keeps its text layer, is marked `ocr_stopped` and is not recognised."""
     text = clean_pdf_text(_page_text(page))
     if not needs_ocr(page, text):
         return RawPage(page_number=page_number, text=text)
+    reason = stop() if stop is not None else ""
+    if reason:
+        return RawPage(page_number=page_number, text=text, ocr_error=reason, ocr_stopped=True)
     try:
         recognised = clean_pdf_text(ocr(page)).strip()
     except Exception as error:
@@ -168,8 +204,11 @@ class PDFIngestionEngine:
     PreReqAI's raw internal document representation.
     """
 
-    def __init__(self, ocr=None):
+    def __init__(self, ocr=None, max_ocr_seconds=None, max_ocr_pages=None, clock=perf_counter):
         self.ocr = ocr or default_ocr  # callable(page) -> text; replaceable so scanned-page handling is testable without Tesseract
+        # The OCR budget of one ingestion: seconds from its start and pages recognised. Checked before every scan, never inside a
+        # recognition, so a document stops at a page boundary and keeps everything read so far. None means no limit.
+        self.max_ocr_seconds, self.max_ocr_pages, self.clock = max_ocr_seconds, max_ocr_pages, clock
 
     def ingest(self, file_path: str) -> RawDocument:
         from .document_metadata_extractor import DocumentMetadataExtractor
@@ -179,7 +218,20 @@ class PDFIngestionEngine:
 
             metadata = DocumentMetadataExtractor().extract_from(pdf)
 
-            pages = [read_page(page, page_number, self.ocr) for page_number, page in enumerate(pdf, start=1)]
+            started, recognised = self.clock(), [0]
+
+            def stop():
+                if self.max_ocr_pages is not None and recognised[0] >= self.max_ocr_pages:
+                    return f"the OCR limit of {self.max_ocr_pages} pages was reached"
+                if self.max_ocr_seconds is not None and self.clock() - started >= self.max_ocr_seconds:
+                    return f"the OCR time limit of {self.max_ocr_seconds:g} seconds was reached"
+                return ""
+
+            def counted(page):
+                recognised[0] += 1
+                return self.ocr(page)
+
+            pages = [read_page(page, page_number, counted, stop) for page_number, page in enumerate(pdf, start=1)]
 
         cleaned, removed = drop_repeated_page_lines([page.text for page in pages])  # before any concept is counted
         for page, text, count in zip(pages, cleaned, removed):

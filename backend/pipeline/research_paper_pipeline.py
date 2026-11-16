@@ -344,11 +344,14 @@ class ResearchPaperPipeline:
         file_path: str,
         should_cancel=None,
         max_file_bytes=None,
+        ocr_seconds=None,
     ) -> PipelineResult:
 
         timer = _StageTimer(should_cancel)
 
         checkpoint = RETRY_CHECKPOINT.set(timer.check_cancelled)
+
+        self.ingestion.max_ocr_seconds = ocr_seconds  # the OCR share of the time limit for this run (None: no limit)
 
         try:
 

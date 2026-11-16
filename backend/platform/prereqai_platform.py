@@ -99,6 +99,10 @@ def _repair_warning(file_path) -> list:
     ] if repaired else []
 
 
+# The share of the analysis time limit OCR may use, so the stages after ingestion still fit in the limit and a partial result can be returned.
+OCR_TIME_SHARE = 0.5
+
+
 def _page_list(numbers) -> str:
     return ", ".join(str(n) for n in numbers)
 
@@ -107,8 +111,12 @@ def _ocr_warning(paper) -> list:
     """Pages whose text came from OCR (recognition errors are possible) and scanned pages that could not be read at all."""
     pages = paper.pages or []
     used = [p.page_number for p in pages if getattr(p, "ocr", False)]
-    failed = [(p.page_number, p.ocr_error) for p in pages if getattr(p, "ocr_error", "")]
+    stopped = [p for p in pages if getattr(p, "ocr_stopped", False)]
+    failed = [(p.page_number, p.ocr_error) for p in pages if getattr(p, "ocr_error", "") and not getattr(p, "ocr_stopped", False)]
     notes = []
+    if stopped:
+        notes.append(f"This analysis is partial: OCR stopped because {stopped[0].ocr_error}, so scanned pages {_page_list(p.page_number for p in stopped)} were not "
+                     "recognised and are missing; the pages read before the limit are included. Raise the time limit (or analyse a smaller scan) for the whole paper.")
     if used:
         notes.append(f"Pages {_page_list(used)} are scans; their text was recognised by OCR, so words may be misread and some concepts missed or wrongly detected.")
     if failed:
@@ -385,7 +393,8 @@ class PreReqAIPlatform:
         counter_token = RETRY_COUNTER.set(retries)
         try:
             result = self.analysis.run(file_path, should_cancel=should_cancel,
-                                       **({'max_file_bytes': limits.max_file_bytes} if limits is not None and limits.max_file_bytes is not None else {}))
+                                       **({'max_file_bytes': limits.max_file_bytes} if limits is not None and limits.max_file_bytes is not None else {}),
+                                       **({'ocr_seconds': limits.max_seconds * OCR_TIME_SHARE} if limits is not None and limits.max_seconds is not None else {}))
         except Exception as exc:
             # Every way a run can stop becomes one terminal outcome here, with what finished before it.
             outcome = _stopped_outcome(exc, limits if exceeded else None)
