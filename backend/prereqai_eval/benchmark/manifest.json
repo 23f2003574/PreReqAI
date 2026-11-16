@@ -1,0 +1,114 @@
+{
+  "format": "prereqai-benchmark-manifest",
+  "schema_version": 1,
+  "papers": [
+    {
+      "id": "attention-is-all-you-need",
+      "title": "Attention Is All You Need",
+      "authors": [
+        "Ashish Vaswani",
+        "Noam Shazeer",
+        "Niki Parmar",
+        "Jakob Uszkoreit",
+        "Llion Jones",
+        "Aidan N. Gomez",
+        "Lukasz Kaiser",
+        "Illia Polosukhin"
+      ],
+      "source_url": "https://arxiv.org/abs/1706.03762",
+      "publication": {
+        "venue": "NeurIPS",
+        "year": 2017
+      },
+      "license": {
+        "status": "unverified"
+      },
+      "retrieved_on": null,
+      "pdf": null,
+      "annotation": "annotations/attention-is-all-you-need.json"
+    },
+    {
+      "id": "lora",
+      "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "authors": [
+        "Edward J. Hu",
+        "Yelong Shen",
+        "Phillip Wallis",
+        "Zeyuan Allen-Zhu",
+        "Yuanzhi Li",
+        "Shean Wang",
+        "Lu Wang",
+        "Weizhu Chen"
+      ],
+      "source_url": "https://arxiv.org/abs/2106.09685",
+      "publication": {
+        "venue": "ICLR",
+        "year": 2022
+      },
+      "license": {
+        "status": "unverified"
+      },
+      "retrieved_on": null,
+      "pdf": null,
+      "annotation": "annotations/lora.json"
+    },
+    {
+      "id": "ddpm",
+      "title": "Denoising Diffusion Probabilistic Models",
+      "authors": [
+        "Jonathan Ho",
+        "Ajay Jain",
+        "Pieter Abbeel"
+      ],
+      "source_url": "https://arxiv.org/abs/2006.11239",
+      "publication": {
+        "venue": "NeurIPS",
+        "year": 2020
+      },
+      "license": {
+        "status": "unverified"
+      },
+      "retrieved_on": null,
+      "pdf": null,
+      "annotation": "annotations/ddpm.json"
+    },
+    {
+      "id": "adam",
+      "title": "Adam: A Method for Stochastic Optimization",
+      "authors": [
+        "Diederik P. Kingma",
+        "Jimmy Ba"
+      ],
+      "source_url": "https://arxiv.org/abs/1412.6980",
+      "publication": {
+        "venue": "ICLR",
+        "year": 2015
+      },
+      "license": {
+        "status": "unverified"
+      },
+      "retrieved_on": null,
+      "pdf": null,
+      "annotation": "annotations/adam.json"
+    },
+    {
+      "id": "batch-normalization",
+      "title": "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift",
+      "authors": [
+        "Sergey Ioffe",
+        "Christian Szegedy"
+      ],
+      "source_url": "https://arxiv.org/abs/1502.03167",
+      "publication": {
+        "venue": "ICML",
+        "year": 2015
+      },
+      "license": {
+        "status": "unverified"
+      },
+      "retrieved_on": null,
+      "pdf": null,
+      "annotation": "annotations/batch-normalization.json"
+    }
+  ]
+}

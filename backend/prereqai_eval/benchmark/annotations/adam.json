@@ -1,0 +1,16 @@
+{
+  "format": "prereqai-benchmark-annotation",
+  "schema_version": 1,
+  "paper_id": "adam",
+  "review": {
+    "status": "pending_review"
+  },
+  "sections": [
+    {
+      "title": "Abstract",
+      "role": "other"
+    }
+  ],
+  "concepts": [],
+  "prerequisites": []
+}
