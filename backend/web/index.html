@@ -36,6 +36,13 @@
   <h1>PreReqAI</h1>
   <p class="lead">Find out what to study before reading a research paper.</p>
 
+  <section id="history" hidden>
+    <h2>Resume an earlier analysis</h2>
+    <p class="lead">Each analysis is saved on this computer's PreReqAI server. Resuming opens it with its plan, progress, quiz and settings; a new analysis below never replaces it.</p>
+    <div id="historyList"></div>
+  </section>
+
+  <h2 id="newHeading">Start a new analysis</h2>
   <form id="form" novalidate>
     <label for="paper">Paper PDF <small>(text-based PDF; scans are not read)</small></label>
     <input id="paper" name="paper" type="file" accept="application/pdf,.pdf">
@@ -125,7 +132,7 @@ function table(headers, rows) {
 function fill(id, node) { var box = $(id); box.textContent = ""; box.appendChild(node); }
 
 var KEY = "prereqai.session";  // the browser remembers only the session id; the server holds the progress
-var state = { mine: null, paths: null, quizTopics: [], round: null, suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
+var state = { deleting: null, mine: null, paths: null, quizTopics: [], round: null, suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
 
 function remember(sid) { try { if (sid) localStorage.setItem(KEY, sid); else localStorage.removeItem(KEY); } catch (e) { /* storage unavailable: no restore */ } }
 function recall() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
@@ -245,6 +252,7 @@ async function loadQuizTopics() {
 function render(body) {
   var report = body.report || {}, paper = report.paper || {};
   state.sid = body.session_id || state.sid; remember(state.sid);
+  loadHistory();
   loadQuizTopics();
   state.paper = paper; state.difficulty = report.paper_difficulty || null;
   state.paths = report.study_paths || null; renderPaths();
@@ -558,9 +566,72 @@ function restoredCard(body) {
   return p ? { id: p.question_id, concept: p.concept, difficulty: p.difficulty, question: p.question, answer: null, revealed: p.revealed } : null;
 }
 
-async function restore() {
-  var sid = recall();
+// The saved analyses the server knows, newest first, exactly as GET /api/session lists them: resume one, or remove it after an explicit confirmation.
+function sessionStatus(s) {
+  var p = s.progress || { completed: 0, total: 0, percent: 0 };
+  return (s.readiness || "Not evaluated") + " - " + p.completed + " of " + p.total + " steps studied (" + p.percent + "%)" + (p.total && p.completed === p.total ? ", complete" : "");
+}
+
+function renderHistory(sessions, unreadable) {
+  var box = el("div"), pending = state.deleting;
+  $("history").hidden = !(sessions.length || unreadable.length);
+  sessions.forEach(function (s) {
+    var card = el("div", null, "card"), when = typeof s.created_at === "number" ? new Date(s.created_at * 1000).toISOString().slice(0, 16).replace("T", " ") + " UTC" : "date unknown";
+    card.appendChild(el("p", (s.paper_title || "Untitled paper") + (s.session_id === state.sid ? " (open now)" : "")));
+    card.appendChild(el("p", when + " - " + sessionStatus(s) + " - " + (s.quiz_attempts || 0) + " quiz answers - session " + s.session_id.slice(0, 8), "meta"));
+    var resume = el("button", "Resume", "small"); resume.type = "button"; resume.disabled = state.busy;
+    resume.addEventListener("click", function () { remember(s.session_id); restore(s.session_id); });
+    card.appendChild(resume); card.appendChild(document.createTextNode(" "));
+    if (pending === s.session_id) {
+      card.appendChild(el("span", "Delete this analysis for good? Your learner profile is not affected. ", "meta"));
+      var yes = el("button", "Yes, delete it", "small"), no = el("button", "Keep it", "small");
+      yes.type = no.type = "button";
+      yes.addEventListener("click", function () { removeSession(s.session_id); });
+      no.addEventListener("click", function () { state.deleting = null; loadHistory(); });
+      card.appendChild(yes); card.appendChild(document.createTextNode(" ")); card.appendChild(no);
+    } else {
+      var del = el("button", "Delete", "small"); del.type = "button";
+      del.addEventListener("click", function () { state.deleting = s.session_id; loadHistory(); });
+      card.appendChild(del);
+    }
+    box.appendChild(card);
+  });
+  unreadable.forEach(function (id) {
+    var card = el("div", null, "card");
+    card.appendChild(el("p", "A saved analysis (session " + id.slice(0, 8) + ") cannot be read: its file is damaged or from another version.", "msg warn"));
+    var del = el("button", "Remove it", "small"); del.type = "button";
+    del.addEventListener("click", function () { removeSession(id); });
+    card.appendChild(del); box.appendChild(card);
+  });
+  fill("historyList", box);
+}
+
+async function loadHistory() {
+  try {
+    var response = await fetch("/api/session"), body = await response.json();
+    if (!response.ok || !Array.isArray(body.sessions)) throw new Error("bad listing");
+    renderHistory(body.sessions, Array.isArray(body.unreadable) ? body.unreadable : []);
+  } catch (e) {
+    $("history").hidden = false;
+    fill("historyList", el("p", "Your earlier analyses could not be listed.", "msg warn"));  // the rest of the page still works
+  }
+}
+
+async function removeSession(sid) {
+  state.deleting = null;
+  try {
+    var response = await fetch("/api/session/" + encodeURIComponent(sid), { method: "DELETE" });
+    if (!response.ok && response.status !== 404) throw new Error("delete failed");
+  } catch (e) { showStatus("error", "Could not delete that analysis.", "Try again."); return loadHistory(); }
+  if (sid === state.sid) { state.sid = null; remember(null); $("results").hidden = true; }
+  showStatus("info", "The analysis was deleted.");
+  loadHistory();
+}
+
+async function restore(chosen) {
+  var sid = chosen || recall();
   if (!sid) return;
+  if (chosen) { state.answers = []; state.studied = {}; state.known = []; state.mine = null; renderMine(); }  // another analysis replaces what the page shows, nothing of the previous one
   showStatus("info", "Restoring your saved session...");
   try {
     var response = await fetch("/api/session/" + encodeURIComponent(sid)), body = null;
@@ -602,6 +673,7 @@ async function restore() {
     if (state.card && state.card.revealed) reveal();  // the answer was already shown before the reload: fetch it again so the outcome can be recorded
     $("results").hidden = false;
     showStatus("info", "Restored your saved session.");
+    refreshPaths(); loadHistory();
   } catch (error) {
     showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then reload the page.");
   }
@@ -650,6 +722,7 @@ $("form").addEventListener("submit", submit);
 $("download").addEventListener("click", downloadPlan);
 $("askForm").addEventListener("submit", function (event) { event.preventDefault(); ask($("question").value); });
 $("quizNext").addEventListener("click", nextQuestion);
+loadHistory();
 restore();
 </script>
 </body>

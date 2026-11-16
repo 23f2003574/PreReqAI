@@ -21,26 +21,40 @@ ROOT = Path(__file__).resolve().parents[2]
 SAMPLE = ROOT / "examples" / "prerequisites" / "sample-paper.pdf"
 
 
-@pytest.fixture(scope="module")
-def server(tmp_path_factory):
+def _launch(directory, **extra):
+    """(process, url) of a real server using `directory` for its sessions; no profile, tutor provider, key or network."""
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
-    env = {**os.environ, "PREREQAI_SESSION_DIR": str(tmp_path_factory.mktemp("sessions")), "PYTHONPATH": str(ROOT)}
+    env = {**os.environ, "PREREQAI_SESSION_DIR": str(directory), "PYTHONPATH": str(ROOT), **extra}
     for name in ("PREREQAI_PROFILE_DIR", "PREREQAI_TUTOR_PROVIDER", "GEMINI_API_KEY", "PREREQAI_MAX_ANALYSIS_SECONDS"):
-        env.pop(name, None)
+        if name not in extra:
+            env.pop(name, None)
     process = subprocess.Popen([sys.executable, "-m", "uvicorn", "backend.main:app", "--port", str(port), "--log-level", "warning"], cwd=ROOT, env=env)
     url = f"http://127.0.0.1:{port}"
     for _ in range(60):
         try:
             urllib.request.urlopen(url + "/health", timeout=1)
-            break
+            return process, url
         except OSError:
             time.sleep(0.5)
-    else:
-        process.kill()
-        pytest.fail("the PreReqAI server did not start")
+    process.kill()
+    pytest.fail("the PreReqAI server did not start")
+
+
+@pytest.fixture(scope="module")
+def server(tmp_path_factory):
+    process, url = _launch(tmp_path_factory.mktemp("sessions"))
     yield url
+    process.terminate()
+    process.wait(timeout=10)
+
+
+@pytest.fixture
+def lone_server(tmp_path):
+    """A server of its own (empty history, a profile directory) for the tests that count saved analyses."""
+    process, url = _launch(tmp_path / "sessions", PREREQAI_PROFILE_DIR=str(tmp_path / "profiles"))
+    yield url, tmp_path
     process.terminate()
     process.wait(timeout=10)
 
@@ -182,3 +196,61 @@ def test_failed_tutor_and_quiz_requests_and_unsupported_topics_are_reported(page
     page.click("#quizNext")
     page.wait_for_selector("#quizMsg .msg.error")
     assert page.locator("#quizCard .card").count() == 0
+
+
+def test_history_lists_analyses_resumes_one_and_deletes_only_after_confirmation(browser, lone_server):
+    url, tmp_path = lone_server
+    context = browser.new_context(viewport={"width": 1100, "height": 1800})
+    page = context.new_page()
+    page.set_default_timeout(15000)
+    page.goto(url)
+    assert page.locator("#history").is_hidden()  # nothing analysed yet
+    page.fill("#profile", "me")
+    analyse(page, known="Linear Algebra")  # a profile file now exists, apart from the analyses
+    first = page.evaluate("localStorage.getItem('prereqai.session')")
+    page.locator("#plan table tr").nth(1).locator("input[type=checkbox]").check()
+    page.wait_for_function("document.querySelector('#plan input:checked') !== null")
+    page.reload()
+    page.fill("#profile", "")
+    analyse(page)  # a second, separate analysis: it must not replace the first
+    second = page.evaluate("localStorage.getItem('prereqai.session')")
+    assert second != first
+    page.wait_for_function("document.querySelectorAll('#historyList .card').length === 2")
+    cards = page.locator("#historyList .card")
+    assert "(open now)" in cards.nth(0).inner_text() and "1 of" in cards.nth(1).inner_text() and "Attention Is All You Need" in cards.nth(1).inner_text()
+    cards.nth(1).get_by_role("button", name="Resume").click()  # resuming is a different action from the new-analysis form
+    page.wait_for_function("document.querySelector('#status').innerText.includes('Restored your saved session')")
+    assert page.evaluate("localStorage.getItem('prereqai.session')") == first and page.locator("#plan input:checked").count() == 1
+    assert page.locator("#newHeading").inner_text() == "Start a new analysis"
+    cards = page.locator("#historyList .card")
+    cards.nth(0).get_by_role("button", name="Delete").click()  # asks first; nothing is removed yet
+    page.wait_for_function("document.querySelector('#historyList').innerText.includes('Delete this analysis for good?')")
+    assert page.locator("#historyList .card").count() == 2 and len(page.evaluate("fetch('/api/session').then(r => r.json())")["sessions"]) == 2
+    page.get_by_role("button", name="Keep it").click()
+    page.wait_for_function("!document.querySelector('#historyList').innerText.includes('Delete this analysis for good?')")
+    page.locator("#historyList .card").nth(0).get_by_role("button", name="Delete").click()
+    page.get_by_role("button", name="Yes, delete it").click()
+    page.wait_for_function("document.querySelectorAll('#historyList .card').length === 1")
+    assert [s["session_id"] for s in page.evaluate("fetch('/api/session').then(r => r.json())")["sessions"]] == [first]
+    assert (tmp_path / "profiles" / "me.json").is_file()  # learner profiles are independent of deleting an analysis
+    context.close()
+
+
+def test_a_damaged_saved_analysis_is_shown_and_can_be_removed_without_breaking_the_page(browser, lone_server):
+    url, tmp_path = lone_server
+    (tmp_path / "sessions").mkdir(exist_ok=True)
+    (tmp_path / "sessions" / "deadbeef-dead-beef-dead-beefdeadbeef.session").write_bytes(b"garbage")
+    context = browser.new_context()
+    page = context.new_page()
+    page.set_default_timeout(15000)
+    page.goto(url)
+    page.wait_for_selector("#historyList .msg.warn")
+    assert "cannot be read" in page.locator("#historyList").inner_text() and page.locator("#form").is_visible()
+    page.get_by_role("button", name="Remove it").click()
+    page.wait_for_function("document.querySelector('#history').hidden")
+    assert not (tmp_path / "sessions" / "deadbeef-dead-beef-dead-beefdeadbeef.session").exists()
+    page.route("**/api/session", lambda route: route.fulfill(status=500, content_type="application/json", body="{}"))
+    page.reload()
+    page.wait_for_function("document.querySelector('#historyList').innerText.includes('could not be listed')")
+    assert page.locator("#form").is_visible()
+    context.close()

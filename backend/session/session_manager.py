@@ -607,7 +607,22 @@ class SessionManager:
             "paper_title": session.paper_title,
             "created_at": getattr(session, "created_at", None),
             "readiness": (session.report.get("readiness") or {}).get("status"),
+            "progress": SessionManager._progress(session),
+            "quiz_attempts": len(getattr(session, "quiz_attempts", None) or []),
         }
+
+    @staticmethod
+    def _progress(session) -> dict:
+        """The planned study steps finished so far, for the history view: {completed, total, percent}."""
+        steps = getattr(getattr(session, "paper", None), "study_progress", None) or []
+        done = sum(1 for step in steps if getattr(step, "completed", False))
+        return {"completed": done, "total": len(steps), "percent": round(100 * done / len(steps)) if steps else 0}
+
+    def unreadable_ids(self) -> "list[str]":
+        """Saved sessions whose file cannot be read (corrupt or from another version), sorted: the history lists them so they can be removed.
+        Only files already examined by summaries() are known, so call summaries() first."""
+        with self._lock:
+            return sorted(path.stem for path, cached in self._summaries.items() if cached[1] is None and path.exists())
 
     def summaries(self) -> "list[dict]":
         """What GET /api/session shows for every known session, newest first (the same sessions as `list`). A saved-only

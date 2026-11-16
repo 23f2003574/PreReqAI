@@ -55,11 +55,12 @@ class QuestionRequest(BaseModel):
 def list_sessions():
     """The sessions this server knows (newest first), so a client that lost an id can find its analysis again."""
 
+    sessions = [*session_manager.summaries()]  # first: it is what finds the unreadable files below
+
     return {
         "status": "success",
-        "sessions": [
-            *session_manager.summaries()
-        ],
+        "sessions": sessions,
+        "unreadable": session_manager.unreadable_ids(),  # saved files that cannot be read; DELETE /api/session/{id} removes one
     }
 
 
