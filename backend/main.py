@@ -22,6 +22,10 @@ from backend.api.session_routes import (
     router as session_router,
 )
 
+from backend.api.curriculum_routes import (
+    router as curriculum_router,
+)
+
 from backend.api.review_routes import (
     router as review_router,
 )
@@ -67,6 +71,10 @@ app.include_router(
 
 app.include_router(
     review_router,
+)
+
+app.include_router(
+    curriculum_router,
 )
 
 app.include_router(

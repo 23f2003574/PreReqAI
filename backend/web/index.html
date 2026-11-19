@@ -40,6 +40,10 @@
     <h2>Resume an earlier analysis</h2>
     <p class="lead">Each analysis is saved on this computer's PreReqAI server. Resuming opens it with its plan, progress, quiz and settings; a new analysis below never replaces it.</p>
     <div id="historyList"></div>
+    <h3>Curriculum</h3>
+    <p class="meta">Tick two or more analyses above to plan them together: shared prerequisites once, what your learner profile knows left out, one order and one schedule (the deadline and study days below apply).</p>
+    <button id="curriculumBtn" type="button">Plan a curriculum from the ticked analyses</button>
+    <div id="curriculumMsg" role="status" aria-live="polite"></div><div id="curriculumBox"></div>
   </section>
 
   <h2 id="newHeading">Start a new analysis</h2>
@@ -150,7 +154,7 @@ function table(headers, rows) {
 function fill(id, node) { var box = $(id); box.textContent = ""; box.appendChild(node); }
 
 var KEY = "prereqai.session";  // the browser remembers only the session id; the server holds the progress
-var state = { deleting: null, mine: null, paths: null, quizTopics: [], round: null, suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
+var state = { picked: {}, deleting: null, mine: null, paths: null, quizTopics: [], round: null, suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
 
 function remember(sid) { try { if (sid) localStorage.setItem(KEY, sid); else localStorage.removeItem(KEY); } catch (e) { /* storage unavailable: no restore */ } }
 function recall() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
@@ -614,6 +618,10 @@ function renderHistory(sessions, unreadable) {
   $("history").hidden = !(sessions.length || unreadable.length);
   sessions.forEach(function (s) {
     var card = el("div", null, "card"), when = typeof s.created_at === "number" ? new Date(s.created_at * 1000).toISOString().slice(0, 16).replace("T", " ") + " UTC" : "date unknown";
+    var pick = document.createElement("input"); pick.type = "checkbox"; pick.className = "pick"; pick.value = s.session_id; pick.checked = !!state.picked[s.session_id];
+    pick.setAttribute("aria-label", "Include in curriculum: " + (s.paper_title || "Untitled paper"));
+    pick.addEventListener("change", function () { state.picked[s.session_id] = pick.checked; });
+    card.appendChild(pick);
     card.appendChild(el("p", (s.paper_title || "Untitled paper") + (s.session_id === state.sid ? " (open now)" : "")));
     card.appendChild(el("p", when + " - " + sessionStatus(s) + " - " + (s.quiz_attempts || 0) + " quiz answers - session " + s.session_id.slice(0, 8), "meta"));
     var resume = el("button", "Resume", "small"); resume.type = "button"; resume.disabled = state.busy;
@@ -840,6 +848,33 @@ async function loadReadingList() {
   } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "readingMsg"); }
 }
 $("readingBtn").addEventListener("click", loadReadingList);
+
+// ---- a curriculum over the ticked analyses (POST /api/curriculum) ----
+async function planCurriculum() {
+  var ids = Object.keys(state.picked).filter(function (id) { return state.picked[id]; });
+  if (ids.length < 2) return showStatus("error", "Tick at least two analyses to plan together.", null, "curriculumMsg");
+  var payload = { session_ids: ids, today: new Date().toLocaleDateString("en-CA") }, days = Array.prototype.filter.call(document.querySelectorAll("#studydays input"), function (b) { return b.checked; }).map(function (b) { return b.value; });
+  if ($("profile").value.trim()) payload.profile = $("profile").value.trim();
+  if ($("deadline").value) payload.deadline = $("deadline").value;
+  if ($("hours").value) payload.hours_per_day = Number($("hours").value);
+  if (days.length && days.length < 7) payload.weekdays = days.join(",");
+  showStatus("info", "Planning...", null, "curriculumMsg");
+  try {
+    var response = await fetch("/api/curriculum", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }), body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (!response.ok || !body || body.status !== "success") { var text = failureText(body, response.status); showStatus("error", text[0], text[1], "curriculumMsg"); return; }
+    showStatus("info", (body.warnings || []).join(" "), null, "curriculumMsg");
+    var box = el("div", "");
+    box.appendChild(el("p", "Together: " + body.hours.combined + " h instead of " + body.hours.separate + " h separately (" + body.hours.saved + " h saved: " + body.hours.saved_by_mastery + " h you know, " + body.hours.saved_by_sharing + " h shared).", "msg info"));
+    body.papers.forEach(function (p) { var card = el("div", null, "card"); card.appendChild(el("p", p.position + ". " + p.title)); card.appendChild(el("p", p.reason, "meta")); box.appendChild(card); });
+    if (body.shared_prerequisites.length) box.appendChild(el("p", "Studied once for several papers: " + body.shared_prerequisites.map(function (s) { return s.concept + " (" + s.hours + " h)"; }).join("; ") + ".", "meta"));
+    if (body.excluded.length) box.appendChild(el("p", "Left out: " + body.excluded.map(function (e) { return e.concept + " (" + e.reason + ")"; }).join("; ") + ".", "meta"));
+    box.appendChild(el("p", body.calendar.feasibility.message, body.calendar.feasibility.status === "achievable" ? "msg info" : "msg warn"));
+    box.appendChild(body.calendar.days.length ? table(["Date", "Hours", "Study"], body.calendar.days.map(function (d) { return [d.date + " (" + d.weekday + ")", d.hours + " h", d.items.map(function (i) { return i.concept + " " + i.hours + " h"; }).join("; ")]; })) : el("p", "Nothing is left to study.", "msg info"));
+    fill("curriculumBox", box);
+  } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "curriculumMsg"); }
+}
+$("curriculumBtn").addEventListener("click", planCurriculum);
 </script>
 </body>
 </html>
