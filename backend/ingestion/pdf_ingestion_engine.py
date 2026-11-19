@@ -20,6 +20,7 @@ class RawPage:
     ocr: bool = False  # the text was recognised from a scanned page image, not read from the PDF's text layer
     ocr_error: str = ""  # a scanned page whose text could not be recognised, and why
     ocr_stopped: bool = False  # a scanned page left unread because the OCR time or page budget ran out (ocr_error says which)
+    layout: list = field(default_factory=list)  # one dict per text line (text, size, bold, mixed, block_lines, bbox) for heading detection; emptied once sections are parsed
     removed_lines: int = 0  # running header, footer and page-number lines taken out of `text` (they repeat on many pages)
 
 
@@ -179,13 +180,37 @@ def default_ocr(page) -> str:
         raise RuntimeError(f"{type(error).__name__}: {error}") from error
 
 
+def _layout_lines(page):
+    """The typography of the page's text lines: text, font size (of the longest span), bold (every span bold), mixed (bold and regular
+    spans in one line, e.g. a bold lead-in of a paragraph), the number of lines in its block and its box. [] when unavailable."""
+    try:
+        blocks = page.get_text("dict")["blocks"]
+    except Exception:
+        return []
+    found = []
+    for block in blocks:
+        if block.get("type") != 0:
+            continue
+        for line in block["lines"]:
+            spans = [span for span in line["spans"] if span["text"].strip()]
+            if not spans:
+                continue
+            weights = [bool(span["flags"] & 16) or "bold" in span["font"].lower() for span in spans]
+            main = max(spans, key=lambda span: len(span["text"]))
+            found.append({"text": "".join(span["text"] for span in line["spans"]).strip(), "size": round(main["size"], 1),
+                          "chars": sum(len(span["text"].strip()) for span in spans), "bold": all(weights),
+                          "mixed": any(weights) and not all(weights), "block_lines": len(block["lines"]),
+                          "bbox": [round(v, 1) for v in line["bbox"]]})
+    return found
+
+
 def read_page(page, page_number, ocr, stop=None) -> RawPage:
     """One page in the ingestion format: its text layer when it has one, else (for a scan) OCR output. Never raises for OCR: a
     scan that could not be recognised keeps empty text and says why in `ocr_error`. `stop` (optional) is asked before a scan is
     recognised and returns why OCR must stop ("" to go on); the page then keeps its text layer, is marked `ocr_stopped` and is not recognised."""
     text = clean_pdf_text(_page_text(page))
     if not needs_ocr(page, text):
-        return RawPage(page_number=page_number, text=text)
+        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page))
     reason = stop() if stop is not None else ""
     if reason:
         return RawPage(page_number=page_number, text=text, ocr_error=reason, ocr_stopped=True)

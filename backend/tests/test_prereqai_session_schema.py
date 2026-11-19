@@ -64,7 +64,7 @@ def make_legacy(session):
 
 def test_a_saved_session_is_stamped_with_the_current_version_and_loads(saved):
     sid, path = saved
-    assert json.loads(path.read_bytes())["schema_version"] == SessionManager.SCHEMA_VERSION == 4 and load_saved(path).schema_version == 4
+    assert json.loads(path.read_bytes())["schema_version"] == SessionManager.SCHEMA_VERSION == 5 and load_saved(path).schema_version == 5
     session_manager.sessions.clear()
     assert session_manager.get(sid).session_id == sid and not session_manager.is_unreadable(sid)
 

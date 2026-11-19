@@ -1,6 +1,6 @@
 """The saved-session file format: a versioned JSON envelope.
 
-    {"format": "prereqai-session", "schema_version": 4, "session": <value>}
+    {"format": "prereqai-session", "schema_version": 5, "session": <value>}
 
 `<value>` is plain JSON for strings, numbers, booleans, null, lists and string-keyed dicts, and a tagged object for anything else:
     {"__t__": "dc", "c": "backend.models.paper.Paper", "f": {field: value, ...}}   a dataclass of this project (all its attributes)

@@ -3,6 +3,8 @@ import re
 from backend.ingestion import RawDocument
 from backend.models import Paper, PaperSection
 
+from .layout_headings import layout_headings
+
 
 # An optional section number ("2", "3.1.", "IV.", "A.1") in front of a heading.
 _NUMBER = r"(?:\d+(?:\.\d+)*\.?|[IVX]+\.|[A-Z](?:\.\d+)+\.?|[A-Z]\.?)[ \t]+"
@@ -103,9 +105,70 @@ def split_reference_blocks(sections):
             result.append(section)
             continue
         if section.content[:start].strip():
-            result.append(PaperSection(title=section.title, content=section.content[:start].strip()))
-        result.append(PaperSection(title="References", content=section.content[start:].strip()))
+            result.append(PaperSection(title=section.title, content=section.content[:start].strip(), page_number=section.page_number, heading_source=section.heading_source))
+        result.append(PaperSection(title="References", content=section.content[start:].strip(), page_number=section.page_number))
     return result
+
+
+class _LayoutHeading:
+    """A heading found by its typography, shaped like the regex match the parser uses for a heading found by its wording."""
+
+    def __init__(self, start, end, title):
+        self._start, self._end, self.title = start, end, title
+
+    def start(self):
+        return self._start
+
+    def end(self):
+        return self._end
+
+    def group(self):
+        return self.title
+
+    def groupdict(self):
+        return {"title": self.title}
+
+
+def _layout_matches(document, text, matches, back):
+    """Typographic headings the wording rules missed, located in the document text. Not before the first recognised heading (title,
+    authors), not in the back matter, not a line the wording rules already took, and each line of the text at most once."""
+    found = layout_headings(document.pages)
+    if not found:
+        return []
+    starts, position = {}, 0
+    for page in document.pages:
+        starts[page.page_number] = (position, position + len(page.text))
+        position += len(page.text) + 1
+    taken = [(m.start(), m.end()) for m in matches]
+    first = matches[0].start() if matches else None
+    top_page1 = max((size for number, _, size, _ in found if number == document.pages[0].page_number), default=None)
+    result, used = [], set()
+    for number, title, size, bold in found:
+        if number not in starts:
+            continue
+        low, high = starts[number]
+        pattern = re.compile(r"^[ \t]*" + r"\s+".join(map(re.escape, title.split())) + r"[ \t]*$", re.MULTILINE)
+        match = next((m for m in pattern.finditer(text, low, high) if m.start() not in used), None)
+        if match is None:
+            continue
+        if first is None and number == document.pages[0].page_number and size == top_page1:
+            continue  # the paper's title
+        if (first is not None and match.start() < first) or (back is not None and match.start() > back):
+            continue
+        if any(a <= match.start() < b or match.start() <= a < match.end() for a, b in taken):
+            continue
+        used.add(match.start())
+        result.append(_LayoutHeading(match.start(), match.end(), title))
+    return result
+
+
+def _page_of(document, offset):
+    position = 0
+    for page in document.pages:
+        position += len(page.text) + 1
+        if offset < position:
+            return page.page_number
+    return document.pages[-1].page_number if document.pages else None
 
 
 class ScientificSectionParser:
@@ -129,6 +192,10 @@ class ScientificSectionParser:
                 key=lambda m: m.start(),
             )
 
+        extra = _layout_matches(document, text, matches, back) if document.pages else []
+        layout_starts = {m.start() for m in extra}
+        matches = sorted([*matches, *extra], key=lambda m: m.start())
+
         if not matches:
             sections = [
                 PaperSection(
@@ -143,7 +210,7 @@ class ScientificSectionParser:
 
             if front:  # title and abstract text before the first recognised heading
 
-                sections.append(PaperSection(title="Front Matter", content=front))
+                sections.append(PaperSection(title="Front Matter", content=front, page_number=_page_of(document, 0)))
 
             for index, match in enumerate(matches):
 
@@ -159,8 +226,13 @@ class ScientificSectionParser:
                     PaperSection(
                         title=match.groupdict().get("title") or match.group().strip(),
                         content=text[start:end].strip(),
+                        page_number=_page_of(document, match.start()),
+                        heading_source="layout" if match.start() in layout_starts else "text",
                     )
                 )
+
+        for page in document.pages:
+            page.layout = []  # typography is only needed to find headings; it is not kept in the paper or its saved session
 
         return Paper(
             source_path=document.source_path,

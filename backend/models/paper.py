@@ -14,6 +14,8 @@ from .knowledge_graph import KnowledgeGraph
 class PaperSection:
     title: str
     content: str
+    page_number: int | None = None  # the page the heading is on (None for a legacy session or when it cannot be located)
+    heading_source: str = "text"  # "text": recognised from its wording or numbering; "layout": from its typography (size or bold)
 
 
 @dataclass
@@ -76,6 +78,7 @@ class Paragraph:
     paragraph_id: int
     section_title: str
     content: str
+    page_number: int | None = None  # the page the paragraph starts on (None for a legacy session or when it cannot be located)
 
 
 @dataclass

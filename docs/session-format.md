@@ -3,7 +3,7 @@
 With `PREREQAI_SESSION_DIR` set, each session is saved as `<session-id>.session`, a UTF-8 JSON file (`backend/session/session_codec.py`):
 
 ```json
-{"format": "prereqai-session", "schema_version": 4, "session": {"__t__": "dc", "c": "backend.session.learning_session.LearningSession", "f": {"...": "..."}}}
+{"format": "prereqai-session", "schema_version": 5, "session": {"__t__": "dc", "c": "backend.session.learning_session.LearningSession", "f": {"...": "..."}}}
 ```
 
 - Plain JSON stands for strings, numbers, booleans, null, lists and string-keyed dicts. Everything else is a tagged object: `dc` (a dataclass of this

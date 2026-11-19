@@ -53,7 +53,7 @@ def use(sid, answer_question=True):
 def test_the_file_is_a_documented_versioned_json_envelope_and_not_a_pickle(saved):
     sid, path = saved
     envelope = json.loads(path.read_bytes())
-    assert envelope["format"] == "prereqai-session" and envelope["schema_version"] == SessionManager.SCHEMA_VERSION == 4
+    assert envelope["format"] == "prereqai-session" and envelope["schema_version"] == SessionManager.SCHEMA_VERSION == 5
     assert envelope["session"]["__t__"] == "dc" and envelope["session"]["c"] == "backend.session.learning_session.LearningSession"
     assert path.read_bytes()[:1] == b"{" and b"\x80" not in path.read_bytes()[:2]
 
@@ -97,11 +97,11 @@ def test_older_pickle_sessions_migrate_to_json_keeping_the_learners_progress(sav
     legacy = session_manager.get(sid)
     legacy.schema_version = 3
     path.write_bytes(pickle.dumps(legacy))  # exactly what a version-3 server left behind
-    legacy.schema_version = 4  # the one thing migration changes is the version stamp
+    legacy.schema_version = SessionManager.SCHEMA_VERSION  # the one thing migration changes is the version stamp
     expected = session_codec.encode(legacy)
     migrated = reload(sid)
     assert migrated is not None and session_codec.encode(migrated) == expected
-    assert path.read_bytes()[:1] == b"{" and json.loads(path.read_bytes())["schema_version"] == 4  # rewritten in the new format
+    assert path.read_bytes()[:1] == b"{" and json.loads(path.read_bytes())["schema_version"] == SessionManager.SCHEMA_VERSION  # rewritten in the new format
     assert {i.concept for i in migrated.paper.study_progress if i.completed} == {"Probability"} and migrated.quiz_attempts
     assert client.get(f"/api/session/{sid}").json()["readiness"]["completed_concepts"] == 1
 
@@ -146,7 +146,7 @@ def hostile(name):
 
 
 @pytest.mark.parametrize("change", [
-    lambda e: e.update(format="other"), lambda e: e.update(schema_version=3), lambda e: e.update(schema_version=5), lambda e: e.update(schema_version=0),
+    lambda e: e.update(format="other"), lambda e: e.update(schema_version=3), lambda e: e.update(schema_version=6), lambda e: e.update(schema_version=0),
     lambda e: e.update(schema_version=True), lambda e: e.update(schema_version="4"), lambda e: e.pop("schema_version"), lambda e: e.pop("session"),
     lambda e: e.update(session=[1, 2]), lambda e: e["session"].update(c="backend.models.paper.Paper"),  # a Paper where a session belongs
     lambda e: e["session"]["f"].update(report=[1]), lambda e: e["session"]["f"].update(session_id="another-id"),
