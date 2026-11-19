@@ -18,7 +18,10 @@ from backend.api.workflow_result import (
     success_body,
 )
 
-from backend import learner_profile
+from datetime import datetime, time, timezone
+
+from backend import learner_profile, study_calendar
+from backend.prerequisites.study_time_estimator import parse_hours_per_day
 from backend.session import (
     session_manager,
     TutorMode,
@@ -183,6 +186,57 @@ def get_study_plan(session_id: str):
         return session_not_found(session_id)
 
     return MarkdownResponse(plan_markdown(session.report))
+
+
+class CalendarMarkdown(PlainTextResponse):
+    media_type = "text/calendar"
+
+
+def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone_name, start_time):
+    """(session, calendar, timezone name, start time) for the calendar endpoints, or a failure response. Hours default to the session's own daily hours."""
+    session = session_manager.get(session_id)
+    if session is None:
+        return session_not_found(session_id)
+    try:
+        report = session.report
+        daily = parse_hours_per_day(hours_per_day if hours_per_day is not None else (report.get("study_time") or {}).get("daily_hours"))
+        today_date = study_calendar.parse_date(today, "today") if today else datetime.now(timezone.utc).date()
+        steps, importance, studied = study_calendar.plan_inputs(report)
+        calendar = study_calendar.build_calendar(
+            steps, importance, daily, today_date, study_calendar.parse_weekdays(weekdays),
+            study_calendar.parse_date(deadline, "deadline") if deadline else None, study_calendar.parse_date(start, "start") if start else None, studied)
+        hours, _, minutes = (start_time or "09:00").partition(":")
+        begin = time(int(hours), int(minutes or 0))
+    except (ValueError, study_calendar.CalendarError) as error:  # CalendarError is a ValueError; so are bad hours and bad times
+        return failure_response(422, "calendar", str(error), hint="Send dates as YYYY-MM-DD, weekdays as mon,tue,..., hours per day above 0 and at most 24, start_time as HH:MM.")
+    return session, calendar, timezone_name or "UTC", begin
+
+
+@router.get("/{session_id}/calendar")
+def study_calendar_json(session_id: str, deadline: str | None = None, hours_per_day: float | None = None, weekdays: str | None = None,
+                        today: str | None = None, start: str | None = None):
+    """The remaining study plan on real dates: `deadline` (YYYY-MM-DD) adds a feasibility verdict (achievable, or the extra daily hours needed and the date you
+    would finish), `weekdays` (mon,tue,...) limits the study days, `today` is the first day work can happen (default: today, UTC), and `start` the day the plan
+    began, so work planned for earlier days that is still not done is listed as `missed_sessions` and laid out again from `today`. Studied concepts are not scheduled."""
+    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, None, None)
+    if not isinstance(found, tuple):
+        return found
+    return success_body("Study Calendar", "calendar", session_id=session_id, **found[1])
+
+
+@router.get("/{session_id}/calendar.ics", response_class=CalendarMarkdown,
+            responses={404: {"description": "Unknown session", "content": _FAILURE_JSON}, 422: {"description": "Invalid request", "content": _FAILURE_JSON}})
+def study_calendar_ics(session_id: str, deadline: str | None = None, hours_per_day: float | None = None, weekdays: str | None = None,
+                       today: str | None = None, start: str | None = None, timezone: str = "UTC", start_time: str = "09:00"):
+    """The same calendar as an iCalendar file: one event per scheduled item, back to back from `start_time` local time in `timezone` (an IANA name)."""
+    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone, start_time)
+    if not isinstance(found, tuple):
+        return found
+    try:
+        text = study_calendar.to_ics(found[1], title=f"Study plan: {session_manager.get(session_id).paper_title}", timezone_name=found[2], start_at=found[3])
+    except study_calendar.CalendarError as error:
+        return failure_response(422, "calendar", str(error), hint="Use an IANA time zone name such as UTC or Europe/Berlin.")
+    return CalendarMarkdown(text, headers={"Content-Disposition": 'attachment; filename="study-plan.ics"'})
 
 
 @router.delete("/{session_id}")

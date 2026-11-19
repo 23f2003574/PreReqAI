@@ -76,6 +76,12 @@ def add_prerequisites_parser(subparsers):
     analyze.add_argument("--profile", type=_nonblank, default=None, metavar="FILE",
                          help="A learner profile (JSON) that keeps the subjects you know or have studied across papers: its subjects are used "
                               "with --known/--studied (explicit values add to it) and your progress is saved to it after a successful analysis; created if missing")
+    analyze.add_argument("--deadline", type=_nonblank, default=None, metavar="YYYY-MM-DD",
+                         help="Finish studying by this date: prints a dated schedule and whether it is achievable (or the extra daily hours needed)")
+    analyze.add_argument("--study-days", type=_nonblank, default=None, metavar="DAYS", dest="study_days",
+                         help="The weekdays you can study on, such as mon,tue,wed,thu,fri (default: every day)")
+    analyze.add_argument("--ics-file", type=_nonblank, default=None, metavar="PATH", dest="ics_file",
+                         help="Save the dated schedule as an iCalendar (.ics) file (one event per item, from 09:00 UTC)")
     analyze.add_argument("--resume", type=_nonblank, default=None, metavar="PLAN_FILE",
                          help="Mark as studied every concept ticked in a plan saved earlier with --plan-file, "
                               "so progress carries over between runs (add --studied for newly finished concepts)")
@@ -242,6 +248,29 @@ def _apply_resume(args):
     return True
 
 
+def _apply_calendar(args, outcome):
+    """Lay the remaining plan out on dates when --deadline, --study-days or --ics-file was given: the calendar goes into the outcome (and so into --json),
+    the .ics file is written next to it. A problem text (an invalid date, weekday or file) is returned, else ""."""
+    if outcome.get("status") != "success" or not (args.deadline or args.study_days or args.ics_file):
+        return ""
+    from datetime import datetime, timezone
+
+    from backend import study_calendar
+
+    try:
+        steps, importance, studied = study_calendar.plan_inputs(outcome["report"])
+        calendar = study_calendar.build_calendar(
+            steps, importance, args.hours_per_day or outcome["report"].get("study_time", {}).get("daily_hours") or 3.0, datetime.now(timezone.utc).date(),
+            study_calendar.parse_weekdays(args.study_days), study_calendar.parse_date(args.deadline, "--deadline") if args.deadline else None, None, studied)
+        outcome["calendar"] = calendar
+        if args.ics_file:
+            text = study_calendar.to_ics(calendar, title=f"Study plan: {outcome['report']['paper']['title']}")
+            Path(args.ics_file).write_text(text, encoding="utf-8", newline="")
+    except (study_calendar.CalendarError, OSError) as error:
+        return f"cannot build the study calendar: {getattr(error, 'strerror', None) or error}"
+    return ""
+
+
 def _same_file(first, second):
     try:
         return os.path.samefile(first, second)
@@ -299,6 +328,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
     _note_resume_mismatch(args, outcome)
     if run is not None:
         outcome = run.finish(outcome)
+    calendar_problem = _apply_calendar(args, outcome)
     was_cancelled = outcome["status"] == "cancelled"
     limit_hit = outcome["status"] == "limit_exceeded"
     timed_out = outcome["status"] == "timeout"
@@ -327,6 +357,9 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         info = outcome["diagnostics"]
         print(f"  diagnostics: {len(info['completed_stages'])} stages completed; stopped after "
               f"{info['stopped_after'] or 'the start'}", file=sys.stderr)
+    if calendar_problem:
+        print(f"error: {calendar_problem}", file=sys.stderr)
+        return EXIT_USAGE
     if not args.as_json and not failed:
         report = outcome["report"]
         print(f"Analysed '{report['paper']['title']}' (session {outcome['session_id']})")
@@ -336,6 +369,9 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         known = sum(1 for item in satisfied if str(item.get("reason", "")).startswith("Already known"))  # the learner's own --known
         covered = len(satisfied) - known
         explained = [text for count, text in ((covered, f"{covered} covered in the paper"), (known, f"{known} marked known") ) if count]
+        if outcome.get("calendar"):
+            calendar = outcome["calendar"]
+            print(f"  calendar: {calendar['feasibility']['message']}" + (f" Saved {args.ics_file}." if args.ics_file else ""))
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "
               f"missing: {len(missing)}" + (f" ({', '.join(explained)})" if explained else ""))
         terms = report.get("not_analysed_terms") or []

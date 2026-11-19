@@ -67,7 +67,16 @@
     <section><h2>Study plan</h2><div id="plan"></div><div class="actions"><button id="download" type="button" class="small" hidden>Download study plan (Markdown)</button></div></section>
     <section id="mineBox" hidden><h2>Your study plan</h2><div id="mine"></div></section>
     <section id="pathsbox"><h2>Learning paths</h2><div id="paths"></div></section>
-    <section id="schedulebox"><h2>Study schedule</h2><p id="schedulesummary" class="lead"></p><div id="schedule"></div></section>
+    <section id="schedulebox"><h2>Study schedule</h2><p id="schedulesummary" class="lead"></p><div id="schedule"></div>
+      <h3>Plan to a deadline</h3>
+      <p class="meta">Dates the remaining plan across the weekdays you can study; says whether it is achievable.</p>
+      <label for="deadline">Deadline</label><input id="deadline" type="date">
+      <fieldset id="studydays"><legend>Study days</legend>
+        <label><input type="checkbox" value="mon" checked> Mon</label> <label><input type="checkbox" value="tue" checked> Tue</label> <label><input type="checkbox" value="wed" checked> Wed</label>
+        <label><input type="checkbox" value="thu" checked> Thu</label> <label><input type="checkbox" value="fri" checked> Fri</label> <label><input type="checkbox" value="sat" checked> Sat</label> <label><input type="checkbox" value="sun" checked> Sun</label>
+      </fieldset>
+      <button id="calendarBtn" type="button">Plan to deadline</button> <a id="icsLink" href="#" hidden>Download calendar (.ics)</a>
+      <div id="calendarMsg" role="status" aria-live="polite"></div><div id="calendarBox"></div></section>
     <section id="tutor"><h2>Ask a question</h2>
       <p class="lead">No tutoring model is configured in this release: answers are built-in definitions and facts from your analysis, not generated explanations.</p>
       <form id="askForm" novalidate>
@@ -773,6 +782,32 @@ async function loadReviews() {
   } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "reviewMsg"); }
 }
 $("reviewBtn").addEventListener("click", loadReviews);
+
+// ---- a dated schedule to a deadline, with a calendar download (GET /api/session/{id}/calendar and calendar.ics) ----
+function calendarQuery() {
+  var days = Array.prototype.filter.call(document.querySelectorAll("#studydays input"), function (box) { return box.checked; }).map(function (box) { return box.value; });
+  var q = ["today=" + encodeURIComponent(new Date().toLocaleDateString("en-CA"))];  // the learner's own calendar day (YYYY-MM-DD)
+  if ($("deadline").value) q.push("deadline=" + encodeURIComponent($("deadline").value));
+  if (days.length && days.length < 7) q.push("weekdays=" + days.join(","));
+  if ($("hours").value) q.push("hours_per_day=" + encodeURIComponent($("hours").value));
+  q.push("timezone=" + encodeURIComponent((Intl.DateTimeFormat().resolvedOptions().timeZone) || "UTC"));
+  return "?" + q.join("&");
+}
+async function planToDeadline() {
+  if (!state.sid) return showStatus("error", "Analyse a paper first.", null, "calendarMsg");
+  var base = "/api/session/" + encodeURIComponent(state.sid), query = calendarQuery();
+  showStatus("info", "Planning...", null, "calendarMsg");
+  try {
+    var response = await fetch(base + "/calendar" + query), body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (!response.ok || !body || body.status !== "success") { var text = failureText(body, response.status); showStatus("error", text[0], text[1], "calendarMsg"); return; }
+    showStatus(body.feasibility.status === "achievable" ? "info" : "error", body.feasibility.message, null, "calendarMsg");
+    var rows = body.days.map(function (d) { return [d.date + " (" + d.weekday + ")", d.hours + " h", d.items.map(function (i) { return i.concept + " " + i.hours + " h"; }).join("; ")]; });
+    fill("calendarBox", rows.length ? table(["Date", "Hours", "Study"], rows) : el("p", "Nothing is left to study.", "msg info"));
+    $("icsLink").href = base + "/calendar.ics" + query; $("icsLink").hidden = !rows.length;
+  } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "calendarMsg"); }
+}
+$("calendarBtn").addEventListener("click", planToDeadline);
 </script>
 </body>
 </html>
