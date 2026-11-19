@@ -51,6 +51,7 @@ def add_prerequisites_parser(subparsers):
     prerequisites = subparsers.add_parser("prerequisites", help="Prerequisite Explorer: analyse a research paper PDF (start here)")
     commands = prerequisites.add_subparsers(dest="prerequisites_command", required=True, metavar="<subcommand>")
     add_prerequisites_review_parser(commands)
+    add_prerequisites_profile_parser(commands)
     analyze = commands.add_parser(
         "analyze",
         help="Analyse a paper PDF into concepts, prerequisites and a learning plan",
@@ -122,6 +123,49 @@ def add_prerequisites_review_parser(commands):
     review.add_argument("--profile", type=_nonblank, required=True, metavar="FILE", help="The learner profile file")
     review.add_argument("--limit", type=int, default=10, metavar="N", help="How many upcoming reviews to list (default 10)")
     review.add_argument("--json", action="store_true", dest="as_json", help="Print the queue as JSON")
+
+
+def add_prerequisites_profile_parser(commands):
+    profile = commands.add_parser(
+        "profile",
+        help="Show or change a learner profile file (known and studied subjects, quiz mastery)",
+        description="Shows the profile, or first applies the changes given. Changes are atomic and never reset anything else; a profile that cannot be read is left as it is.",
+        epilog="Example: python -m backend.cli prerequisites profile me.json --known 'Linear Algebra' --forget Calculus. Exit codes: 0 done; 1 the profile cannot be used; 2 usage error.",
+    )
+    profile.add_argument("file", type=_nonblank, help="The learner profile file (created when a change is made and it does not exist)")
+    for flag, help_text in (("--known", "Mark a concept as known (repeat for several)"), ("--studied", "Mark a concept as studied (repeat for several)"),
+                            ("--forget", "Remove a concept from known and studied (repeat for several)"), ("--forget-quiz", "Delete the quiz history of a concept (repeat for several)")):
+        profile.add_argument(flag, type=_nonblank, action="append", default=[], metavar="CONCEPT", dest=flag[2:].replace("-", "_"), help=help_text)
+    profile.add_argument("--json", action="store_true", dest="as_json", help="Print the profile as the portable JSON document (the export format)")
+
+
+def run_prerequisites_profile(args) -> int:
+    from backend import learner_profile
+
+    notes = []
+    try:
+        if args.known or args.studied or args.forget or args.forget_quiz:
+            _, notes = learner_profile.update_profile(args.file, args.known, args.studied, args.forget, args.forget_quiz)
+        profile, problem = learner_profile.load_full(args.file)
+    except learner_profile.ProfileInputError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return EXIT_USAGE
+    except (learner_profile.ProfileError, OSError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return EXIT_FAILURE
+    if problem:
+        print(f"error: {problem}", file=sys.stderr)
+        return EXIT_FAILURE
+    for note in notes:
+        print(f"note: {note}", file=sys.stderr)
+    if args.as_json:
+        print(json.dumps({"format": learner_profile.FORMAT, "schema_version": learner_profile.SCHEMA_VERSION, **profile}, indent=2))
+        return 0
+    print(f"known: {', '.join(profile['known']) or '(none)'}")
+    print(f"studied: {', '.join(profile['studied']) or '(none)'}")
+    for item in learner_profile.mastery(profile["quiz"]):
+        print(f"quiz: {item['concept']}: {item['status']} ({item['knew']} knew, {item['missed']} missed over {item['questions']} question(s))")
+    return 0
 
 
 def run_prerequisites_review(args) -> int:

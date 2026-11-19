@@ -43,6 +43,10 @@ class ProfileError(ValueError):
     """The file is not a usable profile; the message says why."""
 
 
+class ProfileInputError(ProfileError):
+    """A request to change a profile was invalid (an unknown concept, too many names); the profile is untouched."""
+
+
 def key(name):
     return re.sub(r"[\s\-_]+", " ", str(name)).strip().casefold()
 
@@ -207,6 +211,78 @@ def review_queue(path, moment=None, upcoming_limit=10):
 
     profile, problem = load_full(path)
     return spaced_review.queue(profile["quiz"], moment or spaced_review.now(), upcoming_limit), problem
+
+
+def mastery(quiz):
+    """[{concept, questions, attempts, knew, missed, status, last_seen}] per concept of a profile's quiz history, by name. status: "mastered" when at least two
+    different questions were answered and each was last answered "knew" with a streak of at least 2; "needs_practice" when any question was last missed;
+    otherwise "progressing". It is a summary of self-graded answers, not a test result."""
+    by_concept = {}
+    for entry in quiz.values():
+        by_concept.setdefault(entry["concept"], []).append(entry)
+    result = []
+    for concept in sorted(by_concept):
+        entries = by_concept[concept]
+        if any(e["last_outcome"] == "missed" for e in entries):
+            status = "needs_practice"
+        elif len(entries) >= 2 and all(e["streak"] >= 2 for e in entries):
+            status = "mastered"
+        else:
+            status = "progressing"
+        result.append({"concept": concept, "questions": len(entries), "attempts": sum(e["attempts"] for e in entries), "knew": sum(e["knew"] for e in entries),
+                       "missed": sum(e["missed"] for e in entries), "status": status, "last_seen": max(e["last_seen"] for e in entries)})
+    return result
+
+
+def _canonical(names, label, vocab, problems):
+    kept = []
+    for name in names:
+        if not isinstance(name, str) or not 0 < len(name.strip()) <= MAX_NAME_CHARS:
+            problems.append(f"{label}: {str(name)[:40]!r} is not a concept name")
+        elif key(name) not in vocab:
+            problems.append(f"{label}: {name.strip()!r} is not a concept PreReqAI knows")
+        else:
+            kept.append(vocab[key(name)])
+    return kept
+
+
+def update_profile(path, add_known=(), add_studied=(), forget=(), forget_quiz=()):
+    """Change a profile atomically and return (profile, notes). `add_known` / `add_studied` add concepts (known wins over studied); `forget` removes concepts from both
+    lists; `forget_quiz` removes the quiz history of concepts (a profile's mastery is otherwise never touched). A missing file starts an empty profile. ProfileInputError
+    for any invalid name or too long a list (nothing is written); ProfileError for an unreadable profile (left as it is); OSError when it cannot be saved (the previous
+    file is kept)."""
+    lists = {"add_known": list(add_known), "add_studied": list(add_studied), "forget": list(forget), "forget_quiz": list(forget_quiz)}
+    if any(len(names) > 200 for names in lists.values()):
+        raise ProfileInputError("at most 200 concepts can be changed in one request")
+    vocab, problems = vocabulary(), []
+    canonical = {label: _canonical(names, label, vocab, problems) for label, names in lists.items()}
+    if problems:
+        raise ProfileInputError("; ".join(problems))
+    with _lock:
+        profile, problem = load_full(path)
+        if problem:
+            raise ProfileError(problem)
+        known, studied, quiz, notes = profile["known"], profile["studied"], profile["quiz"], []
+        gone = {key(name) for name in canonical["forget"]}
+        known = [name for name in known if key(name) not in gone]
+        studied = [name for name in studied if key(name) not in gone]
+        known = _dedupe([*known, *canonical["add_known"]], vocab)
+        for name in canonical["add_studied"]:
+            if key(name) in {key(k) for k in known}:
+                notes.append(f"{name} is already known, so it was not also marked studied")
+        studied = [name for name in _dedupe([*studied, *canonical["add_studied"]], vocab) if key(name) not in {key(k) for k in known}]
+        wiped = {key(name) for name in canonical["forget_quiz"]}
+        quiz = {identifier: entry for identifier, entry in quiz.items() if key(entry["concept"]) not in wiped}
+        save(path, known, studied, quiz)
+    return {"known": known, "studied": studied, "quiz": quiz}, notes
+
+
+def profile_names(directory):
+    """The names of the profiles in the directory (files NAME.json with a valid name), sorted."""
+    folder = Path(directory).expanduser()
+    if not folder.is_dir():
+        return []
+    return sorted(item.stem for item in folder.glob("*.json") if _NAME.fullmatch(item.stem) and item.is_file())
 
 
 def profile_path(directory, name=None):

@@ -68,6 +68,13 @@
     <section><h2>Detected concepts</h2><div id="concepts"></div></section>
     <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
     <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
+    <section id="profilebox"><h2>Learner profile</h2>
+      <p class="meta">What the server keeps about you under the profile name above (needs the server's profile directory): concepts you know or have studied, quiz mastery and reviews due. You decide what stays.</p>
+      <button id="profileBtn" type="button">Show my profile</button> <a id="profileExport" href="#" hidden>Export profile (.json)</a>
+      <div id="profileMsg" role="status" aria-live="polite"></div>
+      <label for="profileConcept">Concept</label><input id="profileConcept" type="text" autocomplete="off" maxlength="200" placeholder="Linear Algebra">
+      <button id="profileKnown" type="button">Mark known</button> <button id="profileStudied" type="button">Mark studied</button>
+      <div id="profileBody"></div></section>
     <section id="readingbox"><h2>Reading list from this paper's citations</h2>
       <p class="meta">The cited works most worth reading first, ranked by where and how often the paper cites them. Nothing is downloaded until you choose to analyse one.</p>
       <button id="readingBtn" type="button">Show reading list</button>
@@ -875,6 +882,39 @@ async function planCurriculum() {
   } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "curriculumMsg"); }
 }
 $("curriculumBtn").addEventListener("click", planCurriculum);
+
+// ---- the learner profile: view, mark known or studied, forget (GET/PATCH /api/profiles/{name}) ----
+function profileName() { return ($("profile").value || "").trim() || "default"; }
+function profileUrl() { return "/api/profiles/" + encodeURIComponent(profileName()); }
+async function profileCall(method, payload) {
+  showStatus("info", "Working...", null, "profileMsg");
+  try {
+    var response = await fetch(profileUrl(), payload ? { method: method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) } : { method: method }), body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (!response.ok || !body || body.status !== "success") { var text = failureText(body, response.status); showStatus("error", text[0], text[1], "profileMsg"); return; }
+    showStatus("info", (body.warnings || []).join(" "), null, "profileMsg");
+    renderProfile(body);
+  } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "profileMsg"); }
+}
+function renderProfile(profile) {
+  var box = el("div", "");
+  [["known", "Known"], ["studied", "Studied"]].forEach(function (kind) {
+    box.appendChild(el("h3", kind[1] + " (" + profile[kind[0]].length + ")"));
+    profile[kind[0]].forEach(function (name) {
+      var row = el("span", name + " "), forget = el("button", "Forget", "small"); forget.type = "button"; forget.setAttribute("aria-label", "Forget " + name);
+      forget.addEventListener("click", function () { profileCall("PATCH", { forget: [name] }); });
+      row.appendChild(forget); box.appendChild(row); box.appendChild(document.createTextNode(" "));
+    });
+  });
+  box.appendChild(el("h3", "Quiz mastery"));
+  box.appendChild(profile.mastery.length ? table(["Concept", "Status", "Knew", "Missed", "Questions"], profile.mastery.map(function (m) { return [m.concept, m.status, m.knew, m.missed, m.questions]; })) : el("p", "No quiz answers are saved yet.", "meta"));
+  box.appendChild(el("p", profile.reviews.due.length + " review(s) due now" + (profile.reviews.upcoming.length ? ", next: " + profile.reviews.upcoming[0].concept + " at " + profile.reviews.upcoming[0].due : "") + ".", "meta"));
+  fill("profileBody", box);
+  $("profileExport").href = profileUrl() + "/export"; $("profileExport").hidden = false;
+}
+$("profileBtn").addEventListener("click", function () { profileCall("GET"); });
+$("profileKnown").addEventListener("click", function () { var c = $("profileConcept").value.trim(); if (c) { profileCall("PATCH", { add_known: [c] }); $("profileConcept").value = ""; } });
+$("profileStudied").addEventListener("click", function () { var c = $("profileConcept").value.trim(); if (c) { profileCall("PATCH", { add_studied: [c] }); $("profileConcept").value = ""; } });
 </script>
 </body>
 </html>

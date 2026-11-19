@@ -26,6 +26,10 @@ from backend.api.curriculum_routes import (
     router as curriculum_router,
 )
 
+from backend.api.profile_routes import (
+    router as profile_router,
+)
+
 from backend.api.review_routes import (
     router as review_router,
 )
@@ -59,7 +63,7 @@ def cors_origins() -> list[str]:
 
 
 if cors_origins():  # off by default: a same-origin or command-line deployment needs no cross-origin access
-    app.add_middleware(CORSMiddleware, allow_origins=cors_origins(), allow_methods=["GET", "POST", "DELETE"], allow_headers=["*"])
+    app.add_middleware(CORSMiddleware, allow_origins=cors_origins(), allow_methods=["GET", "POST", "PATCH", "DELETE"], allow_headers=["*"])
 
 app.include_router(
     prerequisite_router,
@@ -67,6 +71,10 @@ app.include_router(
 
 app.include_router(
     session_router,
+)
+
+app.include_router(
+    profile_router,
 )
 
 app.include_router(
