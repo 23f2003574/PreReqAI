@@ -1,3 +1,4 @@
+from .ml_expansion import EXPLANATIONS as _EXPANSION_EXPLANATIONS
 from backend.models import (
     Paper,
     ConceptExplanation,
@@ -342,6 +343,8 @@ class ConceptExplanationEngine:
             "Beginner",
         ),
     }
+
+    EXPLANATIONS.update(_EXPANSION_EXPLANATIONS)  # the modern ML concepts (concepts/ml_expansion.py)
 
     def explain(
         self,

@@ -66,7 +66,7 @@ def test_section_attribution_uses_the_whole_paper_as_evidence():
 
 def test_ambiguous_flags_are_declared_in_the_registry():
     ambiguous = {c.name for c in ConceptRegistry().all() if c.ambiguous}
-    assert ambiguous == {"Attention", "Dropout", "Embedding", "Overfitting"}
+    assert ambiguous == {"Attention", "Dropout", "Embedding", "Overfitting", "AI Alignment"}
     assert all(c.technical and c.context for c in ConceptRegistry().all() if c.ambiguous)
 
 

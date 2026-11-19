@@ -103,8 +103,8 @@ def test_each_representation_concept_is_registered_once_and_wired_like_the_earli
 
 def test_the_registry_order_and_the_earlier_concepts_are_unchanged():
     names = [c.name for c in ConceptRegistry().all()]
-    assert names[:52] == [n for n in names[:52]] and len(names) == len(set(names)) == 66
-    assert names[52:60] == CLASSICAL and names[60:] == REPRESENTATION  # appended: no existing concept moved
+    assert len(names) == len(set(names)) == 116  # 66 earlier concepts plus the 50 of concepts/ml_expansion.py
+    assert names[52:60] == CLASSICAL and names[60:66] == REPRESENTATION  # appended: no existing concept moved
     assert {"Variational Autoencoder", "Fine-Tuning", "Contrastive Learning", "Embedding", "Large Language Model"} <= set(names)
 
 

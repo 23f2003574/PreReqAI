@@ -4,7 +4,7 @@ text-based quiz of the tutor ("Quiz me on Softmax") is separate and unchanged.""
 
 import re
 
-from .quiz_bank import QUIZ_BANK, SUBJECT_QUIZ_BANK
+from .quiz_bank import QUIZ_BANK, QUIZ_EXPLANATIONS, SUBJECT_QUIZ_BANK
 
 ASKABLE = {**QUIZ_BANK, **SUBJECT_QUIZ_BANK}  # questions that can be served by name; the default pick still uses QUIZ_BANK (paper concepts) only
 
@@ -82,7 +82,11 @@ def reveal(session, identifier):
         raise QuizError("state", f"Question {identifier!r} has not been asked in this session (or its outcome is already recorded).",
                         "Request a question with GET /quiz/question first.")
     session.quiz_pending[identifier]["revealed"] = True
-    return {"question_id": identifier, "answer": item["answer"]}
+    revealed = {"question_id": identifier, "answer": item["answer"]}
+    explanation = QUIZ_EXPLANATIONS.get((concept, item["question"]))
+    if explanation:  # only the newer questions carry one
+        revealed["explanation"] = explanation
+    return revealed
 
 
 def record(session, identifier, outcome):

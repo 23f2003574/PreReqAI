@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from .ml_expansion import AMBIGUOUS, EXPANSION
+
 
 @dataclass(frozen=True)
 class Concept:
@@ -127,6 +129,11 @@ class ConceptRegistry:
             Concept("Self-Supervised Learning", "deep_learning", aliases=('self supervised learning', 'self-supervised', 'self supervised')),
             Concept("Transfer Learning", "deep_learning"),
         ]
+
+        # Modern vision, self-supervised, reinforcement-learning, alignment, retrieval and sparse-model concepts (see ml_expansion).
+        for name, domain, aliases, *_ in EXPANSION:
+            technical, context = AMBIGUOUS.get(name, ((), ()))
+            self._concepts.append(Concept(name, domain, aliases=tuple(aliases), ambiguous=name in AMBIGUOUS, technical=technical, context=context))
 
     def all(self):
 

@@ -380,6 +380,12 @@ class RuleBasedTutor(BaseTutor):
             for item in sorted(getattr(paper, "missing_prerequisites", []), key=lambda item: -len(item.concept)):
                 if item.satisfied and re.search(_name_pattern(item.concept, plural=False), text):
                     return f"{item.concept} is not in your study plan, so there is no resource to suggest for it: {item.reason}."
+        if not named:  # a registry concept that is not a plan subject has its own curated link
+            from backend.resources.learning_resource_recommender import LearningResourceRecommender
+
+            own = [(name, link) for name, link in LearningResourceRecommender.CONCEPT_RESOURCES.items() if re.search(_name_pattern(name, plural=False), text)]
+            if own:
+                return "Suggested resources: " + "; ".join(f"{name}: {link[0]} ({link[1]}, ~{link[3]} h) {link[2]}" for name, link in own) + "."
         if named:
             chosen = named
         else:

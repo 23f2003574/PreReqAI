@@ -73,9 +73,10 @@ def test_a_subject_is_planned_after_every_subject_it_builds_on(subject):
 
 def test_the_new_subjects_attach_to_the_concepts_that_need_them():
     needing = lambda subject: {c for c, targets in RULES.items() if subject in targets}
-    assert needing("Optimization") == {"Gradient Descent", "Adam Optimizer", "Support Vector Machine", "Logistic Regression", "Regularization"}
+    assert needing("Optimization") == {"Gradient Descent", "Adam Optimizer", "Support Vector Machine", "Logistic Regression", "Regularization",
+                                      "Residual Network", "BYOL", "Trust Region Policy Optimization", "Direct Preference Optimization", "Load Balancing Loss"}
     assert needing("Statistics") == {"Maximum Likelihood Estimation", "Overfitting", "Monte Carlo Method", "Principal Component Analysis", "K-Means Clustering",
-                                     "Random Forest", "Regularization", "Cross-Validation"}
+                                     "Random Forest", "Regularization", "Cross-Validation", "Data Augmentation", "Offline Reinforcement Learning", "Bradley-Terry Model"}
     assert needing("Stochastic Processes") == {"Diffusion Model", "Forward Process", "Reverse Process", "Noise Schedule"}
     assert needing("Optimization") | needing("Statistics") | needing("Stochastic Processes") <= REGISTRY_NAMES
     assert RULES["Optimization"] == ["Calculus", "Linear Algebra"] and RULES["Statistics"] == ["Probability"]

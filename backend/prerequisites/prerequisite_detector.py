@@ -1,6 +1,7 @@
 import logging
 
 from backend.concepts.concept_registry import ConceptRegistry
+from backend.concepts.ml_expansion import RULES as _EXPANSION_RULES
 from backend.models import (
     Paper,
     Prerequisite,
@@ -376,6 +377,8 @@ class PrerequisiteDetector:
             "Neural Networks",
         ],
     }
+
+    PREREQUISITE_RULES.update(_EXPANSION_RULES)  # the modern ML concepts (concepts/ml_expansion.py); every target is a subject the planner has hours for
 
     def detect(
         self,

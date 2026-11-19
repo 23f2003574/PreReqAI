@@ -1,3 +1,4 @@
+from backend.concepts.ml_expansion import RESOURCES as _EXPANSION_RESOURCES
 from backend.prerequisites.prerequisite_learning_planner import PrerequisiteLearningPlanner
 from backend.models import (
     Paper,
@@ -97,6 +98,14 @@ class LearningResourceRecommender:
             PrerequisiteLearningPlanner.STUDY_TIME["Transformer"],  # one source of study hours: the planner's
         ),
     }
+
+    # One curated study link per registry concept that is not a planner subject (the modern ML concepts); (title, provider, url, hours).
+    CONCEPT_RESOURCES = dict(_EXPANSION_RESOURCES)
+
+    @classmethod
+    def for_concept(cls, name):
+        """The curated (title, provider, url, hours) for a registry concept, whether it is a planner subject or one of the modern ML concepts; None if none."""
+        return cls.RESOURCE_LIBRARY.get(name) or cls.CONCEPT_RESOURCES.get(name)
 
     def recommend(
         self,

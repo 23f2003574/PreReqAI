@@ -1,3 +1,5 @@
+from backend.concepts.ml_expansion import QUIZ as _EXPANSION_QUIZ, QUIZ_EXPLANATIONS
+
 QUIZ_BANK = {
 
     "Attention": [
@@ -1003,3 +1005,5 @@ _MORE_QUESTIONS = {
 
 for _name, _items in _MORE_QUESTIONS.items():
     QUIZ_BANK[_name].extend(_items)
+
+QUIZ_BANK.update(_EXPANSION_QUIZ)  # the modern ML concepts, each with two questions and an explanation (concepts/ml_expansion.py)
