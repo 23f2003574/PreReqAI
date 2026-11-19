@@ -275,6 +275,21 @@ function render(body) {
         return [c.concept, c.domain, c.occurrences + (c.mentioned_once ? " (mentioned once)" : "")];
       }))
     : el("p", "No known concepts were detected in this paper, so there is nothing to plan.", "msg warn"));
+  // The paper's own sentences behind each concept, with their page and section; text is inserted as text, never as markup.
+  var quoted = evidence.filter(function (c) { return (c.passages || []).length; }), cite = el("div", "");
+  quoted.forEach(function (c) {
+    var details = document.createElement("details"), summary = document.createElement("summary");
+    summary.textContent = c.concept + ": " + c.passages.length + " passage" + (c.passages.length === 1 ? "" : "s") + " from the paper";
+    details.appendChild(summary);
+    c.passages.forEach(function (p) {
+      var quote = document.createElement("blockquote");
+      quote.textContent = "\u201c" + p.sentence + "\u201d";
+      var where = el("p", (p.page_number ? "Page " + p.page_number + ", " : "") + (p.section ? "section " + p.section : "untitled section") + " [" + p.passage_id + "]", "meta");
+      details.appendChild(quote); details.appendChild(where);
+    });
+    cite.appendChild(details);
+  });
+  if (quoted.length) $("concepts").appendChild(cite);
 
   var terms = report.not_analysed_terms || [];
   $("notanalysed").hidden = !terms.length;

@@ -173,7 +173,8 @@ class RuleBasedTutor(BaseTutor):
                  "The quotations are the paper's own words, not an explanation by the tutor; check them in context."]
         for number, passage in enumerate(passages, start=1):
             where = f"section \"{passage['section']}\"" if passage["section"] else "an untitled section"
-            lines.append(f"{number}. From {where}, paragraph {passage['paragraph_id']}: \u201c{passage['text']}\u201d")
+            page = f", page {passage['page_number']}" if passage.get("page_number") else ""  # a session saved before pages were recorded has none
+            lines.append(f"{number}. From {where}{page}, paragraph {passage['paragraph_id']}: \u201c{passage['text']}\u201d")
         return "\n".join(lines)
 
     @staticmethod

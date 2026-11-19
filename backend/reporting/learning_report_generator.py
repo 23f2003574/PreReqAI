@@ -76,13 +76,18 @@ class LearningReportGenerator:
     def _concept_evidence(paper: Paper) -> list:
         """Why each concept was detected, so the detection can be checked against the paper: how many times the
         paper mentions it (by name or alias, bibliography excluded) and whether that is a single passing mention.
-        Most-mentioned first; ties keep the detection order."""
+        Most-mentioned first; ties keep the detection order. `passages` are the paper's own sentences about the concept, each with its
+        page and section (see backend/evidence.py); empty for a concept with no quotable sentence."""
+        from backend.evidence import build_evidence
+
+        passages = build_evidence(paper)
         return [
             {
                 "concept": concept.name,
                 "domain": concept.domain,
                 "occurrences": concept.occurrences,
                 "mentioned_once": concept.occurrences == 1,
+                "passages": passages.get(concept.name, []),
             }
             for concept in sorted(paper.concepts, key=lambda item: -item.occurrences)
         ]

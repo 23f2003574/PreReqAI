@@ -90,7 +90,7 @@ def rank_passages(paper, question):
             ranked.append((-coverage, index, paragraph))
     ranked.sort(key=lambda item: item[:2])
     return [{"section": paragraph.section_title or "", "paragraph_id": paragraph.paragraph_id, "text": _excerpt(paragraph.content, query),
-             "coverage": round(-negative, 3)} for negative, _, paragraph in ranked[:MAX_PASSAGES]]
+             "page_number": getattr(paragraph, "page_number", None), "coverage": round(-negative, 3)} for negative, _, paragraph in ranked[:MAX_PASSAGES]]
 
 
 class ContextRetriever:
