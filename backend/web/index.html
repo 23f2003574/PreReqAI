@@ -391,6 +391,10 @@ function renderAnswers() {
     var card = el("div", null, "card");
     card.appendChild(el("p", a.question, "meta"));
     card.appendChild(el("p", a.text));
+    if (a.grounding === "verified" && (a.citations || []).length) {  // quotations the server checked against the paper's own text
+      card.appendChild(el("p", "Checked against the paper:", "meta"));
+      a.citations.forEach(function (c) { var q = document.createElement("blockquote"); q.textContent = "\u201c" + c.quote + "\u201d (" + (c.page_number ? "page " + c.page_number + ", " : "") + c.section + ")"; card.appendChild(q); });
+    } else if (a.grounding === "fallback") card.appendChild(el("p", "The model's answer could not be verified against the paper, so this is the built-in tutor's answer.", "msg warn"));
     if (a.concepts && a.concepts.length) card.appendChild(el("p", "Concepts: " + a.concepts.join(", "), "meta"));
     if (a.sections && a.sections.length) card.appendChild(el("p", "Found in sections: " + a.sections.join("; "), "meta"));
     (a.warnings || []).forEach(function (w) { card.appendChild(el("p", w, "msg warn")); });
@@ -423,7 +427,7 @@ async function ask(question) {
     } else {
       var r = body.responses[0];
       state.answers.unshift({ question: question, text: r.answer, concepts: r.supporting_concepts, sections: r.supporting_sections,
-                              warnings: body.warnings || [], followups: r.suggested_followups });
+                              warnings: body.warnings || [], followups: r.suggested_followups, citations: r.citations || [], grounding: r.grounding || "" });
       $("question").value = ""; showStatus("info", "", null, "askMsg");
     }
   } catch (error) {

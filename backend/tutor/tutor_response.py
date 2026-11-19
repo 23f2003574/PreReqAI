@@ -31,3 +31,12 @@ class TutorResponse:
     notes: list[str] = field(
         default_factory=list,
     )
+
+    # Model answers only: the citations that were checked against the paper (each {passage_id, quote, sentence, page_number, section}, taken from the
+    # stored passage, never from the model) and how the answer came about: "verified" (a model answer whose citations all matched), "fallback" (the
+    # model's answer was rejected or could not be checked and the built-in tutor answered), or "" (the built-in tutor, as before).
+    citations: list = field(
+        default_factory=list,
+    )
+
+    grounding: str = ""

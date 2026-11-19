@@ -50,6 +50,9 @@ class FakeProvider(TutorProvider):
         self.prompts.append((system_prompt, user_prompt))
         if self.error:
             raise self.error
+        if self.reply == GOOD:  # a model that cites the first excerpt it was given, quoting it exactly
+            first = json.loads(user_prompt)["paper_excerpts"][0]
+            return json.dumps({**json.loads(GOOD), "citations": [{"passage_id": first["passage_id"], "quote": first["text"][:60]}]})
         return self.reply
 
 
@@ -245,6 +248,7 @@ def test_prompts_are_bounded_and_carry_only_what_the_question_needs(sid, monkeyp
     data = json.loads(user_prompt)
     assert len(user_prompt) < 12000 and len(data["paper_excerpts"]) <= 4 and all(len(e["text"]) <= 600 for e in data["paper_excerpts"])
     assert len(data["question"]) <= 1000 and len(data["study_plan"]) <= 8 and "UNRELATED-SENTINEL" not in user_prompt
+    assert all(set(e) == {"passage_id", "section", "page", "text"} for e in data["paper_excerpts"])
     assert set(data) == {"question", "mode", "paper_title", "concepts_in_question", "paper_concepts", "paper_excerpts", "study_plan"}  # no session or learner history
 
 
