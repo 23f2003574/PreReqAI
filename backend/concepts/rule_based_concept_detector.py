@@ -1,5 +1,7 @@
+import hashlib
 import re
 import unicodedata
+from copy import deepcopy
 from functools import lru_cache
 
 from backend.models import (
@@ -70,7 +72,7 @@ def subject_mentions(paper):
 def _word_in(inner, outer):
     """Whether `inner` occurs in `outer` as whole words. Registry terms never change, and detect() asks this for every pair of
     terms (concepts x concepts x aliases), which dominated an analysis of any paper; the answer is cached per pair."""
-    return re.search(rf"\b{re.escape(inner)}\b", outer) is not None
+    return inner in outer and re.search(rf"\b{re.escape(inner)}\b", outer) is not None  # the plain substring test rejects almost every pair before a regex is built
 
 
 @lru_cache(maxsize=None)
@@ -256,6 +258,22 @@ class RuleBasedConceptDetector:
 def section_mentions(paper):
     """{section title: {"concepts": {registry concept: mentions}, "subjects": {prerequisite subject: mentions}}} for the sections that
     mention anything, in the order the sections appear. Bibliography and other back-matter sections are empty, like in detect()."""
+    from backend.models import Paper
+
+    fingerprint = hashlib.sha1("\x00".join(f"{p.section_title}\x01{p.content}" for p in getattr(paper, "paragraphs", [])).encode("utf-8", "replace")).hexdigest()
+    if fingerprint in _SECTION_CACHE:  # the stages that need it (coverage, report) ask about the same paper: the answer is worked out once
+        return deepcopy(_SECTION_CACHE[fingerprint])
+    found = _section_mentions(paper)
+    _SECTION_CACHE[fingerprint] = deepcopy(found)
+    while len(_SECTION_CACHE) > 4:
+        _SECTION_CACHE.pop(next(iter(_SECTION_CACHE)))
+    return found
+
+
+_SECTION_CACHE = {}
+
+
+def _section_mentions(paper):
     from backend.models import Paper
 
     titles = list(dict.fromkeys(paragraph.section_title or "" for paragraph in getattr(paper, "paragraphs", [])))

@@ -12,6 +12,8 @@ import urllib3
 from backend.ingestion.arxiv_resolver import RETRY_COUNTER
 from backend.ingestion.pdf_url_resolver import PdfUrlError
 from backend.parsing.scientific_section_parser import absorbed_heading_candidates
+from backend.analysis_cache import analysis_cache, file_key
+from backend.pipeline.research_paper_pipeline import PipelineResult
 from backend.prerequisites.study_time_estimator import parse_hours_per_day
 
 from backend.api.workflow_result import (
@@ -398,9 +400,18 @@ class PreReqAIPlatform:
 
         counter_token = RETRY_COUNTER.set(retries)
         try:
-            result = self.analysis.run(file_path, should_cancel=should_cancel,
-                                       **({'max_file_bytes': limits.max_file_bytes} if limits is not None and limits.max_file_bytes is not None else {}),
-                                       **({'ocr_seconds': limits.max_seconds * OCR_TIME_SHARE} if limits is not None and limits.max_seconds is not None else {}))
+            def produce():  # the pipeline itself; a run whose OCR budget left scanned pages unread is partial and is never cached
+                run = self.analysis.run(file_path, should_cancel=should_cancel,
+                                        **({'max_file_bytes': limits.max_file_bytes} if limits is not None and limits.max_file_bytes is not None else {}),
+                                        **({'ocr_seconds': limits.max_seconds * OCR_TIME_SHARE} if limits is not None and limits.max_seconds is not None else {}))
+                return {"paper": run.paper, "report": run.report, "timings": run.timings,
+                        "partial": any(getattr(page, "ocr_stopped", False) for page in (run.paper.pages or []))}
+
+            # The same file (by its SHA-256) analysed again under the same pipeline version is not analysed again: see backend/analysis_cache.py
+            entry, hit = analysis_cache.fetch(file_key(file_path), produce, should_cancel)
+            result = PipelineResult(paper=entry["paper"], report=entry["report"], timings=entry["timings"])
+            if hit:
+                result.paper.source_path = file_path  # the copy belongs to this request's file, not to the upload that filled the cache
         except Exception as exc:
             # Every way a run can stop becomes one terminal outcome here, with what finished before it.
             outcome = _stopped_outcome(exc, limits if exceeded else None)

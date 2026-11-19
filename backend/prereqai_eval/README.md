@@ -84,3 +84,26 @@ hand-made inputs, which show the logic works as designed, not that it works on p
   whether Probability is needed for a graph-attention paper), so the prerequisite score is indicative only.
 - **Six fixtures** are far too few for statistics. Detection rules are never tuned to these fixtures.
 - **PDF mode is synthetic.** `--pdf` exercises ingestion, section parsing and coverage on three generated PDFs only; no published paper is used.
+
+## Performance (`--performance`)
+
+`python -m backend.prereqai_eval --performance [--pages 120] [--json]` runs a generated academic PDF of at least 100 pages through the real pipeline and prints
+the seconds of each stage, the peak Python memory (tracemalloc) and the process's peak resident size, for a cold run and for the same file again (served by the
+analysis cache, `backend/analysis_cache.py`). Timings depend on the machine, so tests never assert them; compare runs on one machine.
+
+Measured on the development container (120 pages, 115 KB, one run each, cold, in a fresh process; the numbers move by roughly 0.2 s between runs):
+
+| | before | after |
+|---|---|---|
+| total | 5.03 s | 3.15-3.35 s |
+| concept_detector | 1.50 s | 0.66 s |
+| ingestion | 1.21 s | 0.86-0.93 s |
+| missing_prerequisite_analyzer | 0.72 s | 0.14 s |
+| report_generator | 0.70 s | 0.85 s (now also builds the evidence passages) |
+| peak Python memory | 17.5 MiB | 17.3 MiB |
+| the same file again | n/a | 0.03 s (cache hit; the pipeline is not rerun) |
+
+The profile (cProfile, cumulative) showed three demonstrated hotspots and only these were changed: the one-off `_shadowing_terms` table built 76,000 regular
+expressions for the 116-concept registry (a plain substring test now rejects almost every pair first); `section_mentions` re-ran the detector for every section
+twice (the second ask for the same paper now reuses the first answer, keyed by a hash of the paragraphs); and ingestion extracted every page's lines and fonts
+twice (once now). Nothing else was tuned. Results are unchanged: the `--pdf` evaluation and the whole test suite give the same answers.

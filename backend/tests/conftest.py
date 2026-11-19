@@ -13,6 +13,16 @@ def _no_real_backoff_sleep(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _empty_analysis_cache(monkeypatch):
+    """The analysis cache is a process-wide singleton: an earlier test's analysis of the bundled paper must not stand in for the pipeline run a
+    later test (stage cancellation, time limits, patched stages) is about. The cache's own tests fill it on purpose."""
+    from backend.analysis_cache import analysis_cache
+
+    monkeypatch.delenv("PREREQAI_ANALYSIS_CACHE_DIR", raising=False)
+    analysis_cache.clear()
+
+
+@pytest.fixture(autouse=True)
 def _run_from_the_repository_root(monkeypatch):
     """Tests name the bundled examples by repository-relative paths ("examples/prerequisites/sample-paper.pdf"), as the README
     does; pytest started from another directory (an IDE, CI with a different working-directory) must not break them."""

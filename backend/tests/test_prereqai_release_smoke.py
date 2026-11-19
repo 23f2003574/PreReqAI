@@ -5,6 +5,7 @@ input and configuration, ordinary failure, cancellation, timeout, resource
 limit -- each followed by a successful run that must equal the baseline, so
 no failed or interrupted run can contaminate the next one. Only the arXiv
 download is mocked (it needs the network)."""
+from backend.analysis_cache import analysis_cache
 import json
 import os
 import signal
@@ -84,6 +85,7 @@ def test_every_terminal_path_behaves_and_never_contaminates_the_next_run(tmp_pat
     parser = platform.analysis.section_parser
     real_parse = parser.parse
     monkeypatch.setattr(parser, "parse", lambda document: (os.kill(os.getpid(), signal.SIGINT), real_parse(document))[1])
+    analysis_cache.clear()  # the file was analysed above; this run must exercise the patched stage, not the cache
     code, cancelled = _cli_json(capsys, str(paper), "--diagnose")
     monkeypatch.setattr(parser, "parse", real_parse)
     assert code == EXIT_CANCELLED and cancelled["status"] == "cancelled" and cancelled["diagnostics"]["stopped_after"] == "section_parser"

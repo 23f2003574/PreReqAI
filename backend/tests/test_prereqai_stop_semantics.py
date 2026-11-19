@@ -6,6 +6,7 @@ import json
 
 import pymupdf as fitz
 import pytest
+from backend.analysis_cache import analysis_cache
 import requests
 import urllib3
 from fastapi.testclient import TestClient
@@ -107,6 +108,7 @@ def test_a_clean_run_after_a_cancellation_and_a_timeout_succeeds_normally(platfo
     platform.analyze(paper, should_cancel=lambda: True)
     with monkeypatch.context() as patch:
         patch.setattr(platform.analysis.ingestion, "ingest", _raise(TimeoutError("slow")))
+        analysis_cache.clear()  # the file was analysed above; this run must exercise the patched stage, not the cache
         assert platform.analyze(paper)["status"] == "timeout"
 
     outcome = platform.analyze(paper, diagnostics=True)

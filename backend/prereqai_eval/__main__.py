@@ -11,11 +11,22 @@ def main(argv=None):
     parser.add_argument("--fixtures", default=str(DEFAULT_FIXTURES), help="annotation file (default: the bundled fixtures)")
     parser.add_argument("--pdf", action="store_true", help="evaluate generated synthetic academic PDFs through the full pipeline (needs PyMuPDF)")
     parser.add_argument("--benchmark", action="store_true", help="evaluate the real-paper benchmark (reviewed annotations only; needs PyMuPDF; reported apart from --pdf)")
+    parser.add_argument("--performance", action="store_true", help="time the pipeline stage by stage on a generated PDF (see --pages); machine-dependent, for comparing changes")
+    parser.add_argument("--pages", type=int, default=120, help="pages of the --performance PDF (at least 100; default 120)")
     parser.add_argument("--manifest", default=None, help="benchmark manifest (default: the bundled one)")
     parser.add_argument("--approve", metavar="ANNOTATION", default=None, help="record a person's approval of a benchmark annotation (needs --reviewer)")
     parser.add_argument("--reviewer", default=None, help="the name of the person approving the annotation")
     parser.add_argument("--json", action="store_true", help="print the full report as JSON")
     args = parser.parse_args(argv)
+    if args.performance:
+        from . import performance
+
+        if args.pages < 100:
+            print("error: --pages must be at least 100", file=sys.stderr)
+            return 2
+        report = performance.run_benchmark(args.pages)
+        print(json.dumps(report, indent=2) if args.json else performance.render_performance(report))
+        return 0
     if args.approve or args.benchmark:
         from . import benchmark
 

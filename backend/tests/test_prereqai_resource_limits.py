@@ -6,6 +6,7 @@ import time
 
 import pymupdf as fitz
 import pytest
+from backend.analysis_cache import analysis_cache
 
 from backend.cli import EXIT_FAILURE, EXIT_OK, main
 from backend.cli_common import EXIT_LIMIT_EXCEEDED
@@ -108,6 +109,7 @@ def test_the_next_run_after_a_limit_stop_is_clean(tmp_path):
     assert platform.analyze(path, limits=AnalysisLimits(max_file_bytes=100))["status"] == "limit_exceeded"
     parser, real = _slow_section_parser(platform, 0.2)
     try:
+        analysis_cache.clear()  # the file was analysed above; this run must exercise the patched stage, not the cache
         assert platform.analyze(path, limits=AnalysisLimits(max_seconds=0.1))["status"] == "limit_exceeded"
     finally:
         parser.parse = real

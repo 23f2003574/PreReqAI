@@ -84,7 +84,7 @@ def _three_column_order(lines, width):
     return ordered if found else None
 
 
-def _lines_in_column_order(page):
+def _lines_in_column_order(page, blocks=None):
     """The page's text lines (with their boxes) in reading order, or None when the page needs no reordering.
 
     Some generators write a two-column page's lines alternately (left line 1, right line 1, left line 2, ...), and the text then
@@ -96,7 +96,7 @@ def _lines_in_column_order(page):
     middle, slack = page.rect.width / 2, page.rect.width * 0.02
     lines = [
         (line["bbox"], "".join(span["text"] for span in line["spans"]))
-        for block in page.get_text("dict")["blocks"] if block.get("type") == 0
+        for block in (blocks if blocks is not None else page.get_text("dict")["blocks"]) if block.get("type") == 0
         for line in block["lines"]
     ]
     three = _three_column_order(lines, page.rect.width)
@@ -127,9 +127,9 @@ def _lines_in_column_order(page):
     return "\n".join(item[1] for item in ordered) + "\n"
 
 
-def _page_text(page) -> str:
+def _page_text(page, blocks=None) -> str:
 
-    return _lines_in_column_order(page) or page.get_text("text")
+    return _lines_in_column_order(page, blocks) or page.get_text("text")
 
 
 MIN_TEXT_CHARS = 25  # fewer letters and digits than this on a page is "no usable text layer"
@@ -256,11 +256,11 @@ def default_ocr(page) -> str:
         raise RuntimeError(f"{type(error).__name__}: {error}") from error
 
 
-def _layout_lines(page):
+def _layout_lines(page, blocks=None):
     """The typography of the page's text lines: text, font size (of the longest span), bold (every span bold), mixed (bold and regular
     spans in one line, e.g. a bold lead-in of a paragraph), the number of lines in its block and its box. [] when unavailable."""
     try:
-        blocks = page.get_text("dict")["blocks"]
+        blocks = blocks if blocks is not None else page.get_text("dict")["blocks"]
     except Exception:
         return []
     found = []
@@ -398,11 +398,15 @@ def read_page(page, page_number, ocr, stop=None, region_ocr=None, rotated_ocr=No
     """One page in the ingestion format: its text layer when it has one, else (for a scan) OCR output. Never raises for OCR: a
     scan that could not be recognised keeps empty text and says why in `ocr_error`. `stop` (optional) is asked before a scan is
     recognised and returns why OCR must stop ("" to go on); the page then keeps its text layer, is marked `ocr_stopped` and is not recognised."""
-    text = clean_pdf_text(_page_text(page))
+    try:  # one extraction of the page's lines and fonts serves both the reading order and the heading layout
+        blocks = page.get_text("dict")["blocks"]
+    except Exception:
+        blocks = None
+    text = clean_pdf_text(_page_text(page, blocks))
     if not needs_ocr(page, text):
         if region_ocr is not None and (mixed := _read_regions(page, page_number, text, region_ocr, stop, rotated_ocr)) is not None:
             return mixed
-        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page))
+        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page, blocks))
     reason = stop() if stop is not None else ""
     if reason:
         return RawPage(page_number=page_number, text=text, ocr_error=reason, ocr_stopped=True)
