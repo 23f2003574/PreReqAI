@@ -119,6 +119,12 @@ def _ocr_warning(paper) -> list:
                      "recognised and are missing; the pages read before the limit are included. Raise the time limit (or analyse a smaller scan) for the whole paper.")
     if used:
         notes.append(f"Pages {_page_list(used)} are scans; their text was recognised by OCR, so words may be misread and some concepts missed or wrongly detected.")
+    turned = [(p.page_number, p.ocr_rotation) for p in pages if getattr(p, "ocr_rotation", 0)]
+    if turned:
+        notes.append("Scanned pages " + _page_list(f"{n} (turned {d} degrees)" for n, d in turned) + " were upside down or sideways; they were rotated before recognition.")
+    for page in pages:
+        if getattr(page, "ocr_warning", ""):
+            notes.append(f"Page {page.page_number}: {page.ocr_warning}.")
     if failed:
         reasons = sorted({reason for _, reason in failed})
         notes.append(f"Scanned pages {_page_list(n for n, _ in failed)} could not be read and are missing from this analysis ({'; '.join(reasons)}).")

@@ -1,3 +1,4 @@
+import os
 import re
 from time import perf_counter
 
@@ -21,6 +22,9 @@ class RawPage:
     ocr: bool = False  # the text was recognised from a scanned page image, not read from the PDF's text layer
     ocr_error: str = ""  # a scanned page whose text could not be recognised, and why
     ocr_stopped: bool = False  # a scanned page left unread because the OCR time or page budget ran out (ocr_error says which)
+    ocr_rotation: int = 0  # degrees (90, 180 or 270) the scan was turned before its text could be read; 0 when it was upright
+    ocr_quality: float | None = None  # 0..1 plausibility of the recognised text (see ocr_quality); None when no OCR text was judged
+    ocr_warning: str = ""  # something the learner must know about this page's OCR that does not make the page unreadable
     ocr_regions: int = 0  # scanned image regions on a page that also has a text layer, recognised and merged into `text`
     layout: list = field(default_factory=list)  # one dict per text line (text, size, bold, mixed, block_lines, bbox) for heading detection; emptied once sections are parsed
     removed_lines: int = 0  # running header, footer and page-number lines taken out of `text` (they repeat on many pages)
@@ -168,13 +172,83 @@ def needs_ocr(page, text) -> bool:
     return share >= SCAN_IMAGE_COVER and height is not None and height <= STAMP_MAX_HEIGHT
 
 
+class OcrLanguageError(RuntimeError):
+    """The OCR language configured in PREREQAI_OCR_LANGS is malformed or its Tesseract language pack is not installed."""
+
+
+_LANGUAGE_CODE = re.compile(r"^[a-z]{3}(?:_[a-z]{3,8})?$")
+
+
+def ocr_languages():
+    """The Tesseract language codes from PREREQAI_OCR_LANGS (comma, plus or space separated, e.g. "eng,deu"); ["eng"] when unset or blank.
+    OcrLanguageError for a code that is not a Tesseract language code, so a typo is reported and never silently replaced by English."""
+    raw = os.environ.get("PREREQAI_OCR_LANGS", "").strip()
+    codes = [code for code in re.split(r"[,+\s]+", raw.lower()) if code] or ["eng"]
+    for code in codes:
+        if not _LANGUAGE_CODE.match(code):
+            raise OcrLanguageError(f"{code!r} in PREREQAI_OCR_LANGS is not a Tesseract language code (such as eng or deu)")
+    return list(dict.fromkeys(codes))
+
+
+def ocr_language_argument(tessdata):
+    """The `language` argument for Tesseract ("eng+deu"); OcrLanguageError naming every requested language whose pack is not in `tessdata`."""
+    codes = ocr_languages()
+    missing = [code for code in codes if not os.path.exists(os.path.join(str(tessdata), f"{code}.traineddata"))]
+    if missing:
+        raise OcrLanguageError(f"the Tesseract language pack{'s' if len(missing) > 1 else ''} for {', '.join(missing)} "
+                               "(requested in PREREQAI_OCR_LANGS) is not installed, so the scan was not recognised")
+    return "+".join(codes)
+
+
+QUALITY_MIN = 0.6  # recognised text scoring lower is treated as noise and never reaches concept detection
+ROTATIONS = (90, 180, 270)
+_TOKEN = re.compile(r"[^\W_]+(?:[-'][^\W_]+)*")
+
+
+def ocr_quality(text):
+    """0..1 plausibility of recognised text: the share of its characters that are letters, digits or ordinary punctuation, and the share
+    of its words that look like words (letters and digits, and a vowel in a long lower-case Latin word). Garbage from a rotated or
+    degraded scan ("xq7#~ zkvt |||") scores low; prose, and acronyms such as "RNN", score high."""
+    chars = [char for char in text if not char.isspace()]
+    if not chars:
+        return 0.0
+    ordinary = sum(char.isalnum() or char in ".,;:()-'\"%/+=?![]" for char in chars) / len(chars)
+    tokens = text.split()
+
+    def plausible(token):
+        word = token.strip(".,;:()'\"?!%/+=[]")
+        if not _TOKEN.fullmatch(word):
+            return False
+        return not (word.isascii() and word.isalpha() and word.islower() and len(word) >= 4 and not set(word) & set("aeiouy"))
+
+    return round(0.4 * ordinary + 0.6 * sum(plausible(token) for token in tokens) / len(tokens), 3)
+
+
+def _pixmap_text(pixmap, language):
+    with fitz.open("pdf", pixmap.pdfocr_tobytes(language=language)) as recognised:
+        return recognised[0].get_text("text")
+
+
+def default_rotated_ocr(page, box, angle):
+    """Recognise a page (box None) or one rectangle of it after turning the image by `angle` degrees; RuntimeError when OCR cannot run."""
+    try:
+        language = ocr_language_argument(fitz.get_tessdata())
+        matrix = fitz.Matrix(300 / 72, 300 / 72).prerotate(angle)
+        return _pixmap_text(page.get_pixmap(matrix=matrix, clip=fitz.Rect(*box) if box else page.rect), language)
+    except RuntimeError:
+        raise
+    except Exception as error:
+        raise RuntimeError(f"{type(error).__name__}: {error}") from error
+
+
 def default_ocr(page) -> str:
     """Recognise a page's text with PyMuPDF's OCR, which needs a system Tesseract (and its language data). Raises RuntimeError
     with the reason when OCR cannot run, so the caller can report it instead of returning an empty page."""
     try:
-        if not fitz.get_tessdata():
+        tessdata = fitz.get_tessdata()
+        if not tessdata:
             raise RuntimeError("Tesseract language data was not found")
-        textpage = page.get_textpage_ocr(language="eng", dpi=300, full=True)
+        textpage = page.get_textpage_ocr(language=ocr_language_argument(tessdata), dpi=300, full=True)
         return page.get_text("text", textpage=textpage)
     except RuntimeError:
         raise
@@ -243,15 +317,33 @@ def scanned_regions(page):
 def default_region_ocr(page, box):
     """Recognise the text of one rectangle of a page (rendered at 300 dpi); RuntimeError with the reason when OCR cannot run."""
     try:
-        if not fitz.get_tessdata():
+        tessdata = fitz.get_tessdata()
+        if not tessdata:
             raise RuntimeError("Tesseract language data was not found")
-        pixmap = page.get_pixmap(clip=fitz.Rect(*box), dpi=300)
-        with fitz.open("pdf", pixmap.pdfocr_tobytes(language="eng")) as recognised:
-            return recognised[0].get_text("text")
+        return _pixmap_text(page.get_pixmap(clip=fitz.Rect(*box), dpi=300), ocr_language_argument(tessdata))
     except RuntimeError:
         raise
     except Exception as error:
         raise RuntimeError(f"{type(error).__name__}: {error}") from error
+
+
+def _recognise(first, rotated, stop):
+    """(text, quality, rotation) of a recognition: `first()` upright, and, when its text is non-trivial but implausible, the scan turned by
+    90, 180 and 270 degrees through `rotated(angle)` (each attempt asks `stop` first, so the OCR budget holds); the best of them, the
+    first one that is good enough winning at once."""
+    text = clean_pdf_text(first()).strip()
+    best = (ocr_quality(text), text, 0)
+    if rotated is not None and len(text) >= 10 and best[0] < QUALITY_MIN:
+        for angle in ROTATIONS:
+            if stop is not None and stop():
+                break
+            turned = clean_pdf_text(rotated(angle)).strip()
+            candidate = (ocr_quality(turned), turned, angle)
+            if candidate[0] > best[0]:
+                best = candidate
+            if best[0] >= QUALITY_MIN:
+                break
+    return best[1], best[0], best[2]
 
 
 def _words(text):
@@ -267,52 +359,63 @@ def _merge_regions(page, text, recovered):
     return merged if merged.strip() else text
 
 
-def _read_regions(page, page_number, text, region_ocr, stop):
+def _read_regions(page, page_number, text, region_ocr, stop, rotated_ocr=None):
     """A text page whose scanned image regions are recognised and merged into its text (see scanned_regions), or None when it has none. A
     region whose recognised text is mostly already in the page, or is too short to be a passage, adds nothing. An exhausted budget
     leaves the remaining regions unread and marks the page `ocr_stopped`; a recogniser that cannot run keeps the text layer."""
     regions = scanned_regions(page)
     if not regions:
         return None
-    recovered, reason, known = [], "", _words(text)
+    recovered, reason, known, warnings, rotation = [], "", _words(text), [], 0
     for box in regions:
         reason = stop() if stop is not None else ""
         if reason:
             break
         try:
-            recognised = clean_pdf_text(region_ocr(page, box)).strip()
+            recognised, quality, turned = _recognise(lambda: region_ocr(page, box),
+                                                     (lambda angle: rotated_ocr(page, box, angle)) if rotated_ocr else None, stop)
+        except OcrLanguageError as error:
+            warnings.append(str(error))
+            break
         except Exception:
             break  # best effort: the page keeps its text layer, and a paper full of figures is not reported as unreadable because OCR is absent
+        if recognised and quality < QUALITY_MIN:
+            warnings.append(f"a scanned image region on this page was too noisy to trust (quality {quality:.2f}) and was left out")
+            continue
         words = _words(recognised)
         if sum(c.isalpha() for c in recognised) >= MIN_REGION_LETTERS and words and len(words & known) < 0.6 * len(words):
             recovered.append((box, recognised))
+            rotation = rotation or turned
             known |= words
-    if not (recovered or reason):
+    if not (recovered or reason or warnings):
         return None
     merged = _merge_regions(page, text, recovered) if recovered else text
-    return RawPage(page_number=page_number, text=merged, ocr=bool(recovered), ocr_regions=len(recovered), ocr_error=reason,
+    return RawPage(page_number=page_number, text=merged, ocr=bool(recovered), ocr_regions=len(recovered), ocr_error=reason, ocr_rotation=rotation, ocr_warning="; ".join(dict.fromkeys(warnings)),
                    ocr_stopped=bool(reason), layout=_layout_lines(page))
 
 
-def read_page(page, page_number, ocr, stop=None, region_ocr=None) -> RawPage:
+def read_page(page, page_number, ocr, stop=None, region_ocr=None, rotated_ocr=None) -> RawPage:
     """One page in the ingestion format: its text layer when it has one, else (for a scan) OCR output. Never raises for OCR: a
     scan that could not be recognised keeps empty text and says why in `ocr_error`. `stop` (optional) is asked before a scan is
     recognised and returns why OCR must stop ("" to go on); the page then keeps its text layer, is marked `ocr_stopped` and is not recognised."""
     text = clean_pdf_text(_page_text(page))
     if not needs_ocr(page, text):
-        if region_ocr is not None and (mixed := _read_regions(page, page_number, text, region_ocr, stop)) is not None:
+        if region_ocr is not None and (mixed := _read_regions(page, page_number, text, region_ocr, stop, rotated_ocr)) is not None:
             return mixed
         return RawPage(page_number=page_number, text=text, layout=_layout_lines(page))
     reason = stop() if stop is not None else ""
     if reason:
         return RawPage(page_number=page_number, text=text, ocr_error=reason, ocr_stopped=True)
     try:
-        recognised = clean_pdf_text(ocr(page)).strip()
+        recognised, quality, rotation = _recognise(lambda: ocr(page), (lambda angle: rotated_ocr(page, None, angle)) if rotated_ocr else None, stop)
     except Exception as error:
         return RawPage(page_number=page_number, text=text, ocr_error=f"OCR could not run: {error}")
     if not recognised:
         return RawPage(page_number=page_number, text=text, ocr_error="OCR found no text on this scanned page")
-    return RawPage(page_number=page_number, text=recognised, ocr=True)
+    if quality < QUALITY_MIN:  # noise is not content: it is kept out of the text, so no concept is detected from it
+        return RawPage(page_number=page_number, text=text, ocr_quality=quality,
+                       ocr_error=f"the recognised text was too noisy to trust (quality {quality:.2f}; the scan may be skewed, faint or in another language, see PREREQAI_OCR_LANGS)")
+    return RawPage(page_number=page_number, text=recognised, ocr=True, ocr_rotation=rotation, ocr_quality=quality)
 
 
 class PDFIngestionEngine:
@@ -321,7 +424,8 @@ class PDFIngestionEngine:
     PreReqAI's raw internal document representation.
     """
 
-    def __init__(self, ocr=None, max_ocr_seconds=None, max_ocr_pages=None, clock=perf_counter, region_ocr=None):
+    def __init__(self, ocr=None, max_ocr_seconds=None, max_ocr_pages=None, clock=perf_counter, region_ocr=None, rotated_ocr=None):
+        self.rotated_ocr = rotated_ocr or default_rotated_ocr  # callable(page, box or None, angle) -> text of the image turned by `angle`
         self.region_ocr = region_ocr or default_region_ocr  # callable(page, box) -> text for a scanned region of a page that has a text layer
         self.ocr = ocr or default_ocr  # callable(page) -> text; replaceable so scanned-page handling is testable without Tesseract
         # The OCR budget of one ingestion: seconds from its start and pages recognised. Checked before every scan, never inside a
@@ -353,7 +457,11 @@ class PDFIngestionEngine:
                 recognised[0] += 1  # a region counts against the same page budget as a scanned page
                 return self.region_ocr(page, box)
 
-            pages = [read_page(page, page_number, counted, stop, counted_region) for page_number, page in enumerate(pdf, start=1)]
+            def counted_rotation(page, box, angle):
+                recognised[0] += 1  # every extra recognition is OCR work against the same budget
+                return self.rotated_ocr(page, box, angle)
+
+            pages = [read_page(page, page_number, counted, stop, counted_region, counted_rotation) for page_number, page in enumerate(pdf, start=1)]
 
         cleaned, removed = drop_repeated_page_lines([page.text for page in pages])  # before any concept is counted
         for page, text, count in zip(pages, cleaned, removed):
