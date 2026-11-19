@@ -71,6 +71,9 @@ class LearningSession:
 
     quiz_pending: dict = field(default_factory=dict)
 
+    # The name of the learner profile this session was analysed with (None without one): quiz outcomes are remembered in it for spaced review.
+    profile: str | None = None
+
     # The format of the saved file (see SessionManager.SCHEMA_VERSION). A file written before versions existed has no such attribute, so it
     # reads this class default: 1, the legacy format.
     schema_version: int = 1

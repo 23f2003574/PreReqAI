@@ -22,6 +22,10 @@ from backend.api.session_routes import (
     router as session_router,
 )
 
+from backend.api.review_routes import (
+    router as review_router,
+)
+
 from backend.api.recovery_decision_routes import (
     router as recovery_decision_router,
 )
@@ -59,6 +63,10 @@ app.include_router(
 
 app.include_router(
     session_router,
+)
+
+app.include_router(
+    review_router,
 )
 
 app.include_router(

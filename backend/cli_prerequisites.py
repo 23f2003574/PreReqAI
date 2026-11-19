@@ -50,6 +50,7 @@ def _nonblank(value):
 def add_prerequisites_parser(subparsers):
     prerequisites = subparsers.add_parser("prerequisites", help="Prerequisite Explorer: analyse a research paper PDF (start here)")
     commands = prerequisites.add_subparsers(dest="prerequisites_command", required=True, metavar="<subcommand>")
+    add_prerequisites_review_parser(commands)
     analyze = commands.add_parser(
         "analyze",
         help="Analyse a paper PDF into concepts, prerequisites and a learning plan",
@@ -102,6 +103,39 @@ def _cli_detail(detail: str) -> str:
     """The analysis failure detail as a command-line user should read it: the shared message says "the uploaded paper" (the
     HTTP wording), but nothing was uploaded here; the learner gave a path or link. --json keeps the shared text."""
     return str(detail).replace("the uploaded paper", "the paper").replace("Upload a text-based PDF", "Use a text-based PDF")
+
+
+def add_prerequisites_review_parser(commands):
+    review = commands.add_parser(
+        "review",
+        help="List the quiz questions a learner profile has due for spaced review",
+        description="Reads the learner profile (the file given to `analyze --profile`) and lists the questions due for review now, most overdue first, "
+                    "and the next upcoming ones. Nothing is analysed or changed.",
+        epilog="Example: python -m backend.cli prerequisites review --profile me.json. Exit codes: 0 listed; 1 the profile cannot be read; 2 usage error.",
+    )
+    review.add_argument("--profile", type=_nonblank, required=True, metavar="FILE", help="The learner profile file")
+    review.add_argument("--limit", type=int, default=10, metavar="N", help="How many upcoming reviews to list (default 10)")
+    review.add_argument("--json", action="store_true", dest="as_json", help="Print the queue as JSON")
+
+
+def run_prerequisites_review(args) -> int:
+    from backend import learner_profile
+
+    queue, problem = learner_profile.review_queue(args.profile, upcoming_limit=max(1, args.limit))
+    if problem:
+        print(f"error: {problem}", file=sys.stderr)
+        return EXIT_FAILURE
+    if args.as_json:
+        print(json.dumps({"status": "success", **queue}, indent=2))
+        return 0
+    print(f"{len(queue['due'])} question(s) due for review")
+    for item in queue["due"]:
+        print(f"  {item['question_id']}  ({item['concept']}, last answer {item['last_outcome']}, {item['overdue_hours']}h overdue)")
+    if queue["upcoming"]:
+        print("Coming up:")
+        for item in queue["upcoming"]:
+            print(f"  {item['question_id']}  ({item['concept']}) due {item['due']}")
+    return 0
 
 
 def add_limit_arguments(parser):

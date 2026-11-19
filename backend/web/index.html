@@ -86,6 +86,11 @@
       <div id="quizRound"></div>
       <div id="quizCard"></div>
       <div id="suggest"></div>
+      <h2>Review queue</h2>
+      <p class="meta">Questions your learner profile has due for spaced review (needs a profile name above and the server's profile directory).</p>
+      <button id="reviewBtn" type="button">Show reviews due</button>
+      <div id="reviewMsg" role="status" aria-live="polite"></div>
+      <div id="reviewList"></div>
       <h2>Mastery</h2><div id="mastery"></div>
     </section>
   </div>
@@ -724,6 +729,31 @@ $("askForm").addEventListener("submit", function (event) { event.preventDefault(
 $("quizNext").addEventListener("click", nextQuestion);
 loadHistory();
 restore();
+
+// ---- spaced review: the learner profile's due questions (GET /api/review) ----
+async function loadReviews() {
+  var name = ($("profile").value || "").trim(), url = "/api/review" + (name ? "?profile=" + encodeURIComponent(name) : "");
+  showStatus("info", "Loading reviews...", null, "reviewMsg");
+  try {
+    var response = await fetch(url), body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (!response.ok || !body || body.status !== "success") {
+      var text = failureText(body, response.status);
+      showStatus("error", text[0], text[1], "reviewMsg"); fill("reviewList", el("div", "")); return;
+    }
+    showStatus("info", "", null, "reviewMsg");
+    var box = el("div", "");
+    if (!body.due.length) box.appendChild(el("p", "Nothing is due for review right now." + (body.upcoming.length ? " Next: " + body.upcoming[0].concept + " at " + body.upcoming[0].due + "." : ""), "msg info"));
+    body.due.forEach(function (item) {
+      var row = el("p", item.concept + " (" + item.question_id + "): last answer " + item.last_outcome + ", " + item.overdue_hours + " h overdue ");
+      var practise = el("button", "Practise " + item.concept, "small"); practise.type = "button";
+      practise.addEventListener("click", function () { if (state.sid) { state.round = null; $("quizConcept").value = item.concept; nextQuestion(); } else showStatus("error", "Analyse or resume a paper to practise.", null, "reviewMsg"); });
+      row.appendChild(practise); box.appendChild(row);
+    });
+    fill("reviewList", box);
+  } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "reviewMsg"); }
+}
+$("reviewBtn").addEventListener("click", loadReviews);
 </script>
 </body>
 </html>

@@ -31,6 +31,7 @@ from backend.cli_prerequisites import (
     add_prerequisites_parser,
     run_prerequisites_analyze,
     run_prerequisites_ask,
+    run_prerequisites_review,
 )
 
 
@@ -319,6 +320,8 @@ def main(argv=None, facade=None, health_service=None, readiness_service=None) ->
         return run_prerequisites_analyze(args)
     if args.command == "prerequisites" and args.prerequisites_command == "ask":
         return run_prerequisites_ask(args)
+    if args.command == "prerequisites" and args.prerequisites_command == "review":
+        return run_prerequisites_review(args)
 
     parser.print_usage(sys.stderr)
     return EXIT_USAGE

@@ -2,7 +2,13 @@
 
 A profile is a small versioned JSON file in the same envelope style as a saved session (see session/session_codec.py):
 
-    {"format": "prereqai-learner-profile", "schema_version": 1, "known": ["Linear Algebra", ...], "studied": ["Probability", ...]}
+    {"format": "prereqai-learner-profile", "schema_version": 2, "known": ["Linear Algebra", ...], "studied": ["Probability", ...],
+     "quiz": {"Softmax:1": {"concept": "Softmax", "attempts": 3, "knew": 2, "missed": 1, "streak": 1, "last_outcome": "knew",
+                            "first_seen": "...Z", "last_seen": "...Z", "interval_hours": 12.0, "due": "...Z"}}}
+
+Version 2 adds `quiz`: the learner's outcome history per question (see spaced_review.py for the review schedule). A version 1 file (no `quiz`) is read
+as a version 2 profile with no quiz history, keeping its `known` and `studied`, and becomes version 2 the next time it is saved; the rewrite is checked
+by reading it back before it replaces the file, so a faulty migration can never replace a valid profile.
 
 It is separate from paper sessions, opt-in (the CLI's --profile FILE, the server's PREREQAI_PROFILE_DIR) and meant for the local, single-user
 deployment: there are no accounts. Loading validates everything and never raises; a missing file is an empty profile, an unreadable one
@@ -21,7 +27,10 @@ import threading
 from pathlib import Path
 
 FORMAT = "prereqai-learner-profile"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+MAX_QUESTIONS = 5000
+_QUESTION_ID = re.compile(r"[^:\x00]{1,200}:\d{1,4}")
+_COUNTS = ("attempts", "knew", "missed", "streak")
 MAX_BYTES = 1024 * 1024
 MAX_SUBJECTS = 2000
 MAX_NAME_CHARS = 200
@@ -59,6 +68,33 @@ def _dedupe(names, vocab=None):
 
 def parse(raw):
     """(known, studied) from the bytes of a profile file, or ProfileError saying why it cannot be used."""
+    profile = parse_full(raw)
+    return profile["known"], profile["studied"]
+
+
+def _quiz_entries(value):
+    """The validated quiz history of a profile: {question_id: entry}; ProfileError for anything that is not one."""
+    from backend import spaced_review
+
+    if not isinstance(value, dict) or len(value) > MAX_QUESTIONS:
+        raise ProfileError(f"'quiz' must be an object of at most {MAX_QUESTIONS} questions")
+    result = {}
+    for identifier, entry in value.items():
+        if not (isinstance(identifier, str) and _QUESTION_ID.fullmatch(identifier) and isinstance(entry, dict)):
+            raise ProfileError(f"'quiz' has an invalid question {str(identifier)[:40]!r}")
+        counts = [entry.get(name) for name in _COUNTS]
+        if (not all(isinstance(n, int) and not isinstance(n, bool) and 0 <= n <= 10**6 for n in counts) or entry["knew"] + entry["missed"] != entry["attempts"]
+                or not isinstance(entry.get("concept"), str) or not entry["concept"].strip() or len(entry["concept"]) > MAX_NAME_CHARS
+                or entry.get("last_outcome") not in ("knew", "missed") or any(spaced_review.parse_time(entry.get(f)) is None for f in ("first_seen", "last_seen", "due"))
+                or isinstance(entry.get("interval_hours"), bool) or not isinstance(entry.get("interval_hours"), (int, float)) or not math.isfinite(entry["interval_hours"])):
+            raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
+        result[identifier] = {"concept": entry["concept"].strip(), **{name: entry[name] for name in _COUNTS}, "last_outcome": entry["last_outcome"],
+                              "first_seen": entry["first_seen"], "last_seen": entry["last_seen"], "interval_hours": entry["interval_hours"], "due": entry["due"]}
+    return result
+
+
+def parse_full(raw):
+    """{"known": [...], "studied": [...], "quiz": {...}} from the bytes of a version 1 or 2 profile file, or ProfileError saying why it cannot be used."""
     try:
         data = json.loads(raw.decode("utf-8-sig"), parse_constant=lambda c: (_ for _ in ()).throw(ValueError(f"constant {c}")))
     except (UnicodeDecodeError, ValueError, RecursionError) as error:
@@ -79,7 +115,24 @@ def parse(raw):
         lists.append(values)
     vocab = vocabulary()
     known = _dedupe(lists[0], vocab)
-    return known, [name for name in _dedupe(lists[1], vocab) if key(name) not in {key(k) for k in known}]
+    quiz = _quiz_entries(data["quiz"]) if version >= 2 and "quiz" in data else {}  # a version 1 file has no quiz history
+    return {"known": known, "studied": [name for name in _dedupe(lists[1], vocab) if key(name) not in {key(k) for k in known}], "quiz": quiz}
+
+
+def load_full(path):
+    """(profile, problem): the profile as {"known", "studied", "quiz"} and "" for a readable or missing file, else an empty profile and why it cannot be used."""
+    target = Path(path)
+    empty = {"known": [], "studied": [], "quiz": {}}
+    try:
+        if not target.exists():
+            return empty, ""
+        if target.stat().st_size > MAX_BYTES:
+            raise ProfileError(f"it is larger than {MAX_BYTES} bytes")
+        return parse_full(target.read_bytes()), ""
+    except ProfileError as error:
+        return empty, f"the learner profile {target} was not used and was left unchanged: {error}"
+    except OSError as error:
+        return empty, f"the learner profile {target} could not be read ({getattr(error, 'strerror', None) or error}); it was left unchanged"
 
 
 def load(path):
@@ -98,12 +151,21 @@ def load(path):
         return [], [], f"the learner profile {target} could not be read ({getattr(error, 'strerror', None) or error}); it was left unchanged"
 
 
-def save(path, known, studied):
-    """Write the profile atomically: the previous file stays intact if anything fails (the error is raised, the temporary file removed)."""
+def save(path, known, studied, quiz=None):
+    """Write the profile atomically: the previous file stays intact if anything fails (the error is raised, the temporary file removed).
+    `quiz` None keeps the quiz history the file already has; the text is read back and checked before it replaces the file."""
     target = Path(path)
     known = _dedupe(known)
     studied = [name for name in _dedupe(studied) if key(name) not in {key(k) for k in known}]
-    text = json.dumps({"format": FORMAT, "schema_version": SCHEMA_VERSION, "known": known, "studied": studied}, indent=2) + "\n"
+    if quiz is None:
+        quiz, problem = load_full(target)
+        if problem:
+            raise ProfileError(problem)
+        quiz = quiz["quiz"]
+    text = json.dumps({"format": FORMAT, "schema_version": SCHEMA_VERSION, "known": known, "studied": studied, "quiz": quiz}, indent=2) + "\n"
+    written = parse_full(text.encode("utf-8"))  # a faulty rewrite raises here, before the previous file is touched
+    if written["quiz"] != quiz:
+        raise ProfileError("the quiz history did not survive being written; the profile was not changed")
     target.parent.mkdir(parents=True, exist_ok=True)
     temp = target.with_name(f".{target.name}.{os.getpid()}.{threading.get_ident()}.tmp")
     try:
@@ -115,6 +177,36 @@ def save(path, known, studied):
     except BaseException:
         temp.unlink(missing_ok=True)
         raise
+
+
+def record_quiz(path, question_id, concept, outcome, moment=None):
+    """Remember one answered question in the profile (its history and next review time); returns the question's entry. ProfileError when the
+    profile cannot be used (it is then left untouched) or the question or outcome is invalid; a concept PreReqAI does not know is refused."""
+    from backend import spaced_review
+
+    if outcome not in ("knew", "missed") or not _QUESTION_ID.fullmatch(str(question_id)):
+        raise ProfileError("an outcome is 'knew' or 'missed' and a question id looks like 'Softmax:1'")
+    name = vocabulary().get(key(concept))
+    if name is None:
+        raise ProfileError(f"{concept!r} is not a concept PreReqAI knows")
+    with _lock:
+        profile, problem = load_full(path)
+        if problem:
+            raise ProfileError(problem)
+        quiz = profile["quiz"]
+        if question_id not in quiz and len(quiz) >= MAX_QUESTIONS:
+            raise ProfileError(f"the profile already holds {MAX_QUESTIONS} questions")
+        quiz[question_id] = spaced_review.update(quiz.get(question_id), name, outcome, moment or spaced_review.now())
+        save(path, profile["known"], profile["studied"], quiz)
+    return quiz[question_id]
+
+
+def review_queue(path, moment=None, upcoming_limit=10):
+    """(queue, problem): the due and upcoming reviews of a profile (see spaced_review.queue), or an empty queue and why the profile cannot be used."""
+    from backend import spaced_review
+
+    profile, problem = load_full(path)
+    return spaced_review.queue(profile["quiz"], moment or spaced_review.now(), upcoming_limit), problem
 
 
 def profile_path(directory, name=None):
@@ -161,6 +253,7 @@ class ProfileRun:
             return
         plan = build_plan(session.paper, {"known": self.profile_known, "studied": self.profile_studied})
         outcome["report"]["personalised_plan"] = session.report["personalised_plan"] = plan
+        session.profile = self.path.stem  # quiz outcomes of this session go to this profile
         session_manager.save(session)
 
     def finish(self, outcome):

@@ -18,6 +18,7 @@ from backend.api.workflow_result import (
     success_body,
 )
 
+from backend import learner_profile
 from backend.session import (
     session_manager,
     TutorMode,
@@ -288,8 +289,28 @@ def quiz_reveal(session_id: str, body: QuizReveal):
 @router.post("/{session_id}/quiz/outcome")
 def quiz_outcome(session_id: str, body: QuizOutcome):
     """Record `knew` or `missed` for a served question (once); answers with the updated per-concept mastery."""
-    return _quiz(session_id, lambda session: {"progress": quiz_session.record(session, body.question_id, body.outcome),
-                                              "suggest_known": quiz_session.known_suggestions(session), "topics": quiz_session.topics(session)})  # offered, never applied
+    def act(session):
+        result = {"progress": quiz_session.record(session, body.question_id, body.outcome),
+                  "suggest_known": quiz_session.known_suggestions(session), "topics": quiz_session.topics(session)}  # offered, never applied
+        review = _remember_outcome(session)
+        return {**result, **({"review": review} if review else {})}
+
+    return _quiz(session_id, act)
+
+
+def _remember_outcome(session):
+    """Keep the answer just recorded in the session's learner profile, with its next review time; None when the session has no profile. A profile
+    that cannot be written never fails the quiz: the answer is still recorded in the session and the result says it was not remembered."""
+    directory = learner_profile.configured_directory()
+    path = learner_profile.profile_path(directory, session.profile) if directory and getattr(session, "profile", None) else None
+    if path is None:
+        return None
+    attempt = session.quiz_attempts[-1]
+    try:
+        entry = learner_profile.record_quiz(path, attempt["question_id"], attempt["concept"], attempt["outcome"])
+    except (learner_profile.ProfileError, OSError) as error:
+        return {"saved": False, "warning": f"this answer was not saved to your learner profile: {error}"}
+    return {"saved": True, "profile": session.profile, "question_id": attempt["question_id"], "next_review": entry["due"], "interval_hours": entry["interval_hours"]}
 
 
 @router.get("/{session_id}/quiz/progress")
