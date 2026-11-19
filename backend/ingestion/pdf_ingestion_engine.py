@@ -1,3 +1,4 @@
+import re
 from time import perf_counter
 
 import pymupdf as fitz  # PyMuPDF; "import fitz" prints a deprecation notice to stdout
@@ -20,6 +21,7 @@ class RawPage:
     ocr: bool = False  # the text was recognised from a scanned page image, not read from the PDF's text layer
     ocr_error: str = ""  # a scanned page whose text could not be recognised, and why
     ocr_stopped: bool = False  # a scanned page left unread because the OCR time or page budget ran out (ocr_error says which)
+    ocr_regions: int = 0  # scanned image regions on a page that also has a text layer, recognised and merged into `text`
     layout: list = field(default_factory=list)  # one dict per text line (text, size, bold, mixed, block_lines, bbox) for heading detection; emptied once sections are parsed
     removed_lines: int = 0  # running header, footer and page-number lines taken out of `text` (they repeat on many pages)
 
@@ -204,12 +206,102 @@ def _layout_lines(page):
     return found
 
 
-def read_page(page, page_number, ocr, stop=None) -> RawPage:
+MIN_REGION_SHARE = 0.08  # an image smaller than this share of the page is a logo or an icon, not a scanned passage
+REGION_TEXT_COVER = 0.03  # an image whose area is covered this much by extracted text already has its text (a scan with a hidden text layer)
+MIN_REGION_LETTERS = 40  # recognised text with fewer letters than this is not a passage (a figure's axis labels)
+MAX_REGIONS_PER_PAGE = 4
+
+
+def _overlap(a, b):
+    return max(0.0, min(a[2], b[2]) - max(a[0], b[0])) * max(0.0, min(a[3], b[3]) - max(a[1], b[1]))
+
+
+def scanned_regions(page):
+    """The boxes (x0, y0, x1, y1) of image regions on a page that has a text layer but holds text that layer lacks: images covering
+    at least MIN_REGION_SHARE of the page whose area is not already covered by extracted text. [] when the page has no such image or no
+    text-block geometry to tell (then the text layer is trusted, as before), so a text-only PDF never costs an OCR call."""
+    try:
+        area = page.rect.width * page.rect.height
+        blocks = page.get_text("blocks")
+        if area <= 0 or not isinstance(blocks, list):
+            return []
+        boxes = [tuple(block[:4]) for block in blocks if len(block) > 4 and str(block[4]).strip()]
+        regions = []
+        for info in page.get_image_info():
+            box = tuple(info["bbox"])
+            size = max(0.0, box[2] - box[0]) * max(0.0, box[3] - box[1])
+            if size < MIN_REGION_SHARE * area or any(box == region for region in regions):
+                continue
+            if sum(_overlap(box, text) for text in boxes) >= REGION_TEXT_COVER * size:
+                continue
+            regions.append(box)
+        return sorted(regions, key=lambda box: (box[1], box[0]))[:MAX_REGIONS_PER_PAGE]
+    except Exception:
+        return []
+
+
+def default_region_ocr(page, box):
+    """Recognise the text of one rectangle of a page (rendered at 300 dpi); RuntimeError with the reason when OCR cannot run."""
+    try:
+        if not fitz.get_tessdata():
+            raise RuntimeError("Tesseract language data was not found")
+        pixmap = page.get_pixmap(clip=fitz.Rect(*box), dpi=300)
+        with fitz.open("pdf", pixmap.pdfocr_tobytes(language="eng")) as recognised:
+            return recognised[0].get_text("text")
+    except RuntimeError:
+        raise
+    except Exception as error:
+        raise RuntimeError(f"{type(error).__name__}: {error}") from error
+
+
+def _words(text):
+    return set(re.findall(r"[a-z]{3,}", text.lower()))
+
+
+def _merge_regions(page, text, recovered):
+    """The page text with each recognised region's text placed where the region is: the page's text blocks and the regions, top to
+    bottom (left to right at the same height)."""
+    items = [(block[1], block[0], block[4].strip()) for block in page.get_text("blocks", sort=True) if len(block) > 4 and str(block[4]).strip()]
+    items += [(box[1], box[0], recognised) for box, recognised in recovered]
+    merged = "\n".join(clean_pdf_text(part) for _, _, part in sorted(items, key=lambda item: (round(item[0]), item[1])))
+    return merged if merged.strip() else text
+
+
+def _read_regions(page, page_number, text, region_ocr, stop):
+    """A text page whose scanned image regions are recognised and merged into its text (see scanned_regions), or None when it has none. A
+    region whose recognised text is mostly already in the page, or is too short to be a passage, adds nothing. An exhausted budget
+    leaves the remaining regions unread and marks the page `ocr_stopped`; a recogniser that cannot run keeps the text layer."""
+    regions = scanned_regions(page)
+    if not regions:
+        return None
+    recovered, reason, known = [], "", _words(text)
+    for box in regions:
+        reason = stop() if stop is not None else ""
+        if reason:
+            break
+        try:
+            recognised = clean_pdf_text(region_ocr(page, box)).strip()
+        except Exception:
+            break  # best effort: the page keeps its text layer, and a paper full of figures is not reported as unreadable because OCR is absent
+        words = _words(recognised)
+        if sum(c.isalpha() for c in recognised) >= MIN_REGION_LETTERS and words and len(words & known) < 0.6 * len(words):
+            recovered.append((box, recognised))
+            known |= words
+    if not (recovered or reason):
+        return None
+    merged = _merge_regions(page, text, recovered) if recovered else text
+    return RawPage(page_number=page_number, text=merged, ocr=bool(recovered), ocr_regions=len(recovered), ocr_error=reason,
+                   ocr_stopped=bool(reason), layout=_layout_lines(page))
+
+
+def read_page(page, page_number, ocr, stop=None, region_ocr=None) -> RawPage:
     """One page in the ingestion format: its text layer when it has one, else (for a scan) OCR output. Never raises for OCR: a
     scan that could not be recognised keeps empty text and says why in `ocr_error`. `stop` (optional) is asked before a scan is
     recognised and returns why OCR must stop ("" to go on); the page then keeps its text layer, is marked `ocr_stopped` and is not recognised."""
     text = clean_pdf_text(_page_text(page))
     if not needs_ocr(page, text):
+        if region_ocr is not None and (mixed := _read_regions(page, page_number, text, region_ocr, stop)) is not None:
+            return mixed
         return RawPage(page_number=page_number, text=text, layout=_layout_lines(page))
     reason = stop() if stop is not None else ""
     if reason:
@@ -229,7 +321,8 @@ class PDFIngestionEngine:
     PreReqAI's raw internal document representation.
     """
 
-    def __init__(self, ocr=None, max_ocr_seconds=None, max_ocr_pages=None, clock=perf_counter):
+    def __init__(self, ocr=None, max_ocr_seconds=None, max_ocr_pages=None, clock=perf_counter, region_ocr=None):
+        self.region_ocr = region_ocr or default_region_ocr  # callable(page, box) -> text for a scanned region of a page that has a text layer
         self.ocr = ocr or default_ocr  # callable(page) -> text; replaceable so scanned-page handling is testable without Tesseract
         # The OCR budget of one ingestion: seconds from its start and pages recognised. Checked before every scan, never inside a
         # recognition, so a document stops at a page boundary and keeps everything read so far. None means no limit.
@@ -256,7 +349,11 @@ class PDFIngestionEngine:
                 recognised[0] += 1
                 return self.ocr(page)
 
-            pages = [read_page(page, page_number, counted, stop) for page_number, page in enumerate(pdf, start=1)]
+            def counted_region(page, box):
+                recognised[0] += 1  # a region counts against the same page budget as a scanned page
+                return self.region_ocr(page, box)
+
+            pages = [read_page(page, page_number, counted, stop, counted_region) for page_number, page in enumerate(pdf, start=1)]
 
         cleaned, removed = drop_repeated_page_lines([page.text for page in pages])  # before any concept is counted
         for page, text, count in zip(pages, cleaned, removed):
