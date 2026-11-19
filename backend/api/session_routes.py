@@ -1,5 +1,6 @@
 from fastapi import (
     APIRouter,
+    Query,
 )
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
@@ -21,6 +22,7 @@ from backend.api.workflow_result import (
 from datetime import datetime, time, timezone
 
 from backend import learner_profile, study_calendar
+from backend.reading_list import build_reading_list
 from backend.prerequisites.study_time_estimator import parse_hours_per_day
 from backend.session import (
     session_manager,
@@ -186,6 +188,16 @@ def get_study_plan(session_id: str):
         return session_not_found(session_id)
 
     return MarkdownResponse(plan_markdown(session.report))
+
+
+@router.get("/{session_id}/reading-list")
+def reading_list(session_id: str, limit: int = Query(default=10, ge=1, le=50)):
+    """The works this paper cites that are most worth reading first (see backend/reading_list.py): ranked by where and how often they are cited, with the concepts
+    they support and the reason. `source` of a resolvable item can be sent to POST /api/prerequisites/analyze to read that paper next; nothing is fetched here."""
+    session = session_manager.get(session_id)
+    if session is None:
+        return session_not_found(session_id)
+    return success_body("Prerequisite Reading List", "reading_list", session_id=session_id, reading_list=build_reading_list(session.paper, limit))
 
 
 class CalendarMarkdown(PlainTextResponse):

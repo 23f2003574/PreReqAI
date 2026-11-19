@@ -64,6 +64,10 @@
     <section><h2>Detected concepts</h2><div id="concepts"></div></section>
     <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
     <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
+    <section id="readingbox"><h2>Reading list from this paper's citations</h2>
+      <p class="meta">The cited works most worth reading first, ranked by where and how often the paper cites them. Nothing is downloaded until you choose to analyse one.</p>
+      <button id="readingBtn" type="button">Show reading list</button>
+      <div id="readingMsg" role="status" aria-live="polite"></div><div id="readingList"></div></section>
     <section><h2>Study plan</h2><div id="plan"></div><div class="actions"><button id="download" type="button" class="small" hidden>Download study plan (Markdown)</button></div></section>
     <section id="mineBox" hidden><h2>Your study plan</h2><div id="mine"></div></section>
     <section id="pathsbox"><h2>Learning paths</h2><div id="paths"></div></section>
@@ -808,6 +812,34 @@ async function planToDeadline() {
   } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "calendarMsg"); }
 }
 $("calendarBtn").addEventListener("click", planToDeadline);
+
+// ---- a reading list from the paper's citations (GET /api/session/{id}/reading-list); a work is fetched only when the learner chooses "Analyse this next" ----
+async function loadReadingList() {
+  if (!state.sid) return showStatus("error", "Analyse a paper first.", null, "readingMsg");
+  showStatus("info", "Loading...", null, "readingMsg");
+  try {
+    var response = await fetch("/api/session/" + encodeURIComponent(state.sid) + "/reading-list"), body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (!response.ok || !body || body.status !== "success") { var text = failureText(body, response.status); showStatus("error", text[0], text[1], "readingMsg"); return; }
+    showStatus("info", "", null, "readingMsg");
+    var box = el("div", "");
+    if (!body.reading_list.length) box.appendChild(el("p", "This paper has no numbered citations that match its bibliography, so there is nothing to recommend.", "msg info"));
+    body.reading_list.forEach(function (item) {
+      var card = el("div", null, "card");
+      card.appendChild(el("p", "#" + item.rank + " " + (item.title || item.reference), null));
+      card.appendChild(el("p", item.reason, "meta"));
+      if (item.concepts.length) card.appendChild(el("p", "Supports: " + item.concepts.join(", "), "meta"));
+      if (item.status === "resolvable") {
+        var go = el("button", "Analyse this next (" + item.source + ")", "small"); go.type = "button";
+        go.addEventListener("click", function () { $("source").value = item.source; $("form").requestSubmit ? $("form").requestSubmit() : $("form").dispatchEvent(new Event("submit", { cancelable: true })); });
+        card.appendChild(go);
+      } else card.appendChild(el("p", "Unresolved: no arXiv id or DOI in the reference.", "msg warn"));
+      box.appendChild(card);
+    });
+    fill("readingList", box);
+  } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "readingMsg"); }
+}
+$("readingBtn").addEventListener("click", loadReadingList);
 </script>
 </body>
 </html>
