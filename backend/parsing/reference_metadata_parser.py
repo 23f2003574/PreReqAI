@@ -8,13 +8,13 @@ SENTENCE_SPLIT_PATTERN = re.compile(r"\.\s+(?=[A-Z]|arXiv\b)")  # a venue such a
 # A full stop after a lone capital is an author's initial, not a sentence end, when a surname follows ("A. Vaswani, N. Shazeer. Title"):
 # the next word is then followed by a comma, "and", a full stop or another initial. A title word ("N. Attention is all you need") is not.
 _AUTHOR_INITIAL_BEFORE = re.compile(r"(?:^|[\s,])[A-Z]$")
-_SURNAME_AFTER = re.compile(r"\s+(?:[A-Z]\.\s*)*[A-Z][\w'\u2019-]+(?:,|\s+and\b|\.|\s+[A-Z]\.)")  # "F. Christiano," after "P." too: several initials in a row
+_SURNAME_AFTER = re.compile(r"\s+(?:[A-Z]\.,?\s*)*[A-Z][\w'\u2019-]+(?:,|\s+and\b|\.|\s+[A-Z]\.)")  # "F. Christiano," after "P." too: several initials in a row
 _INITIALS_ONLY = re.compile(r"^(?:[A-Z]\.?\s*)+$")
 
 
 _LINE_BREAK_HYPHEN = re.compile(r"(?<=[A-Za-z])-\s+(?=[A-Za-z])")  # "Hatfield- Dodds", "Mirho- seini": a hyphen left at the end of a wrapped line
 # An author-year entry ("Aida Amini, Saadia Gabriel, and Hannaneh Hajishirzi. 2019. MathQA: Towards ... In Proceedings of ...") or an APA one ("Smith, J. (2019). Title. Venue.").
-_AUTHOR_YEAR = re.compile(r"^(?P<authors>.+?)[.,]?\s+\(?(?P<year>(?:19|20)\d{2}[a-z]?)\)?[.:]\s+(?P<rest>\S.*)$", re.DOTALL)
+_AUTHOR_YEAR = re.compile(r"^(?P<authors>.+?)[.,]?\s+(?:\((?P<year>(?:19|20)\d{2}[a-z]?)\)[.:]?|(?P<year2>(?:19|20)\d{2}[a-z]?)[.:])\s+(?P<rest>\S.*)$", re.DOTALL)
 ARXIV_ID = re.compile(r"arxiv[:\s]*(?:preprint\s+)?(?:arxiv[:\s]*)?(\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Za-z]{2})?/\d{7})(?:v\d+)?", re.IGNORECASE)
 DOI = re.compile(r"\b(10\.\d{4,9}/[-._;()/:A-Za-z0-9]+)")
 
@@ -52,7 +52,7 @@ class ReferenceMetadataParser:
         if styled and len(styled.group("authors")) < 400 and not re.search(r"\bIn\b|Proceedings", styled.group("authors")) and len(_split_sentences(styled.group("authors"))) == 1:
             # "Authors. 2019. Title. Venue." : the year closes the author list, the title is the first sentence after it
             rest = [segment.strip() for segment in _split_sentences(styled.group("rest")) if segment.strip()]
-            authors_segment, title, venue, year = styled.group("authors"), rest[0] if rest else "", " ".join(rest[1:]), int(styled.group("year")[:4])
+            authors_segment, title, venue, year = styled.group("authors"), rest[0] if rest else "", " ".join(rest[1:]), int((styled.group("year") or styled.group("year2"))[:4])
         else:
             segments = [segment.strip() for segment in _split_sentences(raw_text) if segment.strip()]
             authors_segment = segments[0] if segments else ""

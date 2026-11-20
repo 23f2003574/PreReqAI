@@ -33,7 +33,9 @@ _NAME = r"[A-Z][\w'\u2019\-]+"
 _PARENTHESIS = re.compile(r"\(([^()]*?" + _YEAR_TOKEN + r"[^()]*)\)")
 _ITEM = re.compile(rf"(?P<first>{_NAME})(?:\s+(?:and|&)\s+(?P<second>{_NAME})|\s+et\s+al\.?)?,?\s+(?P<year>{_YEAR_TOKEN})\b")
 # ... and "Brown et al. (2020)", "Andor et al. (2019, 2020)": the names first, the years in the parenthesis.
-_NARRATIVE = re.compile(rf"(?P<first>{_NAME})(?:\s+(?:and|&)\s+(?P<second>{_NAME})|\s+et\s+al\.?)?\s*\((?P<years>{_YEAR_TOKEN}(?:\s*[,;]\s*{_YEAR_TOKEN})*)\)")
+_NARRATIVE = re.compile(rf"(?P<first>{_NAME})(?:\s+(?:and|&)\s+(?P<second>{_NAME})|\s+et\s+al\.?)?\s*[(\[](?P<years>{_YEAR_TOKEN}(?:\s*[,;]\s*{_YEAR_TOKEN})*)[)\]]")
+# "[Bai et al., 2022]", "[Askell et al., 2021, Bai et al., 2022]": a bracket that holds names and a year (a number-only bracket is a numbered citation, handled elsewhere).
+_BRACKET = re.compile(r"\[([^\[\]]*?" + _YEAR_TOKEN + r"[^\[\]]*)\]")
 
 
 def _surname(author: str) -> str:
@@ -58,6 +60,7 @@ def author_year_numbers(text: str, index: dict) -> list:
     second author tells them apart; otherwise it is left out rather than guessed."""
     found = []
     pairs = [(m.group("first"), m.group("second"), m.group("year")) for group in _PARENTHESIS.findall(text) for part in group.split(";") for m in [_ITEM.search(part.strip())] if m]
+    pairs += [(m.group("first"), m.group("second"), m.group("year")) for group in _BRACKET.findall(text) for m in _ITEM.finditer(group)]
     for m in _NARRATIVE.finditer(text):
         pairs += [(m.group("first"), m.group("second"), year) for year in re.findall(_YEAR_TOKEN, m.group("years"))]
     for first, second, year in pairs:
@@ -86,6 +89,7 @@ class CitationExtractor:
         citation_counter = 1
 
         index = author_year_index(paper)
+        known = {reference.reference_number for reference in paper.references}  # with a bibliography, "[0]" or "[40]" beyond its entries is not a citation
 
         for paragraph in paper.paragraphs:
 
@@ -99,6 +103,9 @@ class CitationExtractor:
             ):
 
                 for number in reference_numbers(match.group(1)):
+
+                    if known and number not in known:
+                        continue
 
                     citations.append(
                         Citation(

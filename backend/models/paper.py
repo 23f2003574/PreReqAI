@@ -45,6 +45,7 @@ class PaperTable:
 class PaperReference:
     reference_number: int
     raw_text: str
+    label: str = ""  # the bracketed author-year label an entry carries in some bibliographies ("Askell et al., 2021"), exactly as printed; "" for numbered entries
 
 
 @dataclass

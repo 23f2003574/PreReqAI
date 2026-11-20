@@ -50,6 +50,19 @@ def author_year_entries(content: str) -> list:
     return [(number, text) for number, text in enumerate(entries, start=1)] if len(entries) >= MIN_ENTRIES else []
 
 
+# A bibliography whose entries open with a bracketed author-year label instead of a number: "[Askell et al., 2021] Askell, A., Bai, Y., ... (2021). A general language assistant ...".
+# An entry runs to the next such label at the start of a line; its label is kept as printed and its number is its position.
+_LABEL = r"\[(?P<label>[A-Z][^\[\]\n]{0,120}?\b(?:19|20)\d{2}[a-z]?)\]"
+BRACKET_ENTRY = re.compile(rf"^{_LABEL}[ \t]*(?P<text>.*?)(?=^\[[A-Z][^\[\]\n]{{0,120}}?\b(?:19|20)\d{{2}}[a-z]?\]|\Z)", re.DOTALL | re.MULTILINE)
+
+
+def bracketed_author_year_entries(content: str) -> list:
+    """[(number, text, label)] for a bibliography of "[Surname et al., 2021] ..." entries, numbered in order; [] with fewer than MIN_ENTRIES of them."""
+    found = [(match.group("label"), match.group("text")) for match in BRACKET_ENTRY.finditer(content)]
+    found = [(label, text) for label, text in found if text.strip()]
+    return [(number, text, label) for number, (label, text) in enumerate(found, start=1)] if len(found) >= MIN_ENTRIES else []
+
+
 # The titles ScientificSectionParser accepts for the bibliography, with an optional section number ("7", "7.", "VII.") and a trailing colon.
 REFERENCES_TITLE = re.compile(r"^(?:\d+(?:\.\d+)*\.?|[IVXivx]+\.)?\s*(?:references|bibliography|works cited)\s*:?\s*$", re.IGNORECASE)
 
@@ -82,6 +95,12 @@ class ReferenceExtractor:
             unnumbered = author_year_entries(section.content)
             if len(unnumbered) > 2 * len(matches):  # a few "[1]" marks in a checklist after an author-year bibliography are not the bibliography
                 matches = unnumbered
+
+            labelled = bracketed_author_year_entries(section.content)
+            if len(labelled) > 2 * len(matches):  # "[Surname, 2021]" labels are not "[1]" numbers: entries are numbered by position, the label is kept
+                for number, text, label in labelled:
+                    paper.references.append(PaperReference(reference_number=number, raw_text=" ".join(text.split()), label=" ".join(label.split())))
+                continue
 
             for number, text in matches:
 
