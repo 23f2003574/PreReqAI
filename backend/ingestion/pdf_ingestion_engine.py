@@ -26,6 +26,7 @@ class RawPage:
     ocr_quality: float | None = None  # 0..1 plausibility of the recognised text (see ocr_quality); None when no OCR text was judged
     ocr_warning: str = ""  # something the learner must know about this page's OCR that does not make the page unreadable
     ocr_regions: int = 0  # scanned image regions on a page that also has a text layer, recognised and merged into `text`
+    equation_groups: list = field(default_factory=list)  # display equations rebuilt from the layout (see equation_groups); emptied once equations are extracted
     paragraph_starts: list = field(default_factory=list)  # the first words of each line that opens a paragraph, from the page's layout (see paragraph_starts); emptied once paragraphs are segmented
     layout: list = field(default_factory=list)  # one dict per text line (text, size, bold, mixed, block_lines, bbox) for heading detection; emptied once sections are parsed
     removed_lines: int = 0  # running header, footer and page-number lines taken out of `text` (they repeat on many pages)
@@ -317,6 +318,81 @@ def paragraph_starts(blocks):
     return starts
 
 
+_DELIMITERS = {"\x10": "(", "\x11": ")", "\x12": "(", "\x13": ")", "\x14": "[", "\x15": "]"}  # the oversized brackets of a TeX display, as the font encodes them
+_MATH_SIGNS = re.compile(r"[=\u2248\u221d\u225c\u2254]|:=")
+_MATHY = re.compile(r"[\u0370-\u03ff\u2200-\u22ff\u2190-\u21ff\u2211\u220f\u2207\u00b7\u00d7\u2212]|\b(?:log|exp|softmax|argmax|argmin|max|min|sin|cos|lim)\b|\([a-zA-Z]+\|")
+_FORMULA_WORDS = frozenset("log exp sum prod max min argmax argmin softmax sigmoid sin cos tan det for all and where otherwise".split())
+_TAG_LINE = re.compile(r"^\(\d{1,3}(?:\.\d+)?\)$")
+_TAG = re.compile(r"\s*\((\d{1,3}(?:\.\d+)?)\)\s*$")
+
+
+def equation_groups(blocks):
+    """The display equations of a page, rebuilt from the layout: [{"text", "tag", "bbox", "fragments"}]. A TeX display reaches the text layer as many small blocks (a fraction's
+    numerator and denominator, a big bracket, the equation number). A run of consecutive non-prose blocks that holds an equals sign and mathematical content (symbols, Greek letters,
+    log/exp...) is one equation, its pieces read left to right; a table or a figure's labels (percentages, many bare numbers, no maths) is not. [] when the page has no such run."""
+    groups, run = [], []
+
+    def flush():
+        if run:
+            found = _equation_from(run)
+            if found:
+                groups.append(found)
+        run.clear()
+
+    try:
+        for block in blocks or []:
+            if block.get("type") != 0:
+                continue
+            lines = [(line["bbox"], "".join(span["text"] for span in line["spans"]).strip()) for line in block["lines"]]
+            lines = [(box, text) for box, text in lines if text]
+            if not lines:
+                continue
+            chars = sum(len(text) for _, text in lines)
+            words = sum(1 for text in lines for token in text[1].split() if token.isalpha() and token.islower() and len(token) >= 3 and token not in _FORMULA_WORDS)
+            if (chars >= MIN_PROSE_CHARS and chars >= 25 * len(lines)) or words >= 5:  # a paragraph, or a sentence of its own: it ends the equation before it
+                flush()
+            else:
+                for box, text in lines:
+                    if _is_wordy(text):  # a heading or a sentence between displays is not part of one
+                        flush()
+                    else:
+                        run.append((box, text))
+                if any(_TAG_LINE.match(text) for _, text in lines):  # the equation number closes the display
+                    flush()
+        flush()
+    except (KeyError, TypeError, ValueError):
+        return []
+    return groups
+
+
+def _is_wordy(text):
+    """Whether a line is words (a heading, a sentence), not mathematics: ordinary words only, or three or more plain lowercase words."""
+    tokens = text.split()
+    plain = [token for token in tokens if token.isascii() and token.isalpha() and len(token) >= 3 and token.lower() not in _FORMULA_WORDS]
+    lowercase = [token for token in plain if token.islower()]
+    return len(lowercase) >= 3 or (bool(tokens) and len(plain) == len(tokens))
+
+
+def _equation_from(run):
+    if not 1 <= len(run) <= 24:
+        return None
+    top, bottom = min(box[1] for box, _ in run), max(box[3] for box, _ in run)
+    if bottom - top > 130:
+        return None
+    pieces = [(box, text) for box, text in sorted(run, key=lambda item: (round(item[0][0]), item[0][1]))]
+    joined = " ".join("".join(_DELIMITERS.get(ch, "" if ord(ch) < 32 else ch) for ch in text) for _, text in pieces)
+    joined = " ".join(joined.split())
+    tag = _TAG.search(joined)
+    body = _TAG.sub("", joined).strip(" .,") if tag else joined.strip(" .,")
+    tokens = body.split()
+    if not _MATH_SIGNS.search(body) or not _MATHY.search(body) or "%" in body or len(body) > 400 or len(tokens) < 3:
+        return None
+    if sum(token.replace(".", "", 1).isdigit() for token in tokens) > len(tokens) / 2:
+        return None  # a row of numbers: a table
+    return {"text": body, "tag": tag.group(1) if tag else "", "bbox": [round(min(b[0] for b, _ in run), 1), round(top, 1), round(max(b[2] for b, _ in run), 1), round(bottom, 1)],
+            "fragments": [text for _, text in run]}
+
+
 def _merge_same_row(lines):
     """Lines of one block that sit on the same row (a section number set apart from its title, "4" then "Direct Preference Optimization") become one line, left to right, so a
     numbered heading is one heading line and not two lines of a block."""
@@ -464,7 +540,7 @@ def read_page(page, page_number, ocr, stop=None, region_ocr=None, rotated_ocr=No
     if not needs_ocr(page, text):
         if region_ocr is not None and (mixed := _read_regions(page, page_number, text, region_ocr, stop, rotated_ocr)) is not None:
             return mixed
-        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page, blocks), paragraph_starts=paragraph_starts(blocks))
+        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page, blocks), paragraph_starts=paragraph_starts(blocks), equation_groups=equation_groups(blocks))
     reason = stop() if stop is not None else ""
     if reason:
         return RawPage(page_number=page_number, text=text, ocr_error=reason, ocr_stopped=True)

@@ -23,6 +23,9 @@ class Equation:
     equation_id: int
     expression: str
     section: str
+    page_number: int | None = None  # the page the equation is on (None when it was found in text without layout)
+    tag: str = ""  # the equation number printed beside it ("7" for "(7)"), "" when it has none
+    anchor: str = ""  # its first piece as the text layer reads it: where to find the equation in its section's text
 
 
 @dataclass

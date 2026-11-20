@@ -104,6 +104,15 @@ class LearningReportGenerator:
             content = sections.get(equation.section, "")
             expression = equation.expression.lower()
             at = content.find(expression)
+            if at < 0 and getattr(equation, "anchor", ""):  # an equation rebuilt from the layout: its first piece is where the section's text has it
+                def plain(text):  # the layout has the real minus sign where the text layer has a hyphen
+                    return " ".join(text.lower().replace("\u2212", "-").split())
+
+                content, expression = plain(content), plain(equation.anchor)
+                at = content.find(expression)
+                if at < 0:
+                    expression = expression[:12]
+                    at = content.find(expression)
             return expression if at < 0 else content[max(0, at - 300):at + len(expression)]
 
         terms = {
@@ -116,6 +125,8 @@ class LearningReportGenerator:
                 "id": equation.equation_id,
                 "expression": equation.expression,
                 "section": equation.section,
+                "page_number": getattr(equation, "page_number", None),
+                "tag": getattr(equation, "tag", ""),
                 "concepts": [
                     name for name, names in terms.items()
                     if any(re.search(rf"\b{re.escape(term)}s?\b", context(equation)) for term in names)

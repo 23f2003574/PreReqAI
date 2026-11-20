@@ -22,6 +22,24 @@ _WORD = re.compile(r"[A-Za-z]+")
 _SENTENCE_END = re.compile(r"[A-Za-z0-9%)]\.$")
 
 
+# Arithmetic inside a sentence ("so he travels for 3 * 6 = 18 miles. The ...", "... = $50.00. The answer is ...") is a worked example in the text, not a display equation: it
+# continues into a sentence, carries a unit, a currency amount, a percentage or quotation marks, or opens with ordinary words.
+_SENTENCE_BOUNDARY = re.compile(r"[.!?]\s+[A-Z][a-z]")
+_UNIT_AFTER_RESULT = re.compile(r"=\s*[$\u20ac\u00a3]?\d+(?:[.,]\d+)*\s*(?:%|[a-z]{3,}\b)")
+_CURRENCY = re.compile(r"[$\u20ac\u00a3]\d")  # "$x$" is TeX; "$50.00" is money
+_OPENS_WITH_WORDS = re.compile(r"^[a-z]{2,}\s+[a-z]{2,}\b")
+
+
+def is_prose_arithmetic(line: str) -> bool:
+    text = line.strip()
+    return bool(_SENTENCE_BOUNDARY.search(text) or _UNIT_AFTER_RESULT.search(text) or _CURRENCY.search(text) or "%" in text or "\u201c" in text or "\u201d" in text
+                or (_OPENS_WITH_WORDS.match(text) and _word_count(text) >= 2))
+
+
+def _word_count(line: str) -> int:
+    return sum(1 for token in line.split() if token.strip(".,;:").isalpha() and token.islower() and token.strip(".,;:") not in _MATH_WORDS and len(token.strip(".,;:")) >= 2)
+
+
 def looks_like_prose(line: str) -> bool:
     """Whether a line holding "=" is a sentence rather than a formula ("where x = 5 is the number of users.").
 
@@ -35,7 +53,7 @@ def looks_like_prose(line: str) -> bool:
             continue
         if len(token) >= 3 or token in _SHORT_PROSE_WORDS:
             words += 1
-    return words >= 3 or (words >= 2 and _SENTENCE_END.search(line.strip()) is not None)
+    return words >= 3 or (words >= 2 and _SENTENCE_END.search(line.strip()) is not None) or is_prose_arithmetic(line)
 
 
 class EquationExtractor:
@@ -54,9 +72,23 @@ class EquationExtractor:
 
         equation_counter = 1
 
+        titles = {section.title for section in paper.sections}
+        skipped = {section.title for section in paper.sections if REFERENCES_TITLE.match(section.title.strip())}
+        pieces = {" ".join(text.split()) for page in getattr(paper, "pages", []) for group in (getattr(page, "equation_groups", None) or []) for text in group["fragments"]}
+
+        for page in getattr(paper, "pages", []):  # display equations rebuilt from the layout, in page order
+            for group in getattr(page, "equation_groups", None) or []:
+                anchor = group["fragments"][0] if group["fragments"] else ""
+                section = _section_of(paper, page.page_number, anchor)
+                if section is None or section in skipped:
+                    continue
+                equations.append(Equation(equation_id=equation_counter, expression=group["text"], section=section, page_number=page.page_number, tag=group["tag"], anchor=anchor))
+                equation_counter += 1
+            page.equation_groups = []  # the layout is only needed to rebuild the equations; it is not kept in the paper or its saved session
+
         for section in paper.sections:
 
-            if REFERENCES_TITLE.match(section.title.strip()):
+            if section.title in skipped:
                 continue
 
             matches = DISPLAY_EQUATION_PATTERN.findall(
@@ -65,7 +97,7 @@ class EquationExtractor:
 
             for match in matches:
 
-                if looks_like_prose(match):
+                if looks_like_prose(match) or any(" ".join(line.split()) in pieces for line in match.splitlines()):  # a piece of a display already rebuilt above
                     continue
 
                 equations.append(
@@ -73,6 +105,7 @@ class EquationExtractor:
                         equation_id=equation_counter,
                         expression=match.strip(),
                         section=section.title,
+                        page_number=getattr(section, "page_number", None),
                     )
                 )
 
@@ -81,3 +114,14 @@ class EquationExtractor:
         paper.equations = equations
 
         return paper
+
+
+def _section_of(paper: Paper, page_number, anchor: str):
+    """The section an equation on `page_number` belongs to: the one whose text holds its first piece, else the last section that begins on or before that page."""
+    key = " ".join(anchor.split())
+    holding = [section.title for section in paper.sections
+               if key and key in " ".join(section.content.split()) and (getattr(section, "page_number", None) is None or section.page_number <= page_number)]
+    if holding:
+        return holding[-1]  # the same expression may be quoted in an earlier section: the nearest one before the page is the one it is displayed in
+    earlier = [section for section in paper.sections if section.page_number is not None and section.page_number <= page_number]
+    return earlier[-1].title if earlier else None
