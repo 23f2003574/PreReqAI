@@ -6,7 +6,7 @@ import pytest
 
 from backend.concepts.concept_explanation_engine import ConceptExplanationEngine
 from backend.concepts.concept_registry import ConceptRegistry
-from backend.concepts.ml_expansion import AMBIGUOUS, EXPANSION
+from backend.concepts.ml_expansion import ALIAS_CONTEXT, AMBIGUOUS, EXPANSION
 from backend.concepts.rule_based_concept_detector import RuleBasedConceptDetector
 from backend.models import Paper, Paragraph
 from backend.platform import platform
@@ -61,7 +61,8 @@ def test_every_alias_is_detected_as_its_concept():
         for term in (row[0], *row[2]):
             if row[0] in AMBIGUOUS:
                 continue
-            assert row[0] in detect(f"We build on {term} in a neural network trained with a softmax loss."), term
+            guard = " Documents are split into passages for retrieval." if term in {t for guarded, _ in ALIAS_CONTEXT.get(row[0], ()) for t in guarded} else ""
+            assert row[0] in detect(f"We build on {term} in a neural network trained with a softmax loss.{guard}"), term  # a guarded alias needs its context (see alias_context)
 
 
 @pytest.mark.parametrize("text", [

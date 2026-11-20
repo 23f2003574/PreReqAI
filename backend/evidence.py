@@ -10,7 +10,7 @@ import re
 from functools import lru_cache
 
 from backend.concepts.concept_registry import ConceptRegistry
-from backend.concepts.rule_based_concept_detector import _BACK_MATTER
+from backend.concepts.rule_based_concept_detector import _BACK_MATTER, alias_context_cue
 from backend.prerequisites.missing_prerequisite_analyzer import section_role
 
 MAX_PER_CONCEPT = 3
@@ -123,7 +123,10 @@ def build_evidence(paper, limit=MAX_PER_CONCEPT):
         passages = []
         for _, _, section, sentence, number in ranked[:limit]:
             mentioned = [c.name for c in concepts if c.name in registry and _pattern(registry[c.name]).search(sentence)]
-            passages.append({"passage_id": passage_id(section, sentence), "sentence": sentence, "page_number": number, "section": section, "concepts": mentioned})
+            found = pattern.search(sentence)
+            cue = alias_context_cue(entry, sentence.lower(), found.start(), found.end(), (found.group().lower().rstrip("s"), found.group().lower())) if entry.alias_context else None
+            passages.append({"passage_id": passage_id(section, sentence), "sentence": sentence, "page_number": number, "section": section, "concepts": mentioned,
+                             "matched_term": found.group(), "context": cue or ""})
         if passages:
             result[concept.name] = passages
     return result

@@ -138,6 +138,31 @@ def _anchor_pattern():
     return re.compile(r"(?<![a-z0-9])(?:" + "|".join(re.escape(term) for term in terms) + r")s?(?![a-z0-9])")
 
 
+ALIAS_WINDOW = 200  # characters on each side of a guarded alias (Concept.alias_context) that may hold one of its context cues
+
+
+def alias_context_cue(concept, text, start, end, aliases):
+    """The context cue found within ALIAS_WINDOW characters of text[start:end] (the alias itself left out) for one of `aliases` of `concept`, or None when the alias has none."""
+    for guarded, cues in concept.alias_context:
+        if any(alias.lower() in guarded for alias in aliases):
+            window = text[max(0, start - ALIAS_WINDOW):start] + " " + text[end:end + ALIAS_WINDOW]
+            found = re.search("|".join(cues), window, re.IGNORECASE)
+            if found:
+                return found.group()
+    return None
+
+
+def unsupported_alias_mentions(concept, text):
+    """How many mentions of the concept's guarded aliases have none of their context cues close by: they are not the concept (a "CNN" column of a results table)."""
+    rejected = 0
+    for guarded, cues in concept.alias_context:
+        for alias in guarded:
+            for match in re.finditer(rf"(?<![a-z0-9]){re.escape(alias.lower())}s?(?![a-z0-9])", text):
+                if alias_context_cue(concept, text, match.start(), match.end(), (alias,)) is None:
+                    rejected += 1
+    return rejected
+
+
 LOCAL_WINDOW = 250  # characters on each side of a bare mention that may hold its technical evidence
 
 
@@ -248,6 +273,12 @@ class RuleBasedConceptDetector:
             inside_longer = sum(count(term, True) for term in shadowing[concept])
 
             occurrences = mentions(concept) - inside_longer - sum(len(re.findall(rx, full_text)) for rx in concept.exclude)
+
+            if concept.alias_context and occurrences > 0:
+                masked = full_text
+                for rx in concept.exclude:  # already subtracted above: not rejected a second time
+                    masked = re.sub(rx, lambda found: " " * len(found.group()), masked)
+                occurrences -= unsupported_alias_mentions(concept, masked)
 
             if occurrences > 0 and concept.ambiguous and context_text is None:  # a section judged on its paper's evidence keeps that evidence; only whole-paper detection looks at the surroundings
                 # A bare mention of an everyday word counts where its own surroundings are technical (a window of text around it), whatever the rest of the paper is about: a paper on

@@ -225,6 +225,12 @@ AMBIGUOUS = {
                      (r"language models?", r"human feedback", r"reward", r"safety", r"preferences?")),
 }
 
+# Aliases of an expansion concept that count only with one of these cues close by (see Concept.alias_context): "chunk size" is also the size of the prompt pieces a
+# long-context model pre-fills, which has nothing to do with splitting documents for retrieval.
+ALIAS_CONTEXT = {
+    "Document Chunking": ((("chunk size",), (r"retriev\w*", r"embedd?\w*", r"\brag\b", r"vector (?:store|database|index)", r"passages?", r"documents?", r"corpus|corpora", r"knowledge base")),),
+}
+
 RULES = {row[0]: list(row[3]) for row in EXPANSION}
 EXPLANATIONS = {row[0]: (row[5], row[4]) for row in EXPANSION}
 RESOURCES = {row[0]: (row[6][0], "arXiv" if "arxiv.org" in row[6][1] else "Web", row[6][1], row[6][2]) for row in EXPANSION}

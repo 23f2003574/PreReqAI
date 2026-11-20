@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .ml_expansion import AMBIGUOUS, EXPANSION
+from .ml_expansion import ALIAS_CONTEXT, AMBIGUOUS, EXPANSION
 
 
 @dataclass(frozen=True)
@@ -19,6 +19,9 @@ class Concept:
     # Phrases (lower-case regular expressions) in which the concept's name or an alias is something else and must not count: the "CNN" of "CNN/DailyMail" is a news
     # dataset, not a convolutional network. Each match is subtracted from the concept's mentions.
     exclude: tuple = ()
+    # Aliases that are only this concept where the text around them says so: ((aliases...), (cue regexes...)) pairs. A mention of such an alias (an acronym that is also a table column, a phrase
+    # that means something else here) counts only with one of the cues within ALIAS_WINDOW characters of it; the concept's full name always counts.
+    alias_context: tuple = ()
 
 
 class ConceptRegistry:
@@ -54,6 +57,7 @@ class ConceptRegistry:
             Concept("Gradient Descent", "deep_learning", aliases=('SGD', 'stochastic gradient descent')),
             Concept("Backpropagation", "deep_learning", aliases=('backprop', 'back-propagation')),
             Concept("Convolutional Neural Network", "deep_learning", aliases=('CNN', 'CNNs', 'convolutional network'),
+                    alias_context=((("cnn", "cnns"), (r"convolution\w*", r"\bconv\d?d?\b", r"pooling", r"feature maps?", r"filters?", r"kernels?", r"image (?:classification|recognition|encoder)s?", r"resnet|vgg|lenet|alexnet|imagenet|cifar", r"receptive field", r"(?:vision|visual) (?:model|backbone|task)s?", r"\bimages?\b", r"layers?", r"\b(?:rnn|lstm|gru|mlp)s?\b", r"neural", r"batch ?norm\w*", r"backprop\w*|back-propagation", r"\bsgd\b")),),
                     exclude=(r"(?<![a-z0-9])cnns?[/ -]?daily ?mail", r"(?<![a-z0-9])cnn[/ -]dm(?![a-z0-9])", r"(?<![a-z0-9])cnn news", r"(?<![a-z0-9])cnn\.com")),
             Concept("Batch Normalization", "deep_learning", aliases=('BatchNorm', 'batch norm', 'batch normalisation')),
             Concept("Dropout", "deep_learning", ambiguous=True,
@@ -137,7 +141,7 @@ class ConceptRegistry:
         # Modern vision, self-supervised, reinforcement-learning, alignment, retrieval and sparse-model concepts (see ml_expansion).
         for name, domain, aliases, *_ in EXPANSION:
             technical, context = AMBIGUOUS.get(name, ((), ()))
-            self._concepts.append(Concept(name, domain, aliases=tuple(aliases), ambiguous=name in AMBIGUOUS, technical=technical, context=context))
+            self._concepts.append(Concept(name, domain, aliases=tuple(aliases), ambiguous=name in AMBIGUOUS, technical=technical, context=context, alias_context=ALIAS_CONTEXT.get(name, ())))
 
     def all(self):
 
