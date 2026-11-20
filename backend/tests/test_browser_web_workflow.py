@@ -1,6 +1,6 @@
 """Browser-level verification of the web page: the real app is served by uvicorn and driven in Chromium through user interactions.
 
-Run: `pip install -r requirements-browser.txt && python -m playwright install chromium && python -m pytest -m browser backend/tests/test_browser_web_workflow.py`
+Run: `pip install -r requirements-browser.txt && python -m playwright install chromium && python -m pytest -m browser backend/tests/test_browser_web_workflow.py backend/tests/test_browser_new_workflows.py`
 (PREREQAI_CHROMIUM=/path/to/chromium uses an existing browser instead). Without Playwright or a browser the tests are skipped, so the backend suite is
 unaffected. Nothing leaves the machine: the built-in tutor and a generated sample paper are used, no LLM and no network."""
 import os

@@ -864,7 +864,8 @@ async function loadReadingList() {
       if (item.concepts.length) card.appendChild(el("p", "Supports: " + item.concepts.join(", "), "meta"));
       if (item.status === "resolvable") {
         var go = el("button", "Analyse this next (" + item.source + ")", "small"); go.type = "button";
-        go.addEventListener("click", function () { $("source").value = item.source; $("form").requestSubmit ? $("form").requestSubmit() : $("form").dispatchEvent(new Event("submit", { cancelable: true })); });
+        go.addEventListener("click", function () { $("paper").value = ""; $("source").value = item.source;  // the uploaded file would make the form refuse ("either a PDF or a link")
+          $("form").requestSubmit ? $("form").requestSubmit() : $("form").dispatchEvent(new Event("submit", { cancelable: true })); });
         card.appendChild(go);
       } else card.appendChild(el("p", "Unresolved: no arXiv id or DOI in the reference.", "msg warn"));
       box.appendChild(card);

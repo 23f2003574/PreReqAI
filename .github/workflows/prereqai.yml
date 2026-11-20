@@ -97,7 +97,7 @@ jobs:
     # The web page in a real browser (Chromium through Playwright): upload, recommendations, progress, tutor, quiz, restore and error states.
     # Reported as its own job so a browser failure is not mixed into the backend results; offline, no LLM.
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -107,5 +107,15 @@ jobs:
           cache-dependency-path: requirements-browser.txt
       - run: pip install -r requirements-browser.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Browser tests of the web page
-        run: python -m pytest -m browser backend/tests/test_browser_web_workflow.py -v
+      - name: Browser tests of the web page (core workflows, then evidence, quiz explanations, reviews, calendar, reading list, curriculum, profile and cited answers)
+        run: python -m pytest -m browser backend/tests/test_browser_web_workflow.py backend/tests/test_browser_new_workflows.py -v -rs --junitxml=browser-results.xml
+      - name: Fail if any browser test was skipped (a skipped test is not a passed one)
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          suite = ET.parse("browser-results.xml").getroot()
+          suite = suite if suite.tag == "testsuite" else suite[0]
+          tests, skipped = int(suite.get("tests")), int(suite.get("skipped"))
+          print(f"{tests} browser tests, {skipped} skipped")
+          assert tests >= 19 and skipped == 0, "the browser tests did not all run"
+          PY
