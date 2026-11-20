@@ -3,9 +3,10 @@
   "schema_version": 1,
   "paper_id": "mixtral",
   "review": {
-    "status": "pending_review"
+    "status": "approved",
+    "reviewer": "Claude (AI assistant), on the repository owner's instruction",
+    "reviewed_on": "2026-11-20"
   },
-  "draft_note": "MACHINE DRAFT, NOT GROUND TRUTH: section titles read from the PDF's headings, roles chosen by the drafter, concept counts by literal term matching inside those sections (not by PreReqAI's detector). Prerequisite coverage is not annotated. A person must check every entry against the paper and then run --approve.",
   "sections": [
     {
       "title": "Abstract",
@@ -36,19 +37,32 @@
       "role": "other"
     },
     {
+      "title": "Acknowledgements",
+      "role": "other"
+    },
+    {
       "title": "References",
       "role": "other"
     }
   ],
   "concepts": [
     {
-      "name": "Mixture of Experts",
+      "name": "Transformer",
       "occurrences": {
-        "Abstract": 3,
-        "1 Introduction": 8,
-        "2 Architectural details": 12,
-        "3 Results": 3,
-        "6 Conclusion": 5
+        "1 Introduction": 1,
+        "2 Architectural details": 3
+      }
+    },
+    {
+      "name": "Feed Forward Network",
+      "occurrences": {
+        "2 Architectural details": 4
+      }
+    },
+    {
+      "name": "Softmax",
+      "occurrences": {
+        "2 Architectural details": 3
       }
     },
     {
@@ -58,29 +72,23 @@
         "1 Introduction": 3,
         "3 Results": 7,
         "4 Instruction Fine-tuning": 2,
-        "6 Conclusion": 3
+        "6 Conclusion": 1,
+        "Acknowledgements": 2
       }
     },
     {
-      "name": "Transformer",
+      "name": "Embedding",
       "occurrences": {
-        "1 Introduction": 1,
-        "2 Architectural details": 3
+        "5 Routing analysis": 1
       }
     },
     {
-      "name": "Expert Routing",
+      "name": "Fine-Tuning",
       "occurrences": {
         "Abstract": 1,
         "1 Introduction": 1,
-        "2 Architectural details": 2
-      }
-    },
-    {
-      "name": "Supervised Fine-Tuning",
-      "occurrences": {
-        "1 Introduction": 1,
-        "4 Instruction Fine-tuning": 3
+        "3 Results": 1,
+        "6 Conclusion": 1
       }
     },
     {
@@ -91,17 +99,32 @@
       }
     },
     {
-      "name": "Feed Forward Network",
+      "name": "Supervised Fine-Tuning",
       "occurrences": {
-        "2 Architectural details": 5
+        "1 Introduction": 1,
+        "4 Instruction Fine-tuning": 3
       }
     },
     {
-      "name": "Softmax",
+      "name": "Mixture of Experts",
       "occurrences": {
-        "2 Architectural details": 3
+        "Abstract": 2,
+        "1 Introduction": 5,
+        "2 Architectural details": 10,
+        "3 Results": 2,
+        "6 Conclusion": 1,
+        "Acknowledgements": 2
+      }
+    },
+    {
+      "name": "Expert Routing",
+      "occurrences": {
+        "Abstract": 1,
+        "1 Introduction": 1,
+        "2 Architectural details": 2
       }
     }
   ],
-  "prerequisites": []
+  "prerequisites": [],
+  "review_note": "Drafted by a machine (section titles read from the PDF's headings, roles chosen by the drafter, concept counts by literal term matching inside those sections with the detector's rule that a longer concept's mentions do not count for a shorter one), then reviewed against the paper's text on 2026-11-20: every registry concept with a mention was read in context and kept only where it is a real use of the concept (the 'CNN' of CNN/DailyMail and the 'attention' of 'lots of attention' were excluded); headings were checked on the pages. Prerequisite coverage is not annotated, so it is not scored. Approved on the repository owner's instruction by the AI assistant that reviewed it, not by a human reader: a human reader should re-check it before the numbers are quoted."
 }

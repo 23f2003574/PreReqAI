@@ -39,13 +39,14 @@ def _bench(tmp_path, status="approved", licence="verified"):
     return manifest
 
 
-def test_the_bundled_manifest_is_valid_and_nothing_in_it_is_scored_until_a_person_approves():
+def test_the_bundled_manifest_is_valid_and_only_approved_verified_papers_are_scored():
     manifest = bm.load_manifest()
     assert len(manifest["papers"]) >= 5 and all((p["license"]["status"] == "unverified") == (p["pdf"] is None) for p in manifest["papers"])  # a PDF only with a verified licence
     report = bm.evaluate_benchmark()
-    assert report["counts"] == {"manifest": len(manifest["papers"]), "evaluated": 0, "excluded": len(manifest["papers"])}
-    assert {item["reason"] for item in report["excluded"]} == {"licence not verified", "annotation pending_review"} and "concepts" not in report  # no metrics without ground truth
-    assert "No paper is evaluable yet" in bm.render_benchmark(report)
+    assert report["counts"] == {"manifest": len(manifest["papers"]), "evaluated": 3, "excluded": len(manifest["papers"]) - 3}
+    assert report["counts"]["evaluated"] == 3 and {r["id"] for r in report["papers"]} == {"dpo", "mixtral", "chain-of-thought"}
+    assert {item["reason"] for item in report["excluded"]} == {"licence not verified"} and "concepts" in report  # scored: the three CC BY papers with approved annotations
+    assert "AGGREGATE" in bm.render_benchmark(report)
 
 
 def test_manifest_validation_names_every_problem():
@@ -142,7 +143,7 @@ def test_results_are_deterministic_and_the_synthetic_evaluation_is_unchanged(tmp
 
 
 def test_the_command_line(tmp_path, capsys):
-    assert cli.main(["--benchmark"]) == 0 and "No paper is evaluable yet" in capsys.readouterr().out
+    assert cli.main(["--benchmark"]) == 0 and "3 of 8 papers evaluated" in capsys.readouterr().out
     manifest = _bench(tmp_path)
     assert cli.main(["--benchmark", "--manifest", str(manifest), "--json"]) == 0
     assert json.loads(capsys.readouterr().out)["counts"]["evaluated"] == 1

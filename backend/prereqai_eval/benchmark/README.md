@@ -7,12 +7,18 @@ synthetic `--pdf` evaluation and never merged with it.
 
 ## Current state (read this first)
 
-**No paper is scored yet, so there are no real-paper results.** Three papers are in the benchmark with a verified licence and their PDFs: `dpo` (Direct Preference
-Optimization, 2305.18290), `mixtral` (Mixtral of Experts, 2401.04088) and `chain-of-thought` (2201.11903), all CC BY 4.0 on their arXiv abstract pages (checked
-2026-11-20; `license.verified_by` says who read them). Their annotations are **machine drafts** (`draft_note`): section titles read from the PDFs' headings, roles chosen
-by the drafter, and concept counts by literal term matching inside those sections, not by PreReqAI's detector; prerequisite coverage is not annotated (reported as "not
-annotated", never scored). They stay `pending_review`, so `--benchmark` excludes them ("annotation pending_review") and reports no metrics. A person must check every
-entry against the paper and then run `--approve benchmark/annotations/<id>.json --reviewer "Name"`; only then do the metrics appear. `--status` lists what is still missing.
+**Three real papers are scored**, all CC BY 4.0 on their arXiv abstract pages (checked 2026-11-20; `license.verified_by` says who read them): `dpo` (Direct Preference
+Optimization, 2305.18290), `mixtral` (Mixtral of Experts, 2401.04088) and `chain-of-thought` (2201.11903). Their annotations were drafted by a machine and reviewed and approved
+by the AI assistant on the repository owner's instruction (`review.reviewer`, `review_note`): **not by a human reader**, so a person should re-check them before the numbers are
+quoted. Prerequisite coverage is not annotated, so it is reported as "not annotated" and never scored.
+
+Results on 2026-11-20 (`python -m backend.prereqai_eval --benchmark`): headings P=0.37 R=0.52 F1=0.44 (tp=22 fp=37 fn=20), concepts P=0.92 R=1.00 F1=0.96 (tp=33 fp=3 fn=0),
+section roles 13/42. What the false positives and negatives show:
+* numbered headings whose number is on its own line or whose title is a known phrase are missed in two of the papers ("4 Direct Preference Optimization", "2 Architectural details",
+  "3 Arithmetic Reasoning", the lettered appendices), and DPO's numbered list of human-study contributors ("1. Gordon Chi") is read as headings: the heading detector is the weak part;
+* concept detection finds everything annotated (recall 1.00); its false positives are the "CNN" of CNN/DailyMail, an everyday "attention" in a prompt and a "Fine-Tuning" in the
+  CoT paper that was not traced.
+Occurrence counts per section mostly disagree because the headings are missed: the counts then land in the wrong section.
 
 The five papers listed first (Attention Is All You Need, LoRA, DDPM, Adam, Batch Normalization) are under arXiv's non-exclusive distribution licence, which does not allow
 redistributing their PDFs, so they cannot be added unless their authors' licence says otherwise; their manifest entries say so.

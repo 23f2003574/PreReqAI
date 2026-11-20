@@ -3,9 +3,10 @@
   "schema_version": 1,
   "paper_id": "dpo",
   "review": {
-    "status": "pending_review"
+    "status": "approved",
+    "reviewer": "Claude (AI assistant), on the repository owner's instruction",
+    "reviewed_on": "2026-11-20"
   },
-  "draft_note": "MACHINE DRAFT, NOT GROUND TRUTH: section titles read from the PDF's headings, roles chosen by the drafter, concept counts by literal term matching inside those sections (not by PreReqAI's detector). Prerequisite coverage is not annotated. A person must check every entry against the paper and then run --approve.",
   "sections": [
     {
       "title": "Abstract",
@@ -40,6 +41,14 @@
       "role": "other"
     },
     {
+      "title": "Acknowledgements",
+      "role": "other"
+    },
+    {
+      "title": "Author Contributions",
+      "role": "other"
+    },
+    {
       "title": "References",
       "role": "other"
     },
@@ -62,31 +71,56 @@
   ],
   "concepts": [
     {
-      "name": "Direct Preference Optimization",
+      "name": "Transformer",
       "occurrences": {
-        "Abstract": 3,
-        "1 Introduction": 10,
-        "4 Direct Preference Optimization": 8,
-        "5 Theoretical Analysis of DPO": 12,
-        "6 Experiments": 39,
-        "7 Discussion": 10,
-        "A Mathematical Derivations": 5,
-        "B DPO Implementation Details and Hyperparameters": 4,
-        "D Additional Empirical Results": 28
+        "3 Preliminaries": 1
       }
     },
     {
-      "name": "Reward Model",
+      "name": "Large Language Model",
       "occurrences": {
-        "Abstract": 2,
-        "1 Introduction": 8,
-        "2 Related Work": 2,
-        "3 Preliminaries": 4,
-        "4 Direct Preference Optimization": 8,
-        "5 Theoretical Analysis of DPO": 6,
-        "6 Experiments": 1,
-        "A Mathematical Derivations": 1,
-        "C Further Details on the Experimental Set-Up": 3
+        "2 Related Work": 5,
+        "5 Theoretical Analysis of DPO": 2,
+        "6 Experiments": 29,
+        "7 Discussion": 1,
+        "Author Contributions": 2,
+        "C Further Details on the Experimental Set-Up": 6,
+        "D Additional Empirical Results": 12
+      }
+    },
+    {
+      "name": "Cross-Entropy Loss",
+      "occurrences": {
+        "1 Introduction": 2,
+        "3 Preliminaries": 1,
+        "7 Discussion": 2
+      }
+    },
+    {
+      "name": "Maximum Likelihood Estimation",
+      "occurrences": {
+        "3 Preliminaries": 1,
+        "4 Direct Preference Optimization": 2,
+        "5 Theoretical Analysis of DPO": 2,
+        "A Mathematical Derivations": 1
+      }
+    },
+    {
+      "name": "Fine-Tuning",
+      "occurrences": {
+        "Abstract": 5,
+        "1 Introduction": 1,
+        "2 Related Work": 5,
+        "3 Preliminaries": 2,
+        "4 Direct Preference Optimization": 1,
+        "5 Theoretical Analysis of DPO": 1,
+        "6 Experiments": 8
+      }
+    },
+    {
+      "name": "Monte Carlo Method",
+      "occurrences": {
+        "5 Theoretical Analysis of DPO": 1
       }
     },
     {
@@ -112,18 +146,95 @@
         "5 Theoretical Analysis of DPO": 7,
         "6 Experiments": 33,
         "7 Discussion": 2,
+        "Author Contributions": 2,
         "C Further Details on the Experimental Set-Up": 1,
         "D Additional Empirical Results": 15
       }
     },
     {
+      "name": "Reinforcement Learning",
+      "occurrences": {
+        "Abstract": 1,
+        "1 Introduction": 4,
+        "2 Related Work": 4,
+        "4 Direct Preference Optimization": 1,
+        "7 Discussion": 2
+      }
+    },
+    {
+      "name": "Policy Gradient",
+      "occurrences": {
+        "5 Theoretical Analysis of DPO": 1
+      }
+    },
+    {
+      "name": "Value Function",
+      "occurrences": {
+        "5 Theoretical Analysis of DPO": 2
+      }
+    },
+    {
+      "name": "Actor-Critic",
+      "occurrences": {
+        "5 Theoretical Analysis of DPO": 3
+      }
+    },
+    {
+      "name": "Self-Supervised Learning",
+      "occurrences": {
+        "2 Related Work": 1
+      }
+    },
+    {
+      "name": "Reward Model",
+      "occurrences": {
+        "Abstract": 2,
+        "1 Introduction": 8,
+        "2 Related Work": 2,
+        "3 Preliminaries": 4,
+        "4 Direct Preference Optimization": 8,
+        "5 Theoretical Analysis of DPO": 6,
+        "6 Experiments": 1,
+        "Author Contributions": 1,
+        "A Mathematical Derivations": 1,
+        "C Further Details on the Experimental Set-Up": 3
+      }
+    },
+    {
+      "name": "Direct Preference Optimization",
+      "occurrences": {
+        "Abstract": 3,
+        "1 Introduction": 10,
+        "4 Direct Preference Optimization": 8,
+        "5 Theoretical Analysis of DPO": 12,
+        "6 Experiments": 39,
+        "7 Discussion": 10,
+        "Author Contributions": 7,
+        "A Mathematical Derivations": 5,
+        "B DPO Implementation Details and Hyperparameters": 4,
+        "D Additional Empirical Results": 28
+      }
+    },
+    {
+      "name": "Reinforcement Learning from AI Feedback",
+      "occurrences": {
+        "1 Introduction": 1
+      }
+    },
+    {
       "name": "Bradley-Terry Model",
       "occurrences": {
-        "1 Introduction": 2,
-        "2 Related Work": 2,
-        "4 Direct Preference Optimization": 8,
-        "5 Theoretical Analysis of DPO": 2,
-        "A Mathematical Derivations": 10
+        "1 Introduction": 1,
+        "2 Related Work": 1,
+        "4 Direct Preference Optimization": 4,
+        "5 Theoretical Analysis of DPO": 1,
+        "A Mathematical Derivations": 5
+      }
+    },
+    {
+      "name": "Reward Hacking",
+      "occurrences": {
+        "7 Discussion": 1
       }
     },
     {
@@ -138,34 +249,8 @@
         "C Further Details on the Experimental Set-Up": 1,
         "D Additional Empirical Results": 3
       }
-    },
-    {
-      "name": "Large Language Model",
-      "occurrences": {
-        "2 Related Work": 5,
-        "5 Theoretical Analysis of DPO": 2,
-        "6 Experiments": 29,
-        "7 Discussion": 1,
-        "C Further Details on the Experimental Set-Up": 6,
-        "D Additional Empirical Results": 12
-      }
-    },
-    {
-      "name": "Reinforcement Learning",
-      "occurrences": {
-        "Abstract": 2,
-        "1 Introduction": 4,
-        "2 Related Work": 4,
-        "4 Direct Preference Optimization": 1,
-        "7 Discussion": 2
-      }
-    },
-    {
-      "name": "Actor-Critic",
-      "occurrences": {
-        "5 Theoretical Analysis of DPO": 6
-      }
     }
   ],
-  "prerequisites": []
+  "prerequisites": [],
+  "review_note": "Drafted by a machine (section titles read from the PDF's headings, roles chosen by the drafter, concept counts by literal term matching inside those sections with the detector's rule that a longer concept's mentions do not count for a shorter one), then reviewed against the paper's text on 2026-11-20: every registry concept with a mention was read in context and kept only where it is a real use of the concept (the 'CNN' of CNN/DailyMail and the 'attention' of 'lots of attention' were excluded); headings were checked on the pages. Prerequisite coverage is not annotated, so it is not scored. Approved on the repository owner's instruction by the AI assistant that reviewed it, not by a human reader: a human reader should re-check it before the numbers are quoted."
 }

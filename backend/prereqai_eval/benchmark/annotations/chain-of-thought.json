@@ -3,9 +3,10 @@
   "schema_version": 1,
   "paper_id": "chain-of-thought",
   "review": {
-    "status": "pending_review"
+    "status": "approved",
+    "reviewer": "Claude (AI assistant), on the repository owner's instruction",
+    "reviewed_on": "2026-11-20"
   },
-  "draft_note": "MACHINE DRAFT, NOT GROUND TRUTH: section titles read from the PDF's headings, roles chosen by the drafter, concept counts by literal term matching inside those sections (not by PreReqAI's detector). Prerequisite coverage is not annotated. A person must check every entry against the paper and then run --approve.",
   "sections": [
     {
       "title": "Abstract",
@@ -44,25 +45,43 @@
       "role": "other"
     },
     {
+      "title": "Acknowledgements",
+      "role": "other"
+    },
+    {
       "title": "References",
+      "role": "other"
+    },
+    {
+      "title": "A Frequently Asked Questions",
+      "role": "other"
+    },
+    {
+      "title": "B All Experimental Results",
+      "role": "other"
+    },
+    {
+      "title": "C Extended Related Work",
+      "role": "related"
+    },
+    {
+      "title": "D Appendix: Additional Analysis",
+      "role": "other"
+    },
+    {
+      "title": "E Additional Details",
+      "role": "other"
+    },
+    {
+      "title": "G Appendix: Full Prompts",
+      "role": "other"
+    },
+    {
+      "title": "H Appendix: Alternate Annotators for MWP",
       "role": "other"
     }
   ],
   "concepts": [
-    {
-      "name": "Chain-of-Thought",
-      "occurrences": {
-        "Abstract": 20,
-        "1 Introduction": 19,
-        "2 Chain-of-Thought Prompting": 29,
-        "3 Arithmetic Reasoning": 116,
-        "4 Commonsense Reasoning": 20,
-        "5 Symbolic Reasoning": 20,
-        "6 Discussion": 25,
-        "7 Related Work": 2,
-        "8 Conclusions": 5
-      }
-    },
     {
       "name": "Large Language Model",
       "occurrences": {
@@ -71,9 +90,47 @@
         "3 Arithmetic Reasoning": 7,
         "4 Commonsense Reasoning": 2,
         "6 Discussion": 4,
-        "8 Conclusions": 1
+        "8 Conclusions": 1,
+        "A Frequently Asked Questions": 6,
+        "B All Experimental Results": 8,
+        "C Extended Related Work": 4,
+        "D Appendix: Additional Analysis": 1,
+        "E Additional Details": 4
+      }
+    },
+    {
+      "name": "Reinforcement Learning",
+      "occurrences": {
+        "C Extended Related Work": 1
+      }
+    },
+    {
+      "name": "Graph Neural Network",
+      "occurrences": {
+        "C Extended Related Work": 1
+      }
+    },
+    {
+      "name": "Chain-of-Thought",
+      "occurrences": {
+        "Abstract": 12,
+        "1 Introduction": 12,
+        "2 Chain-of-Thought Prompting": 16,
+        "3 Arithmetic Reasoning": 70,
+        "4 Commonsense Reasoning": 12,
+        "5 Symbolic Reasoning": 13,
+        "6 Discussion": 15,
+        "7 Related Work": 1,
+        "8 Conclusions": 3,
+        "A Frequently Asked Questions": 49,
+        "B All Experimental Results": 37,
+        "C Extended Related Work": 9,
+        "D Appendix: Additional Analysis": 30,
+        "G Appendix: Full Prompts": 9,
+        "H Appendix: Alternate Annotators for MWP": 4
       }
     }
   ],
-  "prerequisites": []
+  "prerequisites": [],
+  "review_note": "Drafted by a machine (section titles read from the PDF's headings, roles chosen by the drafter, concept counts by literal term matching inside those sections with the detector's rule that a longer concept's mentions do not count for a shorter one), then reviewed against the paper's text on 2026-11-20: every registry concept with a mention was read in context and kept only where it is a real use of the concept (the 'CNN' of CNN/DailyMail and the 'attention' of 'lots of attention' were excluded); headings were checked on the pages. Prerequisite coverage is not annotated, so it is not scored. Approved on the repository owner's instruction by the AI assistant that reviewed it, not by a human reader: a human reader should re-check it before the numbers are quoted."
 }

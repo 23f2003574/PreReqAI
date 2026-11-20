@@ -45,7 +45,7 @@ def test_a_new_paper_gets_its_hash_licence_and_a_pending_annotation_and_is_not_s
     assert annotation["review"] == {"status": "pending_review"} and annotation["concepts"] == []
     assert benchmark.load_manifest(folder / "manifest.json")  # still a valid manifest
     report = benchmark.evaluate_benchmark(folder / "manifest.json")
-    assert report["counts"]["evaluated"] == 0 and {"id": "test-paper", "title": "A Test Paper", "reason": "annotation pending_review"} in report["excluded"]
+    assert "test-paper" not in {r["id"] for r in report["papers"]} and {"id": "test-paper", "title": "A Test Paper", "reason": "annotation pending_review"} in report["excluded"]
     row = next(r for r in benchmark.status(folder / "manifest.json") if r["id"] == "test-paper")
     assert not row["ready"] and len(row["blockers"]) == 1 and "pending_review" in row["blockers"][0]
 
@@ -57,13 +57,13 @@ def test_only_a_persons_approval_makes_it_scored_and_a_changed_pdf_is_caught(fol
     annotation["sections"] = [{"title": "1 Introduction", "role": "instructional"}]
     annotation["concepts"] = [{"name": "Softmax", "occurrences": {"1 Introduction": 2}}]
     path.write_text(json.dumps(annotation))
-    assert benchmark.evaluate_benchmark(folder / "manifest.json")["counts"]["evaluated"] == 0  # filled in but still unreviewed
+    scored = lambda: {r["id"] for r in benchmark.evaluate_benchmark(folder / "manifest.json")["papers"]}
+    assert "test-paper" not in scored()  # filled in but still unreviewed
     benchmark.approve(path, "A. Reviewer")
-    report = benchmark.evaluate_benchmark(folder / "manifest.json")
-    assert report["counts"]["evaluated"] == 1 and report["papers"][0]["id"] == "test-paper"
+    assert "test-paper" in scored()
     assert next(r for r in benchmark.status(folder / "manifest.json") if r["id"] == "test-paper")["ready"]
     (folder / "pdfs" / "test-paper.pdf").write_bytes(pdf.read_bytes() + b"tampered")
-    assert benchmark.evaluate_benchmark(folder / "manifest.json")["counts"]["evaluated"] == 0
+    assert "test-paper" not in scored()
     assert "sha256" in next(r for r in benchmark.status(folder / "manifest.json") if r["id"] == "test-paper")["blockers"][0]
 
 
@@ -103,7 +103,7 @@ def test_a_non_pdf_and_an_already_verified_paper_are_refused(folder, pdf, tmp_pa
 
 def test_the_command_line_registers_and_reports_the_status(folder, pdf, capsys):
     manifest = str(folder / "manifest.json")
-    assert main(["--status", "--manifest", manifest]) == 0 and "0 of 8 papers ready" in capsys.readouterr().out
+    assert main(["--status", "--manifest", manifest]) == 0 and "3 of 8 papers ready" in capsys.readouterr().out
     code = main(["--register", str(pdf), "--manifest", manifest, "--id", "test-paper", "--licence", "CC-BY-4.0", "--licence-evidence", "https://example.org/licence",
                  "--licence-checked-by", "A. Reviewer", "--title", "A Test Paper", "--author", "A. Writer", "--source-url", "https://example.org/p", "--venue", "TestConf", "--year", "2024"])
     assert code == 0 and "pending_review" in capsys.readouterr().out
@@ -113,7 +113,7 @@ def test_the_command_line_registers_and_reports_the_status(folder, pdf, capsys):
 
 # ---- the shipped benchmark data ----
 
-def test_the_shipped_papers_have_verified_licences_matching_hashes_and_unapproved_annotations():
+def test_the_shipped_papers_have_verified_licences_matching_hashes_and_reviewed_annotations():
     manifest = benchmark.load_manifest(benchmark.DEFAULT_MANIFEST)
     verified = [p for p in manifest["papers"] if p["license"]["status"] == "verified"]
     assert {p["id"] for p in verified} == {"dpo", "mixtral", "chain-of-thought"}
@@ -123,27 +123,37 @@ def test_the_shipped_papers_have_verified_licences_matching_hashes_and_unapprove
         pdf = benchmark.BENCHMARK_DIR / paper["pdf"]["path"]
         assert pdf.read_bytes().startswith(b"%PDF-") and benchmark._sha256(pdf) == paper["pdf"]["sha256"]
         annotation = json.loads((benchmark.BENCHMARK_DIR / paper["annotation"]).read_text())
-        assert annotation["review"] == {"status": "pending_review"} and "MACHINE DRAFT" in annotation["draft_note"] and annotation["sections"] and annotation["concepts"]
-        assert benchmark.validate_annotation(annotation) == []
+        assert annotation["review"]["status"] == "approved" and annotation["review"]["reviewer"] and "not by a human reader" in annotation["review_note"]  # who approved, and what that is worth, is on record
+        assert annotation["sections"] and annotation["concepts"] and annotation["prerequisites"] == [] and benchmark.validate_annotation(annotation) == []
     unverified = [p for p in manifest["papers"] if p["license"]["status"] != "verified"]
     assert unverified and all("non-exclusive distribution licence" in p["license"]["note"] for p in unverified)
 
 
-def test_nothing_unreviewed_is_scored_and_status_names_the_one_missing_step():
+def test_the_shipped_benchmark_scores_three_papers_and_names_the_errors_and_leaves_coverage_unscored():
     report = benchmark.evaluate_benchmark()
-    assert report["counts"]["evaluated"] == 0 and "metrics" not in report and "concepts" not in report
-    assert {e["id"]: e["reason"] for e in report["excluded"]}["dpo"] == "annotation pending_review"
-    rows = {r["id"]: r for r in benchmark.status()}
-    assert all(len(rows[i]["blockers"]) == 1 and "pending_review" in rows[i]["blockers"][0] for i in ("dpo", "mixtral", "chain-of-thought"))
+    assert report["counts"]["evaluated"] == 3 and all(row["ok"] and row["coverage"] is None for row in report["papers"]) and report["coverage"] is None
+    assert {"precision", "recall", "f1", "tp", "fp", "fn"} <= set(report["headings"]) and {"precision", "recall", "f1"} <= set(report["concepts"])
+    dpo = next(row for row in report["papers"] if row["id"] == "dpo")
+    assert "Convolutional Neural Network" in dpo["concepts"]["spurious"]  # the 'CNN' of CNN/DailyMail: a false positive, named
+    assert "direct preference optimization" in dpo["headings"]["missed"]  # a numbered heading the parser misses: a false negative, named
+    text = benchmark.render_benchmark(report)
+    assert "false positives" in text and "false negatives" in text and "coverage not annotated" in text
 
 
-def test_an_approved_annotation_without_prerequisites_is_scored_with_coverage_reported_as_not_annotated(folder):
-    annotation = folder / "annotations" / "mixtral.json"
-    benchmark.approve(annotation, "Test Reviewer")  # a test copy: the shipped annotation stays pending
+def test_a_pending_annotation_is_never_scored(folder):
+    path = folder / "annotations" / "mixtral.json"
+    data = json.loads(path.read_text())
+    data["review"] = {"status": "pending_review"}
+    path.write_text(json.dumps(data))
     report = benchmark.evaluate_benchmark(folder / "manifest.json")
-    [row] = report["papers"]
-    assert row["ok"] and row["coverage"] is None and report["coverage"] is None and report["counts"]["evaluated"] == 1
-    assert {"tp", "fp", "fn"} <= set(row["headings"]) and {"tp", "fp", "fn"} <= set(report["concepts"])
+    assert "mixtral" not in {r["id"] for r in report["papers"]} and {"id": "mixtral", "title": report["excluded"][-1]["title"], "reason": "annotation pending_review"} in report["excluded"] or \
+        any(e["id"] == "mixtral" and e["reason"] == "annotation pending_review" for e in report["excluded"])
+    assert report["counts"]["evaluated"] == 2
+
+
+def test_an_approved_annotation_without_prerequisites_reports_coverage_as_not_annotated(folder):
+    report = benchmark.evaluate_benchmark(folder / "manifest.json")
+    row = next(r for r in report["papers"] if r["id"] == "mixtral")
+    assert row["ok"] and row["coverage"] is None and report["coverage"] is None
     text = benchmark.render_benchmark(report)
     assert "coverage not annotated" in text and "not annotated for any evaluated paper" in text
-    assert json.loads((benchmark.BENCHMARK_DIR / "annotations" / "mixtral.json").read_text())["review"] == {"status": "pending_review"}
