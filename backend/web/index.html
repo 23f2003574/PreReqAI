@@ -91,7 +91,8 @@
         <label><input type="checkbox" value="thu" checked> Thu</label> <label><input type="checkbox" value="fri" checked> Fri</label> <label><input type="checkbox" value="sat" checked> Sat</label> <label><input type="checkbox" value="sun" checked> Sun</label>
       </fieldset>
       <button id="calendarBtn" type="button">Plan to deadline</button> <a id="icsLink" href="#" hidden>Download calendar (.ics)</a>
-      <div id="calendarMsg" role="status" aria-live="polite"></div><div id="calendarBox"></div></section>
+      <div id="calendarMsg" role="status" aria-live="polite"></div><div id="missedBox"></div><div id="calendarBox"></div>
+      <button id="restartPlan" type="button" class="small">Start my plan again from today</button></section>
     <section id="tutor"><h2>Ask a question</h2>
       <p class="lead">No tutoring model is configured in this release: answers are built-in definitions and facts from your analysis, not generated explanations.</p>
       <form id="askForm" novalidate>
@@ -283,7 +284,7 @@ function render(body) {
   state.sid = body.session_id || state.sid; remember(state.sid);
   loadHistory();
   loadQuizTopics();
-  state.paper = paper; state.difficulty = report.paper_difficulty || null;
+  state.planStart = (body && body.plan_start) || null; state.paper = paper; state.difficulty = report.paper_difficulty || null;
   state.paths = report.study_paths || null; renderPaths();
   state.mine = report.personalised_plan || null; renderMine();
   state.studyTime = report.study_time || null; state.readiness = report.readiness || null;
@@ -810,6 +811,7 @@ $("reviewBtn").addEventListener("click", loadReviews);
 function calendarQuery() {
   var days = Array.prototype.filter.call(document.querySelectorAll("#studydays input"), function (box) { return box.checked; }).map(function (box) { return box.value; });
   var q = ["today=" + encodeURIComponent(new Date().toLocaleDateString("en-CA"))];  // the learner's own calendar day (YYYY-MM-DD)
+  if (state.planStart) q.push("start=" + encodeURIComponent(state.planStart));  // the day the plan began, so earlier unfinished work is reported as missed
   if ($("deadline").value) q.push("deadline=" + encodeURIComponent($("deadline").value));
   if (days.length && days.length < 7) q.push("weekdays=" + days.join(","));
   if ($("hours").value) q.push("hours_per_day=" + encodeURIComponent($("hours").value));
@@ -825,12 +827,24 @@ async function planToDeadline() {
     try { body = await response.json(); } catch (e) { body = null; }
     if (!response.ok || !body || body.status !== "success") { var text = failureText(body, response.status); showStatus("error", text[0], text[1], "calendarMsg"); return; }
     showStatus(body.feasibility.status === "achievable" ? "info" : "error", body.feasibility.message, null, "calendarMsg");
+    var missed = body.missed_sessions || [], note = el("div", "");
+    if (missed.length) {  // unfinished work planned for days that have passed: moved, never dropped
+      note.appendChild(el("p", "Missed so far (moved to later days, nothing is lost):", "msg warn"));
+      missed.forEach(function (m) { note.appendChild(el("p", m.concept + " " + m.hours + " h, planned for " + m.date + ", now " + (m.moved_to || "a later day"), "meta")); });
+    }
+    fill("missedBox", note);
     var rows = body.days.map(function (d) { return [d.date + " (" + d.weekday + ")", d.hours + " h", d.items.map(function (i) { return i.concept + " " + i.hours + " h"; }).join("; ")]; });
     fill("calendarBox", rows.length ? table(["Date", "Hours", "Study"], rows) : el("p", "Nothing is left to study.", "msg info"));
     $("icsLink").href = base + "/calendar.ics" + query; $("icsLink").hidden = !rows.length;
   } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "calendarMsg"); }
 }
 $("calendarBtn").addEventListener("click", planToDeadline);
+$("restartPlan").addEventListener("click", async function () {  // a fresh start: nothing before today counts as missed (studied concepts stay studied)
+  if (!state.sid) return showStatus("error", "Analyse a paper first.", null, "calendarMsg");
+  var response = await fetch("/api/session/" + encodeURIComponent(state.sid) + "/plan-start?date=" + encodeURIComponent(new Date().toLocaleDateString("en-CA")), { method: "POST" }), body = null;
+  try { body = await response.json(); } catch (e) { body = null; }
+  if (response.ok && body && body.status === "success") { state.planStart = body.plan_start; planToDeadline(); } else { var text = failureText(body, response.status); showStatus("error", text[0], text[1], "calendarMsg"); }
+});
 
 // ---- a reading list from the paper's citations (GET /api/session/{id}/reading-list); a work is fetched only when the learner chooses "Analyse this next" ----
 async function loadReadingList() {

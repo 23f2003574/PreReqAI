@@ -292,6 +292,15 @@ def _apply_resume(args):
     return True
 
 
+def _plan_start(args):
+    """The day the plan began: the one a --resume plan file records, else today (UTC)."""
+    from datetime import datetime, timezone
+
+    from backend.study_plan_markdown import plan_start_from_plan
+
+    return plan_start_from_plan(getattr(args, "resume_text", "") or "") or datetime.now(timezone.utc).date().isoformat()
+
+
 def _apply_calendar(args, outcome):
     """Lay the remaining plan out on dates when --deadline, --study-days or --ics-file was given: the calendar goes into the outcome (and so into --json),
     the .ics file is written next to it. A problem text (an invalid date, weekday or file) is returned, else ""."""
@@ -305,7 +314,8 @@ def _apply_calendar(args, outcome):
         steps, importance, studied = study_calendar.plan_inputs(outcome["report"])
         calendar = study_calendar.build_calendar(
             steps, importance, args.hours_per_day or outcome["report"].get("study_time", {}).get("daily_hours") or 3.0, datetime.now(timezone.utc).date(),
-            study_calendar.parse_weekdays(args.study_days), study_calendar.parse_date(args.deadline, "--deadline") if args.deadline else None, None, studied)
+            study_calendar.parse_weekdays(args.study_days), study_calendar.parse_date(args.deadline, "--deadline") if args.deadline else None,
+            study_calendar.parse_date(_plan_start(args), "the plan's start"), studied, study_calendar.planned_steps(outcome["report"]))
         outcome["calendar"] = calendar
         if args.ics_file:
             text = study_calendar.to_ics(calendar, title=f"Study plan: {outcome['report']['paper']['title']}")
@@ -416,6 +426,8 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         if outcome.get("calendar"):
             calendar = outcome["calendar"]
             print(f"  calendar: {calendar['feasibility']['message']}" + (f" Saved {args.ics_file}." if args.ics_file else ""))
+            for missed in calendar["missed_sessions"]:  # work the plan scheduled for days that have passed and that is not done: it is laid out again from today
+                print(f"  missed: {missed['concept']} {missed['hours']:g}h planned for {missed['date']}, now scheduled for {missed['moved_to'] or 'a later day'}")
         print(f"  concepts: {len(report['concepts'])}  prerequisites: {len(report['prerequisites'])}  "
               f"missing: {len(missing)}" + (f" ({', '.join(explained)})" if explained else ""))
         terms = report.get("not_analysed_terms") or []
@@ -496,7 +508,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             print("  statistics: " + ", ".join(f"{key}={value}" for key, value in info["statistics"].items()))
     if args.plan_file and not failed:  # also with --json, where stdout stays the JSON envelope only
         try:
-            _save_plan(args.plan_file, plan_markdown(outcome["report"]))
+            _save_plan(args.plan_file, plan_markdown(outcome["report"], _plan_start(args)))
             if not args.as_json:
                 print(f"  plan saved: {args.plan_file}")
         except OSError as exc:

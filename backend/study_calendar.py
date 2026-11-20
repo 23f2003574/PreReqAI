@@ -40,6 +40,11 @@ def parse_weekdays(value):
     return {WEEKDAYS.index(name) for name in names}
 
 
+def planned_steps(report):
+    """Every step of the report's plan, studied or not, in plan order (what the original schedule was made of)."""
+    return [SimpleNamespace(concept=step["concept"], estimated_hours=step["estimated_hours"]) for step in report.get("learning_plan", [])]
+
+
 def plan_inputs(report):
     """(remaining steps, importance, studied concepts) from an analysis report: the plan's steps not yet studied, in plan order."""
     done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
@@ -77,9 +82,11 @@ def _lay_out(steps, importance, daily_hours, weekdays, first_day, limit):
     return days, (date.fromisoformat(days[-1]["date"]) if days and not queue else None)
 
 
-def build_calendar(steps, importance, daily_hours, today, weekdays=None, deadline=None, start=None, studied=()):
+def build_calendar(steps, importance, daily_hours, today, weekdays=None, deadline=None, start=None, studied=(), planned=None):
     """The dated schedule and its assessment (see the module description). `steps` are the plan's steps still to study (objects with `concept` and
-    `estimated_hours`), `today` the first day work can happen, `start` (default `today`) the day the plan began, used only to report missed sessions."""
+    `estimated_hours`), `today` the first day work can happen, `start` (default `today`) the day the plan began, used only to report missed sessions. `planned` (default `steps`)
+    is the whole plan including what is already studied: the original schedule is laid out from it, so work finished on time is not reported as missed and the days the unfinished
+    work was planned for are the days it really had."""
     weekdays = weekdays if weekdays is not None else set(range(7))
     if isinstance(daily_hours, bool) or not isinstance(daily_hours, (int, float)) or not math.isfinite(daily_hours) or not 0 < daily_hours <= 24:
         raise CalendarError("hours per day must be above 0 and at most 24")
@@ -94,8 +101,14 @@ def build_calendar(steps, importance, daily_hours, today, weekdays=None, deadlin
     days, finish = _lay_out(steps, importance, daily_hours, weekdays, today, MAX_DAYS)
     moved = []
     if start < today:  # what the original plan put on the days that have passed and is still not done
-        original, _ = _lay_out(steps, importance, daily_hours, weekdays, start, (today - start).days)
-        moved = [{"date": day["date"], "concept": item["concept"], "hours": item["hours"]} for day in original for item in day["items"]]
+        original, _ = _lay_out(planned if planned is not None else steps, importance, daily_hours, weekdays, start, (today - start).days)
+        finished = set(studied)
+        later = {}
+        for day in days:
+            for item in day["items"]:
+                later.setdefault(item["concept"], day["date"])
+        moved = [{"date": day["date"], "concept": item["concept"], "hours": item["hours"], "moved_to": later.get(item["concept"])}
+                 for day in original for item in day["items"] if item["concept"] not in finished]
     result = {"today": today.isoformat(), "remaining_hours": round(remaining, 2), "daily_hours": daily_hours, "weekdays": [WEEKDAYS[i] for i in sorted(weekdays)],
               "studied": list(studied), "missed_sessions": moved, "days": days, "finish_date": finish.isoformat() if finish else None}
     if deadline is None or not remaining:

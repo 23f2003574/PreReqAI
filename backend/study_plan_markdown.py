@@ -16,11 +16,13 @@ def studied_concepts(report):
     return {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
 
 
-def plan_markdown(report):
+def plan_markdown(report, start=None):
     done = studied_concepts(report)
     links = {item["concept"]: item for item in report.get("learning_resources", [])}
     reasons = {item["concept"]: item["justification"] for item in report.get("prerequisite_justifications", [])}
     lines = [f"{PLAN_HEADING} {_one_line(report['paper']['title'])}", ""]
+    if start:  # the day the plan began, so a later --resume can tell which scheduled days were missed
+        lines += [f"Plan started: {start}", ""]
     steps = report["learning_plan"]
     if steps:
         left = sum(step["estimated_hours"] for step in steps if step["concept"] not in done)
@@ -104,3 +106,12 @@ def resume_mismatch_warning(plan_text, paper_title):
     if saved and saved.casefold() != _one_line(paper_title).casefold():
         return f"The resumed plan was saved for '{saved}', not '{_one_line(paper_title)}'; its studied and known concepts were applied anyway."
     return None
+
+
+_START = re.compile(r"^Plan started:[ \t]*(\d{4}-\d{2}-\d{2})[ \t]*$", re.MULTILINE)
+
+
+def plan_start_from_plan(text):
+    """The "Plan started: YYYY-MM-DD" date of a saved plan, or None for one saved before the line existed."""
+    found = _START.search(text)
+    return found.group(1) if found else None

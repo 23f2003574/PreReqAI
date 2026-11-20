@@ -127,6 +127,7 @@ def get_session(session_id: str):
 
         "status": session.status,
 
+        "plan_start": session.plan_start_date().isoformat(),
         "study_progress": session.report.get("study_progress", []),
 
         "readiness": session.report.get("readiness"),
@@ -187,7 +188,7 @@ def get_study_plan(session_id: str):
 
         return session_not_found(session_id)
 
-    return MarkdownResponse(plan_markdown(session.report))
+    return MarkdownResponse(plan_markdown(session.report, session.plan_start_date().isoformat()))
 
 
 @router.get("/{session_id}/reading-list")
@@ -198,6 +199,21 @@ def reading_list(session_id: str, limit: int = Query(default=10, ge=1, le=50)):
     if session is None:
         return session_not_found(session_id)
     return success_body("Prerequisite Reading List", "reading_list", session_id=session_id, reading_list=build_reading_list(session.paper, limit))
+
+
+@router.post("/{session_id}/plan-start")
+def set_plan_start(session_id: str, date: str | None = None):
+    """Start the plan over: its start becomes `date` (YYYY-MM-DD, default today, UTC), so days before it are never reported as missed. Studied concepts stay studied."""
+    session = session_manager.get(session_id)
+    if session is None:
+        return session_not_found(session_id)
+    try:
+        day = study_calendar.parse_date(date, "date") if date else datetime.now(timezone.utc).date()
+    except study_calendar.CalendarError as error:
+        return failure_response(422, "calendar", str(error), hint="Send a date as YYYY-MM-DD.")
+    session.plan_start = day.isoformat()
+    session_manager.save(session)
+    return success_body("Study Calendar", "calendar", session_id=session_id, plan_start=session.plan_start)
 
 
 class CalendarMarkdown(PlainTextResponse):
@@ -214,9 +230,11 @@ def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timez
         daily = parse_hours_per_day(hours_per_day if hours_per_day is not None else (report.get("study_time") or {}).get("daily_hours"))
         today_date = study_calendar.parse_date(today, "today") if today else datetime.now(timezone.utc).date()
         steps, importance, studied = study_calendar.plan_inputs(report)
+        begun = study_calendar.parse_date(start, "start") if start else min(session.plan_start_date(), today_date)  # the plan's own start unless the caller names one
         calendar = study_calendar.build_calendar(
             steps, importance, daily, today_date, study_calendar.parse_weekdays(weekdays),
-            study_calendar.parse_date(deadline, "deadline") if deadline else None, study_calendar.parse_date(start, "start") if start else None, studied)
+            study_calendar.parse_date(deadline, "deadline") if deadline else None, begun, studied, study_calendar.planned_steps(report))
+        calendar["plan_start"] = begun.isoformat()
         hours, _, minutes = (start_time or "09:00").partition(":")
         begin = time(int(hours), int(minutes or 0))
     except (ValueError, study_calendar.CalendarError) as error:  # CalendarError is a ValueError; so are bad hours and bad times

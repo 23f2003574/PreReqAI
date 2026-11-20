@@ -74,6 +74,18 @@ class LearningSession:
     # The name of the learner profile this session was analysed with (None without one): quiz outcomes are remembered in it for spaced review.
     profile: str | None = None
 
+    # The day (YYYY-MM-DD, UTC) the learner's plan began: the base of the missed-day report of the study calendar. None in a session saved before it existed; created_at then gives it.
+    plan_start: str | None = None
+
+    def plan_start_date(self):
+        """The plan's start as a date: the saved one, else the day the session was created."""
+        import datetime
+
+        try:
+            return datetime.date.fromisoformat(self.plan_start) if self.plan_start else datetime.datetime.fromtimestamp(self.created_at, datetime.timezone.utc).date()
+        except (TypeError, ValueError, OSError):
+            return datetime.datetime.now(datetime.timezone.utc).date()
+
     # Concepts the learner has said "no, I do not know this yet" to when they were suggested as already known (quiz_session.known_suggestions): not suggested again for this session.
     dismissed_suggestions: list = field(default_factory=list)
 
