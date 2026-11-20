@@ -9,7 +9,7 @@ from backend.platform.prereqai_platform import _concept_key
 from backend.prerequisites.personalised_plan import build_plan
 from backend.prerequisites.prerequisite_paths import build_paths
 from backend.study_plan_markdown import plan_markdown, studied_concepts
-from backend.tutor import quiz_session
+from backend.tutor import paper_quiz as paper_quiz_module, quiz_session
 from backend.tutor.tutor_provider import TutorConfig
 from backend.tutor.rule_based_tutor import ANSWERABLE_HINT, EXTRACTIVE_PREFIX
 
@@ -332,6 +332,13 @@ class QuizReveal(BaseModel):
     question_id: str
 
 
+class PaperQuizReveal(BaseModel):
+
+    question_id: str
+
+    attempt: str | None = None  # what the learner typed in the blank, if anything: only compared with the answer, never required
+
+
 class QuizOutcome(BaseModel):
 
     question_id: str
@@ -377,6 +384,52 @@ def quiz_question(session_id: str, concept: str | None = None):
 def quiz_reveal(session_id: str, body: QuizReveal):
     """The answer to a question that was served."""
     return _quiz(session_id, lambda session: quiz_session.reveal(session, body.question_id))
+
+
+@router.get("/{session_id}/paper-quiz")
+def paper_quiz(session_id: str):
+    """Fill-in-the-blank questions about this paper, made from its own verified sentences (without answers). They are separate from the global concept questions."""
+    def act(session):
+        questions = paper_quiz_module.build(session)
+        return {"questions": [paper_quiz_module.public(q, n, len(questions)) for n, q in enumerate(questions, start=1)],
+                "note": "Each blank is a term from a sentence the paper really contains; revealing shows the sentence, its page and its section." if questions else
+                        "This paper has no sentence that makes a good fill-in-the-blank question."}
+
+    return _quiz(session_id, act, saves=False)
+
+
+@router.post("/{session_id}/paper-quiz/reveal")
+def paper_quiz_reveal(session_id: str, body: PaperQuizReveal):
+    """The answer to a paper question, with the exact quotation, its page and section; `attempt` (optional) is compared with the answer."""
+    def act(session):
+        _, question = paper_quiz_module.find(session, body.question_id)
+        if question is None:
+            raise quiz_session.QuizError("unknown", f"There is no paper question {body.question_id!r}.", "Use a question_id from GET /paper-quiz.")
+        session.quiz_pending[question["question_id"]] = {"revealed": True}
+        found = {"question_id": question["question_id"], "concept": question["concept"], "answer": question["answer"], "quotation": question["quotation"],
+                 "page_number": question["page_number"], "section": question["section"]}
+        return {**found, **({"attempt_correct": paper_quiz_module.matches(body.attempt, question["answer"])} if body.attempt is not None else {})}
+
+    return _quiz(session_id, act)
+
+
+@router.post("/{session_id}/paper-quiz/outcome")
+def paper_quiz_outcome(session_id: str, body: QuizOutcome):
+    """Record `knew` or `missed` for a paper question that was revealed: it counts toward the concept's mastery and, with a learner profile, enters spaced review."""
+    def act(session):
+        _, question = paper_quiz_module.find(session, body.question_id)
+        if question is None:
+            raise quiz_session.QuizError("unknown", f"There is no paper question {body.question_id!r}.", "Use a question_id from GET /paper-quiz.")
+        if body.outcome not in quiz_session.OUTCOMES:
+            raise quiz_session.QuizError("outcome", f"outcome must be 'knew' or 'missed', not {body.outcome!r}.", "Send {\"outcome\": \"knew\"} or {\"outcome\": \"missed\"}.")
+        state = session.quiz_pending.pop(question["question_id"], None)
+        if state is None:
+            raise quiz_session.QuizError("state", f"No outcome is awaited for {body.question_id!r}: reveal the question first, and answer it once.", "POST /paper-quiz/reveal, then record the outcome.")
+        session.quiz_attempts.append({"question_id": question["question_id"], "concept": question["concept"], "outcome": body.outcome, "revealed": True, "kind": "paper"})
+        review = _remember_outcome(session)
+        return {"progress": quiz_session.progress(session), "suggest_known": _suggestions(session), **({"review": review} if review else {})}
+
+    return _quiz(session_id, act)
 
 
 @router.post("/{session_id}/quiz/outcome")

@@ -239,3 +239,24 @@ def test_the_new_panels_survive_a_study_action_and_never_run_injected_markup(bro
     page.wait_for_function("document.querySelectorAll('#tree .badge.studied').length >= 1")
     assert not errors and page.locator("#tree script, #math script, #roadmap script").count() == 0
     context.close()
+
+
+def test_paper_questions_are_answered_checked_against_the_paper_and_recorded(browser, plain):
+    context, page = open_page(browser, plain)
+    analyse(page, DPO)
+    page.click("#pqNext")
+    page.wait_for_selector("#pqPrompt")
+    prompt = page.locator("#pqPrompt").inner_text()
+    assert "_____" in prompt and page.locator("#pqAnswer").count() == 0  # the answer is not on the page before it is asked for
+    page.fill("#pqAttempt", "zebra")
+    page.click("#pqCard button:has-text('Check and show the answer')")
+    page.wait_for_selector("#pqAnswer")
+    assert page.locator("#pqCard blockquote").inner_text().startswith("“") and re.search(r"Page \d+, section ", page.locator("#pqCard").inner_text())
+    assert "Your answer was: zebra" in page.locator("#pqCard").inner_text()
+    page.click("#pqCard button:has-text('I knew it')")
+    page.wait_for_function("document.querySelector('#pqMsg').innerText.indexOf('Recorded') >= 0")
+    assert page.locator("#mastery").inner_text().strip() != ""
+    page.click("#pqNext")
+    page.wait_for_selector("#pqPrompt")
+    assert page.locator("#pqPrompt").inner_text() != prompt  # the next question is a different one
+    context.close()

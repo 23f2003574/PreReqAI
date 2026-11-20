@@ -115,6 +115,10 @@
       <div id="askMsg" role="status" aria-live="polite"></div>
       <div id="answers"></div>
     </section>
+    <section id="paperquizpanel"><h2>Questions about this paper</h2>
+      <p class="meta">Fill in the blank: each question is a sentence this paper really contains with one term hidden. After you answer you see the sentence, its page and section. Your answers count toward your mastery (and spaced review, with a profile).</p>
+      <button id="pqNext" type="button">Get a question about this paper</button>
+      <div id="pqMsg" role="status" aria-live="polite"></div><div id="pqCard"></div></section>
     <section id="quizpanel"><h2>Practice quiz</h2>
       <label for="quizConcept">Concept</label>
       <select id="quizConcept"><option value="">Choose for me (the one that needs the most practice)</option></select>
@@ -371,6 +375,7 @@ function render(body) {
   loadQuizTopics();
   state.planStart = (body && body.plan_start) || null; state.paper = paper; state.difficulty = report.paper_difficulty || null;
   state.paths = report.study_paths || null; renderPaths();
+  pq.list = null; pq.card = null; pq.done = {}; renderPaperCard();
   renderTree(report.prerequisite_tree); renderMath(report); renderWhy(report); renderRoadmap(report);
   state.mine = report.personalised_plan || null; renderMine();
   state.studyTime = report.study_time || null; state.readiness = report.readiness || null;
@@ -877,6 +882,83 @@ $("askForm").addEventListener("submit", function (event) { event.preventDefault(
 $("quizNext").addEventListener("click", nextQuestion);
 loadHistory();
 restore();
+
+// ---- questions about this paper: fill in the blank from the paper's own sentences (GET /paper-quiz, POST /paper-quiz/reveal, POST /paper-quiz/outcome) ----
+var pq = { list: null, card: null, done: {}, busy: false };
+function pqUrl(tail) { return "/api/session/" + encodeURIComponent(state.sid) + "/paper-quiz" + (tail ? "/" + tail : ""); }
+
+function pqShow(kind, text) { showStatus(kind, text, null, "pqMsg"); }
+
+function renderPaperCard() {
+  var box = el("div"), c = pq.card;
+  if (c) {
+    var card = el("div", null, "card");
+    card.appendChild(el("p", "Question " + c.number + " of " + c.of + " (" + c.concept + ")", "meta"));
+    card.appendChild(el("p", c.prompt)); card.lastChild.id = "pqPrompt";
+    if (c.answer === undefined) {
+      var input = el("input"); input.type = "text"; input.id = "pqAttempt"; input.maxLength = 200; input.setAttribute("aria-label", "Your answer for the blank"); input.autocomplete = "off";
+      var show = el("button", "Check and show the answer", "small"); show.type = "button"; show.disabled = pq.busy;
+      show.addEventListener("click", function () { pqReveal(input.value); });
+      card.appendChild(input); card.appendChild(document.createTextNode(" ")); card.appendChild(show);
+    } else {
+      if (c.typed) card.appendChild(el("p", c.correct ? "Your answer matches." : "Your answer was: " + c.typed, "meta"));
+      var a = el("p", "Answer: " + c.answer); a.id = "pqAnswer"; card.appendChild(a);
+      var q = el("blockquote", "\u201c" + c.quotation + "\u201d"); card.appendChild(q);
+      card.appendChild(el("p", (c.page_number ? "Page " + c.page_number + ", " : "") + "section " + (c.section || "untitled"), "meta"));
+      card.appendChild(el("p", "How did you do?", "meta"));
+      [["knew", "I knew it"], ["missed", "I missed it"]].forEach(function (o) {
+        var b = el("button", o[1], "small"); b.type = "button"; b.disabled = pq.busy;
+        b.addEventListener("click", function () { pqRecord(o[0]); }); card.appendChild(b); card.appendChild(document.createTextNode(" "));
+      });
+    }
+    box.appendChild(card);
+  }
+  fill("pqCard", box);
+  $("pqNext").disabled = pq.busy;
+}
+
+async function pqCall(label, request, onOk) {
+  if (pq.busy) return;
+  if (!state.sid) return pqShow("error", "Analyse a paper first.");
+  pq.busy = true; renderPaperCard(); pqShow("info", label + "...");
+  try {
+    var response = await request(), body = null;
+    try { body = await response.json(); } catch (e) { body = null; }
+    if (!response.ok || !body || body.status !== "success") { var text = failureText(body, response.status); pqShow("error", text[0] + (text[1] ? " " + text[1] : "")); }
+    else { pqShow("info", ""); onOk(body); }
+  } catch (error) {
+    pqShow("error", "Could not reach the PreReqAI server. Check that it is running, then try again.");
+  } finally { pq.busy = false; renderPaperCard(); }
+}
+
+function pqNext() {
+  pqCall("Getting a question", function () { return fetch(pqUrl("")); }, function (body) {
+    pq.list = body.questions || [];
+    var next = pq.list.filter(function (q) { return !pq.done[q.question_id]; })[0];
+    if (!pq.list.length) { pq.card = null; pqShow("info", body.note || "This paper has no fill-in-the-blank questions."); }
+    else if (!next) { pq.card = null; pq.done = {}; pqShow("info", "You have answered every question about this paper. Ask again to go through them once more."); }
+    else pq.card = next;
+  });
+}
+
+function pqReveal(typed) {
+  var card = pq.card;
+  pqCall("Getting the answer", function () {
+    return fetch(pqUrl("reveal"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question_id: card.question_id, attempt: typed }) });
+  }, function (body) { card.answer = body.answer; card.quotation = body.quotation; card.page_number = body.page_number; card.section = body.section; card.typed = typed.trim(); card.correct = !!body.attempt_correct; });
+}
+
+function pqRecord(outcome) {
+  var card = pq.card;
+  pqCall("Recording your answer", function () {
+    return fetch(pqUrl("outcome"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question_id: card.question_id, outcome: outcome }) });
+  }, function (body) {
+    pq.done[card.question_id] = true; pq.card = null;
+    state.quiz = body.progress; state.suggestions = body.suggest_known || []; renderMastery(); renderSuggestions();
+    pqShow("info", "Recorded: " + (outcome === "knew" ? "you knew it" : "you missed it") + ". Ask for another question to keep going.");
+  });
+}
+$("pqNext").addEventListener("click", pqNext);
 
 // ---- spaced review: the learner profile's due questions (GET /api/review) ----
 async function loadReviews() {
