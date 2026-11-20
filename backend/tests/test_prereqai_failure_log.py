@@ -6,7 +6,8 @@ import pytest
 from starlette.testclient import TestClient
 
 from backend.main import app
-from backend.pipeline import research_paper_pipeline as pipeline
+from backend.pipeline import research_paper_pipeline as pipeline  # noqa: F401
+from backend.platform import platform
 
 pytestmark = pytest.mark.prereqai
 
@@ -19,10 +20,12 @@ def _upload(client, data=None):
 
 
 def test_a_stage_failure_is_logged_with_its_stage_and_error_type_but_not_its_message(monkeypatch, caplog):
-    def boom(self, *args, **kwargs):
+    def boom(*args, **kwargs):
         raise KeyError("secret-token-from-the-paper")
 
-    monkeypatch.setattr(pipeline.RuleBasedConceptDetector, "detect", boom)
+    # The pipeline's own detector object: an earlier test that patches `detect` on that instance leaves a bound method behind after monkeypatch undoes it, which
+    # a patch of the class would then never reach (the failure depended on test order).
+    monkeypatch.setattr(platform.analysis.concept_detector, "detect", boom)
 
     with caplog.at_level(logging.INFO, logger="prereqai.analysis"):
         response = _upload(TestClient(app), {"known": "Calculus"})
