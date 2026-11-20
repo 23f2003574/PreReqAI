@@ -19,18 +19,63 @@ COVERAGE_MIN_MENTIONS = 3
 #                   by themselves make a prerequisite "covered", so an unknown label never claims coverage.
 # A title that is both ("Background and Related Work") is "related": when in doubt, no coverage is claimed.
 _NUMBER = re.compile(r"^(?:\d+(?:\.\d+)*\.?|[IVX]+\.|[A-Z]\.)\s+")
-_RELATED = re.compile(r"related|prior work|previous work|literature|reference|bibliograph|works cited|acknowledg", re.IGNORECASE)
+# Whole words only: "Preference" is not "reference" (a section "Direct Preference Optimization" is the method, not the bibliography). "References" and
+# "Bibliography" name the list itself, so they must be (nearly) the whole title; a title merely containing the word "reference" is not one.
+_RELATED = re.compile(r"\b(?:related (?:work|research|literature)s?|prior (?:work|art)|previous (?:work|studies)|literature|works cited|acknowledg\w*)\b", re.IGNORECASE)
+_BIBLIOGRAPHY = re.compile(r"^(?:references?(?: list)?|bibliography|works cited)$", re.IGNORECASE)
 _INSTRUCTIONAL = re.compile(
-    r"^(?:background|preliminar|notation|problem (?:statement|formulation|setup|setting|definition)|method|approach|proposed|model|architecture|theory|theoretical)",
+    r"^(?:background|preliminar(?:y|ies)|notation|problem (?:statement|formulation|setup|setting|definition)|methods?(?:ology)?|approach|"
+    r"proposed|models?(?:ing|ling)?|architectur(?:e|es|al)|theory|theoretical|algorithms?|framework|formulation|derivations?)\b",
+    re.IGNORECASE,
+)
+_INTRODUCTION = re.compile(r"^(?:introduction|overview|motivation)\b", re.IGNORECASE)
+# Titles that name where results, discussion or extra material go: the method section is over once one of these starts.
+_LATER = re.compile(
+    r"\b(?:experiment\w*|results?|evaluation|empirical|discussion|conclusions?|limitations?|ablations?|appendix|supplementary|broader impact|ethic\w*|"
+    r"dataset|benchmark\w*|analysis|frequently asked|acknowledg\w*|references?|bibliography|author|contributions?)\b",
     re.IGNORECASE,
 )
 
 
+def _title(title):
+    return _NUMBER.sub("", (title or "").strip())
+
+
 def section_role(title):
-    title = _NUMBER.sub("", (title or "").strip())
-    if _RELATED.search(title):
+    """The role a section's title alone gives it (see the policy above); `section_roles` adds the context of the neighbouring sections."""
+    title = _title(title)
+    if _RELATED.search(title) or _BIBLIOGRAPHY.match(title):
         return "related"
     return "instructional" if _INSTRUCTIONAL.match(title) else "other"
+
+
+def _top_level(title):
+    return bool(re.match(r"^(?:\d+|[IVX]+)\.?\s", (title or "").strip()))
+
+
+def section_roles(titles):
+    """{title: role} for a paper's section titles in reading order. Each title gives its role, and a numbered top-level section whose title
+    says nothing (a method named after the paper's own idea: "4 Direct Preference Optimization", "2 Chain-of-Thought Prompting") is instructional
+    when it directly follows the Introduction or a Background / Method / Related Work section, and is not one of the results, discussion or
+    appendix sections (so "3 Arithmetic Reasoning", which follows the method section, stays "other")."""
+    roles, previous = {}, None  # previous: the role-source of the last top-level section: "intro", "title" (recognised by its title), "context" (promoted), None
+    for title in titles:
+        if title in roles:
+            continue
+        role, name = section_role(title), _title(title)
+        if _INTRODUCTION.match(name):
+            previous = "intro"
+        elif _top_level(title):
+            if role != "other":
+                previous = "title"
+            elif _LATER.search(name):
+                previous = None
+            elif previous in ("intro", "title"):
+                role, previous = "instructional", "context"
+            else:
+                previous = None
+        roles[title] = role
+    return roles
 
 
 class MissingPrerequisiteAnalyzer:
@@ -69,8 +114,9 @@ class MissingPrerequisiteAnalyzer:
                 count = subjects.get(prerequisite.concept, 0)
 
             by_section = section_mentions(paper) if by_section is None else by_section
+            roles = section_roles([section.title for section in getattr(paper, "sections", [])])
             where = [
-                {"section": title, "mentions": found[kind][prerequisite.concept], "role": section_role(title)}
+                {"section": title, "mentions": found[kind][prerequisite.concept], "role": roles.get(title) or section_role(title)}
                 for title, found in by_section.items()
                 for kind in ("concepts" if detected else "subjects",)
                 if prerequisite.concept in found[kind]

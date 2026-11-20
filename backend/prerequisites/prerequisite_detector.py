@@ -442,11 +442,12 @@ class PrerequisiteDetector:
         where = {}
         if paper.concepts and getattr(paper, "paragraphs", None):
             from backend.concepts.rule_based_concept_detector import section_mentions
-            from backend.prerequisites.missing_prerequisite_analyzer import section_role
+            from backend.prerequisites.missing_prerequisite_analyzer import section_role, section_roles
 
+            roles = section_roles([section.title for section in getattr(paper, "sections", [])])
             for title, found in section_mentions(paper).items():
                 for name in found["concepts"]:
-                    where.setdefault(name, []).append((title, section_role(title)))
+                    where.setdefault(name, []).append((title, roles.get(title) or section_role(title)))
         ambiguous = {c.name for c in ConceptRegistry().all() if c.ambiguous}
 
         for prerequisite, concepts in needed_by.items():

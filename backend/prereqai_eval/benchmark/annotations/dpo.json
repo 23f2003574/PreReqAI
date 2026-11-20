@@ -43,7 +43,7 @@
     },
     {
       "title": "Acknowledgements",
-      "role": "other"
+      "role": "related"
     },
     {
       "title": "Author Contributions",
@@ -51,7 +51,7 @@
     },
     {
       "title": "References",
-      "role": "other"
+      "role": "related"
     },
     {
       "title": "A Mathematical Derivations",
@@ -253,6 +253,6 @@
     }
   ],
   "prerequisites": [],
-  "review_note": "Drafted by a machine (section titles read from the PDF's headings, roles chosen by the drafter, concept counts by literal term matching inside those sections with the detector's rule that a longer concept's mentions do not count for a shorter one), then reviewed against the paper's text on 2026-11-20: every registry concept with a mention was read in context and kept only where it is a real use of the concept (the 'CNN' of CNN/DailyMail and the 'attention' of 'lots of attention' were excluded); headings were checked on the pages. Prerequisite coverage is not annotated, so it is not scored. Approved on the repository owner's instruction by the AI assistant that reviewed it, not by a human reader: a human reader should re-check it before the numbers are quoted.",
+  "review_note": "Drafted by a machine (section titles read from the PDF's headings, roles chosen by the drafter, concept counts by literal term matching inside those sections with the detector's rule that a longer concept's mentions do not count for a shorter one), then reviewed against the paper's text on 2026-11-20: every registry concept with a mention was read in context and kept only where it is a real use of the concept (the 'CNN' of CNN/DailyMail and the 'attention' of 'lots of attention' were excluded); headings were checked on the pages. Prerequisite coverage is not annotated, so it is not scored. Approved on the repository owner's instruction by the AI assistant that reviewed it, not by a human reader: a human reader should re-check it before the numbers are quoted. Correction on 2026-11-21 (also by the AI assistant, not a human reader): the roles of 'References' and 'Acknowledgements' were changed from 'other' to 'related', the role the benchmark README and section policy define for the bibliography and acknowledgements (mentions there cite other work and are not counted); the earlier 'other' contradicted that definition. No other label was changed.",
   "heading_scope": "top-level"
 }

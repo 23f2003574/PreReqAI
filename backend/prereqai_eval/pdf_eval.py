@@ -7,7 +7,7 @@ import re
 import tempfile
 
 from backend.parsing.scientific_section_parser import ScientificSectionParser  # noqa: F401  (the real parser runs inside the pipeline)
-from backend.prerequisites.missing_prerequisite_analyzer import section_role
+from backend.prerequisites.missing_prerequisite_analyzer import section_roles
 
 from .harness import scores
 from .pdf_fixtures import FIXTURES, write_fixture_pdfs
@@ -39,7 +39,8 @@ def score_fixture(fixture, paper):
     headings = scores(expected, found_titles)
     headings["missed"], headings["spurious"] = sorted(set(expected) - set(found_titles)), sorted(set(found_titles) - set(expected))
     matched = sorted(set(expected) & set(found_titles))
-    wrong = [key for key in matched if section_role(found_titles[key]) != expected[key]]
+    roles = section_roles([s.title for s in paper.sections])
+    wrong = [key for key in matched if roles[found_titles[key]] != expected[key]]
     roles = {"correct": len(matched) - len(wrong), "total": len(expected), "wrong": wrong, "accuracy": round((len(matched) - len(wrong)) / len(expected), 3) if expected else 1.0}
     concepts = scores(fixture["concepts"], {c.name for c in paper.concepts})
     covered = {m.concept for m in paper.missing_prerequisites if m.satisfied}
