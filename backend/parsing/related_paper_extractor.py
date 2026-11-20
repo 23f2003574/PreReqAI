@@ -49,6 +49,9 @@ class RelatedPaperExtractor:
                     year=metadata["year"],
                     relationship="cites",
                     similarity_score=None,
+                    venue=metadata.get("venue", ""),
+                    arxiv_id=metadata.get("arxiv_id"),
+                    doi=metadata.get("doi"),
                 )
             )
 

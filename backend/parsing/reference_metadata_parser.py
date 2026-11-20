@@ -3,16 +3,24 @@ import re
 
 YEAR_PATTERN = re.compile(r"\b(19|20)\d{2}\b")
 
-SENTENCE_SPLIT_PATTERN = re.compile(r"\.\s+(?=[A-Z])")
+SENTENCE_SPLIT_PATTERN = re.compile(r"\.\s+(?=[A-Z]|arXiv\b)")  # a venue such as "arXiv preprint ..." also starts a new sentence
 
 # A full stop after a lone capital is an author's initial, not a sentence end, when a surname follows ("A. Vaswani, N. Shazeer. Title"):
 # the next word is then followed by a comma, "and", a full stop or another initial. A title word ("N. Attention is all you need") is not.
 _AUTHOR_INITIAL_BEFORE = re.compile(r"(?:^|[\s,])[A-Z]$")
-_SURNAME_AFTER = re.compile(r"\s+[A-Z][\w'\u2019-]+(?:,|\s+and\b|\.|\s+[A-Z]\.)")
+_SURNAME_AFTER = re.compile(r"\s+(?:[A-Z]\.\s*)*[A-Z][\w'\u2019-]+(?:,|\s+and\b|\.|\s+[A-Z]\.)")  # "F. Christiano," after "P." too: several initials in a row
 _INITIALS_ONLY = re.compile(r"^(?:[A-Z]\.?\s*)+$")
 
 
+_LINE_BREAK_HYPHEN = re.compile(r"(?<=[A-Za-z])-\s+(?=[A-Za-z])")  # "Hatfield- Dodds", "Mirho- seini": a hyphen left at the end of a wrapped line
+# An author-year entry ("Aida Amini, Saadia Gabriel, and Hannaneh Hajishirzi. 2019. MathQA: Towards ... In Proceedings of ...") or an APA one ("Smith, J. (2019). Title. Venue.").
+_AUTHOR_YEAR = re.compile(r"^(?P<authors>.+?)[.,]?\s+\(?(?P<year>(?:19|20)\d{2}[a-z]?)\)?[.:]\s+(?P<rest>\S.*)$", re.DOTALL)
+ARXIV_ID = re.compile(r"arxiv[:\s]*(?:preprint\s+)?(?:arxiv[:\s]*)?(\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Za-z]{2})?/\d{7})(?:v\d+)?", re.IGNORECASE)
+DOI = re.compile(r"\b(10\.\d{4,9}/[-._;()/:A-Za-z0-9]+)")
+
+
 def _split_sentences(text: str) -> list[str]:
+    text = _LINE_BREAK_HYPHEN.sub("-", text)
     segments, start = [], 0
     for match in SENTENCE_SPLIT_PATTERN.finditer(text):
         if _AUTHOR_INITIAL_BEFORE.search(text[start:match.start()]) and _SURNAME_AFTER.match(text, match.start() + 1):
@@ -38,41 +46,37 @@ class ReferenceMetadataParser:
         raw_text: str,
     ) -> dict:
 
-        segments = [
+        raw_text = _LINE_BREAK_HYPHEN.sub("-", " ".join(raw_text.split()))
 
-            segment.strip()
+        styled = _AUTHOR_YEAR.match(raw_text)
+        if styled and len(styled.group("authors")) < 400 and not re.search(r"\bIn\b|Proceedings", styled.group("authors")) and len(_split_sentences(styled.group("authors"))) == 1:
+            # "Authors. 2019. Title. Venue." : the year closes the author list, the title is the first sentence after it
+            rest = [segment.strip() for segment in _split_sentences(styled.group("rest")) if segment.strip()]
+            authors_segment, title, venue, year = styled.group("authors"), rest[0] if rest else "", " ".join(rest[1:]), int(styled.group("year")[:4])
+        else:
+            segments = [segment.strip() for segment in _split_sentences(raw_text) if segment.strip()]
+            authors_segment = segments[0] if segments else ""
+            title = segments[1] if len(segments) > 1 else ""
+            venue = " ".join(segments[2:]) if len(segments) > 2 else ""
+            year = self._extract_year(raw_text)
 
-            for segment in _split_sentences(raw_text)
-
-            if segment.strip()
-        ]
-
-        authors_segment = (
-            segments[0] if segments else ""
-        )
-
-        title = (
-            segments[1] if len(segments) > 1 else ""
-        )
-
-        venue = (
-            " ".join(segments[2:])
-            if len(segments) > 2
-            else ""
-        )
-
-        year = self._extract_year(raw_text)
+        arxiv = ARXIV_ID.search(raw_text)
+        doi = DOI.search(raw_text)
 
         return {
 
             "authors":
                 self._split_authors(authors_segment),
 
-            "title": title,
+            "title": re.sub(r",?\s*(?:19|20)\d{2}[a-z]?\s*$", "", title.rstrip(" .")).rstrip(" ."),
 
             "venue": venue,
 
             "year": year,
+
+            "arxiv_id": arxiv.group(1) if arxiv else None,
+
+            "doi": doi.group(1).rstrip(".,;)") if doi and not doi.group(1).rstrip(".,;)").endswith(("/", "-")) else None,  # one cut off at a line end is not recorded
         }
 
     def _split_authors(
@@ -80,7 +84,7 @@ class ReferenceMetadataParser:
         segment: str,
     ) -> list[str]:
 
-        segment = segment.replace(" and ", ", ")
+        segment = re.sub(r"\bet al\.?", "", segment.replace(" and ", ", "))
 
         authors = []
         for author in (part.strip() for part in segment.split(",")):

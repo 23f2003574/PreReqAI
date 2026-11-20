@@ -71,6 +71,9 @@ class RelatedPaper:
     year: int | None
     relationship: str
     similarity_score: float | None
+    venue: str = ""  # what the reference lists after the title (a conference, a journal, "arXiv preprint ..."); empty when it could not be told apart
+    arxiv_id: str | None = None  # an identifier is recorded only when the reference text itself contains one
+    doi: str | None = None
 
 
 @dataclass
