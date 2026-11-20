@@ -130,6 +130,31 @@ def _context_pattern(concept):
     return re.compile(rf"(?<![a-z0-9])(?:{'|'.join((*_ML_CONTEXT, *concept.context))})")
 
 
+@lru_cache(maxsize=None)
+def _anchor_pattern():
+    """Every name and alias of the concepts that are not everyday words, as one pattern: such a term near a bare mention shows the text is technical there."""
+    registry = ConceptRegistry().all()
+    terms = sorted({term.lower() for c in registry if not c.ambiguous for term in (c.name, *c.aliases) if len(term) > 3}, key=len, reverse=True)
+    return re.compile(r"(?<![a-z0-9])(?:" + "|".join(re.escape(term) for term in terms) + r")s?(?![a-z0-9])")
+
+
+LOCAL_WINDOW = 250  # characters on each side of a bare mention that may hold its technical evidence
+
+
+def _locally_technical(concept, text, occurrences):
+    """`occurrences` reduced to the mentions of an ambiguous concept that are technical where they stand: inside one of its technical phrases, or with technical evidence (the
+    concept's own context words or the shared machine-learning vocabulary) within LOCAL_WINDOW characters. Never more than `occurrences`."""
+    technical = len(_technical_pattern(concept).findall(text))
+    terms = sorted({concept.name.lower(), *(alias.lower() for alias in _aliases(concept))}, key=len, reverse=True)
+    needle = re.compile(r"\b(?:" + "|".join(re.escape(term) for term in terms) + r")s?\b")
+    cue, bare = _context_pattern(concept), 0
+    for match in needle.finditer(text):
+        window = text[max(0, match.start() - LOCAL_WINDOW):match.end() + LOCAL_WINDOW]
+        if cue.search(window.replace(match.group(), " ")) or _anchor_pattern().search(window):  # technical words, or a concept that is not an everyday word, close by
+            bare += 1
+    return min(occurrences, max(technical, bare))
+
+
 def _corroborated(concept, evidence):
     """Whether `evidence` (lower-cased paper text) is technical enough for a bare mention of an ambiguous concept to count."""
     return _context_pattern(concept).search(evidence) is not None
@@ -222,7 +247,12 @@ class RuleBasedConceptDetector:
 
             inside_longer = sum(count(term, True) for term in shadowing[concept])
 
-            occurrences = mentions(concept) - inside_longer
+            occurrences = mentions(concept) - inside_longer - sum(len(re.findall(rx, full_text)) for rx in concept.exclude)
+
+            if occurrences > 0 and concept.ambiguous and context_text is None:  # a section judged on its paper's evidence keeps that evidence; only whole-paper detection looks at the surroundings
+                # A bare mention of an everyday word counts where its own surroundings are technical (a window of text around it), whatever the rest of the paper is about: a paper on
+                # language models still says "lots of attention" in an example prompt.
+                occurrences = _locally_technical(concept, full_text, occurrences)
 
             if occurrences > 0 and concept.ambiguous and not _corroborated(concept, evidence):
                 pending.append((concept, occurrences))  # decided below, once the unambiguous concepts are known

@@ -13,7 +13,7 @@ by the AI assistant on the repository owner's instruction (`review.reviewer`, `r
 quoted. Prerequisite coverage is not annotated, so it is reported as "not annotated" and never scored.
 
 Results (`python -m backend.prereqai_eval --benchmark`): headings P=0.85 R=0.95 F1=0.90 (tp=41 fp=7 fn=2; 0.44 before numbered headings were read as one line and
-name lists were rejected), concepts P=0.92 R=1.00 F1=0.96 (tp=33 fp=3 fn=0). The annotations list the numbered sections only (`heading_scope: top-level`), so numbered sub-sections
+name lists were rejected), concepts P=1.00 R=1.00 F1=1.00 (tp=34 fp=0 fn=0; P was 0.92 before the CNN/DailyMail, everyday-"attention" and finetune fixes). The annotations list the numbered sections only (`heading_scope: top-level`), so numbered sub-sections
 ("5.2 ...") are not counted as false positives. What the errors show:
 * headings: generic one-word lines ("Model", "Dataset", "Results") in tables are still read as headings in some papers, and Mixtral's "5 Routing analysis" is missed;
 * concepts: recall is 1.00; the false positives are the "CNN" of CNN/DailyMail, an everyday "attention" in a prompt and a "Fine-Tuning" in the CoT paper that was not traced.

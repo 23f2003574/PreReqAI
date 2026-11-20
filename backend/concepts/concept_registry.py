@@ -16,6 +16,9 @@ class Concept:
     ambiguous: bool = False
     technical: tuple = ()
     context: tuple = ()
+    # Phrases (lower-case regular expressions) in which the concept's name or an alias is something else and must not count: the "CNN" of "CNN/DailyMail" is a news
+    # dataset, not a convolutional network. Each match is subtracted from the concept's mentions.
+    exclude: tuple = ()
 
 
 class ConceptRegistry:
@@ -50,7 +53,8 @@ class ConceptRegistry:
 
             Concept("Gradient Descent", "deep_learning", aliases=('SGD', 'stochastic gradient descent')),
             Concept("Backpropagation", "deep_learning", aliases=('backprop', 'back-propagation')),
-            Concept("Convolutional Neural Network", "deep_learning", aliases=('CNN', 'CNNs', 'convolutional network')),
+            Concept("Convolutional Neural Network", "deep_learning", aliases=('CNN', 'CNNs', 'convolutional network'),
+                    exclude=(r"(?<![a-z0-9])cnns?[/ -]?daily ?mail", r"(?<![a-z0-9])cnn[/ -]dm(?![a-z0-9])", r"(?<![a-z0-9])cnn news", r"(?<![a-z0-9])cnn\.com")),
             Concept("Batch Normalization", "deep_learning", aliases=('BatchNorm', 'batch norm', 'batch normalisation')),
             Concept("Dropout", "deep_learning", ambiguous=True,
                     technical=(r"dropout (?:layers?|probabilit(?:y|ies)|masks?|regulari[sz]ation)", r"(?:apply|applied|applying|use|used|using|add|added) dropout", r"dropout (?:of|rate of|rate =|p =) ?0?\.\d+"),
@@ -66,7 +70,7 @@ class ConceptRegistry:
             Concept("Embedding", "deep_learning", aliases=('word2vec',), ambiguous=True,
                     technical=(r"(?:word|token|sentence|node|graph|positional|input|output|learned|pre-?trained|text|image|entity|vector|dense|sinusoidal|contextual) embeddings?", r"embeddings? (?:layers?|matri(?:x|ces)|vectors?|spaces?|tables?|dimensions?|models?)"),
                     context=(r"vectors?", r"neural", r"tokens?", r"vocabular", r"lookup", r"dimension", r"cosine", r"semantic")),
-            Concept("Fine-Tuning", "transformers", aliases=('fine tuning', 'finetuning', 'fine tune', 'fine tuned', 'fine-tune', 'fine-tuned')),
+            Concept("Fine-Tuning", "transformers", aliases=('fine tuning', 'finetuning', 'fine tune', 'fine tuned', 'fine-tune', 'fine-tuned', 'finetune', 'finetuned')),
             Concept("Monte Carlo Method", "probability", aliases=('Monte Carlo', 'MCMC')),
             Concept("Variational Autoencoder", "deep_learning", aliases=('VAE', 'variational auto-encoder')),
             Concept("Generative Adversarial Network", "deep_learning", aliases=('GAN',)),

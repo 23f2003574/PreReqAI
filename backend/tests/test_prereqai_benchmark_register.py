@@ -134,7 +134,7 @@ def test_the_shipped_benchmark_scores_three_papers_and_names_the_errors_and_leav
     assert report["counts"]["evaluated"] == 3 and all(row["ok"] and row["coverage"] is None for row in report["papers"]) and report["coverage"] is None
     assert {"precision", "recall", "f1", "tp", "fp", "fn"} <= set(report["headings"]) and {"precision", "recall", "f1"} <= set(report["concepts"])
     dpo = next(row for row in report["papers"] if row["id"] == "dpo")
-    assert "Convolutional Neural Network" in dpo["concepts"]["spurious"]  # the 'CNN' of CNN/DailyMail: a false positive, named
+    assert "Convolutional Neural Network" not in dpo["concepts"]["spurious"]  # the 'CNN' of CNN/DailyMail used to be a named false positive
     assert "direct preference optimization" not in dpo["headings"]["missed"]  # a numbered heading that used to be missed (its number was a line of its own)
     text = benchmark.render_benchmark(report)
     assert "false positives" in text and "false negatives" in text and "coverage not annotated" in text
