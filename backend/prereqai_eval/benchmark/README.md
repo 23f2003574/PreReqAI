@@ -22,3 +22,18 @@ the manifest, and an annotation that a named person approved. Anything else is l
 4. A person who checked it approves it: `python -m backend.prereqai_eval --approve benchmark/annotations/<id>.json --reviewer "Name"`.
 
 Validation reports every invalid identifier, missing field, duplicate and section reference that is not in `sections`.
+
+## Adding a paper with the tools (`--register`, `--status`)
+`python -m backend.prereqai_eval --status` lists, for every paper, everything still missing before it can be scored (licence, PDF, hash, annotation content, review).
+
+After you have read the licence on the paper's source page, a PDF you may redistribute is added with:
+
+```bash
+python -m backend.prereqai_eval --register paper.pdf --id my-paper --licence CC-BY-4.0 \
+  --licence-evidence https://example.org/where-the-licence-is-stated --licence-checked-by "Your Name" \
+  --title "..." --author "A. Writer" --source-url https://... --venue "..." --year 2024
+```
+
+It copies the PDF to `pdfs/my-paper.pdf`, records its SHA-256 and the licence (on the word of the person named: nothing is checked online), and creates a `pending_review`
+annotation if none exists (an existing one is never replaced). For an id already in the manifest (the five listed there) only the PDF and licence are filled in. It never
+approves an annotation: annotate from the paper by reading it, then a person runs `--approve`. Nothing is written unless the whole manifest still validates.

@@ -186,6 +186,95 @@ def approve(annotation_path, reviewer, reviewed_on=None):
     return data
 
 
+def register_paper(manifest_path, pdf_path, paper_id, licence_spdx, licence_evidence_url, licence_checked_by, metadata=None, checked_on=None):
+    """Put a PDF into the benchmark: copy it to pdfs/<id>.pdf, record its SHA-256, retrieval date and licence, and make sure a `pending_review` annotation exists.
+    The licence is recorded as verified only on the word of the person named in `licence_checked_by`, who has read the licence at `licence_evidence_url`: this
+    function checks nothing online and never approves an annotation (that stays `approve`'s job). `metadata` (title, authors, source_url, venue, year) is needed
+    for an id the manifest does not list yet. Nothing is written unless the whole manifest validates afterwards."""
+    manifest_path, pdf_path, today = Path(manifest_path), Path(pdf_path), checked_on or datetime.date.today().isoformat()
+    problems = []
+    if not isinstance(paper_id, str) or not _ID.fullmatch(paper_id):
+        problems.append("the id must be lower-case letters, digits, '-' or '_'")
+    if licence_spdx not in LICENCES:
+        problems.append(f"the licence must be one of {', '.join(LICENCES)} (a paper without a redistribution licence cannot be added)")
+    for value, label in ((licence_evidence_url, "the licence evidence link"), (licence_checked_by, "the name of the person who checked the licence")):
+        if not isinstance(value, str) or not value.strip():
+            problems.append(f"{label} is required")
+    try:
+        raw = pdf_path.read_bytes()
+    except OSError as error:
+        raise BenchmarkError([f"cannot read {pdf_path}: {getattr(error, 'strerror', None) or error}"]) from None
+    if not raw.startswith(b"%PDF-"):
+        problems.append(f"{pdf_path} is not a PDF file")
+    manifest = _read(manifest_path, MANIFEST_FORMAT)
+    entry = next((paper for paper in manifest.get("papers", []) if paper.get("id") == paper_id), None)
+    if entry is not None and entry.get("license", {}).get("status") == "verified":
+        problems.append(f"{paper_id!r} already has a verified licence and PDF; edit the manifest by hand to replace them")
+    if entry is None:
+        needed = ("title", "authors", "source_url", "venue", "year")
+        if not metadata or any(not metadata.get(name) for name in needed):
+            problems.append(f"a new paper needs {', '.join(needed)}")
+    if problems:
+        raise BenchmarkError(problems)
+    base = manifest_path.parent
+    if entry is None:
+        entry = {"id": paper_id, "title": metadata["title"], "authors": list(metadata["authors"]), "source_url": metadata["source_url"],
+                 "publication": {"venue": metadata["venue"], "year": int(metadata["year"])}, "annotation": f"annotations/{paper_id}.json"}
+        manifest["papers"].append(entry)
+    entry["license"] = {"status": "verified", "spdx": licence_spdx, "evidence_url": licence_evidence_url.strip(), "verified_on": today, "verified_by": licence_checked_by.strip()}
+    entry["retrieved_on"], entry["pdf"] = today, {"path": f"pdfs/{paper_id}.pdf", "sha256": hashlib.sha256(raw).hexdigest()}
+    found = validate_manifest(manifest, base)
+    if found:
+        raise BenchmarkError(found)
+    (base / "pdfs").mkdir(parents=True, exist_ok=True)
+    (base / entry["pdf"]["path"]).write_bytes(raw)
+    annotation = base / entry["annotation"]
+    if not annotation.exists():  # never replaces an annotation a person has worked on
+        annotation.parent.mkdir(parents=True, exist_ok=True)
+        annotation.write_text(json.dumps({"format": ANNOTATION_FORMAT, "schema_version": 1, "paper_id": paper_id, "review": {"status": "pending_review"},
+                                          "sections": [{"title": "Abstract", "role": "other"}], "concepts": [], "prerequisites": []}, indent=2) + "\n", encoding="utf-8")
+    temp = manifest_path.with_name(f".{manifest_path.name}.tmp")
+    temp.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    temp.replace(manifest_path)
+    return entry
+
+
+def status(manifest_path=DEFAULT_MANIFEST):
+    """[{id, ready, blockers: [...]}] for every paper: everything still missing before it can be scored (licence, PDF, hash, annotation content and review), not just the first."""
+    manifest = load_manifest(manifest_path)
+    base, rows = Path(manifest_path).parent, []
+    for paper in manifest["papers"]:
+        blockers = []
+        if paper["license"]["status"] != "verified":
+            blockers.append("licence not verified: check the licence at the source, then `--register PDF --id ...`")
+        pdf = paper.get("pdf")
+        if not pdf or not (base / pdf["path"]).is_file():
+            blockers.append("PDF not in the benchmark folder")
+        elif _sha256(base / pdf["path"]) != pdf["sha256"]:
+            blockers.append("PDF does not match its recorded sha256")
+        try:
+            annotation = _read(base / paper["annotation"], ANNOTATION_FORMAT)
+            if validate_annotation(annotation, paper["annotation"]):
+                blockers.append("annotation is invalid: " + validate_annotation(annotation, paper["annotation"])[0])
+            elif annotation["review"]["status"] != "approved":
+                blockers.append("annotation is pending_review: annotate it from the paper, then a person runs `--approve`")
+            elif not annotation.get("concepts"):
+                blockers.append("annotation is approved but lists no concepts")
+        except BenchmarkError as error:
+            blockers.append(f"annotation unusable: {error}")
+        rows.append({"id": paper["id"], "ready": not blockers, "blockers": blockers})
+    return rows
+
+
+def render_status(rows):
+    ready = sum(row["ready"] for row in rows)
+    lines = [f"BENCHMARK STATUS: {ready} of {len(rows)} papers ready to be scored (scoring needs a verified licence, the PDF and a person-approved annotation)"]
+    for row in rows:
+        lines.append(f"  {row['id']}: " + ("ready" if row["ready"] else ""))
+        lines.extend(f"      - {blocker}" for blocker in row["blockers"])
+    return "\n".join(lines)
+
+
 def eligibility(paper, manifest_dir):
     """(annotation or None, why not): a paper takes part in the metrics only with a verified licence, its PDF (matching its sha256) and an approved annotation."""
     if paper["license"]["status"] != "verified":
