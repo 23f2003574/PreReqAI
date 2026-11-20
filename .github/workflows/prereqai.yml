@@ -87,7 +87,7 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - name: Remaining backend tests (no network)
         run: >-
-          python -m pytest backend/tests -q -m "not prereqai and not browser"
+          python -m pytest backend/tests -q -m "not prereqai and not browser and not tesseract"
           --ignore=backend/tests/test_arxiv_resolver.py
           --ignore=backend/tests/test_research_metadata_resolver.py
           --ignore-glob='backend/tests/test_api_generation_*'
@@ -118,4 +118,35 @@ jobs:
           tests, skipped = int(suite.get("tests")), int(suite.get("skipped"))
           print(f"{tests} browser tests, {skipped} skipped")
           assert tests >= 19 and skipped == 0, "the browser tests did not all run"
+          PY
+
+  ocr:
+    # The real Tesseract engine behind the OCR paths: a scanned page, a rotated scan, a noisy scan, a scanned region next to a text layer, the OCR budget and language data. The unit tests of the
+    # same code use stand-in recognisers (and say so); only this job runs the engine, so only this job is evidence that it works. PREREQAI_REQUIRE_TESSERACT=1 turns a missing engine
+    # into a failure, so the job can never pass by skipping.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PREREQAI_REQUIRE_TESSERACT: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-eng
+      - run: tesseract --version && tesseract --list-langs
+      - run: pip install -r requirements-dev.txt
+      - name: Real-Tesseract OCR tests
+        run: python -m pytest -m tesseract backend/tests/test_tesseract_integration.py -v -rs --junitxml=ocr-results.xml
+      - name: Fail if any OCR test was skipped
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          suite = ET.parse("ocr-results.xml").getroot()
+          suite = suite if suite.tag == "testsuite" else suite[0]
+          tests, skipped = int(suite.get("tests")), int(suite.get("skipped"))
+          print(f"{tests} OCR tests, {skipped} skipped")
+          assert tests >= 7 and skipped == 0, "the real-engine OCR tests did not all run"
           PY
