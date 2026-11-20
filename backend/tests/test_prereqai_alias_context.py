@@ -54,11 +54,11 @@ def test_evidence_names_the_matched_alias_and_its_context():
     assert passage["matched_term"] == "CNN" and passage["context"].lower().startswith("convolution")
 
 
-@pytest.mark.parametrize("name,concept", [("2305.13245", "Convolutional Neural Network"), ("2310.06825", "Document Chunking")])
+@pytest.mark.parametrize("name,concept", [("gqa", "Convolutional Neural Network"), ("mistral-7b", "Document Chunking")])
 def test_the_held_out_papers_no_longer_detect_the_false_positives(name, concept):
     from backend.pipeline import ResearchPaperPipeline
 
-    pdf = Path(f"/tmp/claude-0/heldout/{name}.pdf")
+    pdf = Path(f"backend/prereqai_eval/heldout/pdfs/{name}.pdf")
     if not pdf.exists():
-        pytest.skip("the held-out PDFs are added to the repository by the held-out gate")
+        pytest.fail("the held-out PDFs are part of the repository")
     assert concept not in {c.name for c in ResearchPaperPipeline().run(str(pdf)).paper.concepts}

@@ -1,7 +1,7 @@
 """The regression gate: `python -m backend.prereqai_eval --gate` scores the pipeline on gold data that ships with the repository and fails (exit code 1) when a score falls below its floor in
 thresholds.json. Offline and deterministic (no network, no model, no randomness): the same code gives the same numbers.
 
-Four groups, reported apart:
+Five groups, reported apart (the fifth, heldout_invariants, is in heldout.py):
 * text_fixtures: the labelled text fixtures of the evaluation harness (concept and prerequisite scores);
 * synthetic_pdf: generated academic PDFs with known headings, roles, concepts and covered prerequisites (written for this repository, so a score on them is evidence about the pipeline's logic,
   not about real papers), run through the whole pipeline;
@@ -62,6 +62,22 @@ def evidence_scores(fixtures=None):
             "page_known": share(paged, passages), "missing": missing, "passages": passages}
 
 
+def heldout_checks(checks, floors, manifest=None):
+    """Add one check per held-out invariant (the share of papers where it holds must reach its floor, 1.0: every paper) and return the held-out report, or None when its manifest is unusable
+    (then the failure is a check of its own, with the reasons)."""
+    from . import heldout
+
+    try:
+        report = heldout.run_heldout(manifest or heldout.DEFAULT_MANIFEST)
+    except heldout.HeldoutError as error:
+        checks.append({"group": "heldout_invariants", "metric": "manifest", "value": 0.0, "threshold": 1.0, "passed": False, "detail": "; ".join(error.problems)})
+        return None
+    for name in heldout.INVARIANTS:
+        broken = [f"{row['id']}: {message}" for row in report["papers"] for message in row["violations"][name]]
+        _check(checks, "heldout_invariants", name, report["invariants"][name], floors.get(name, 1.0), "; ".join(broken[:6]) + (f"; and {len(broken) - 6} more" if len(broken) > 6 else ""))
+    return report
+
+
 def run_gate(thresholds=None, benchmark_manifest=None):
     """{"passed", "checks": [...], "real_papers": {...}} for the thresholds (default: thresholds.json). Never raises for a failed score: a failure is a failed check."""
     from . import benchmark
@@ -99,7 +115,8 @@ def run_gate(thresholds=None, benchmark_manifest=None):
         _check(checks, "real_papers_provisional", "concepts_precision", real["concepts"]["precision"], group["concepts_precision"], "false positives: " + worst("concepts", "spurious"))
         _check(checks, "real_papers_provisional", "concepts_recall", real["concepts"]["recall"], group["concepts_recall"], "false negatives: " + worst("concepts", "missed"))
         _check(checks, "real_papers_provisional", "roles_accuracy", real["roles"]["accuracy"], group["roles_accuracy"], "wrong roles: " + worst("roles", "wrong"))
-    return {"passed": all(c["passed"] for c in checks), "checks": checks,
+    held = heldout_checks(checks, floors.get("heldout_invariants", {}))
+    return {"passed": all(c["passed"] for c in checks), "checks": checks, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
             "real_papers": {"status": real["status"], "per_paper": [{"id": r["id"], "review_kind": r.get("review_kind"), "headings_f1": r["headings"]["f1"], "concepts_f1": r["concepts"]["f1"]}
                                                                   for r in real["papers"] if r["ok"]],
                             "aggregate": {key: real.get(key) for key in ("headings", "concepts", "coverage", "roles")},
@@ -112,6 +129,8 @@ def render_gate(report):
         lines.append(f"  [{'ok' if check['passed'] else 'FAIL'}] {check['group']:<24}{check['metric']:<24}{check['value']:.3f} (floor {check['threshold']})")
         if not check["passed"] and check["detail"]:
             lines.append(f"        what to look at: {check['detail']}")
+    for paper in (report.get("heldout") or {}).get("papers", []):
+        lines.append(f"held-out {paper['id']:<18} arXiv {paper['arxiv_id']} {paper['licence']} sha256 {paper['sha256'][:12]}: licence read by {paper['licence_checked_by'].split(',')[0]} (not a human reviewer)")
     real = report["real_papers"]
     lines.append(f"real papers: {real['status'].upper()} " + ("(annotations approved by an AI, not a human reviewer: the floors above guard against regressions but are not validated ground truth)"
                  if real["status"] == "provisional" else "(human-reviewed annotations)" if real["status"] == "human_reviewed" else "(no scored paper)"))

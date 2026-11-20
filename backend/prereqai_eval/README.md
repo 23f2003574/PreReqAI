@@ -107,3 +107,7 @@ The profile (cProfile, cumulative) showed three demonstrated hotspots and only t
 expressions for the 116-concept registry (a plain substring test now rejects almost every pair first); `section_mentions` re-ran the detector for every section
 twice (the second ask for the same paper now reuses the first answer, keyed by a hash of the paragraphs); and ingestion extracted every page's lines and fonts
 twice (once now). Nothing else was tuned. Results are unchanged: the `--pdf` evaluation and the whole test suite give the same answers.
+
+
+## Held-out invariants (`--heldout`, part of `--gate`)
+`heldout/manifest.json` holds three CC BY 4.0 papers the rules were not tuned on (GQA 2305.13245, Mistral 7B 2310.06825, Constitutional AI 2212.08073) with their arXiv source, licence evidence and the SHA-256 of each PDF. They carry no annotations, so nothing here is a score: the gate checks invariants a correct extraction always satisfies and prints exactly what is wrong when one fails: references were extracted (at least 10 entries), no two headings are identical, no heading is shorter than 3 characters, every detected concept is named somewhere outside the bibliography, and every evidence quotation is an exact quotation of the page it cites. It is offline and deterministic. The licences were read from the arXiv abstract pages by an AI assistant, which the manifest and the gate output say; a human should confirm them. A PDF whose SHA-256 changed, a licence not recorded as verified, or a missing file stops the gate with that reason.

@@ -68,9 +68,9 @@ def test_constitutional_ai_references_and_citations(tmp_path):
 
     from backend.pipeline import ResearchPaperPipeline
 
-    pdf = Path("/tmp/claude-0/heldout/2212.08073.pdf")
+    pdf = Path("backend/prereqai_eval/heldout/pdfs/constitutional-ai.pdf")
     if not pdf.exists():
-        pytest.skip("the Constitutional AI PDF is added to the benchmark folder by the held-out gate")
+        pytest.fail("the held-out PDFs are part of the repository")
     paper = ResearchPaperPipeline().run(str(pdf)).paper
     parser = ReferenceMetadataParser()
     assert len(paper.references) == 25  # the paper's own list: 25 entries (counted independently from the PDF's "(year)." marks); there is no longer list to find

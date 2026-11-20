@@ -18,6 +18,7 @@ def main(argv=None):
     parser.add_argument("--reviewer", default=None, help="the name of the person approving the annotation")
     parser.add_argument("--reviewer-kind", choices=("human", "ai"), default="human", help="who is approving (default human): an AI's approval is recorded as such and keeps the scores provisional")
     parser.add_argument("--gate", action="store_true", help="the regression gate: synthetic gold fixtures and the provisional real-paper floors against thresholds.json; exit code 1 on a regression")
+    parser.add_argument("--heldout", action="store_true", help="the held-out PDF invariants (GQA, Mistral 7B, Constitutional AI): references, headings, concepts and evidence quotations; part of --gate")
     parser.add_argument("--status", action="store_true", help="list, for every benchmark paper, everything still missing before it can be scored")
     parser.add_argument("--register", metavar="PDF", default=None, help="add a PDF you have the right to redistribute to the benchmark (needs --id, --licence, --licence-evidence, --licence-checked-by)")
     parser.add_argument("--id", default=None, help="the paper's benchmark id (with --register)")
@@ -34,6 +35,16 @@ def main(argv=None):
 
         report = gate.run_gate()
         print(json.dumps(report, indent=2) if args.json else gate.render_gate(report))
+        return 0 if report["passed"] else 1
+    if args.heldout:
+        from . import heldout
+
+        try:
+            report = heldout.run_heldout()
+        except heldout.HeldoutError as error:
+            print("error: " + "\n       ".join(error.problems), file=sys.stderr)
+            return 2
+        print(json.dumps(report, indent=2) if args.json else heldout.render_heldout(report))
         return 0 if report["passed"] else 1
     if args.performance:
         from . import performance
