@@ -103,7 +103,7 @@ def test_approval_needs_a_named_reviewer_and_a_valid_annotation(tmp_path):
         bm.approve(path, "Reviewer")
     assert json.loads(path.read_text())["review"]["status"] == "pending_review"  # a refused approval changes nothing
     path.write_text(json.dumps(ANNOTATION))
-    assert bm.approve(path, "Reviewer", "2026-11-16")["review"] == {"status": "approved", "reviewer": "Reviewer", "reviewed_on": "2026-11-16"}
+    assert bm.approve(path, "Reviewer", "2026-11-16")["review"] == {"status": "approved", "reviewer": "Reviewer", "reviewer_kind": "human", "reviewed_on": "2026-11-16"}
 
 
 def test_a_reviewed_annotation_runs_through_the_full_pdf_pipeline_with_traceable_errors(tmp_path):

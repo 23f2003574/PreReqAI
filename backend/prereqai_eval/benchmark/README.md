@@ -49,3 +49,15 @@ python -m backend.prereqai_eval --register paper.pdf --id my-paper --licence CC-
 It copies the PDF to `pdfs/my-paper.pdf`, records its SHA-256 and the licence (on the word of the person named: nothing is checked online), and creates a `pending_review`
 annotation if none exists (an existing one is never replaced). For an id already in the manifest (the five listed there) only the PDF and licence are filled in. It never
 approves an annotation: annotate from the paper by reading it, then a person runs `--approve`. Nothing is written unless the whole manifest still validates.
+
+## Who approved, and the regression gate
+
+An approved annotation records **who** approved it: `review.reviewer_kind` is `human` or `ai` (`--approve FILE --reviewer "Name" [--reviewer-kind ai]`; the default is human). Only a human's
+approval makes a paper's scores human-reviewed; an AI's, or an approval that does not say (older files), makes them **provisional**, and so does a pending annotation never gets scored at all.
+`--benchmark` reports `human_reviewed` and `provisional` aggregates apart, with `status` `human_reviewed`, `provisional` or `no_scores`. The three shipped annotations are approved by an AI:
+every real-paper number here is provisional until a person re-checks the annotations and approves them (`--reviewer-kind human`).
+
+`python -m backend.prereqai_eval --gate` is the regression gate CI runs: the text fixtures, the generated PDFs (headings, roles, concepts, coverage), the evidence passages on those PDFs (concept coverage,
+exact quotations, no chart residue, concept mentioned, page known) and the provisional real-paper floors, each against `thresholds.json`. Exit code 1 and a report naming the failed metric and the
+false positives and negatives when a floor is missed. Prerequisite coverage is scored for a paper whose annotation lists `prerequisites` (`[{"concept": ..., "covered": true|false}]`) and reported as
+not annotated otherwise. Adding papers: `--register` (above) records the licence evidence, the SHA-256 and the pending annotation; a human annotates and approves it.

@@ -5,7 +5,8 @@
   "review": {
     "status": "approved",
     "reviewer": "Claude (AI assistant), on the repository owner's instruction",
-    "reviewed_on": "2026-11-20"
+    "reviewed_on": "2026-11-20",
+    "reviewer_kind": "ai"
   },
   "sections": [
     {

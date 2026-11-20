@@ -20,6 +20,7 @@ DEFAULT_MANIFEST = BENCHMARK_DIR / "manifest.json"
 MANIFEST_FORMAT, ANNOTATION_FORMAT, SCHEMA_VERSION = "prereqai-benchmark-manifest", "prereqai-benchmark-annotation", 1
 ROLES = ("instructional", "related", "other")
 REVIEW_STATES = ("pending_review", "approved")
+REVIEW_KINDS = ("human", "ai")  # who approved: only a human's approval makes an annotation reviewed ground truth; an AI's makes its scores provisional
 LICENCES = ("CC-BY-4.0", "CC-BY-SA-4.0", "CC-BY-3.0", "CC0-1.0", "CC-BY-NC-4.0", "CC-BY-NC-SA-4.0", "MIT", "Apache-2.0")  # licences that allow redistribution as a test file
 _ID = re.compile(r"[a-z0-9][a-z0-9_-]{0,63}")
 _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -173,12 +174,20 @@ def _sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def approve(annotation_path, reviewer, reviewed_on=None):
+def review_kind(annotation):
+    """"human" or "ai" for an approved annotation. One that does not say (approved before the kind was recorded) is not taken for a human's: it counts as "ai", that is, provisional."""
+    kind = (annotation.get("review") or {}).get("reviewer_kind")
+    return kind if kind in REVIEW_KINDS else "ai"
+
+
+def approve(annotation_path, reviewer, reviewed_on=None, kind="human"):
     """Record a person's approval of a valid annotation (the only way an annotation becomes ground truth). A blank reviewer is refused."""
     if not isinstance(reviewer, str) or not reviewer.strip():
         raise BenchmarkError(["approval needs the reviewer's name"])
     data = _read(annotation_path, ANNOTATION_FORMAT)
-    data["review"] = {"status": "approved", "reviewer": reviewer.strip(), "reviewed_on": reviewed_on or datetime.date.today().isoformat()}
+    if kind not in REVIEW_KINDS:
+        raise BenchmarkError([f"the reviewer kind must be one of {', '.join(REVIEW_KINDS)}"])
+    data["review"] = {"status": "approved", "reviewer": reviewer.strip(), "reviewer_kind": kind, "reviewed_on": reviewed_on or datetime.date.today().isoformat()}
     problems = validate_annotation(data, str(annotation_path))
     if problems:
         raise BenchmarkError(problems)
@@ -357,26 +366,40 @@ def evaluate_benchmark(manifest_path=DEFAULT_MANIFEST):
         check_dependencies()
         from backend.pipeline import ResearchPaperPipeline
     for paper, annotation in ready:
-        row = {"id": paper["id"], "title": paper["title"], "ok": True, "error": ""}
+        row = {"id": paper["id"], "title": paper["title"], "ok": True, "error": "", "review_kind": review_kind(annotation)}
         try:
             row.update(score_paper(annotation, ResearchPaperPipeline().run(str(base / paper["pdf"]["path"])).paper))
         except Exception as error:  # a pipeline failure on a paper is a result, not a crash of the benchmark
             row.update(ok=False, error=f"{type(error).__name__}: {error}")
         rows.append(row)
     scored = [r for r in rows if r["ok"]]
-    correct, total = sum(r["roles"]["correct"] for r in scored), sum(r["roles"]["total"] for r in scored)
     report = {"mode": "benchmark", "real_papers": True, "papers": rows, "excluded": excluded,
               "counts": {"manifest": len(manifest["papers"]), "evaluated": len(rows), "excluded": len(excluded)}}
     if scored:
-        annotated = [r for r in scored if r["coverage"] is not None]
-        report.update(headings=_micro(scored, "headings"), concepts=_micro(scored, "concepts"), coverage=_micro(annotated, "coverage") if annotated else None,
-                      roles={"correct": correct, "total": total, "accuracy": round(correct / total, 3) if total else 1.0})
+        report.update({key: value for key, value in _aggregate(scored).items() if key != "paper_ids"})
+        # Whose approval stands behind the numbers: only a human reviewer's annotations are reviewed ground truth; an AI's (or one that does not say) make the scores provisional.
+        human, provisional = [r for r in scored if r["review_kind"] == "human"], [r for r in scored if r["review_kind"] != "human"]
+        report["human_reviewed"] = _aggregate(human) if human else None
+        report["provisional"] = _aggregate(provisional) if provisional else None
+        report["status"] = "provisional" if provisional else "human_reviewed"
+    else:
+        report["status"] = "no_scores"
     return report
 
 
+def _aggregate(rows):
+    correct, total = sum(r["roles"]["correct"] for r in rows), sum(r["roles"]["total"] for r in rows)
+    annotated = [r for r in rows if r["coverage"] is not None]
+    return {"paper_ids": [r["id"] for r in rows], "headings": _micro(rows, "headings"), "concepts": _micro(rows, "concepts"),
+            "coverage": _micro(annotated, "coverage") if annotated else None, "roles": {"correct": correct, "total": total, "accuracy": round(correct / total, 3) if total else 1.0}}
+
+
 def render_benchmark(report):
-    lines = ["REAL-PAPER BENCHMARK (reviewed ground truth only; separate from the synthetic evaluation)",
+    lines = ["REAL-PAPER BENCHMARK (approved annotations only; separate from the synthetic evaluation)",
              f"{report['counts']['evaluated']} of {report['counts']['manifest']} papers evaluated, {report['counts']['excluded']} excluded"]
+    if report.get("status") == "provisional":
+        lines.append("PROVISIONAL: " + ", ".join(report["provisional"]["paper_ids"]) + " rest on annotations approved by an AI (or by someone not recorded as human), not on a human reviewer's; "
+                     + ("human-reviewed: " + ", ".join(report["human_reviewed"]["paper_ids"]) if report.get("human_reviewed") else "no paper is human-reviewed yet") + ".")
     for row in report["papers"]:
         if not row["ok"]:
             lines.append(f"{row['id']:<18}PIPELINE FAILED: {row['error']}")

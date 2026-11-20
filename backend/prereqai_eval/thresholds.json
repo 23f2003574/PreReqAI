@@ -1,0 +1,8 @@
+{
+  "format": "prereqai-gate-thresholds",
+  "note": "Minimum scores the regression gate (python -m backend.prereqai_eval --gate) enforces. Each sits a little below the score at the commit that set it, so noise-free changes pass and a real regression fails. Raise a floor when the pipeline improves; lowering one needs a reason in the commit. The real-paper floors rest on annotations approved by an AI and stay PROVISIONAL until a human approves them.",
+  "text_fixtures": {"concepts_precision": 0.95, "concepts_recall": 0.98, "prerequisites_recall": 0.98, "prerequisites_precision": 0.70},
+  "synthetic_pdf": {"headings_f1": 0.93, "concepts_precision": 0.98, "concepts_recall": 0.98, "roles_accuracy": 0.90, "coverage_recall": 0.95, "coverage_f1": 0.78, "pipeline_success": 1.0},
+  "synthetic_evidence": {"concept_coverage": 0.90, "exact_quotation": 1.0, "residue_free": 1.0, "mentions_concept": 1.0, "page_known": 1.0},
+  "real_papers_provisional": {"evaluated_papers": 3, "headings_f1": 0.85, "concepts_precision": 0.95, "concepts_recall": 0.95}
+}
