@@ -140,10 +140,12 @@ def distinct_knew(session, concept):
     return len({a["question_id"] for a in _attempts(session) if a["concept"] == concept and a["outcome"] == "knew"})
 
 
-def known_suggestions(session):
+def known_suggestions(session, mastered=None, dismissed=()):
     """[{concept, attempts, knew, mastery, distinct_questions, reason}] for the planned, unstudied subjects whose quiz results meet the thresholds above,
     by concept name, one entry each. A concept the learner already knows is not in the plan, so it is never suggested again; neither is a studied one.
-    Reads the quiz attempts only: scores, mastery and the plan are not changed."""
+    `mastered` (optional) is the learner profile's persisted mastery, {concept: {questions, attempts, knew, last_seen}} (learner_profile.mastered): a planned concept the learner mastered in
+    an earlier session or paper is offered too, with the reason saying so. `dismissed` are concepts the learner has said no to for this session. Reads the quiz attempts only: scores,
+    mastery and the plan are not changed."""
     paper = getattr(session, "paper", None)
     planned = {item.concept for item in getattr(paper, "study_progress", []) if not item.completed}
     knew_on = {}
@@ -156,10 +158,16 @@ def known_suggestions(session):
         if (name in planned and entry["status"] == "mastered" and entry["attempts"] >= SUGGEST_MIN_ATTEMPTS
                 and entry["mastery"] >= SUGGEST_MIN_SHARE and distinct >= SUGGEST_MIN_DISTINCT):
             found.append({"concept": name, "attempts": entry["attempts"], "knew": entry["knew"], "mastery": entry["mastery"],
-                          "distinct_questions": distinct,
+                          "distinct_questions": distinct, "source": "session",
                           "reason": f"You said you knew {entry['knew']} of your {entry['attempts']} {name} answers, including the last {MASTERY_STREAK} in a row "
                                     f"and {distinct} different questions."})
-    return found
+    for name, info in sorted((mastered or {}).items()):
+        if name in planned and name not in {item["concept"] for item in found}:
+            found.append({"concept": name, "attempts": info["attempts"], "knew": info["knew"], "mastery": round(info["knew"] / max(1, info["attempts"]), 2),
+                          "distinct_questions": info["questions"], "source": "profile",
+                          "reason": f"In earlier sessions you answered {info['knew']} of your {info['attempts']} {name} questions correctly across {info['questions']} different questions "
+                                    f"(last on {str(info['last_seen'])[:10]}), and your learner profile rates it mastered."})
+    return [item for item in found if item["concept"] not in set(dismissed)]
 
 
 def topics(session):

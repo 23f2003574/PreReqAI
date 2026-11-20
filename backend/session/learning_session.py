@@ -74,6 +74,9 @@ class LearningSession:
     # The name of the learner profile this session was analysed with (None without one): quiz outcomes are remembered in it for spaced review.
     profile: str | None = None
 
+    # Concepts the learner has said "no, I do not know this yet" to when they were suggested as already known (quiz_session.known_suggestions): not suggested again for this session.
+    dismissed_suggestions: list = field(default_factory=list)
+
     # The format of the saved file (see SessionManager.SCHEMA_VERSION). A file written before versions existed has no such attribute, so it
     # reads this class default: 1, the legacy format.
     schema_version: int = 1

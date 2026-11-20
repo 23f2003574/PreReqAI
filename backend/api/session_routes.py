@@ -137,7 +137,7 @@ def get_session(session_id: str):
 
         "quiz_progress": quiz_session.progress(session),
 
-        "suggest_known": quiz_session.known_suggestions(session),
+        "suggest_known": _suggestions(session),
 
         "quiz_topics": quiz_session.topics(session),
 
@@ -357,11 +357,48 @@ def quiz_outcome(session_id: str, body: QuizOutcome):
     """Record `knew` or `missed` for a served question (once); answers with the updated per-concept mastery."""
     def act(session):
         result = {"progress": quiz_session.record(session, body.question_id, body.outcome),
-                  "suggest_known": quiz_session.known_suggestions(session), "topics": quiz_session.topics(session)}  # offered, never applied
+                  "suggest_known": _suggestions(session), "topics": quiz_session.topics(session)}  # offered, never applied
         review = _remember_outcome(session)
         return {**result, **({"review": review} if review else {})}
 
     return _quiz(session_id, act)
+
+
+def _suggestions(session):
+    """The "you may already know this" suggestions of a session: from its own quiz answers and from the mastery its learner profile holds from earlier sessions and papers, less
+    those the learner declined. Offered only; the plan is never changed by them."""
+    mastered = {}
+    directory = learner_profile.configured_directory()
+    path = learner_profile.profile_path(directory, session.profile) if directory and getattr(session, "profile", None) else None
+    if path is not None:
+        profile, problem = learner_profile.load_full(path)
+        mastered = {} if problem else learner_profile.mastered(profile["quiz"])
+    return quiz_session.known_suggestions(session, mastered, getattr(session, "dismissed_suggestions", []))
+
+
+@router.post("/{session_id}/suggestions/dismiss")
+def dismiss_suggestion(session_id: str, concept: str):
+    """Decline the suggestion that `concept` is already known: it is not offered again for this session (DELETE brings it back). The concept stays in the plan either way."""
+    return _dismissal(session_id, concept, True)
+
+
+@router.delete("/{session_id}/suggestions/dismiss")
+def restore_suggestion(session_id: str, concept: str):
+    return _dismissal(session_id, concept, False)
+
+
+def _dismissal(session_id, concept, dismissed):
+    session = session_manager.get(session_id)
+    if session is None:
+        return session_not_found(session_id)
+    names = {_concept_key(item.concept): item.concept for item in getattr(session.paper, "study_progress", [])}
+    name = names.get(_concept_key(concept))
+    if name is None:
+        return failure_response(422, "suggestions", f"{concept!r} is not in this session's study plan.", hint="Use a concept name from the plan.")
+    current = [item for item in getattr(session, "dismissed_suggestions", []) if item != name]
+    session.dismissed_suggestions = [*current, name] if dismissed else current
+    session_manager.save(session)
+    return success_body("Suggestions", "suggestions", session_id=session_id, concept=name, dismissed=dismissed, suggest_known=_suggestions(session))
 
 
 def _remember_outcome(session):
@@ -382,7 +419,7 @@ def _remember_outcome(session):
 @router.get("/{session_id}/quiz/progress")
 def quiz_progress(session_id: str):
     """Attempts and mastery per concept."""
-    return _quiz(session_id, lambda session: {"progress": quiz_session.progress(session), "suggest_known": quiz_session.known_suggestions(session),
+    return _quiz(session_id, lambda session: {"progress": quiz_session.progress(session), "suggest_known": _suggestions(session),
                                                "topics": quiz_session.topics(session)}, saves=False)
 
 

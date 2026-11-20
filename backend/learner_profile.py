@@ -234,6 +234,13 @@ def mastery(quiz):
     return result
 
 
+def mastered(quiz):
+    """{concept: {questions, attempts, knew, last_seen}} for the concepts a profile's quiz history rates mastered (see mastery()): the evidence other papers' plans may offer as "you may
+    already know this". It is only ever offered; nothing is removed from a plan because of it."""
+    return {item["concept"]: {"questions": item["questions"], "attempts": item["attempts"], "knew": item["knew"], "last_seen": item["last_seen"]}
+            for item in mastery(quiz) if item["status"] == "mastered"}
+
+
 def _canonical(names, label, vocab, problems):
     kept = []
     for name in names:

@@ -10,7 +10,7 @@ from copy import deepcopy
 from types import SimpleNamespace
 
 from backend import study_calendar
-from backend.learner_profile import key
+from backend.learner_profile import key, mastered as profile_mastered
 from backend.prerequisites.study_time_estimator import schedule_order
 
 MAX_PAPERS = 10
@@ -27,7 +27,7 @@ def _paper_view(session):
             "steps": steps, "importance": importance, "done": done, "known": known}
 
 
-def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_per_day=3.0, weekdays=None):
+def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_per_day=3.0, weekdays=None, accept_mastered=()):
     """The curriculum for `sessions` (LearningSession objects, 1 to MAX_PAPERS) as a plain dict. `profile` is {"known": [...], "studied": [...], "quiz": {...}}
     or None. `today` is a date (required when the calendar is wanted); with it the combined schedule and its feasibility are included. Sessions are not changed."""
     views = [_paper_view(session) for session in sessions]
@@ -37,6 +37,11 @@ def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_pe
     for view in views:
         for name in view["done"]:
             mastered.setdefault(key(name), f"already studied in the analysis of {view['title']!r}")
+    # Quiz mastery kept in the profile is a hint, never a decision: a concept is left out only when the learner names it in `accept_mastered`.
+    quiz_mastery = {key(name): info for name, info in profile_mastered(profile.get("quiz", {})).items()}
+    for name in accept_mastered:
+        if key(name) in quiz_mastery:
+            mastered.setdefault(key(name), "you accepted your quiz mastery of it (your learner profile rates it mastered)")
     hours, needed_by, excluded = {}, {}, {}
     separate = 0.0
     for view in views:
@@ -49,6 +54,9 @@ def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_pe
                 excluded.setdefault(step.concept, {"concept": step.concept, "hours_saved": step.estimated_hours, "reason": mastered[key(step.concept)]})
             else:
                 needed_by.setdefault(step.concept, []).append(view["title"])
+    hints = [{"concept": name, "hours": hours[name], "papers": needed_by[name], "reason": f"your learner profile rates {name} mastered ({quiz_mastery[key(name)]['knew']} of "
+             f"{quiz_mastery[key(name)]['attempts']} answers correct over {quiz_mastery[key(name)]['questions']} different questions); it is still in the plan until you accept that"}
+             for name in sorted(needed_by) if key(name) in quiz_mastery]
     scheduled, order, papers = set(), [], []
     pending = list(views)
     while pending:
@@ -78,6 +86,7 @@ def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_pe
                                   "reason": f"{name} is needed by {len(titles)} papers ({'; '.join(titles)}) and is studied once"}
                                  for name, titles in sorted(needed_by.items(), key=lambda item: (-len(item[1]), item[0])) if len(titles) > 1],
         "excluded": sorted(excluded.values(), key=lambda item: item["concept"]),
+        "mastery_hints": hints,
         "steps": [{"concept": step.concept, "hours": step.estimated_hours} for step in order],
         "hours": {"separate": round(separate, 2), "after_mastery": after_mastery, "combined": combined, "saved": round(separate - combined, 2),
                   "saved_by_mastery": round(separate - after_mastery, 2), "saved_by_sharing": round(after_mastery - combined, 2)},

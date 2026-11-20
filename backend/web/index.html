@@ -161,7 +161,7 @@ function table(headers, rows) {
 function fill(id, node) { var box = $(id); box.textContent = ""; box.appendChild(node); }
 
 var KEY = "prereqai.session";  // the browser remembers only the session id; the server holds the progress
-var state = { picked: {}, deleting: null, mine: null, paths: null, quizTopics: [], round: null, suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
+var state = { accepted: {}, picked: {}, deleting: null, mine: null, paths: null, quizTopics: [], round: null, suggestions: [], dismissed: {}, sid: null, paper: {}, difficulty: null, studyTime: null, readiness: null, steps: [], studied: {}, links: {}, known: [], busy: false, concepts: [], answers: [], quiz: { attempts: 0, concepts: [] }, card: null, tutorBusy: false, quizBusy: false };
 
 function remember(sid) { try { if (sid) localStorage.setItem(KEY, sid); else localStorage.removeItem(KEY); } catch (e) { /* storage unavailable: no restore */ } }
 function recall() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
@@ -494,7 +494,10 @@ function renderSuggestions() {
     var yes = el("button", "Mark " + s.concept + " as known"); yes.type = "button";
     yes.addEventListener("click", function () { acceptSuggestion(s.concept); });
     var no = el("button", "Not now", "small"); no.type = "button";
-    no.addEventListener("click", function () { state.dismissed[s.concept] = true; renderSuggestions(); });
+    no.addEventListener("click", function () {
+      state.dismissed[s.concept] = true; renderSuggestions();
+      fetch("/api/session/" + encodeURIComponent(state.sid) + "/suggestions/dismiss?concept=" + encodeURIComponent(s.concept), { method: "POST" });  // remembered by the server, so a reload keeps the decision
+    });
     card.appendChild(yes); card.appendChild(document.createTextNode(" ")); card.appendChild(no); box.appendChild(card);
   });
 }
@@ -866,6 +869,7 @@ async function planCurriculum() {
   if ($("deadline").value) payload.deadline = $("deadline").value;
   if ($("hours").value) payload.hours_per_day = Number($("hours").value);
   if (days.length && days.length < 7) payload.weekdays = days.join(",");
+  payload.accept_mastered = Object.keys(state.accepted).filter(function (name) { return state.accepted[name]; });
   showStatus("info", "Planning...", null, "curriculumMsg");
   try {
     var response = await fetch("/api/curriculum", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }), body = null;
@@ -876,6 +880,12 @@ async function planCurriculum() {
     box.appendChild(el("p", "Together: " + body.hours.combined + " h instead of " + body.hours.separate + " h separately (" + body.hours.saved + " h saved: " + body.hours.saved_by_mastery + " h you know, " + body.hours.saved_by_sharing + " h shared).", "msg info"));
     body.papers.forEach(function (p) { var card = el("div", null, "card"); card.appendChild(el("p", p.position + ". " + p.title)); card.appendChild(el("p", p.reason, "meta")); box.appendChild(card); });
     if (body.shared_prerequisites.length) box.appendChild(el("p", "Studied once for several papers: " + body.shared_prerequisites.map(function (s) { return s.concept + " (" + s.hours + " h)"; }).join("; ") + ".", "meta"));
+    (body.mastery_hints || []).forEach(function (h) {  // offered, never applied: the learner ticks what to leave out
+      var row = el("p", h.concept + " (" + h.hours + " h): " + h.reason + " "), tick = document.createElement("input");
+      tick.type = "checkbox"; tick.checked = !!state.accepted[h.concept]; tick.setAttribute("aria-label", "Leave out " + h.concept);
+      tick.addEventListener("change", function () { state.accepted[h.concept] = tick.checked; });
+      row.appendChild(tick); row.appendChild(document.createTextNode(" Leave it out")); box.appendChild(row);
+    });
     if (body.excluded.length) box.appendChild(el("p", "Left out: " + body.excluded.map(function (e) { return e.concept + " (" + e.reason + ")"; }).join("; ") + ".", "meta"));
     box.appendChild(el("p", body.calendar.feasibility.message, body.calendar.feasibility.status === "achievable" ? "msg info" : "msg warn"));
     box.appendChild(body.calendar.days.length ? table(["Date", "Hours", "Study"], body.calendar.days.map(function (d) { return [d.date + " (" + d.weekday + ")", d.hours + " h", d.items.map(function (i) { return i.concept + " " + i.hours + " h"; }).join("; ")]; })) : el("p", "Nothing is left to study.", "msg info"));
