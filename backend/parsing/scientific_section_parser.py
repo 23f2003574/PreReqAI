@@ -3,7 +3,7 @@ import re
 from backend.ingestion import RawDocument
 from backend.models import Paper, PaperSection
 
-from .layout_headings import layout_headings
+from .layout_headings import body_size, layout_headings
 
 
 # An optional section number ("2", "3.1.", "IV.", "A.1") in front of a heading.
@@ -129,12 +129,21 @@ class _LayoutHeading:
         return {"title": self.title}
 
 
+MIN_TYPOGRAPHIC_HEADINGS = 3
+_APPENDIX_TITLE = re.compile(r"^(?:[A-Z](?:\.\d+)*[ \t]+\S|Appendix\b)")
+# Single words that start many table headers and captions ("Model", "Dataset", "Results"): as a heading they must also be set like one when the paper's typography says what headings look like.
+_GENERIC_HEADINGS = frozenset("model models dataset datasets approach results setup method methods training evaluation analysis architecture implementation baseline baselines "
+                              "overview theory notation contributions motivation preliminary funding".split())
+_NAME_LIST_ITEM = re.compile(r"^\d{1,3}\.[ \t]+[A-Z][\w'\u2019\-]+(?:[ \t]+[A-Z][\w'\u2019\-.]*){0,3}$")
+
+
 def _layout_matches(document, text, matches, back):
-    """Typographic headings the wording rules missed, located in the document text. Not before the first recognised heading (title,
-    authors), not in the back matter, not a line the wording rules already took, and each line of the text at most once."""
+    """(extra headings, text matches they replace): typographic headings the wording rules missed or only partly saw ("G Appendix: Full Prompts" where the wording rules took
+    "Appendix: Full Prompts"), located in the document text. Not before the first recognised heading (title, authors), not in the back matter (except a lettered appendix), and each
+    line of the text at most once."""
     found = layout_headings(document.pages)
     if not found:
-        return []
+        return [], set()
     starts, position = {}, 0
     for page in document.pages:
         starts[page.page_number] = (position, position + len(page.text))
@@ -142,7 +151,7 @@ def _layout_matches(document, text, matches, back):
     taken = [(m.start(), m.end()) for m in matches]
     first = matches[0].start() if matches else None
     top_page1 = max((size for number, _, size, _ in found if number == document.pages[0].page_number), default=None)
-    result, used = [], set()
+    result, used, replaced = [], set(), set()
     for number, title, size, bold in found:
         if number not in starts:
             continue
@@ -153,13 +162,52 @@ def _layout_matches(document, text, matches, back):
             continue
         if first is None and number == document.pages[0].page_number and size == top_page1:
             continue  # the paper's title
-        if (first is not None and match.start() < first) or (back is not None and match.start() > back):
+        if (first is not None and match.start() < first) or (back is not None and match.start() > back and not _APPENDIX_TITLE.match(title)):
             continue
-        if any(a <= match.start() < b or match.start() <= a < match.end() for a, b in taken):
-            continue
+        overlapping = [(a, b) for a, b in taken if a <= match.start() < b or match.start() <= a < match.end()]
+        if overlapping:
+            if all(match.start() < a and b <= match.end() for a, b in overlapping):
+                replaced.update(a for a, _ in overlapping)  # the heading's own line says more than the wording rules took of it
+            else:
+                continue
         used.add(match.start())
         result.append(_LayoutHeading(match.start(), match.end(), title))
-    return result
+    return result, replaced
+
+
+def _drop_name_lists(text, matches):
+    """A numbered list of names ("1. Gordon Chi", "2. Virginia Adams": contributors, annotators) is not a run of sections: three or more numbered name lines in a row with no text
+    between them are dropped."""
+    drop, run = set(), []
+    for index, match in enumerate(matches):
+        item = bool(_NAME_LIST_ITEM.match(match.group().strip()))
+        nxt = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        gap = len(text[match.end():nxt].strip())
+        if item and (not run or gap < 60 or run):
+            run.append(index)
+            if gap >= 60:  # the last name of the list is followed by text
+                (drop.update(run) if len(run) >= 3 else None)
+                run = []
+            continue
+        (drop.update(run) if len(run) >= 3 else None)
+        run = []
+    (drop.update(run) if len(run) >= 3 else None)
+    return [match for index, match in enumerate(matches) if index not in drop]
+
+
+def _typographically_supported(document, match):
+    """A generic one-word heading found by wording is kept only when the line is set like a heading (bold or larger than the body text) on a page with typography; without typography
+    on the page, or in a paper whose headings carry none, the wording is all there is."""
+    title = re.sub(r"^[\dIVXA-Z.]+\s+", "", match.group().strip()).strip(" :").lower()
+    if title not in _GENERIC_HEADINGS:
+        return True
+    body, offset = body_size(document.pages), 0
+    for page in document.pages:
+        if match.start() < offset + len(page.text) + 1:
+            lines = [line for line in (page.layout or []) if re.sub(r"^[\dIVXA-Z.]+\s+", "", line["text"]).strip(" :").lower() == title]
+            return not page.layout or body is None or not lines or any(line["bold"] or line["size"] >= body * 1.1 for line in lines)
+        offset += len(page.text) + 1
+    return True
 
 
 def _page_of(document, offset):
@@ -192,9 +240,12 @@ class ScientificSectionParser:
                 key=lambda m: m.start(),
             )
 
-        extra = _layout_matches(document, text, matches, back) if document.pages else []
+        extra, replaced = _layout_matches(document, text, matches, back) if document.pages else ([], set())
         layout_starts = {m.start() for m in extra}
-        matches = sorted([*matches, *extra], key=lambda m: m.start())
+        matches = sorted([*(m for m in matches if m.start() not in replaced), *extra], key=lambda m: m.start())
+        if document.pages and len(layout_headings(document.pages)) >= MIN_TYPOGRAPHIC_HEADINGS:  # typography tells headings from text only where the paper's headings have any
+            matches = [m for m in matches if m.start() in layout_starts or _typographically_supported(document, m)]
+        matches = _drop_name_lists(text, matches)
 
         if not matches:
             sections = [

@@ -264,7 +264,7 @@ def _layout_lines(page, blocks=None):
     except Exception:
         return []
     found = []
-    for block in blocks:
+    for block_id, block in enumerate(blocks):
         if block.get("type") != 0:
             continue
         for line in block["lines"]:
@@ -276,8 +276,29 @@ def _layout_lines(page, blocks=None):
             found.append({"text": "".join(span["text"] for span in line["spans"]).strip(), "size": round(main["size"], 1),
                           "chars": sum(len(span["text"].strip()) for span in spans), "bold": all(weights),
                           "mixed": any(weights) and not all(weights), "block_lines": len(block["lines"]),
-                          "bbox": [round(v, 1) for v in line["bbox"]]})
-    return found
+                          "bbox": [round(v, 1) for v in line["bbox"]], "block_id": block_id})
+    return _merge_same_row(found)
+
+
+def _merge_same_row(lines):
+    """Lines of one block that sit on the same row (a section number set apart from its title, "4" then "Direct Preference Optimization") become one line, left to right, so a
+    numbered heading is one heading line and not two lines of a block."""
+    merged, rows = [], {}
+    for line in lines:
+        key = (line["block_id"], round(line["bbox"][1] / 3))  # the same block and a top edge within about 3 points
+        if key in rows:
+            row = rows[key]
+            pair = sorted((row, line), key=lambda item: item["bbox"][0])
+            row.update(text=" ".join(item["text"] for item in pair), chars=row["chars"] + line["chars"], bold=row["bold"] and line["bold"],
+                       mixed=row["mixed"] or line["mixed"] or row["bold"] != line["bold"], size=row["size"] if row["chars"] >= line["chars"] else line["size"],
+                       bbox=[min(row["bbox"][0], line["bbox"][0]), min(row["bbox"][1], line["bbox"][1]), max(row["bbox"][2], line["bbox"][2]), max(row["bbox"][3], line["bbox"][3])])
+            row["block_lines"] -= 1
+        else:
+            rows[key] = line
+            merged.append(line)
+    for line in merged:
+        line.pop("block_id", None)
+    return merged
 
 
 MIN_REGION_SHARE = 0.08  # an image smaller than this share of the page is a logo or an icon, not a scanned passage

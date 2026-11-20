@@ -304,12 +304,20 @@ def _set_scores(expected, found):
     return result
 
 
+def heading_depth(title):
+    """1 for a section ("5 Theory", "A Proofs", "Introduction"), 2 or more for a numbered sub-section ("5.2 ...", "A.4 ...")."""
+    match = re.match(r"^\s*(?:\d+|[A-Z])((?:\.\d+)+)(?=\s)", str(title))
+    return 1 + match.group(1).count(".") if match else 1
+
+
 def score_paper(annotation, paper):
     """The metrics of one analysed paper against an approved annotation; false negatives and positives are listed by name."""
     from backend.concepts.rule_based_concept_detector import section_mentions
     from backend.prerequisites.missing_prerequisite_analyzer import section_role
 
-    found_titles = {heading_key(s.title): s.title for s in paper.sections if heading_key(s.title) != "front matter"}
+    top_only = annotation.get("heading_scope") == "top-level"  # such an annotation lists the numbered sections, not their sub-sections ("5.2 ...")
+    found_titles = {heading_key(s.title): s.title for s in paper.sections
+                    if heading_key(s.title) != "front matter" and not (top_only and heading_depth(s.title) > 1)}
     expected = {heading_key(s["title"]): s["role"] for s in annotation["sections"]}
     matched = sorted(set(expected) & set(found_titles))
     wrong = [k for k in matched if section_role(found_titles[k]) != expected[k]]

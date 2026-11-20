@@ -12,12 +12,11 @@ Optimization, 2305.18290), `mixtral` (Mixtral of Experts, 2401.04088) and `chain
 by the AI assistant on the repository owner's instruction (`review.reviewer`, `review_note`): **not by a human reader**, so a person should re-check them before the numbers are
 quoted. Prerequisite coverage is not annotated, so it is reported as "not annotated" and never scored.
 
-Results on 2026-11-20 (`python -m backend.prereqai_eval --benchmark`): headings P=0.37 R=0.52 F1=0.44 (tp=22 fp=37 fn=20), concepts P=0.92 R=1.00 F1=0.96 (tp=33 fp=3 fn=0),
-section roles 13/42. What the false positives and negatives show:
-* numbered headings whose number is on its own line or whose title is a known phrase are missed in two of the papers ("4 Direct Preference Optimization", "2 Architectural details",
-  "3 Arithmetic Reasoning", the lettered appendices), and DPO's numbered list of human-study contributors ("1. Gordon Chi") is read as headings: the heading detector is the weak part;
-* concept detection finds everything annotated (recall 1.00); its false positives are the "CNN" of CNN/DailyMail, an everyday "attention" in a prompt and a "Fine-Tuning" in the
-  CoT paper that was not traced.
+Results (`python -m backend.prereqai_eval --benchmark`): headings P=0.85 R=0.95 F1=0.90 (tp=41 fp=7 fn=2; 0.44 before numbered headings were read as one line and
+name lists were rejected), concepts P=0.92 R=1.00 F1=0.96 (tp=33 fp=3 fn=0). The annotations list the numbered sections only (`heading_scope: top-level`), so numbered sub-sections
+("5.2 ...") are not counted as false positives. What the errors show:
+* headings: generic one-word lines ("Model", "Dataset", "Results") in tables are still read as headings in some papers, and Mixtral's "5 Routing analysis" is missed;
+* concepts: recall is 1.00; the false positives are the "CNN" of CNN/DailyMail, an everyday "attention" in a prompt and a "Fine-Tuning" in the CoT paper that was not traced.
 Occurrence counts per section mostly disagree because the headings are missed: the counts then land in the wrong section.
 
 The five papers listed first (Attention Is All You Need, LoRA, DDPM, Adam, Batch Normalization) are under arXiv's non-exclusive distribution licence, which does not allow
