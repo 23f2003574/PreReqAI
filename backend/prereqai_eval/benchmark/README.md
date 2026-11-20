@@ -7,11 +7,18 @@ synthetic `--pdf` evaluation and never merged with it.
 
 ## Current state (read this first)
 
-**No paper is evaluable yet, so there are no real-paper results.** `manifest.json` lists five well-known papers (title, authors, source link,
-venue and year) but each has `license.status: "unverified"`, no PDF and a `pending_review` annotation. The environment this was built in could not
-reach arxiv.org, so no licence could be checked and no PDF obtained; nothing was assumed. A paper takes part in the metrics only when **all** hold:
-a verified redistribution licence (`spdx` one of the listed licences, with `evidence_url` and `verified_on`), its PDF in `pdfs/` whose sha256 matches
-the manifest, and an annotation that a named person approved. Anything else is listed under `excluded` with its reason.
+**No paper is scored yet, so there are no real-paper results.** Three papers are in the benchmark with a verified licence and their PDFs: `dpo` (Direct Preference
+Optimization, 2305.18290), `mixtral` (Mixtral of Experts, 2401.04088) and `chain-of-thought` (2201.11903), all CC BY 4.0 on their arXiv abstract pages (checked
+2026-11-20; `license.verified_by` says who read them). Their annotations are **machine drafts** (`draft_note`): section titles read from the PDFs' headings, roles chosen
+by the drafter, and concept counts by literal term matching inside those sections, not by PreReqAI's detector; prerequisite coverage is not annotated (reported as "not
+annotated", never scored). They stay `pending_review`, so `--benchmark` excludes them ("annotation pending_review") and reports no metrics. A person must check every
+entry against the paper and then run `--approve benchmark/annotations/<id>.json --reviewer "Name"`; only then do the metrics appear. `--status` lists what is still missing.
+
+The five papers listed first (Attention Is All You Need, LoRA, DDPM, Adam, Batch Normalization) are under arXiv's non-exclusive distribution licence, which does not allow
+redistributing their PDFs, so they cannot be added unless their authors' licence says otherwise; their manifest entries say so.
+
+A paper takes part in the metrics only when **all** hold: a verified redistribution licence (`spdx` one of the listed licences, with `evidence_url` and `verified_on`), its PDF in
+`pdfs/` whose sha256 matches the manifest, and an annotation that a named person approved. Anything else is listed under `excluded` with its reason.
 
 ## Adding a paper
 1. Check the paper's licence at its source (for arXiv, the licence link on the abstract page); only papers licensed for redistribution may be added.

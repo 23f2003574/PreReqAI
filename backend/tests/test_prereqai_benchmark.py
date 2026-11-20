@@ -39,12 +39,12 @@ def _bench(tmp_path, status="approved", licence="verified"):
     return manifest
 
 
-def test_the_bundled_manifest_is_valid_lists_five_papers_and_claims_no_unverified_licence():
+def test_the_bundled_manifest_is_valid_and_nothing_in_it_is_scored_until_a_person_approves():
     manifest = bm.load_manifest()
-    assert len(manifest["papers"]) >= 5 and all(p["license"]["status"] == "unverified" and p["pdf"] is None for p in manifest["papers"])
+    assert len(manifest["papers"]) >= 5 and all((p["license"]["status"] == "unverified") == (p["pdf"] is None) for p in manifest["papers"])  # a PDF only with a verified licence
     report = bm.evaluate_benchmark()
     assert report["counts"] == {"manifest": len(manifest["papers"]), "evaluated": 0, "excluded": len(manifest["papers"])}
-    assert all(item["reason"] == "licence not verified" for item in report["excluded"]) and "concepts" not in report  # no metrics without ground truth
+    assert {item["reason"] for item in report["excluded"]} == {"licence not verified", "annotation pending_review"} and "concepts" not in report  # no metrics without ground truth
     assert "No paper is evaluable yet" in bm.render_benchmark(report)
 
 

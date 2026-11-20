@@ -324,7 +324,8 @@ def score_paper(annotation, paper):
         "concepts": _set_scores({c["name"] for c in annotation["concepts"]}, {c.name for c in paper.concepts}),
         "occurrences": {"annotated": len(expected_counts), "exact": len(exact),
                         "wrong": sorted(f"{c} in {s}: expected {expected_counts[(c, s)]}, found {found_counts.get((c, s), 0)}" for c, s in expected_counts if (c, s) not in exact)},
-        "coverage": _set_scores({p["concept"] for p in annotation["prerequisites"] if p["covered"]}, covered),
+        # An annotation that lists no prerequisites says nothing about coverage: it is reported as not annotated, never as everything being a false positive.
+        "coverage": _set_scores({p["concept"] for p in annotation["prerequisites"] if p["covered"]}, covered) if annotation["prerequisites"] else None,
     }
 
 
@@ -359,7 +360,8 @@ def evaluate_benchmark(manifest_path=DEFAULT_MANIFEST):
     report = {"mode": "benchmark", "real_papers": True, "papers": rows, "excluded": excluded,
               "counts": {"manifest": len(manifest["papers"]), "evaluated": len(rows), "excluded": len(excluded)}}
     if scored:
-        report.update(headings=_micro(scored, "headings"), concepts=_micro(scored, "concepts"), coverage=_micro(scored, "coverage"),
+        annotated = [r for r in scored if r["coverage"] is not None]
+        report.update(headings=_micro(scored, "headings"), concepts=_micro(scored, "concepts"), coverage=_micro(annotated, "coverage") if annotated else None,
                       roles={"correct": correct, "total": total, "accuracy": round(correct / total, 3) if total else 1.0})
     return report
 
@@ -372,16 +374,20 @@ def render_benchmark(report):
             lines.append(f"{row['id']:<18}PIPELINE FAILED: {row['error']}")
             continue
         lines.append(f"{row['id']:<18}headings F1={row['headings']['f1']:.2f}  roles {row['roles']['correct']}/{row['roles']['total']}  concepts F1={row['concepts']['f1']:.2f}  "
-                     f"occurrences {row['occurrences']['exact']}/{row['occurrences']['annotated']}  coverage P={row['coverage']['precision']:.2f} R={row['coverage']['recall']:.2f}")
+                     f"occurrences {row['occurrences']['exact']}/{row['occurrences']['annotated']}  "
+                     + (f"coverage P={row['coverage']['precision']:.2f} R={row['coverage']['recall']:.2f}" if row["coverage"] else "coverage not annotated"))
         for label, key in (("headings", "headings"), ("concepts", "concepts"), ("coverage", "coverage")):
             for field, tag in (("missed", "false negatives"), ("spurious", "false positives")):
-                if row[key][field]:
+                if row[key] and row[key][field]:
                     lines.append(f"{'':<18}  {label} {tag}: {row[key][field]}")
         for item in row["occurrences"]["wrong"]:
             lines.append(f"{'':<18}  occurrence mismatch: {item}")
     if "concepts" in report:
         for key in ("headings", "concepts", "coverage"):
             m = report[key]
+            if m is None:
+                lines.append(f"{'AGGREGATE':<18}{key:<10}not annotated for any evaluated paper")
+                continue
             lines.append(f"{'AGGREGATE':<18}{key:<10}P={m['precision']:.2f} R={m['recall']:.2f} F1={m['f1']:.2f} (tp={m['tp']} fp={m['fp']} fn={m['fn']})")
         lines.append(f"{'AGGREGATE':<18}{'roles':<10}{report['roles']['correct']}/{report['roles']['total']} = {report['roles']['accuracy']:.2f}")
     else:

@@ -21,7 +21,8 @@
         "year": 2017
       },
       "license": {
-        "status": "unverified"
+        "status": "unverified",
+        "note": "Checked 2026-11-20 on the arXiv abstract page: the paper is under arXiv's non-exclusive distribution licence, which does not allow redistributing its PDF here, so it cannot be added. Not a candidate."
       },
       "retrieved_on": null,
       "pdf": null,
@@ -46,7 +47,8 @@
         "year": 2022
       },
       "license": {
-        "status": "unverified"
+        "status": "unverified",
+        "note": "Checked 2026-11-20 on the arXiv abstract page: the paper is under arXiv's non-exclusive distribution licence, which does not allow redistributing its PDF here, so it cannot be added. Not a candidate."
       },
       "retrieved_on": null,
       "pdf": null,
@@ -66,7 +68,8 @@
         "year": 2020
       },
       "license": {
-        "status": "unverified"
+        "status": "unverified",
+        "note": "Checked 2026-11-20 on the arXiv abstract page: the paper is under arXiv's non-exclusive distribution licence, which does not allow redistributing its PDF here, so it cannot be added. Not a candidate."
       },
       "retrieved_on": null,
       "pdf": null,
@@ -85,7 +88,8 @@
         "year": 2015
       },
       "license": {
-        "status": "unverified"
+        "status": "unverified",
+        "note": "Checked 2026-11-20 on the arXiv abstract page: the paper is under arXiv's non-exclusive distribution licence, which does not allow redistributing its PDF here, so it cannot be added. Not a candidate."
       },
       "retrieved_on": null,
       "pdf": null,
@@ -104,11 +108,125 @@
         "year": 2015
       },
       "license": {
-        "status": "unverified"
+        "status": "unverified",
+        "note": "Checked 2026-11-20 on the arXiv abstract page: the paper is under arXiv's non-exclusive distribution licence, which does not allow redistributing its PDF here, so it cannot be added. Not a candidate."
       },
       "retrieved_on": null,
       "pdf": null,
       "annotation": "annotations/batch-normalization.json"
+    },
+    {
+      "id": "dpo",
+      "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "authors": [
+        "Rafael Rafailov",
+        "Archit Sharma",
+        "Eric Mitchell",
+        "Stefano Ermon",
+        "Christopher D. Manning",
+        "Chelsea Finn"
+      ],
+      "source_url": "https://arxiv.org/abs/2305.18290",
+      "publication": {
+        "venue": "NeurIPS",
+        "year": 2023
+      },
+      "annotation": "annotations/dpo.json",
+      "license": {
+        "status": "verified",
+        "spdx": "CC-BY-4.0",
+        "evidence_url": "https://arxiv.org/abs/2305.18290",
+        "verified_on": "2026-11-20",
+        "verified_by": "Claude (AI assistant), read from the arXiv abstract page on 2026-11-20; the repository owner should confirm it"
+      },
+      "retrieved_on": "2026-11-20",
+      "pdf": {
+        "path": "pdfs/dpo.pdf",
+        "sha256": "92cb3a2b71362acda98a789b03d88688fd33cf5fcf13f81d2b1de30ee7d3b67a"
+      }
+    },
+    {
+      "id": "mixtral",
+      "title": "Mixtral of Experts",
+      "authors": [
+        "Albert Q. Jiang",
+        "Alexandre Sablayrolles",
+        "Antoine Roux",
+        "Arthur Mensch",
+        "Blanche Savary",
+        "Chris Bamford",
+        "Devendra Singh Chaplot",
+        "Diego de las Casas",
+        "Emma Bou Hanna",
+        "Florian Bressand",
+        "Gianna Lengyel",
+        "Guillaume Bour",
+        "Guillaume Lample",
+        "L\u00e9lio Renard Lavaud",
+        "Lucile Saulnier",
+        "Marie-Anne Lachaux",
+        "Pierre Stock",
+        "Sandeep Subramanian",
+        "Sophia Yang",
+        "Szymon Antoniak",
+        "Teven Le Scao",
+        "Th\u00e9ophile Gervet",
+        "Thibaut Lavril",
+        "Thomas Wang",
+        "Timoth\u00e9e Lacroix",
+        "William El Sayed"
+      ],
+      "source_url": "https://arxiv.org/abs/2401.04088",
+      "publication": {
+        "venue": "arXiv preprint",
+        "year": 2024
+      },
+      "annotation": "annotations/mixtral.json",
+      "license": {
+        "status": "verified",
+        "spdx": "CC-BY-4.0",
+        "evidence_url": "https://arxiv.org/abs/2401.04088",
+        "verified_on": "2026-11-20",
+        "verified_by": "Claude (AI assistant), read from the arXiv abstract page on 2026-11-20; the repository owner should confirm it"
+      },
+      "retrieved_on": "2026-11-20",
+      "pdf": {
+        "path": "pdfs/mixtral.pdf",
+        "sha256": "f8bbf0e9d979b7a8ce7be65119266545a229a85b57e077d8bd048e458bb642da"
+      }
+    },
+    {
+      "id": "chain-of-thought",
+      "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "authors": [
+        "Jason Wei",
+        "Xuezhi Wang",
+        "Dale Schuurmans",
+        "Maarten Bosma",
+        "Brian Ichter",
+        "Fei Xia",
+        "Ed Chi",
+        "Quoc Le",
+        "Denny Zhou"
+      ],
+      "source_url": "https://arxiv.org/abs/2201.11903",
+      "publication": {
+        "venue": "NeurIPS",
+        "year": 2022
+      },
+      "annotation": "annotations/chain-of-thought.json",
+      "license": {
+        "status": "verified",
+        "spdx": "CC-BY-4.0",
+        "evidence_url": "https://arxiv.org/abs/2201.11903",
+        "verified_on": "2026-11-20",
+        "verified_by": "Claude (AI assistant), read from the arXiv abstract page on 2026-11-20; the repository owner should confirm it"
+      },
+      "retrieved_on": "2026-11-20",
+      "pdf": {
+        "path": "pdfs/chain-of-thought.pdf",
+        "sha256": "7d9f878c23b460e4566aa4ec9201b1abfb3b8faefb2b1356e411cb90fef72a12"
+      }
     }
   ]
 }
