@@ -26,6 +26,7 @@ class RawPage:
     ocr_quality: float | None = None  # 0..1 plausibility of the recognised text (see ocr_quality); None when no OCR text was judged
     ocr_warning: str = ""  # something the learner must know about this page's OCR that does not make the page unreadable
     ocr_regions: int = 0  # scanned image regions on a page that also has a text layer, recognised and merged into `text`
+    paragraph_starts: list = field(default_factory=list)  # the first words of each line that opens a paragraph, from the page's layout (see paragraph_starts); emptied once paragraphs are segmented
     layout: list = field(default_factory=list)  # one dict per text line (text, size, bold, mixed, block_lines, bbox) for heading detection; emptied once sections are parsed
     removed_lines: int = 0  # running header, footer and page-number lines taken out of `text` (they repeat on many pages)
 
@@ -280,6 +281,42 @@ def _layout_lines(page, blocks=None):
     return _merge_same_row(found)
 
 
+MIN_PROSE_CHARS = 120  # a block holding fewer characters than this does not open a paragraph
+START_KEY = 50  # characters of a line (spaces collapsed) that identify it
+
+
+def paragraph_key(text):
+    return " ".join(text.split())[:START_KEY]
+
+
+def paragraph_starts(blocks):
+    """The keys of the page's text lines that open a paragraph, from the PDF's own layout. A block with two or more lines (or one long line) starts a paragraph; inside a
+    block, a line starts one after a line that stops short of the block's right edge and ends a sentence, when it is indented or set apart by a gap. Short fragments (a table's
+    cells, a figure's labels) do not start paragraphs. [] when the page has no layout."""
+    starts = []
+    try:
+        for index, block in enumerate(blocks or []):
+            if block.get("type") != 0:
+                continue
+            lines = [(line["bbox"], "".join(span["text"] for span in line["spans"]).strip()) for line in block["lines"]]
+            lines = [(box, text) for box, text in lines if text]
+            if not lines:
+                continue
+            left, right = min(box[0] for box, _ in lines), max(box[2] for box, _ in lines)
+            width = max(right - left, 1.0)
+            prose = sum(len(text) for _, text in lines) >= MIN_PROSE_CHARS and sum(len(text) for _, text in lines) >= 25 * len(lines)  # a table cell, an equation or axis labels are not prose
+            if prose:
+                starts.append(paragraph_key(lines[0][1]))
+            for (a_box, a_text), (b_box, b_text) in zip(lines, lines[1:]):
+                short = a_box[2] < right - 0.12 * width and a_text.endswith((".", "?", "!", ":", ".)", ".\u201d"))
+                spaced = b_box[1] - a_box[3] > 0.3 * (a_box[3] - a_box[1])
+                if short and (b_box[0] > left + 4 or spaced) and b_text[:1].isupper():
+                    starts.append(paragraph_key(b_text))
+    except (KeyError, TypeError, ValueError):
+        return []
+    return starts
+
+
 def _merge_same_row(lines):
     """Lines of one block that sit on the same row (a section number set apart from its title, "4" then "Direct Preference Optimization") become one line, left to right, so a
     numbered heading is one heading line and not two lines of a block."""
@@ -427,7 +464,7 @@ def read_page(page, page_number, ocr, stop=None, region_ocr=None, rotated_ocr=No
     if not needs_ocr(page, text):
         if region_ocr is not None and (mixed := _read_regions(page, page_number, text, region_ocr, stop, rotated_ocr)) is not None:
             return mixed
-        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page, blocks))
+        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page, blocks), paragraph_starts=paragraph_starts(blocks))
     reason = stop() if stop is not None else ""
     if reason:
         return RawPage(page_number=page_number, text=text, ocr_error=reason, ocr_stopped=True)
