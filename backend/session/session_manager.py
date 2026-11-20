@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 from uuid import UUID
 
-from . import session_codec
+from . import session_codec, session_merge
 
 from backend.models import Paper
 
@@ -91,6 +91,10 @@ class SessionManager:
     PURGE_INTERVAL_SECONDS = 60
 
     def __init__(self):
+
+        self._bases: dict[str, dict] = {}  # per session: the mergeable facts as last read or written (see session_merge)
+
+        self.last_conflicts: list[str] = []
 
         self.sessions = {}
 
@@ -250,6 +254,8 @@ class SessionManager:
 
                 session.schema_version = self.SCHEMA_VERSION
 
+                self._merge_with_saved(session, path)
+
                 temp.write_bytes(session_codec.dumps(session, self.SCHEMA_VERSION))
 
                 with temp.open("rb+") as written:  # on disk before the swap: a power loss must not leave an empty file under the real name
@@ -267,6 +273,8 @@ class SessionManager:
             with self._lock:
 
                 self._unsaved.discard(session.session_id)
+
+                self._bases[session.session_id] = session_merge.facts(session)
 
         except BaseException as exc:  # an interrupt (Ctrl-C, SystemExit) must not leave its temp file behind either
 
@@ -289,6 +297,26 @@ class SessionManager:
                 self._unsaved.add(session.session_id)
 
         return self.last_save_ok
+
+    def _merge_with_saved(self, session: LearningSession, path: Path) -> None:
+        """Called under the file lock just before a write: when another worker saved this session since this one last read or wrote it (the file's version is
+        higher), merge that worker's changes into `session` instead of overwriting them, then stamp the next version. A conflict that cannot be merged keeps this
+        worker's value and is kept in `last_conflicts`. A file that is missing, unreadable (read again a few times) or from another session is simply replaced."""
+        saved = None
+        for attempt in range(3):
+            if not path.is_file():
+                break
+            saved, _ = self._read_file(path)
+            if saved is not None:
+                break
+            time.sleep(0.05 * (attempt + 1))
+        base = self._bases.get(session.session_id)
+        if saved is not None and base is not None and saved.version > session.version:
+            conflicts = session_merge.merge(session, saved, base)
+            if conflicts:
+                self.last_conflicts = conflicts
+                _log.warning("session %s: conflicting changes from two workers: %s", session.session_id, "; ".join(conflicts))
+        session.version = max(session.version, saved.version if saved is not None else 0) + 1
 
     def create(
         self,
@@ -375,6 +403,8 @@ class SessionManager:
                 # Another thread may have restored this id while this one was reading the file: keep the first object so
                 # every request works on (and saves) the same session instead of each on its own copy.
                 session = self.sessions.setdefault(session_id, session)
+
+                self._bases[session_id] = session_merge.facts(session)
 
             if legacy:
 
@@ -548,6 +578,8 @@ class SessionManager:
             self._save_locks.pop(session_id, None)
 
             self._unsaved.discard(session_id)
+
+            self._bases.pop(session_id, None)
 
             self._last_used.pop(session_id, None)  # a deleted session must not leave bookkeeping behind in a long-lived server
 

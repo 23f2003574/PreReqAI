@@ -77,6 +77,9 @@ class LearningSession:
     # The day (YYYY-MM-DD, UTC) the learner's plan began: the base of the missed-day report of the study calendar. None in a session saved before it existed; created_at then gives it.
     plan_start: str | None = None
 
+    # Counts the saves of this session (0 in a file written before it existed): a worker that saves over a file whose version moved on merges instead of overwriting (see session_merge).
+    version: int = 0
+
     def plan_start_date(self):
         """The plan's start as a date: the saved one, else the day the session was created."""
         import datetime

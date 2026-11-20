@@ -98,6 +98,7 @@ def test_older_pickle_sessions_migrate_to_json_keeping_the_learners_progress(sav
     legacy.schema_version = 3
     path.write_bytes(pickle.dumps(legacy))  # exactly what a version-3 server left behind
     legacy.schema_version = SessionManager.SCHEMA_VERSION  # the one thing migration changes is the version stamp
+    legacy.version += 1  # and the rewrite as JSON is itself a save, which counts
     expected = session_codec.encode(legacy)
     migrated = reload(sid)
     assert migrated is not None and session_codec.encode(migrated) == expected
