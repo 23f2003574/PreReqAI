@@ -22,7 +22,7 @@ from backend.api.workflow_result import (
 from datetime import datetime, time, timezone
 
 from backend import learner_profile, study_calendar
-from backend.reading_list import build_reading_list
+from backend import learning_services
 from backend.prerequisites.study_time_estimator import parse_hours_per_day
 from backend.session import (
     session_manager,
@@ -198,7 +198,16 @@ def reading_list(session_id: str, limit: int = Query(default=10, ge=1, le=50)):
     session = session_manager.get(session_id)
     if session is None:
         return session_not_found(session_id)
-    return success_body("Prerequisite Reading List", "reading_list", session_id=session_id, reading_list=build_reading_list(session.paper, limit))
+    return success_body("Prerequisite Reading List", "reading_list", session_id=session_id, reading_list=learning_services.reading_list(session, limit))
+
+
+@router.get("/{session_id}/evidence")
+def concept_evidence(session_id: str, concept: str | None = None):
+    """The paper's own sentences behind each detected concept, with page, section and a passage id (see backend/evidence.py); only `concept` when given."""
+    session = session_manager.get(session_id)
+    if session is None:
+        return session_not_found(session_id)
+    return success_body("Concept Evidence", "evidence", session_id=session_id, evidence=learning_services.evidence(session, concept))
 
 
 @router.post("/{session_id}/plan-start")

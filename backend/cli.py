@@ -32,6 +32,9 @@ from backend.cli_prerequisites import (
     run_prerequisites_analyze,
     run_prerequisites_ask,
     run_prerequisites_profile,
+    run_prerequisites_curriculum,
+    run_prerequisites_evidence,
+    run_prerequisites_readings,
     run_prerequisites_review,
 )
 
@@ -323,6 +326,8 @@ def main(argv=None, facade=None, health_service=None, readiness_service=None) ->
         return run_prerequisites_ask(args)
     if args.command == "prerequisites" and args.prerequisites_command == "profile":
         return run_prerequisites_profile(args)
+    if args.command == "prerequisites" and args.prerequisites_command in ("readings", "evidence", "curriculum"):
+        return {"readings": run_prerequisites_readings, "evidence": run_prerequisites_evidence, "curriculum": run_prerequisites_curriculum}[args.prerequisites_command](args)
     if args.command == "prerequisites" and args.prerequisites_command == "review":
         return run_prerequisites_review(args)
 

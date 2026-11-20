@@ -51,6 +51,7 @@ def add_prerequisites_parser(subparsers):
     prerequisites = subparsers.add_parser("prerequisites", help="Prerequisite Explorer: analyse a research paper PDF (start here)")
     commands = prerequisites.add_subparsers(dest="prerequisites_command", required=True, metavar="<subcommand>")
     add_prerequisites_review_parser(commands)
+    add_session_commands(commands)
     add_prerequisites_profile_parser(commands)
     analyze = commands.add_parser(
         "analyze",
@@ -165,6 +166,131 @@ def run_prerequisites_profile(args) -> int:
     print(f"studied: {', '.join(profile['studied']) or '(none)'}")
     for item in learner_profile.mastery(profile["quiz"]):
         print(f"quiz: {item['concept']}: {item['status']} ({item['knew']} knew, {item['missed']} missed over {item['questions']} question(s))")
+    return 0
+
+
+def _load_session(session_id):
+    """(session, None) from PREREQAI_SESSION_DIR, or (None, message) saying why it cannot be used."""
+    from backend.session import session_manager
+
+    if session_manager._directory() is None:
+        return None, "sessions are only kept on disk when PREREQAI_SESSION_DIR is set, so there is no saved session to read"
+    session = session_manager.get(session_id)
+    if session is None:
+        return None, f"session {session_id!r} was not found" + (" (its saved file cannot be read)" if session_manager.is_unreadable(session_id) else "")
+    return session, None
+
+
+def add_session_commands(commands):
+    readings = commands.add_parser("readings", help="List the cited works most worth reading first for a saved analysis",
+                                   description="Ranks the works the paper cites by where and how often it cites them (nothing is downloaded). Same data as GET /api/session/{id}/reading-list.")
+    readings.add_argument("session", type=_nonblank, help="The session id of an analysis (needs PREREQAI_SESSION_DIR)")
+    readings.add_argument("--limit", type=int, default=10, help="How many works to list (default 10)")
+    readings.add_argument("--json", action="store_true", dest="as_json", help="Print the API's JSON")
+    evidence = commands.add_parser("evidence", help="Show the paper's own sentences behind each detected concept for a saved analysis",
+                                   description="Quotes, with page, section and passage id. Same data as GET /api/session/{id}/evidence.")
+    evidence.add_argument("session", type=_nonblank, help="The session id of an analysis (needs PREREQAI_SESSION_DIR)")
+    evidence.add_argument("--concept", type=_nonblank, default=None, help="Only this concept")
+    evidence.add_argument("--json", action="store_true", dest="as_json", help="Print the API's JSON")
+    curriculum = commands.add_parser("curriculum", help="Plan several saved analyses together",
+                                     description="Shared prerequisites once, known subjects left out, one paper order and one schedule. Same data as POST /api/curriculum.")
+    curriculum.add_argument("sessions", nargs="+", type=_nonblank, metavar="SESSION", help="Two to ten session ids (needs PREREQAI_SESSION_DIR)")
+    curriculum.add_argument("--profile", type=_nonblank, default=None, metavar="FILE", help="A learner profile file: what it knows or has studied is left out")
+    curriculum.add_argument("--accept-mastered", type=_nonblank, action="append", default=[], metavar="CONCEPT", help="Leave out a concept the profile's quiz history rates mastered (repeat)")
+    curriculum.add_argument("--deadline", type=_nonblank, default=None, metavar="YYYY-MM-DD")
+    curriculum.add_argument("--study-days", type=_nonblank, default=None, dest="study_days", metavar="DAYS", help="Weekdays, such as mon,tue,wed,thu,fri")
+    curriculum.add_argument("--hours-per-day", type=_hours_per_day, default=None, dest="hours_per_day", metavar="HOURS")
+    curriculum.add_argument("--json", action="store_true", dest="as_json", help="Print the API's JSON")
+
+
+def _fail(message, code=EXIT_FAILURE):
+    print(f"error: {message}", file=sys.stderr)
+    return code
+
+
+def run_prerequisites_readings(args) -> int:
+    from backend import learning_services
+    from backend.api.workflow_result import success_body
+
+    session, problem = _load_session(args.session)
+    if problem:
+        return _fail(problem)
+    if args.limit < 1:
+        return _fail("--limit must be at least 1", EXIT_USAGE)
+    items = learning_services.reading_list(session, args.limit)
+    if args.as_json:
+        print(json.dumps(success_body("Prerequisite Reading List", "reading_list", session_id=args.session, reading_list=items), indent=2))
+        return 0
+    if not items:
+        print("No numbered or author-year citations match the bibliography, so there is nothing to recommend.")
+    for item in items:
+        print(f"#{item['rank']} [{item['status']}] {item['title'] or item['reference'][:80]}" + (f" ({item['year']})" if item["year"] else ""))
+        print(f"    {item['reason']}")
+        if item["source"]:
+            print(f"    read next with: python -m backend.cli prerequisites analyze {item['source']}")
+    return 0
+
+
+def run_prerequisites_evidence(args) -> int:
+    from backend import learning_services
+    from backend.api.workflow_result import success_body
+
+    session, problem = _load_session(args.session)
+    if problem:
+        return _fail(problem)
+    items = learning_services.evidence(session, args.concept)
+    if args.concept and not items:
+        return _fail(f"{args.concept!r} is not a concept detected in this paper", EXIT_USAGE)
+    if args.as_json:
+        print(json.dumps(success_body("Concept Evidence", "evidence", session_id=args.session, evidence=items), indent=2))
+        return 0
+    for item in items:
+        print(f"{item['concept']} ({item['occurrences']} mention{'s' if item['occurrences'] != 1 else ''})")
+        for passage in item["passages"]:
+            where = f"p. {passage['page_number']}, " if passage["page_number"] else ""
+            print(f"  {where}{passage['section'] or 'untitled section'} [{passage['passage_id']}]: \u201c{' '.join(passage['sentence'].split())}\u201d")
+    return 0
+
+
+def run_prerequisites_curriculum(args) -> int:
+    from datetime import datetime, timezone
+
+    from backend import curriculum, learner_profile, study_calendar
+    from backend.api.workflow_result import success_body
+    from backend.prerequisites.study_time_estimator import parse_hours_per_day
+
+    ids = list(args.sessions)
+    if not 2 <= len(ids) <= curriculum.MAX_PAPERS or len(set(ids)) != len(ids):
+        return _fail(f"name 2 to {curriculum.MAX_PAPERS} different sessions (got {len(ids)})", EXIT_USAGE)
+    sessions = []
+    for session_id in ids:
+        session, problem = _load_session(session_id)
+        if problem:
+            return _fail(problem)
+        sessions.append(session)
+    profile = None
+    if args.profile:
+        profile, problem = learner_profile.load_full(args.profile)
+        if problem:
+            return _fail(problem)
+    try:
+        result = curriculum.build_curriculum(sessions, profile, datetime.now(timezone.utc).date(),
+                                             study_calendar.parse_date(args.deadline, "--deadline") if args.deadline else None, parse_hours_per_day(args.hours_per_day),
+                                             study_calendar.parse_weekdays(args.study_days), args.accept_mastered)
+    except ValueError as error:
+        return _fail(str(error), EXIT_USAGE)
+    if args.as_json:
+        print(json.dumps(success_body("Curriculum", "curriculum", warnings=[], **result), indent=2))
+        return 0
+    hours = result["hours"]
+    print(f"Together: {hours['combined']}h instead of {hours['separate']}h separately ({hours['saved']}h saved: {hours['saved_by_mastery']}h known, {hours['saved_by_sharing']}h shared)")
+    for paper in result["papers"]:
+        print(f"{paper['position']}. {paper['title']}: {paper['reason']}")
+    for hint in result["mastery_hints"]:
+        print(f"hint: {hint['concept']} ({hint['hours']}h): {hint['reason']} (leave it out with --accept-mastered '{hint['concept']}')")
+    for item in result["excluded"]:
+        print(f"left out: {item['concept']}: {item['reason']}")
+    print(f"calendar: {result['calendar']['feasibility']['message']}")
     return 0
 
 
