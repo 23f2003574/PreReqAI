@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+JSON = {"Content-Type": "application/json"}
+
 from backend import learner_profile as lp
 from backend.cli import main as cli_main
 from backend.main import app
@@ -88,16 +90,16 @@ def test_export_and_import_round_trip_with_v1_and_replace_protection(profiles):
     lp.record_quiz(profiles / "me.json", "Softmax:1", "Softmax", "knew")
     exported = client.get("/api/profiles/me/export")
     assert "attachment" in exported.headers["content-disposition"] and exported.json()["schema_version"] == 2 and exported.json()["quiz"]["Softmax:1"]["knew"] == 1
-    imported = client.post("/api/profiles/copy/import", content=exported.content)
+    imported = client.post("/api/profiles/copy/import", headers=JSON, content=exported.content)
     assert imported.status_code == 200 and imported.json()["known"] == ["Calculus"] and imported.json()["mastery"][0]["concept"] == "Softmax"
-    assert client.post("/api/profiles/copy/import", content=exported.content).status_code == 409  # not overwritten by accident
-    assert client.post("/api/profiles/copy/import", content=exported.content, params={"replace": "true"}).status_code == 200
+    assert client.post("/api/profiles/copy/import", headers=JSON, content=exported.content).status_code == 409  # not overwritten by accident
+    assert client.post("/api/profiles/copy/import", headers=JSON, content=exported.content, params={"replace": "true"}).status_code == 200
     v1 = json.dumps({"format": lp.FORMAT, "schema_version": 1, "known": ["Linear Algebra"], "studied": ["Probability"]})
-    legacy = client.post("/api/profiles/old/import", content=v1).json()
+    legacy = client.post("/api/profiles/old/import", headers=JSON, content=v1).json()
     assert (legacy["known"], legacy["studied"], legacy["mastery"]) == (["Linear Algebra"], ["Probability"], [])
     assert json.loads((profiles / "old.json").read_text())["schema_version"] == 2
     for bad in (b"{nope", json.dumps({"format": "x"}).encode(), json.dumps({"format": lp.FORMAT, "schema_version": 3, "known": [], "studied": []}).encode()):
-        assert client.post("/api/profiles/bad/import", content=bad).status_code == 422
+        assert client.post("/api/profiles/bad/import", headers=JSON, content=bad).status_code == 422
     assert not (profiles / "bad.json").exists()
 
 

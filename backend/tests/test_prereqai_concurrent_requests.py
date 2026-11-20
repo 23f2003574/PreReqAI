@@ -34,7 +34,7 @@ def test_other_requests_are_served_while_an_analysis_is_running(monkeypatch):
                 last = now
 
         watcher = asyncio.create_task(watch_loop())
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://localhost") as client:
             uploaded = await client.post(
                 "/api/prerequisites/analyze", files={"paper": ("paper.pdf", SAMPLE.read_bytes(), "application/pdf")})
             missing = await client.get("/api/session/does-not-exist")

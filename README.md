@@ -37,6 +37,12 @@ With the server running, open `http://127.0.0.1:8000/` for a small web interface
 
 To call the API from a browser app on another origin, set `PREREQAI_CORS_ORIGINS=https://app.example.com` (comma separated; unset by default, so no cross-origin access).
 
+The server is built for one learner on their own computer, so it protects itself from web pages the learner visits (`backend/security.py`):
+- **Host validation (DNS rebinding):** only `localhost`, `127.0.0.1` and `[::1]` (any port) are answered; any other `Host` gets 403. Behind a reverse proxy or on a named machine, list the names in `PREREQAI_TRUSTED_HOSTS` (comma separated, `name` or `name:port`). `X-Forwarded-Host` and similar headers are never trusted.
+- **Origin validation:** a POST, PUT, PATCH or DELETE with an `Origin` must come from the page's own origin or one in `PREREQAI_CORS_ORIGINS`, otherwise 403 (so does `Origin: null`). Without an `Origin` it is allowed unless the browser marks it `Sec-Fetch-Site: cross-site`; curl, the CLI and tests send neither header.
+- **Content type:** request bodies must be JSON, multipart or form-encoded (415 for `text/plain` and the like); a profile import must be `application/json`.
+- Responses carry `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and a `Content-Security-Policy` that lets only the page's own script (identified by a per-response nonce) run.
+
 Send the form field `diagnostics=true` with the upload to get the same per-stage timings and statistics as the CLI's `--diagnose` in a `diagnostics` object of the result (also on failures, where it names the stage that failed).
 
 `GET /health` answers `{"status": "ok", "service": "PreReqAI", "version": ...}` for load balancers and uptime checks.

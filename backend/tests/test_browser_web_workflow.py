@@ -73,7 +73,7 @@ def browser():
 
 @pytest.fixture
 def page(browser, server):
-    context = browser.new_context(viewport={"width": 1100, "height": 1600})
+    context = browser.new_context(viewport={"width": 1100, "height": 1600}, bypass_csp=True)  # Playwright waits evaluate strings; the page is served with a strict CSP
     page = context.new_page()
     page.set_default_timeout(15000)
     page.goto(server)
@@ -200,7 +200,7 @@ def test_failed_tutor_and_quiz_requests_and_unsupported_topics_are_reported(page
 
 def test_history_lists_analyses_resumes_one_and_deletes_only_after_confirmation(browser, lone_server):
     url, tmp_path = lone_server
-    context = browser.new_context(viewport={"width": 1100, "height": 1800})
+    context = browser.new_context(viewport={"width": 1100, "height": 1800}, bypass_csp=True)  # Playwright waits evaluate strings; the page is served with a strict CSP
     page = context.new_page()
     page.set_default_timeout(15000)
     page.goto(url)
@@ -240,7 +240,7 @@ def test_a_damaged_saved_analysis_is_shown_and_can_be_removed_without_breaking_t
     url, tmp_path = lone_server
     (tmp_path / "sessions").mkdir(exist_ok=True)
     (tmp_path / "sessions" / "deadbeef-dead-beef-dead-beefdeadbeef.session").write_bytes(b"garbage")
-    context = browser.new_context()
+    context = browser.new_context(bypass_csp=True)
     page = context.new_page()
     page.set_default_timeout(15000)
     page.goto(url)

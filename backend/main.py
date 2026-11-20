@@ -65,6 +65,10 @@ def cors_origins() -> list[str]:
 if cors_origins():  # off by default: a same-origin or command-line deployment needs no cross-origin access
     app.add_middleware(CORSMiddleware, allow_origins=cors_origins(), allow_methods=["GET", "POST", "PATCH", "DELETE"], allow_headers=["*"])
 
+from backend.security import LocalSecurityMiddleware  # noqa: E402
+
+app.add_middleware(LocalSecurityMiddleware)  # added last, so it runs first: Host, Origin and content-type checks and the security headers (see backend/security.py)
+
 app.include_router(
     prerequisite_router,
 )

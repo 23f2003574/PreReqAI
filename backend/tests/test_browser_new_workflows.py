@@ -36,7 +36,7 @@ def plain(tmp_path):
 
 
 def open_page(browser, url, timeout=60000):
-    context = browser.new_context(viewport={"width": 1100, "height": 1800})
+    context = browser.new_context(viewport={"width": 1100, "height": 1800}, bypass_csp=True)  # Playwright waits evaluate strings; the page is served with a strict CSP
     page = context.new_page()
     page.set_default_timeout(timeout)
     page.goto(url)
