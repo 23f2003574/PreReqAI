@@ -97,8 +97,9 @@ def test_selection_does_not_repeat_the_last_answered_question_when_another_exist
     assert [_answer(twin, "Transformer")[1] for _ in range(7)] == seen  # deterministic
 
 
-def test_a_topic_with_a_single_question_is_served_gracefully_and_cannot_reach_mastery():
-    single = next(name for name, items in quiz.ASKABLE.items() if len(items) == 1)
+def test_a_topic_with_a_single_question_is_served_gracefully_and_cannot_reach_mastery(monkeypatch):
+    single = "Softmax"  # every shipped concept now has two questions (test_prereqai_quiz_depth_coverage); a topic left with one must still behave
+    monkeypatch.setitem(quiz.ASKABLE, single, quiz.ASKABLE[single][:1])
     session = _session(single)
     ids = [_answer(session, single)[1] for _ in range(3)]
     assert set(ids) == {f"{single}:1"} and _status(session, single)["status"] == "progressing"

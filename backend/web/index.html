@@ -543,6 +543,7 @@ function renderCard() {
       show.addEventListener("click", reveal); card.appendChild(show);
     } else {
       card.appendChild(el("p", "Answer: " + c.answer));
+      if (c.explanation) { var why = el("p", "Why: " + c.explanation, "meta"); why.id = "quizExplanation"; card.appendChild(why); }  // the reason the answer is right, when the server has one
       card.appendChild(el("p", "How did you do?", "meta"));
       [["knew", "I knew it"], ["missed", "I missed it"]].forEach(function (o) {
         var b = el("button", o[1], "small"); b.type = "button"; b.disabled = state.quizBusy;
@@ -590,7 +591,7 @@ function reveal() {
   var card = state.card;
   quizCall("Getting the answer", function () {
     return fetch(quizUrl("reveal"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question_id: card.id }) });
-  }, function (body) { card.answer = body.answer; });
+  }, function (body) { card.answer = body.answer; card.explanation = body.explanation || null; });
 }
 
 function record(outcome) {
