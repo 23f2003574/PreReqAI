@@ -71,7 +71,7 @@ class ProviderTutor(BaseTutor):
         paper_concepts = [concept.name for concept in paper.concepts][:MAX_CONCEPTS * 2]
         rules, explanations = PrerequisiteDetector.PREREQUISITE_RULES, ConceptExplanationEngine.EXPLANATIONS
         facts = {name: {"definition": explanations[name][0] if name in explanations else None, "prerequisites": rules.get(name, [])} for name in named}
-        evidence = grounding.select_evidence(paper, named)
+        evidence = grounding.select_evidence(paper, named, question)
         excerpts = [{"passage_id": p["passage_id"], "section": _clean(p["section"], 80), "page": p["page_number"], "text": _clean(p["sentence"], MAX_EXCERPT_CHARS)}
                     for p in evidence]
         studied = {item.concept for item in getattr(paper, "study_progress", []) if item.completed}

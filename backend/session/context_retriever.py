@@ -110,9 +110,13 @@ class ContextRetriever:
 
         query = question.lower()
 
+        from backend.tutor.grounding import named_concepts  # by name or any alias: "What is DPO?" names Direct Preference Optimization
+
+        aliased = set(named_concepts([concept.name for concept in paper.concepts], question))
+
         for concept in paper.concepts:
 
-            if concept.name.lower() in query:
+            if concept.name in aliased:
 
                 concepts.append(
                     concept.name,

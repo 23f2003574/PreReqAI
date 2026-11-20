@@ -4,7 +4,10 @@ never trusted because the model supplied it."""
 import json
 import re
 
-from backend.evidence import build_evidence
+import math
+
+from backend.concepts.concept_registry import ConceptRegistry
+from backend.evidence import _pattern, build_evidence, passage_id, quotable_sentences
 
 from .tutor_provider import ProviderError
 
@@ -18,15 +21,74 @@ def _norm(text):
     return _SPACES.sub(" ", str(text)).strip()
 
 
-def select_evidence(paper, concept_names):
-    """The evidence passages (see backend.evidence) for the concepts a question names: at most PER_CONCEPT each and MAX_EVIDENCE in all, none repeated."""
+MIN_COVERAGE, MAX_SEARCH = 0.4, 4
+
+
+def _acronyms(question):
+    return [word.lower() for word in re.findall(r"\b[A-Z]{2,6}s?\b", question)]  # "KL", "DPO": short, but they are the topic
+
+
+def _bag(text):
+    from backend.session.context_retriever import _stem
+
+    return {_stem(word) for word in re.findall(r"[a-z][a-z\-]+", text.lower())}
+
+
+def named_concepts(paper_concepts, question):
+    """The detected concepts a question names, by the concept's name or any alias ("What is DPO?" names Direct Preference Optimization), in the paper's order."""
+    registry = {c.name: c for c in ConceptRegistry().all()}
+    return [name for name in paper_concepts if name in registry and _pattern(registry[name]).search(question)]
+
+
+def search_evidence(paper, question, limit=MAX_SEARCH):
+    """Quotable sentences (see evidence.quotable_sentences) that answer a question without naming a concept, found by their words: the question's content terms (and the
+    spelled-out names of the concepts it names by an acronym) weighted by how rare they are in the paper; a sentence needs at least MIN_COVERAGE of that weight and a term that
+    is not everywhere. Best first, ties in paper order. Returns the same passage dictionaries as build_evidence, so a model's citations of them are checked the same way."""
+    from backend.session.context_retriever import _stem, _terms
+
+    registry = {c.name: c for c in ConceptRegistry().all()}
+    named = [name for name, concept in registry.items() if _pattern(concept).search(question)]
+    query = {_stem(term) for term in [*_terms(question), *_acronyms(question)]}
+    for name in named:
+        query |= {_stem(term) for term in _terms(name)}
+    candidates = quotable_sentences(paper)
+    if not query or not candidates:
+        return []
+    bags = [_bag(sentence) for _, _, _, _, sentence, _ in candidates]
+    total = len(bags)
+    frequency = {term: sum(term in bag for bag in bags) for term in query}
+    spelled = {_stem(term) for term in _acronyms(question)}
+    weight = {term: (math.log((total + 1) / (frequency[term] + 0.5)) + 1) * (2.5 if term in spelled else 1.0) for term in query}  # an acronym is the topic
+    whole, scored = sum(weight.values()), []
+    for index, ((_, _, _, section, sentence, number), bag) in enumerate(zip(candidates, bags)):
+        matched = query & bag
+        coverage = sum(weight[term] for term in matched) / whole
+        if coverage >= MIN_COVERAGE and any(frequency[term] <= max(1, total / 4) for term in matched):
+            scored.append((-coverage, index, section, sentence, number))
+    scored.sort(key=lambda item: item[:2])
+    result = []
+    for _, _, section, sentence, number in scored[:limit]:
+        result.append({"passage_id": passage_id(section, sentence), "sentence": sentence, "page_number": number, "section": section, "concepts": named_concepts(
+            [c.name for c in getattr(paper, "concepts", []) or []], sentence)})
+    return result
+
+
+def select_evidence(paper, concept_names, question=None):
+    """The evidence passages (see backend.evidence) for a question: for the concepts it names at most PER_CONCEPT each and, when it names none or they have too little, sentences
+    found by their words (search_evidence); MAX_EVIDENCE in all, none repeated. Every passage is a stored, verifiable quotation."""
     found = build_evidence(paper, limit=PER_CONCEPT)
     chosen, seen = [], set()
-    for name in dict.fromkeys(concept_names):
-        for passage in found.get(name, []):
+
+    def add(passages):
+        for passage in passages:
             if passage["passage_id"] not in seen and len(chosen) < MAX_EVIDENCE:
                 seen.add(passage["passage_id"])
                 chosen.append(passage)
+
+    for name in dict.fromkeys(concept_names):
+        add(found.get(name, []))
+    if question and len(chosen) < 2:
+        add(search_evidence(paper, question))
     return chosen
 
 
