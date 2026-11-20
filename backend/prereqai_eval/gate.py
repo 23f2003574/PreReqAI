@@ -95,6 +95,7 @@ def run_gate(thresholds=None, benchmark_manifest=None):
     if real["counts"]["evaluated"]:
         worst = lambda key, field: "; ".join(f"{r['id']}: {field} {r[key][field]}" for r in real["papers"] if r["ok"] and r[key][field])
         _check(checks, "real_papers_provisional", "headings_f1", real["headings"]["f1"], group["headings_f1"], worst("headings", "missed") + (" | spurious " + worst("headings", "spurious") if worst("headings", "spurious") else ""))
+        _check(checks, "real_papers_provisional", "headings_precision", real["headings"]["precision"], group["headings_precision"], "spurious headings: " + worst("headings", "spurious"))
         _check(checks, "real_papers_provisional", "concepts_precision", real["concepts"]["precision"], group["concepts_precision"], "false positives: " + worst("concepts", "spurious"))
         _check(checks, "real_papers_provisional", "concepts_recall", real["concepts"]["recall"], group["concepts_recall"], "false negatives: " + worst("concepts", "missed"))
         _check(checks, "real_papers_provisional", "roles_accuracy", real["roles"]["accuracy"], group["roles_accuracy"], "wrong roles: " + worst("roles", "wrong"))

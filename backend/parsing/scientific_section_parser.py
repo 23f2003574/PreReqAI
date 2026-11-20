@@ -3,7 +3,7 @@ import re
 from backend.ingestion import RawDocument
 from backend.models import Paper, PaperSection
 
-from .layout_headings import body_size, layout_headings
+from .layout_headings import body_size, layout_headings, shares_row
 
 
 # An optional section number ("2", "3.1.", "IV.", "A.1") in front of a heading.
@@ -133,7 +133,7 @@ MIN_TYPOGRAPHIC_HEADINGS = 3
 _APPENDIX_TITLE = re.compile(r"^(?:[A-Z](?:\.\d+)*[ \t]+\S|Appendix\b)")
 # Single words that start many table headers and captions ("Model", "Dataset", "Results"): as a heading they must also be set like one when the paper's typography says what headings look like.
 _GENERIC_HEADINGS = frozenset("model models dataset datasets approach results setup method methods training evaluation analysis architecture implementation baseline baselines "
-                              "overview theory notation contributions motivation preliminary funding".split())
+                              "overview theory notation contributions motivation preliminary funding ablation ablations results experiments discussion".split())
 _NAME_LIST_ITEM = re.compile(r"^\d{1,3}\.[ \t]+[A-Z][\w'\u2019\-]+(?:[ \t]+[A-Z][\w'\u2019\-.]*){0,3}$")
 
 
@@ -158,6 +158,12 @@ def _layout_matches(document, text, matches, back):
         low, high = starts[number]
         pattern = re.compile(r"^[ \t]*" + r"\s+".join(map(re.escape, title.split())) + r"[ \t]*$", re.MULTILINE)
         match = next((m for m in pattern.finditer(text, low, high) if m.start() not in used), None)
+        words = title.split()
+        if match is None and len(words) >= 2 and re.fullmatch(r"\d+(?:\.\d+)*\.?", words[0]):
+            # the text layer lost the section number of a heading set apart in the layout ("5 Routing analysis" read as "Routing analysis"): the title
+            # without its number, alone on its line, is the same heading
+            bare = re.compile(r"^[ \t]*" + r"\s+".join(map(re.escape, words[1:])) + r"[ \t]*$", re.MULTILINE)
+            match = next((m for m in bare.finditer(text, low, high) if m.start() not in used), None)
         if match is None:
             continue
         if first is None and number == document.pages[0].page_number and size == top_page1:
@@ -166,7 +172,9 @@ def _layout_matches(document, text, matches, back):
             continue
         overlapping = [(a, b) for a, b in taken if a <= match.start() < b or match.start() <= a < match.end()]
         if overlapping:
-            if all(match.start() < a and b <= match.end() for a, b in overlapping):
+            if len(overlapping) == 1 and overlapping[0] == (match.start(), match.end()) and re.sub(r"\s+", " ", match.group()).strip() == " ".join(title.split()):
+                continue  # the wording rules saw exactly this heading: nothing to add
+            if all(match.start() <= a and b <= match.end() for a, b in overlapping):
                 replaced.update(a for a, _ in overlapping)  # the heading's own line says more than the wording rules took of it
             else:
                 continue
@@ -204,8 +212,10 @@ def _typographically_supported(document, match):
     body, offset = body_size(document.pages), 0
     for page in document.pages:
         if match.start() < offset + len(page.text) + 1:
-            lines = [line for line in (page.layout or []) if re.sub(r"^[\dIVXA-Z.]+\s+", "", line["text"]).strip(" :").lower() == title]
-            return not page.layout or body is None or not lines or any(line["bold"] or line["size"] >= body * 1.1 for line in lines)
+            whole = re.sub(r"\s+", " ", match.group()).strip(" :").lower()  # the line as it stands, number included: the "Results" of a table header is not the "3 Results" heading
+            lines = [line for line in (page.layout or []) if re.sub(r"\s+", " ", line["text"]).strip(" :").lower() == whole]
+            # set like a heading (bold or larger) and standing alone: a table's column header is one cell of a row, a bullet's first word one line of a block of several
+            return not page.layout or body is None or any((line["bold"] or line["size"] >= body * 1.1) and line.get("block_lines", 1) == 1 and not shares_row(line, page.layout) for line in lines)
         offset += len(page.text) + 1
     return True
 

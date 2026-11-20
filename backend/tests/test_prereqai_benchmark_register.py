@@ -137,7 +137,7 @@ def test_the_shipped_benchmark_scores_three_papers_and_names_the_errors_and_leav
     assert "Convolutional Neural Network" not in dpo["concepts"]["spurious"]  # the 'CNN' of CNN/DailyMail used to be a named false positive
     assert "direct preference optimization" not in dpo["headings"]["missed"]  # a numbered heading that used to be missed (its number was a line of its own)
     text = benchmark.render_benchmark(report)
-    assert "false positives" in text and "false negatives" in text and "coverage not annotated" in text
+    assert "headings F1" in text and "coverage not annotated" in text  # false positives and negatives are listed only when there are any (the headings have none now)
 
 
 def test_a_pending_annotation_is_never_scored(folder):
