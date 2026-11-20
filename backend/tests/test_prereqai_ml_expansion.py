@@ -114,11 +114,11 @@ def test_the_tutor_gives_the_curated_link_of_a_new_concept():
     assert "arxiv.org/abs/2305.18290" in answer
 
 
-def test_revealing_a_new_question_returns_its_explanation_and_an_older_one_does_not():
+def test_revealing_any_question_returns_its_explanation():
     from backend.tutor import quiz_session
 
     session = SimpleNamespace(quiz_pending={}, quiz_attempts=[])
-    for concept, expected in (("Direct Preference Optimization", True), ("Attention", False)):
+    for concept, expected in (("Direct Preference Optimization", True), ("Attention", True)):  # an older question has one too since every question was explained
         question = QUIZ_BANK[concept][0]
         identifier = quiz_session.question_id(concept, 1)
         session.quiz_pending[identifier] = {"revealed": False}

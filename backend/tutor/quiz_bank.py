@@ -1013,3 +1013,28 @@ from .quiz_bank_depth import ROWS as _DEPTH_ROWS  # noqa: E402  (a second questi
 for _concept, _question, _answer, _explanation, _difficulty in _DEPTH_ROWS:
     QUIZ_BANK[_concept].append({"question": _question, "answer": _answer, "difficulty": _difficulty})  # appended: the first question keeps its identifier
     QUIZ_EXPLANATIONS[(_concept, _question)] = _explanation
+
+
+# The explanations of the questions that had only an answer: every question in both banks now has one (see quiz_explanations_remaining).
+from .quiz_explanations_remaining import CONCEPT_ROWS as _CONCEPT_EXPLANATION_ROWS, SUBJECT_ROWS as _SUBJECT_EXPLANATION_ROWS  # noqa: E402
+
+
+def _attach(bank, rows, kind):
+    problems = []
+    for name, phrase, explanation in rows:
+        matches = [item["question"] for item in bank.get(name, []) if phrase.lower() in item["question"].lower()]
+        if len(matches) != 1:
+            problems.append(f"({name!r}, {phrase!r}) matches {len(matches)} {kind} questions")
+        else:
+            QUIZ_EXPLANATIONS.setdefault((name, matches[0]), explanation)  # an explanation written with the question wins
+    if problems:
+        raise ValueError("each explanation row must match exactly one question: " + "; ".join(problems))
+
+
+_attach(QUIZ_BANK, _CONCEPT_EXPLANATION_ROWS, "concept")
+_attach(SUBJECT_QUIZ_BANK, _SUBJECT_EXPLANATION_ROWS, "subject")
+
+
+def unexplained_questions():
+    """[(concept or subject, question)] of every question in both banks that has no explanation; the quiz tests require this to stay empty."""
+    return [(name, item["question"]) for bank in (QUIZ_BANK, SUBJECT_QUIZ_BANK) for name, items in bank.items() for item in items if not QUIZ_EXPLANATIONS.get((name, item["question"]))]

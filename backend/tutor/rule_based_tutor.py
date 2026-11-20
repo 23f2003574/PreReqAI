@@ -9,7 +9,7 @@ from .base_tutor import (
     BaseTutor,
 )
 
-from .quiz_bank import QUIZ_BANK
+from .quiz_bank import QUIZ_BANK, QUIZ_EXPLANATIONS
 
 from .tutor_prompt_builder import (
     TutorPromptBuilder,
@@ -219,7 +219,8 @@ class RuleBasedTutor(BaseTutor):
         lines = []
         for name in topics:
             for number, item in enumerate(QUIZ_BANK[name], 1):
-                lines.append(f"{name} Q{number} ({item['difficulty']}): {item['question']} Answer: {item['answer']}")
+                why = QUIZ_EXPLANATIONS.get((name, item["question"]))
+                lines.append(f"{name} Q{number} ({item['difficulty']}): {item['question']} Answer: {item['answer']}" + (f" Why: {why}" if why else ""))
 
         return " ".join(lines)
 
