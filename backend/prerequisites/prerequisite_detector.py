@@ -470,7 +470,9 @@ class PrerequisiteDetector:
                                            item["concept"] in ambiguous, item["relation"] == "indirect")
                 graded.append((grade, item["relation"] == "direct"))
                 reasons.append(f"{item['concept']}: {why}")
-            strength = grade_prerequisite(graded)
+            direct = occurrences[prerequisite] if prerequisite in occurrences else direct_subject_mentions(paper, prerequisite)
+            strength, direct_reason = grade_with_direct_mentions(grade_prerequisite(graded), direct, prerequisite)
+            reasons.append(direct_reason)
 
             paper.prerequisites.append(
 
@@ -552,6 +554,32 @@ def grade_prerequisite(grades):
     if any(grade == "strong" and direct for grade, direct in grades) or (len(good) >= 2 and any(good)):
         return "strong"
     return "moderate" if good else "weak"
+
+
+def direct_subject_mentions(paper, subject):
+    """How often the paper itself names a prerequisite that is not a registry concept (Linear Algebra, Calculus...); None when it cannot be counted."""
+    from backend.concepts.rule_based_concept_detector import subject_mentions
+
+    try:
+        return subject_mentions(paper).get(subject, 0)
+    except Exception:  # no usable text: an unknown count, never an invented zero
+        return None
+
+
+def grade_with_direct_mentions(grade, direct, name):
+    """(grade, reason): the grade from the dependents, adjusted by how often the paper names the prerequisite itself. A dependent's mentions show the
+    paper needs the idea; only the paper's own mentions of it show the paper leans on it: a prerequisite the paper never names (or whose count is
+    unknown) is at most moderate however many dependents it has, and one it names MIN_REPEATED or more times is lifted one step (weak to moderate,
+    moderate to strong). One or two mentions leave the grade as it is."""
+    if not isinstance(direct, int) or direct <= 0:
+        why = f"{name} itself is never named in the paper" if direct == 0 else f"no count of how often the paper names {name} itself"
+        if grade == "strong":
+            return "moderate", why + ", so at most moderate"
+        return grade, why
+    if direct >= MIN_REPEATED:
+        lifted = {"weak": "moderate", "moderate": "strong", "strong": "strong"}[grade]
+        return lifted, f"{name} itself is named {direct} times in the paper" + ("; one grade up for that" if lifted != grade else "")
+    return grade, f"{name} itself is named {direct} time{'s' if direct != 1 else ''} in the paper"
 
 
 def rank_prerequisites(prerequisites):

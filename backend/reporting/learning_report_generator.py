@@ -139,6 +139,7 @@ class LearningReportGenerator:
         position = {prerequisite.concept: index for index, prerequisite in enumerate(ranked)}
         importance = {prerequisite.concept: prerequisite.importance for prerequisite in ranked}
         strength = {prerequisite.concept: prerequisite.evidence_strength for prerequisite in ranked}
+        reasons = {prerequisite.concept: prerequisite.strength_reasons for prerequisite in ranked}
 
         return {
 
@@ -240,6 +241,7 @@ class LearningReportGenerator:
                     "sections": getattr(prerequisite, "sections", []),
                     "importance": importance.get(prerequisite.concept, ""),
                     "evidence_strength": strength.get(prerequisite.concept, ""),
+                    "strength_reasons": reasons.get(prerequisite.concept, []),
                 }
 
                 for prerequisite in sorted(paper.missing_prerequisites, key=lambda item: position.get(item.concept, len(position)))

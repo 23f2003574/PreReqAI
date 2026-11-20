@@ -19,6 +19,7 @@
   button:disabled { opacity: .6; cursor: progress; }
   .msg { padding: .75rem 1rem; border-radius: 6px; border: 1px solid var(--line); margin: 1rem 0; }
   .msg.error { border-color: var(--bad); color: var(--bad); } .msg.warn { border-color: var(--warn); color: var(--warn); } .msg.info { color: var(--muted); }
+  .reason { color: var(--muted); font-size: .85em; }
   .table-wrap { overflow-x: auto; } table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
   .gap { color: var(--bad); font-weight: 600; } .covered { color: var(--ok); font-weight: 600; }
   dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: 0; } dt { color: var(--muted); } dd { margin: 0; overflow-wrap: anywhere; }
@@ -325,11 +326,18 @@ function render(body) {
     $("notanalysedbody").appendChild(el("p", terms.join("; ") + (more > 0 ? " and " + more + " more" : "")));
   }
 
+  // The grade and, under it, why the paper's own text gave it (the mentions of the dependent concepts and of the prerequisite itself).
+  function strengthCell(p) {
+    var cell = el("div", null);
+    cell.appendChild(el("strong", p.evidence_strength.charAt(0).toUpperCase() + p.evidence_strength.slice(1)));
+    (p.strength_reasons || []).forEach(function (reason) { cell.appendChild(el("div", reason, "reason")); });
+    return cell;
+  }
   var prerequisites = report.missing_prerequisites || [];
   fill("gaps", prerequisites.length
     ? table(["Prerequisite", "Importance", "Evidence in the paper", "Status", "Why"], prerequisites.map(function (p) {
         return [p.concept, p.importance === "essential" ? "Essential" : p.importance === "supporting" ? "Supporting" : "-",
-                p.evidence_strength ? p.evidence_strength.charAt(0).toUpperCase() + p.evidence_strength.slice(1) : "-",
+                p.evidence_strength ? strengthCell(p) : "-",
                 el("span", p.satisfied ? "Covered or known" : "Gap", p.satisfied ? "covered" : "gap"), p.reason];
       }))
     : el("p", "This paper has no prerequisites to check.", "msg info"));
