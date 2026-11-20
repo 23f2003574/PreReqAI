@@ -20,6 +20,10 @@
   .msg { padding: .75rem 1rem; border-radius: 6px; border: 1px solid var(--line); margin: 1rem 0; }
   .msg.error { border-color: var(--bad); color: var(--bad); } .msg.warn { border-color: var(--warn); color: var(--warn); } .msg.info { color: var(--muted); }
   .reason { color: var(--muted); font-size: .85em; }
+  details.node { margin: .15rem 0 .15rem 1rem; } details.node > summary { cursor: pointer; } .leaf { margin: .15rem 0 .15rem 2.2rem; }
+  .badge { font-size: .8rem; border: 1px solid var(--line); border-radius: 999px; padding: 0 .5rem; margin-left: .4rem; color: var(--muted); }
+  .badge.covered, .badge.studied { color: var(--ok); } .badge.gap { color: var(--bad); }
+  ol.road { padding-left: 1.4rem; } ol.road li { margin: .3rem 0; }
   .table-wrap { overflow-x: auto; } table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
   .gap { color: var(--bad); font-weight: 600; } .covered { color: var(--ok); font-weight: 600; }
   dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: 0; } dt { color: var(--muted); } dd { margin: 0; overflow-wrap: anywhere; }
@@ -69,6 +73,13 @@
     <section><h2>Detected concepts</h2><div id="concepts"></div></section>
     <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
     <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
+    <section id="treebox"><h2>Prerequisite tree</h2>
+      <p class="lead">Each concept of the paper with what it builds on; open a branch to see the prerequisites of its prerequisites.</p>
+      <div class="actions"><button id="treeOpen" type="button" class="small">Expand all</button> <button id="treeClose" type="button" class="small">Collapse all</button></div>
+      <div id="tree"></div></section>
+    <section id="mathbox"><h2>Mathematics you need</h2><div id="math"></div></section>
+    <section id="whybox"><h2>Why this difficulty</h2><div id="why"></div></section>
+    <section id="roadmapbox"><h2>Roadmap and next actions</h2><div id="roadmap"></div></section>
     <section id="profilebox"><h2>Learner profile</h2>
       <p class="meta">What the server keeps about you under the profile name above (needs the server's profile directory): concepts you know or have studied, quiz mastery and reviews due. You decide what stays.</p>
       <button id="profileBtn" type="button">Show my profile</button> <a id="profileExport" href="#" hidden>Export profile (.json)</a>
@@ -241,8 +252,81 @@ function renderPaths() {
 function refreshPaths() {
   fetch("/api/session/" + encodeURIComponent(state.sid)).then(function (r) { return r.ok ? r.json() : null; }).then(function (body) {
     if (body && body.study_paths) { state.paths = body.study_paths; renderPaths(); }
+    if (body && body.prerequisite_tree) renderTree(body.prerequisite_tree);
     if (body && body.personalised_plan) { state.mine = body.personalised_plan; renderMine(); }
   }).catch(function () { /* the paths stay as they were; the next full render refreshes them */ });
+}
+
+// The prerequisite tree as nested <details>: a concept, then what it builds on, to any depth. Names are inserted as text.
+function treeNode(node, depth) {
+  var label = el("span", node.concept), badge = node.studied ? el("span", "studied", "badge studied") : el("span", node.satisfied ? "covered in the paper" : "gap", node.satisfied ? "badge covered" : "badge gap");
+  var kids = node.prerequisites || [];
+  if (!kids.length) { var leaf = el("div", null, "leaf"); leaf.appendChild(label); leaf.appendChild(badge); return leaf; }
+  var details = document.createElement("details"), summary = document.createElement("summary");
+  details.className = "node"; details.open = depth < 1;
+  summary.appendChild(label); summary.appendChild(badge); summary.appendChild(el("span", kids.length + " prerequisite" + (kids.length === 1 ? "" : "s"), "badge"));
+  details.appendChild(summary);
+  kids.forEach(function (kid) { details.appendChild(treeNode(kid, depth + 1)); });
+  return details;
+}
+
+function renderTree(tree) {
+  var roots = tree || [], box = el("div");
+  if (!roots.length) box.appendChild(el("p", "No prerequisite relations were found for this paper's concepts, so there is no tree to show.", "msg info"));
+  roots.forEach(function (node) { box.appendChild(treeNode(node, 0)); });
+  fill("tree", box);
+  $("treeOpen").disabled = $("treeClose").disabled = !roots.length;
+}
+
+var MATH_SUBJECTS = ["Linear Algebra", "Calculus", "Probability", "Statistics", "Information Theory", "Optimization"];
+
+// The mathematics behind the paper: the maths subjects among its prerequisites (with their status and hours) and its equations (with page and concepts).
+function renderMath(report) {
+  var box = el("div"), prereqs = (report.prerequisites || []).filter(function (p) { return MATH_SUBJECTS.indexOf(p.concept) >= 0; });
+  var gaps = {}; (report.missing_prerequisites || []).forEach(function (g) { gaps[g.concept] = g; });
+  var hours = {}; (report.learning_plan || []).forEach(function (s) { hours[s.concept] = s.estimated_hours; });
+  if (!prereqs.length) box.appendChild(el("p", "This paper's concepts need none of the mathematics subjects PreReqAI tracks (linear algebra, calculus, probability, statistics, information theory, optimization).", "msg info"));
+  else box.appendChild(table(["Subject", "Evidence in the paper", "Status", "Hours"], prereqs.map(function (p) {
+    var g = gaps[p.concept] || {}, status = g.status === "known" ? "Marked as known" : g.satisfied ? "Covered in the paper" : "To study";
+    return [p.concept, p.evidence_strength ? p.evidence_strength.charAt(0).toUpperCase() + p.evidence_strength.slice(1) : "-", status, hours[p.concept] === undefined ? "-" : String(hours[p.concept])];
+  })));
+  var equations = report.equations || [];
+  box.appendChild(el("h3", "Equations in the paper (" + equations.length + ")"));
+  if (!equations.length) box.appendChild(el("p", "No display equations were found in this paper.", "msg info"));
+  equations.slice(0, 30).forEach(function (eq) {
+    var card = el("div", null, "card");
+    card.appendChild(el("code", eq.expression));
+    card.appendChild(el("p", (eq.tag ? "Equation (" + eq.tag + "), " : "") + (eq.page_number ? "page " + eq.page_number + ", " : "") + "section " + eq.section + ((eq.concepts || []).length ? ". Be comfortable with: " + eq.concepts.join(", ") : "."), "meta"));
+    box.appendChild(card);
+  });
+  if (equations.length > 30) box.appendChild(el("p", "and " + (equations.length - 30) + " more equations", "meta"));
+  fill("math", box);
+}
+
+function renderWhy(report) {
+  var box = el("div"), difficulty = report.paper_difficulty, reasons = report.difficulty_explanations || [];
+  if (!difficulty && !reasons.length) box.appendChild(el("p", "No difficulty estimate is available for this paper.", "msg info"));
+  if (difficulty) { box.appendChild(el("p", difficulty.level + (difficulty.score !== undefined ? " (score " + difficulty.score + ")" : ""), "lead")); box.appendChild(el("p", difficulty.explanation)); }
+  if (reasons.length) { var list = el("ul"); reasons.forEach(function (r) { var item = el("li"); item.appendChild(el("strong", r.title)); item.appendChild(document.createTextNode(": " + r.description)); list.appendChild(item); }); box.appendChild(list); }
+  fill("why", box);
+}
+
+function renderRoadmap(report) {
+  var box = el("div"), road = report.study_roadmap || [], actions = report.study_actions || [];
+  if (!road.length && !actions.length) box.appendChild(el("p", "Nothing to study first: this paper has no outstanding prerequisites.", "msg info"));
+  if (road.length) {
+    box.appendChild(el("h3", "Roadmap (in study order)"));
+    var list = el("ol", null, "road");
+    road.forEach(function (step) { list.appendChild(el("li", step.concept + (step.resource ? ": " + step.resource : "") + (step.provider ? " (" + step.provider + ")" : "") + (step.estimated_hours !== undefined && step.estimated_hours !== null ? ", about " + step.estimated_hours + " h" : ""))); });
+    box.appendChild(list);
+  }
+  if (actions.length) {
+    box.appendChild(el("h3", "Next actions"));
+    var todo = el("ol", null, "road");
+    actions.forEach(function (a) { var item = el("li"); item.appendChild(el("strong", a.title)); item.appendChild(document.createTextNode(" - " + a.description)); todo.appendChild(item); });
+    box.appendChild(todo);
+  }
+  fill("roadmap", box);
 }
 
 function renderPlan() {
@@ -287,6 +371,7 @@ function render(body) {
   loadQuizTopics();
   state.planStart = (body && body.plan_start) || null; state.paper = paper; state.difficulty = report.paper_difficulty || null;
   state.paths = report.study_paths || null; renderPaths();
+  renderTree(report.prerequisite_tree); renderMath(report); renderWhy(report); renderRoadmap(report);
   state.mine = report.personalised_plan || null; renderMine();
   state.studyTime = report.study_time || null; state.readiness = report.readiness || null;
   state.studied = {}; (report.study_progress || []).forEach(function (p) { if (p.completed) state.studied[p.concept] = true; });
@@ -785,6 +870,9 @@ async function submit(event) {
 
 $("form").addEventListener("submit", submit);
 $("download").addEventListener("click", downloadPlan);
+function setTree(open) { Array.prototype.forEach.call($("tree").querySelectorAll("details"), function (node) { node.open = open; }); }
+$("treeOpen").addEventListener("click", function () { setTree(true); });
+$("treeClose").addEventListener("click", function () { setTree(false); });
 $("askForm").addEventListener("submit", function (event) { event.preventDefault(); ask($("question").value); });
 $("quizNext").addEventListener("click", nextQuestion);
 loadHistory();
