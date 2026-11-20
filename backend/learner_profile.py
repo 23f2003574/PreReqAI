@@ -24,6 +24,8 @@ import math
 import os
 import re
 import threading
+
+from backend.filelock import locked
 from pathlib import Path
 
 FORMAT = "prereqai-learner-profile"
@@ -36,7 +38,7 @@ MAX_SUBJECTS = 2000
 MAX_NAME_CHARS = 200
 PROFILE_DIR_ENV = "PREREQAI_PROFILE_DIR"
 _NAME = re.compile(r"[A-Za-z0-9_-]{1,64}")
-_lock = threading.RLock()  # one save at a time inside a server process
+_lock = threading.RLock()  # kept for callers that import it; the read-modify-write blocks use filelock.locked(path), which also queues other processes
 
 
 class ProfileError(ValueError):
@@ -173,11 +175,12 @@ def save(path, known, studied, quiz=None):
     target.parent.mkdir(parents=True, exist_ok=True)
     temp = target.with_name(f".{target.name}.{os.getpid()}.{threading.get_ident()}.tmp")
     try:
-        with open(temp, "w", encoding="utf-8") as handle:
-            handle.write(text)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temp, target)
+        with locked(target):  # the swap itself is exclusive across processes too (a caller's read-modify-write block holds the same lock around it)
+            with open(temp, "w", encoding="utf-8") as handle:
+                handle.write(text)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temp, target)
     except BaseException:
         temp.unlink(missing_ok=True)
         raise
@@ -193,7 +196,7 @@ def record_quiz(path, question_id, concept, outcome, moment=None):
     name = vocabulary().get(key(concept))
     if name is None:
         raise ProfileError(f"{concept!r} is not a concept PreReqAI knows")
-    with _lock:
+    with locked(path):
         profile, problem = load_full(path)
         if problem:
             raise ProfileError(problem)
@@ -265,7 +268,7 @@ def update_profile(path, add_known=(), add_studied=(), forget=(), forget_quiz=()
     canonical = {label: _canonical(names, label, vocab, problems) for label, names in lists.items()}
     if problems:
         raise ProfileInputError("; ".join(problems))
-    with _lock:
+    with locked(path):
         profile, problem = load_full(path)
         if problem:
             raise ProfileError(problem)
@@ -352,7 +355,7 @@ class ProfileRun:
             outcome["warnings"].append(f"the learner profile {self.path} was not updated, so this analysis's progress was not saved")
             return outcome
         done = [item["concept"] for item in outcome.get("report", {}).get("study_progress", []) if item.get("completed")]
-        with _lock:
+        with locked(self.path):
             known, studied, problem = load(self.path)  # read again: another run may have saved since this one started
             if problem:
                 outcome["warnings"].append(problem)

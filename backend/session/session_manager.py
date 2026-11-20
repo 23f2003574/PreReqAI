@@ -5,6 +5,8 @@ import pickle
 import copy
 import dataclasses
 import threading
+
+from backend.filelock import locked
 import time
 from pathlib import Path
 from uuid import UUID
@@ -242,7 +244,7 @@ class SessionManager:
         # after a later save wrote the newer state, losing that update. Snapshot and swap happen under the session's lock.
         try:
 
-            with save_lock:
+            with save_lock, locked(path):  # one writer at a time across threads and processes
 
                 path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -563,7 +565,9 @@ class SessionManager:
 
             try:
 
-                path.unlink(missing_ok=True)
+                with locked(path):
+
+                    path.unlink(missing_ok=True)
 
             except OSError:
 

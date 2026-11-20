@@ -15,6 +15,8 @@ from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
 
+from backend.filelock import locked
+
 PIPELINE_VERSION = "2026-11-20.1"
 MAX_ENTRIES = 16
 _CHUNK = 1024 * 1024
@@ -60,7 +62,8 @@ class AnalysisCache:
             data = json.loads(target.read_bytes())
             return {"paper": session_codec.decode(data["paper"]), "report": data["report"], "timings": data["timings"]}
         except Exception:
-            target.unlink(missing_ok=True)  # damaged or from another version: gone, and the analysis runs again
+            with locked(target):
+                target.unlink(missing_ok=True)  # damaged or from another version: gone, and the analysis runs again
             return None
 
     def _write_disk(self, key, entry):
@@ -75,7 +78,8 @@ class AnalysisCache:
             try:
                 temp.write_text(json.dumps({"paper": session_codec.encode(entry["paper"]), "report": entry["report"], "timings": entry["timings"]},
                                            ensure_ascii=False, allow_nan=False), encoding="utf-8")
-                os.replace(temp, directory / f"{key}.json")
+                with locked(directory / f"{key}.json"):  # processes filling the same entry take turns; the swap is atomic
+                    os.replace(temp, directory / f"{key}.json")
             finally:
                 temp.unlink(missing_ok=True)
         except Exception:

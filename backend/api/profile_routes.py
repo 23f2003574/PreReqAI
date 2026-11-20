@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from backend import learner_profile, spaced_review
+from backend.filelock import locked
 from backend.api.workflow_result import failure_response, success_body
 
 router = APIRouter(prefix="/api/profiles", tags=["Learner profiles"])
@@ -117,7 +118,7 @@ async def import_profile(name: str, request: Request, replace: bool = False):
         profile = learner_profile.parse_full(raw)
     except learner_profile.ProfileError as error:
         return failure_response(422, "profiles", f"The document cannot be imported: {error}", hint="Send a document exported by PreReqAI.")
-    with learner_profile._lock:
+    with locked(path):
         if path.exists() and not replace:
             return failure_response(409, "profiles", f"A profile named {name!r} already exists.", hint="Send replace=true to overwrite it, or import under another name.")
         try:
