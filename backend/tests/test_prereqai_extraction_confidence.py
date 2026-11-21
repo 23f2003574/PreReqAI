@@ -76,3 +76,13 @@ def test_missing_references_unresolved_citations_duplicate_headings_and_no_conce
 def test_an_empty_paper_is_low_without_crashing():
     result = confidence.assess(Paper(source_path="e.pdf", metadata=None))
     assert result["level"] == "low" and signals(result)["text_layer"] == "poor" and signals(result)["layout"] == "poor"
+
+
+def test_a_short_but_real_page_is_not_mistaken_for_a_scan():
+    """Regression (CI): the bundled sample paper has short pages; a 200-character cutoff called its text layer poor and added a run warning to every analysis of it."""
+    short = good()
+    short.pages = [page(n, text="A short abstract about attention and softmax in transformers.") for n in (1, 2, 3)]
+    assert signals(confidence.assess(short))["text_layer"] == "ok" and confidence.warning_lines(confidence.assess(short)) == []
+    blank = good()
+    blank.pages = [page(n, text="  \n ") for n in (1, 2, 3)]
+    assert signals(confidence.assess(blank))["text_layer"] == "poor"

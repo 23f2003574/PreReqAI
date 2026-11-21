@@ -5,7 +5,7 @@ that is not ok has a plain warning with an action. The overall level is "low" wh
 still lists everything found, with the level and warnings beside it, so the learner knows which results to double-check. Thresholds are in THRESHOLDS; they are reading aids, not probabilities."""
 from statistics import median
 
-THRESHOLDS = {"text_pages_ok": 0.9, "text_pages_poor": 0.5, "page_chars": 200, "ocr_quality_ok": 0.75, "headings_min": 3, "citations_unresolved_warn": 0.3, "paragraph_chars_warn": 2500}
+THRESHOLDS = {"text_pages_ok": 0.9, "text_pages_poor": 0.5, "page_chars": 20, "ocr_quality_ok": 0.75, "headings_min": 3, "citations_unresolved_warn": 0.3, "paragraph_chars_warn": 2500}
 
 
 def _signal(name, status, value, detail, action=""):
@@ -18,9 +18,9 @@ def _text_layer(paper):
         return _signal("text_layer", "poor", 0.0, "No page text was read.", "Check that the file is a readable PDF and upload it again.")
     readable = sum(1 for p in pages if len((p.text or "").strip()) >= THRESHOLDS["page_chars"]) / len(pages)
     if readable < THRESHOLDS["text_pages_poor"]:
-        return _signal("text_layer", "poor", round(readable, 2), f"Only {readable:.0%} of the pages have more than a few lines of text (a scan, or mostly figures).", "Use a text-based PDF, or the original source if you have it.")
+        return _signal("text_layer", "poor", round(readable, 2), f"Only {readable:.0%} of the pages have any readable text (a scan, or mostly figures).", "Use a text-based PDF, or the original source if you have it.")
     if readable < THRESHOLDS["text_pages_ok"]:
-        return _signal("text_layer", "warn", round(readable, 2), f"{1 - readable:.0%} of the pages have almost no text (figures, scans or blank pages).", "Check that nothing you need is on those pages.")
+        return _signal("text_layer", "warn", round(readable, 2), f"{1 - readable:.0%} of the pages have almost no readable text (figures, scans or blank pages).", "Check that nothing you need is on those pages.")
     return _signal("text_layer", "ok", round(readable, 2), "Every page has text.")
 
 
