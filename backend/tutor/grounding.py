@@ -5,6 +5,7 @@ import json
 import re
 
 import math
+import os
 
 from backend.concepts.concept_registry import ConceptRegistry
 from backend.evidence import _pattern, build_evidence, passage_id, quotable_sentences
@@ -22,6 +23,12 @@ def _norm(text):
 
 
 MIN_COVERAGE, MAX_SEARCH = 0.4, 4
+
+
+def hybrid_search(paper, question, limit):
+    from backend.retrieval import hybrid_search as search
+
+    return search(paper, question, limit)
 
 
 def _acronyms(question):
@@ -88,7 +95,7 @@ def select_evidence(paper, concept_names, question=None):
     for name in dict.fromkeys(concept_names):
         add(found.get(name, []))
     if question and len(chosen) < 2:
-        add(search_evidence(paper, question))
+        add(hybrid_search(paper, question, MAX_SEARCH) if os.environ.get("PREREQAI_RETRIEVAL", "hybrid") != "lexical" else search_evidence(paper, question))
     return chosen
 
 

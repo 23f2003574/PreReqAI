@@ -81,6 +81,27 @@ def heldout_checks(checks, floors, manifest=None):
     return report
 
 
+def retrieval_checks(checks, manifest=None):
+    """Retrieval checks on the held-out papers, by comparing systems with each other so no absolute score has to be guessed: the hybrid search must recall at least as many gold passages as the
+    lexical one it extends, and every passage either returns must be an exact quotation of its page. Returns the measurements, or None when the papers cannot be analysed."""
+    from . import heldout, retrieval_benchmark
+    from backend.pipeline import ResearchPaperPipeline
+
+    try:
+        papers = [ResearchPaperPipeline().run(p["pdf_path"]).paper for p in heldout.load_manifest(manifest or heldout.DEFAULT_MANIFEST)]
+    except heldout.HeldoutError as error:
+        checks.append({"group": "retrieval", "metric": "papers", "value": 0.0, "threshold": 1.0, "passed": False, "detail": "; ".join(error.problems)})
+        return None
+    report = retrieval_benchmark.evaluate(papers)
+    lexical, hybrid = report["systems"]["lexical"], report["systems"]["hybrid"]
+    detail = (f"{report['questions']} questions: lexical recall@{report['k']} {lexical['recall_at_k']:.3f}, hybrid {hybrid['recall_at_k']:.3f}; by style lexical {lexical['recall_by_style']}, "
+              f"hybrid {hybrid['recall_by_style']}")
+    _check(checks, "retrieval", "hybrid_recall_not_below_lexical", hybrid["recall_at_k"], lexical["recall_at_k"], detail)
+    _check(checks, "retrieval", "quotations_verified", min(lexical["quotations_verified"], hybrid["quotations_verified"]), 1.0, detail)
+    _check(checks, "retrieval", "questions_generated", float(report["questions"]), 6.0, detail)
+    return report
+
+
 def run_gate(thresholds=None, benchmark_manifest=None):
     """{"passed", "checks": [...], "real_papers": {...}} for the thresholds (default: thresholds.json). Never raises for a failed score: a failure is a failed check."""
     from . import benchmark
@@ -119,6 +140,7 @@ def run_gate(thresholds=None, benchmark_manifest=None):
         _check(checks, "real_papers_provisional", "concepts_recall", real["concepts"]["recall"], group["concepts_recall"], "false negatives: " + worst("concepts", "missed"))
         _check(checks, "real_papers_provisional", "roles_accuracy", real["roles"]["accuracy"], group["roles_accuracy"], "wrong roles: " + worst("roles", "wrong"))
     held = heldout_checks(checks, floors.get("heldout_invariants", {}))
+    retrieval_checks(checks)
     return {"passed": all(c["passed"] for c in checks), "checks": checks, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
             "real_papers": {"status": real["status"], "per_paper": [{"id": r["id"], "review_kind": r.get("review_kind"), "headings_f1": r["headings"]["f1"], "concepts_f1": r["concepts"]["f1"]}
                                                                   for r in real["papers"] if r["ok"]],
