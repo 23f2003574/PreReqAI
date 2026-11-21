@@ -229,7 +229,18 @@ class CalendarMarkdown(PlainTextResponse):
     media_type = "text/calendar"
 
 
-def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone_name, start_time):
+def _add_reviews(session, calendar, today, cap):
+    """Spaced reviews from the session's learner profile, capped per day, into the calendar; nothing is added without a profile or when it cannot be read."""
+    directory = learner_profile.configured_directory()
+    path = learner_profile.profile_path(directory, session.profile) if directory and getattr(session, "profile", None) else None
+    if path is None:
+        return
+    schedule, problem = learner_profile.review_schedule(path, today, cap)
+    if not problem:
+        study_calendar.add_reviews(calendar, schedule)
+
+
+def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone_name, start_time, review_cap=10):
     """(session, calendar, timezone name, start time) for the calendar endpoints, or a failure response. Hours default to the session's own daily hours."""
     session = session_manager.get(session_id)
     if session is None:
@@ -244,6 +255,7 @@ def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timez
             steps, importance, daily, today_date, study_calendar.parse_weekdays(weekdays),
             study_calendar.parse_date(deadline, "deadline") if deadline else None, begun, studied, study_calendar.planned_steps(report))
         calendar["plan_start"] = begun.isoformat()
+        _add_reviews(session, calendar, today_date, review_cap)
         hours, _, minutes = (start_time or "09:00").partition(":")
         begin = time(int(hours), int(minutes or 0))
     except (ValueError, study_calendar.CalendarError) as error:  # CalendarError is a ValueError; so are bad hours and bad times
@@ -253,11 +265,11 @@ def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timez
 
 @router.get("/{session_id}/calendar")
 def study_calendar_json(session_id: str, deadline: str | None = None, hours_per_day: float | None = None, weekdays: str | None = None,
-                        today: str | None = None, start: str | None = None):
+                        today: str | None = None, start: str | None = None, review_cap: int = 10):
     """The remaining study plan on real dates: `deadline` (YYYY-MM-DD) adds a feasibility verdict (achievable, or the extra daily hours needed and the date you
     would finish), `weekdays` (mon,tue,...) limits the study days, `today` is the first day work can happen (default: today, UTC), and `start` the day the plan
     began, so work planned for earlier days that is still not done is listed as `missed_sessions` and laid out again from `today`. Studied concepts are not scheduled."""
-    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, None, None)
+    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, None, None, max(1, min(review_cap, 200)))
     if not isinstance(found, tuple):
         return found
     return success_body("Study Calendar", "calendar", session_id=session_id, **found[1])

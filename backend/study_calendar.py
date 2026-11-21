@@ -149,6 +149,16 @@ def _fold(line):
     return "\r\n ".join(out)
 
 
+def add_reviews(calendar, review_schedule, minutes_per_review=1.5):
+    """Put spaced reviews into a built calendar: `calendar["reviews"]` is [{date, count, minutes, concepts}] for each review day of the schedule (see spaced_review.schedule) within the
+    calendar's span or beyond it, and `deferred_reviews` the count the cap and horizon left out. Study items are not changed."""
+    days = []
+    for day in review_schedule["days"]:
+        days.append({"date": day["date"], "count": day["count"], "minutes": round(day["count"] * minutes_per_review, 1), "concepts": sorted({i["concept"] for i in day["items"] if i.get("concept")})})
+    calendar["reviews"], calendar["deferred_reviews"], calendar["review_cap"] = days, len(review_schedule["deferred"]), review_schedule["cap"]
+    return calendar
+
+
 def to_ics(calendar, title="PreReqAI study plan", timezone_name="UTC", start_at=time(9, 0), now=None):
     """The calendar as an iCalendar document (CRLF lines). Each scheduled item is one event, back to back from `start_at` local time in `timezone_name`
     (an IANA name such as Europe/Berlin); times are written in UTC, so no VTIMEZONE is needed and every client agrees, and a day with a clock change
@@ -171,5 +181,12 @@ def to_ics(calendar, title="PreReqAI study plan", timezone_name="UTC", start_at=
                       f"DTEND:{end.astimezone(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}", "SUMMARY:" + _escape("Study " + concept),
                       "DESCRIPTION:" + _escape(hours + " h of " + concept + " (" + title + ")"), "END:VEVENT"]
             begin = end
+    for day in calendar.get("reviews", []):  # spaced reviews: one event a day, after that day's study items
+        begin = datetime.combine(date.fromisoformat(day["date"]), start_at, tzinfo=zone) + timedelta(minutes=round(sum(i["hours"] for d in calendar["days"] if d["date"] == day["date"] for i in d["items"]) * 60))
+        end = begin + timedelta(minutes=max(1, round(day["minutes"])))
+        uid = hashlib.sha1(f"{title}|{day['date']}|reviews".encode("utf-8")).hexdigest()[:24] + "@prereqai"
+        lines += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{stamp}", f"DTSTART:{begin.astimezone(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}",
+                  f"DTEND:{end.astimezone(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}", "SUMMARY:" + _escape(f"Review {day['count']} question{'s' if day['count'] != 1 else ''}"),
+                  "DESCRIPTION:" + _escape("Spaced review of " + (", ".join(day["concepts"]) or "your questions") + " (" + title + ")"), "END:VEVENT"]
     lines.append("END:VCALENDAR")
     return "\r\n".join(_fold(line) for line in lines) + "\r\n"

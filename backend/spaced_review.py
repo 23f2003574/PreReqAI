@@ -55,6 +55,60 @@ def _graded(entry, graded):
     return counters
 
 
+GRADES = ("again", "hard", "good", "easy")
+EASE_START = {"Easy": 2.7, "Medium": 2.5, "Hard": 2.3}  # the question's own difficulty sets how fast its interval may grow
+MIN_EASE, MAX_EASE, MAX_INTERVAL_DAYS = 1.3, 3.5, 365
+_GRADE_FACTOR = {"hard": 0.6, "good": 1.0, "easy": 1.4}
+_EASE_CHANGE = {"again": -0.2, "hard": -0.15, "good": 0.0, "easy": 0.15}
+
+
+def graded_update(entry, concept, grade, moment, difficulty="Medium", graded=None):
+    """The entry of a question after a review answered with one of GRADES (again, hard, good, easy). Each question has its own `ease` (starting from its difficulty, then raised or lowered
+    by every grade, between MIN_EASE and MAX_EASE). `again` resets the streak and returns in MISSED_RETRY; the first two successes wait 1 and 3 days, later ones the previous wait times the
+    ease; `hard` waits 0.6 of that, `easy` 1.4 of it, never less than 12 hours or more than MAX_INTERVAL_DAYS. `last_outcome` stays knew/missed (again is missed) so older readers keep working."""
+    if grade not in GRADES:
+        raise ValueError(f"a grade is one of {', '.join(GRADES)}, not {grade!r}")
+    entry = dict(entry or {})
+    outcome = "missed" if grade == "again" else "knew"
+    knew, missed = entry.get("knew", 0) + (outcome == "knew"), entry.get("missed", 0) + (outcome == "missed")
+    streak = entry.get("streak", 0) + 1 if outcome == "knew" else 0
+    ease = round(min(MAX_EASE, max(MIN_EASE, entry.get("ease", EASE_START.get(difficulty, 2.5)) + _EASE_CHANGE[grade])), 2)
+    if grade == "again":
+        wait = MISSED_RETRY
+    else:
+        base_hours = 24.0 if streak == 1 else 72.0 if streak == 2 else max(24.0, entry.get("interval_hours", 24.0)) * ease
+        wait = timedelta(hours=min(MAX_INTERVAL_DAYS * 24, max(12.0, base_hours * _GRADE_FACTOR[grade])))
+    return {**_graded(entry, graded), "concept": concept, "attempts": knew + missed, "knew": knew, "missed": missed, "streak": streak, "last_outcome": outcome, "last_grade": grade, "ease": ease,
+            "first_seen": entry.get("first_seen") or stamp(moment), "last_seen": stamp(moment), "interval_hours": round(wait.total_seconds() / 3600, 2), "due": stamp(moment + wait)}
+
+
+def schedule(items, today, cap=10, horizon_days=30):
+    """Lay review items out over days without ever exceeding `cap` per day. `items` are queue entries ({question_id, concept, due}); `today` a date. Overdue and due-today items are placed
+    from today, most overdue first, `cap` a day, so a long absence becomes a few capped days, never one huge day; an item due on a later day is placed on that day or the first one with
+    room. Items that would fall after `horizon_days` days from today are returned as `deferred` (still due, not scheduled). Returns {"days": [{date, count, items}], "deferred": [...],
+    "cap", "backlog_days"}: backlog_days is how many days the overdue backlog takes to clear."""
+    from datetime import date as _date
+
+    if not isinstance(cap, int) or isinstance(cap, bool) or cap < 1:
+        raise ValueError("the daily review cap must be a whole number of at least 1")
+    ordered = sorted(items, key=lambda item: (parse_time(item["due"]) or datetime.max.replace(tzinfo=timezone.utc), item["question_id"]))
+    load, placed, deferred, overdue_days = {}, {}, [], set()
+    for item in ordered:
+        due = parse_time(item["due"])
+        day = max(today, due.date()) if due else today
+        while load.get(day, 0) >= cap:
+            day += timedelta(days=1)
+        if (day - today).days > horizon_days:
+            deferred.append(item)
+            continue
+        load[day] = load.get(day, 0) + 1
+        placed.setdefault(day, []).append(item)
+        if due and due.date() <= today:
+            overdue_days.add(day)
+    days = [{"date": day.isoformat(), "count": len(entries), "items": [{"question_id": e["question_id"], "concept": e.get("concept")} for e in entries]} for day, entries in sorted(placed.items())]
+    return {"days": days, "deferred": [{"question_id": e["question_id"], "concept": e.get("concept"), "due": e["due"]} for e in deferred], "cap": cap, "backlog_days": len(overdue_days)}
+
+
 def update(entry, concept, outcome, moment, graded=None):
     """The entry of a question after one more answer (`knew` or `missed`) at `moment`; `entry` (or None for a first answer) is not changed."""
     entry = dict(entry or {})

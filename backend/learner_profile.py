@@ -97,6 +97,10 @@ def _quiz_entries(value):
         graded = {name: entry[name] for name in spaced_review.GRADED_FIELDS if name in entry}  # optional: an entry saved before assessed answers existed has none (read as zero)
         if not all(isinstance(n, int) and not isinstance(n, bool) and 0 <= n <= 10**6 for n in graded.values()) or graded.get("graded_correct", 0) > graded.get("graded_attempts", 0):
             raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
+        if "ease" in entry or "last_grade" in entry:  # present only on entries reviewed with a grade (again, hard, good, easy)
+            if (isinstance(entry.get("ease"), bool) or not isinstance(entry.get("ease"), (int, float)) or not 1.3 <= entry["ease"] <= 3.5 or entry.get("last_grade") not in spaced_review.GRADES):
+                raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
+            graded = {**graded, "ease": entry["ease"], "last_grade": entry["last_grade"]}
         result[identifier] = {**graded, "concept": entry["concept"].strip(), **{name: entry[name] for name in _COUNTS}, "last_outcome": entry["last_outcome"],
                               "first_seen": entry["first_seen"], "last_seen": entry["last_seen"], "interval_hours": entry["interval_hours"], "due": entry["due"]}
     return result
@@ -209,6 +213,39 @@ def record_quiz(path, question_id, concept, outcome, moment=None, graded=None):
         quiz[question_id] = spaced_review.update(quiz.get(question_id), name, outcome, moment or spaced_review.now(), graded)
         save(path, profile["known"], profile["studied"], quiz)
     return quiz[question_id]
+
+
+def record_review(path, question_id, concept, grade, moment=None, difficulty="Medium", graded=None):
+    """Remember a review answered with a grade (again, hard, good, easy): the question's ease and next review time follow spaced_review.graded_update. Same errors as record_quiz."""
+    from backend import spaced_review
+
+    if grade not in spaced_review.GRADES or not _QUESTION_ID.fullmatch(str(question_id)):
+        raise ProfileError("a grade is again, hard, good or easy and a question id looks like 'Softmax:1'")
+    name = vocabulary().get(key(concept))
+    if name is None:
+        raise ProfileError(f"{concept!r} is not a concept PreReqAI knows")
+    with locked(path):
+        profile, problem = load_full(path)
+        if problem:
+            raise ProfileError(problem)
+        quiz = profile["quiz"]
+        if question_id not in quiz and len(quiz) >= MAX_QUESTIONS:
+            raise ProfileError(f"the profile already holds {MAX_QUESTIONS} questions")
+        quiz[question_id] = spaced_review.graded_update(quiz.get(question_id), name, grade, moment or spaced_review.now(), difficulty, graded)
+        save(path, profile["known"], profile["studied"], quiz)
+    return quiz[question_id]
+
+
+def review_schedule(path, today=None, cap=10, horizon_days=30):
+    """(schedule, problem): the profile's due and upcoming reviews laid out over days under a daily cap (see spaced_review.schedule)."""
+    from backend import spaced_review
+
+    profile, problem = load_full(path)
+    if problem:
+        return {"days": [], "deferred": [], "cap": cap, "backlog_days": 0}, problem
+    moment = spaced_review.now()
+    queue = spaced_review.queue(profile["quiz"], moment, upcoming_limit=len(profile["quiz"]))
+    return spaced_review.schedule([*queue["due"], *queue["upcoming"]], today or moment.date(), cap, horizon_days), ""
 
 
 def review_queue(path, moment=None, upcoming_limit=10):
