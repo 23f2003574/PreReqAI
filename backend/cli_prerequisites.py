@@ -337,6 +337,10 @@ def run_prerequisites_curriculum(args) -> int:
     print(f"Together: {hours['combined']}h instead of {hours['separate']}h separately ({hours['saved']}h saved: {hours['saved_by_mastery']}h known, {hours['saved_by_sharing']}h shared)")
     for paper in result["papers"]:
         print(f"{paper['position']}. {paper['title']}: {paper['reason']}")
+    for link in result["citations"]["ordering"]:
+        print(f"citation: {link['paper']!r} cites {link['after']!r} (reference {link['reference_number']}), so it comes after it")
+    for item in result["citations"]["ambiguous"] + [{"reason": f"{title!r} is too short to match safely"} for title in result["citations"]["unmatchable"]]:
+        print(f"not used: {item['reason']}")
     for hint in result["mastery_hints"]:
         print(f"hint: {hint['concept']} ({hint['hours']}h): {hint['reason']} (leave it out with --accept-mastered '{hint['concept']}')")
     for item in result["excluded"]:

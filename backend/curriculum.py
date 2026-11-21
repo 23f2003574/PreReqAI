@@ -59,12 +59,24 @@ def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_pe
              for name in sorted(needed_by) if key(name) in quiz_mastery]
     scheduled, order, papers = set(), [], []
     pending = list(views)
+    from backend import paper_citations
+
+    cites = paper_citations.find_links(views, sessions)
+    cycle_pairs = {frozenset(pair) for pair in cites["cycles"]}
+    needs = {}  # a paper after the papers it cites (cycles are not used)
+    for link in cites["links"]:
+        if frozenset((link["citing"], link["cited"])) not in cycle_pairs:
+            needs.setdefault(link["citing"], []).append(link)
+    placed = set()
     while pending:
         def extra(view):
             return sum(step.estimated_hours for step in view["remaining"] if step.concept not in scheduled)
 
-        pick = min(pending, key=lambda view: (round(extra(view), 6), round(sum(s.estimated_hours for s in view["remaining"]), 6), view["title"], view["session_id"]))
+        waiting = {view["session_id"] for view in pending}
+        ready = [view for view in pending if not any(link["cited"] in waiting for link in needs.get(view["session_id"], []))] or pending
+        pick = min(ready, key=lambda view: (round(extra(view), 6), round(sum(s.estimated_hours for s in view["remaining"]), 6), view["title"], view["session_id"]))
         pending.remove(pick)
+        placed.add(pick["session_id"])
         new = [step for step in schedule_order(pick["remaining"], pick["importance"]) if step.concept not in scheduled]
         shared = [step.concept for step in pick["remaining"] if step.concept in scheduled]
         scheduled.update(step.concept for step in new)
@@ -74,10 +86,12 @@ def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_pe
                + (f" ({', '.join(step.concept for step in new)})" if new else "")]
         if shared:
             why.append(f"it shares {', '.join(shared)} with the papers before it, so that groundwork is not repeated")
+        for link in needs.get(pick["session_id"], []):
+            why.append(f"it cites {link['cited_title']!r} (its reference {link['reference_number']}), which is placed before it" if link["cited"] in placed else f"it cites {link['cited_title']!r}")
         if not pick["remaining"]:
             why.append("nothing is left to study for it: you can read it now")
         papers.append({"position": position, "session_id": pick["session_id"], "title": pick["title"], "new_prerequisites": [step.concept for step in new],
-                       "shared_prerequisites": shared, "extra_hours": round(sum(step.estimated_hours for step in new), 2), "reason": "; ".join(why) + "."})
+                       "shared_prerequisites": shared, "cites": [link["cited_title"] for link in needs.get(pick["session_id"], [])], "extra_hours": round(sum(step.estimated_hours for step in new), 2), "reason": "; ".join(why) + "."})
     combined = round(sum(step.estimated_hours for step in order), 2)
     after_mastery = round(sum(step.estimated_hours for view in views for step in view["remaining"]), 2)  # each paper's own plan, less what you know, before sharing
     result = {
@@ -85,6 +99,9 @@ def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_pe
         "shared_prerequisites": [{"concept": name, "hours": hours[name], "papers": titles,
                                   "reason": f"{name} is needed by {len(titles)} papers ({'; '.join(titles)}) and is studied once"}
                                  for name, titles in sorted(needed_by.items(), key=lambda item: (-len(item[1]), item[0])) if len(titles) > 1],
+        "citations": {**cites, "ordering": [{"paper": link["citing_title"], "after": link["cited_title"], "reference_number": link["reference_number"], "evidence": link["evidence"]}
+                                              for links in needs.values() for link in links]},
+        "shared_references": dict(zip(("references", "totals"), paper_citations.shared_references(sessions))),
         "excluded": sorted(excluded.values(), key=lambda item: item["concept"]),
         "mastery_hints": hints,
         "steps": [{"concept": step.concept, "hours": step.estimated_hours} for step in order],

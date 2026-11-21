@@ -1172,6 +1172,9 @@ async function planCurriculum() {
     var box = el("div", "");
     box.appendChild(el("p", "Together: " + body.hours.combined + " h instead of " + body.hours.separate + " h separately (" + body.hours.saved + " h saved: " + body.hours.saved_by_mastery + " h you know, " + body.hours.saved_by_sharing + " h shared).", "msg info"));
     body.papers.forEach(function (p) { var card = el("div", null, "card"); card.appendChild(el("p", p.position + ". " + p.title)); card.appendChild(el("p", p.reason, "meta")); box.appendChild(card); });
+    ((body.citations || {}).ordering || []).forEach(function (c) { box.appendChild(el("p", "Citation: \"" + c.paper + "\" cites \"" + c.after + "\" (reference " + c.reference_number + "), so it comes after it.", "meta")); });
+    var cr = (body.shared_references || {}).references || [];
+    if (cr.length) box.appendChild(el("p", cr.length + " reference" + (cr.length === 1 ? " is" : "s are") + " shared by several of these papers and listed once (" + body.shared_references.totals.total + " entries, " + body.shared_references.totals.unique + " distinct).", "meta"));
     if (body.shared_prerequisites.length) box.appendChild(el("p", "Studied once for several papers: " + body.shared_prerequisites.map(function (s) { return s.concept + " (" + s.hours + " h)"; }).join("; ") + ".", "meta"));
     (body.mastery_hints || []).forEach(function (h) {  // offered, never applied: the learner ticks what to leave out
       var row = el("p", h.concept + " (" + h.hours + " h): " + h.reason + " "), tick = document.createElement("input");
