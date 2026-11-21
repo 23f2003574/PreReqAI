@@ -676,7 +676,7 @@ def run_prerequisites_analyze(args, platform=None) -> int:
         for warning in outcome["warnings"]:
             print(f"  warning: {warning}")
         confidence = (report or {}).get("extraction_confidence")
-        if confidence and confidence["level"] != "high":  # nothing is printed for a paper that extracted normally
+        if confidence and confidence["level"] == "low":  # nothing is printed for a paper that extracted normally or with only minor gaps (the report and page list them)
             print(f"  extraction confidence: {confidence['level']}. {confidence['note']}")
             for item in confidence["warnings"]:
                 print(f"    {item['signal']}: {item['message']}" + (f" {item['action']}" if item["action"] else ""))

@@ -43,10 +43,10 @@ def test_the_command_line_lists_confirms_and_forgets_and_shows_candidates(env, c
     session_id = platform.analyze(MIXTRAL)["session_id"]
     assert main(["prerequisites", "candidates", session_id, "--json"]) == 0
     assert "candidate_concepts" in json.loads(capsys.readouterr().out)
-    assert main(["prerequisites", "custom-concept", "add", "Expert Routing", "--alias", "router balance"]) == 0 and "Confirmed Expert Routing" in capsys.readouterr().out
-    assert main(["prerequisites", "custom-concept", "list"]) == 0 and "Expert Routing (also: router balance)" in capsys.readouterr().out
+    assert main(["prerequisites", "custom-concept", "add", "Aquifer Recharge Basin", "--alias", "recharge basin zone"]) == 0 and "Confirmed Aquifer Recharge Basin" in capsys.readouterr().out
+    assert main(["prerequisites", "custom-concept", "list"]) == 0 and "Aquifer Recharge Basin (also: recharge basin zone)" in capsys.readouterr().out
     assert main(["prerequisites", "custom-concept", "add", "Softmax"]) != 0 and "already a concept" in capsys.readouterr().err
-    assert main(["prerequisites", "custom-concept", "remove", "Expert Routing"]) == 0 and main(["prerequisites", "custom-concept", "remove", "Expert Routing"]) != 0
+    assert main(["prerequisites", "custom-concept", "remove", "Aquifer Recharge Basin"]) == 0 and main(["prerequisites", "custom-concept", "remove", "Aquifer Recharge Basin"]) != 0
 
 
 def test_a_confirmed_concept_is_detected_in_the_next_analysis_and_the_page_offers_confirmation(env):

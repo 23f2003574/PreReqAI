@@ -17,7 +17,7 @@ from pathlib import Path
 
 from backend.filelock import locked
 
-PIPELINE_VERSION = "2026-11-20.1"
+PIPELINE_VERSION = "2026-11-20.1+2"
 MAX_ENTRIES = 16
 _CHUNK = 1024 * 1024
 
@@ -31,7 +31,10 @@ def file_key(path):
                 digest.update(chunk)
     except OSError:
         return None
-    settings = os.environ.get("PREREQAI_OCR_LANGS", "").strip().lower()
+    from backend.custom_concepts import load as custom_load
+
+    custom = "|".join(sorted(t.lower() for c in custom_load()[0] for t in (c["name"], *c["aliases"])))  # confirming a custom concept must change what is detected in a paper seen before
+    settings = os.environ.get("PREREQAI_OCR_LANGS", "").strip().lower() + "|" + custom
     return f"{digest.hexdigest()}-{hashlib.sha256((PIPELINE_VERSION + '|' + settings).encode()).hexdigest()[:12]}"
 
 

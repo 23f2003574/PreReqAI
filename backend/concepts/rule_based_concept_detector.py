@@ -206,6 +206,7 @@ class RuleBasedConceptDetector:
         paper.concepts.clear()
         paper.unrecognised_terms = []
 
+        self.registry = ConceptRegistry(custom=True)  # rebuilt for every paper: a concept the learner confirmed since the last one counts
         original_text = body_text(paper)
         paper.unrecognised_terms = find_unrecognised_terms(original_text, self.registry)
         full_text = normalise_text(original_text)

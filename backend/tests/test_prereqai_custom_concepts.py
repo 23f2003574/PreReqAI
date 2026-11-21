@@ -115,3 +115,17 @@ def test_a_repeated_phrase_that_crosses_punctuation_or_a_number_never_crashes_th
     result.paragraphs = [Paragraph(i, "1 Intro", "The tidal model, 3 data points; (tidal model) and tidal model 3 data points again. Tidal energy, data.", i) for i in (1, 2, 3)]
     found = find(result)
     assert all(c["sentence"] for c in found) and "tidal model" in {c["term"].lower() for c in found}
+
+
+def test_confirming_a_concept_changes_the_analysis_cache_key_so_a_paper_seen_before_is_analysed_again(store, tmp_path):
+    """Regression (CI): the second analysis of the same PDF came from the cache and never saw the concept just confirmed."""
+    from backend.analysis_cache import file_key
+
+    pdf = tmp_path / "p.pdf"
+    pdf.write_bytes(b"%PDF-1.4 same bytes")
+    before = file_key(str(pdf))
+    custom_concepts.add("Aquifer Recharge Basin")
+    after = file_key(str(pdf))
+    assert before != after and after == file_key(str(pdf))
+    custom_concepts.remove("Aquifer Recharge Basin")
+    assert file_key(str(pdf)) == before
