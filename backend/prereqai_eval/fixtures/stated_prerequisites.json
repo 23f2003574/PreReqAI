@@ -1,0 +1,111 @@
+{
+ "format": "prereqai-stated-prerequisite-cases",
+ "note": "Sentences written for this evaluation in the style of papers (not quoted from the benchmark PDFs, which need PyMuPDF to read); the expected names are an AI's annotation and are pending human review. Negative cases carry no explicit cue, an unknown topic, or only a reminder.",
+ "cases": [
+  {
+   "sentence": "We assume familiarity with linear algebra and basic probability theory.",
+   "expected": [
+    "Linear Algebra",
+    "Probability"
+   ]
+  },
+  {
+   "sentence": "The reader is expected to know calculus, in particular partial derivatives and the chain rule.",
+   "expected": [
+    "Calculus"
+   ]
+  },
+  {
+   "sentence": "This section requires a background in information theory, notably KL divergence.",
+   "expected": [
+    "Information Theory"
+   ]
+  },
+  {
+   "sentence": "Readers should be familiar with neural networks and gradient descent.",
+   "expected": [
+    "Neural Networks",
+    "Gradient Descent"
+   ]
+  },
+  {
+   "sentence": "We assume prior knowledge of Markov decision processes and basic reinforcement learning.",
+   "expected": [
+    "Markov Decision Process",
+    "Reinforcement Learning"
+   ]
+  },
+  {
+   "sentence": "Familiarity with the Transformer architecture and self-attention is assumed throughout.",
+   "expected": [
+    "Transformer",
+    "Self-Attention"
+   ]
+  },
+  {
+   "sentence": "Our derivation requires a basic understanding of convex optimization problems.",
+   "expected": [
+    "Optimization"
+   ]
+  },
+  {
+   "sentence": "The proofs presuppose knowledge of stochastic processes and Markov chains.",
+   "expected": [
+    "Stochastic Processes"
+   ]
+  },
+  {
+   "sentence": "We expect the reader to have a background in graph theory and adjacency matrices.",
+   "expected": [
+    "Graphs"
+   ]
+  },
+  {
+   "sentence": "Readers unfamiliar with statistical inference may consult the appendix for a primer.",
+   "expected": []
+  },
+  {
+   "sentence": "Recall that the softmax function maps a vector of scores to a probability distribution.",
+   "expected": []
+  },
+  {
+   "sentence": "We assume the reader is comfortable with the chess openings discussed by the authors.",
+   "expected": []
+  },
+  {
+   "sentence": "Prior knowledge of Byzantine consensus protocols is helpful for the later sections.",
+   "expected": []
+  },
+  {
+   "sentence": "The model is trained with gradient descent and uses a softmax output layer.",
+   "expected": []
+  },
+  {
+   "sentence": "We use matrix multiplication and the chain rule to derive the update.",
+   "expected": []
+  },
+  {
+   "sentence": "Familiar with the notation of the previous section, the reader can skip the proof.",
+   "expected": []
+  },
+  {
+   "sentence": "As a reminder, the KL divergence between two distributions is non-negative.",
+   "expected": []
+  },
+  {
+   "sentence": "Background on batch normalization is given in the appendix of the original paper.",
+   "expected": []
+  },
+  {
+   "sentence": "The authors assume that every user has a stable internet connection during evaluation.",
+   "expected": []
+  },
+  {
+   "sentence": "We assume familiarity with backpropagation and the Adam optimizer.",
+   "expected": [
+    "Backpropagation",
+    "Adam Optimizer"
+   ]
+  }
+ ]
+}

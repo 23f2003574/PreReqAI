@@ -117,6 +117,8 @@ class Prerequisite:
     # rule-based grading of the dependent concepts' mentions and sections (see PrerequisiteDetector.grade), not a probability.
     evidence_strength: str = ""
     strength_reasons: list = field(default_factory=list)  # concise reasons for the grade, one per dependent concept
+    provenance: str = "inferred"  # "inferred" (PreReqAI's table), "inferred+stated" (the table, and the paper says it is needed) or "stated" (only the paper says so)
+    stated_by_paper: list = field(default_factory=list)  # [{passage_id, sentence, page_number, section, cue}]: the paper's own sentences
 
 
 @dataclass
@@ -252,6 +254,9 @@ class Paper:
     prerequisites: list[
         Prerequisite
     ] = field(default_factory=list)
+
+    stated_prerequisites: list = field(default_factory=list)  # [{subject, kind, cue, sentence, page_number, section, passage_id}] the paper states itself (backend/parsing/stated_prerequisites.py)
+    unmatched_prerequisite_cues: list = field(default_factory=list)  # prerequisite-cue sentences naming nothing PreReqAI knows: shown, never turned into prerequisites
 
     # Diagnostic only: detected concepts with no entry at all in the prerequisite rules. That means "unsupported", not
     # "needs nothing" (a rule with an empty list is the explicit way to say the latter).

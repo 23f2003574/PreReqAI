@@ -510,7 +510,9 @@ class PrerequisiteDetector:
                 )
             )
 
-        return paper
+        from backend.parsing.stated_prerequisites import apply as apply_stated
+
+        return apply_stated(paper)  # what the paper itself says it needs: provenance, one grade up for explicit cues
 
 
 # The evidence grade of a dependent concept (the concept whose prerequisite table entry produced a recommendation), from what the paper shows:

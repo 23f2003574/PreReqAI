@@ -224,6 +224,8 @@ class LearningReportGenerator:
                 for explanation in paper.concept_explanations
             },
 
+            "stated_prerequisites": getattr(paper, "stated_prerequisites", []),
+            "unmatched_prerequisite_cues": getattr(paper, "unmatched_prerequisite_cues", []),
             "prerequisites": [
 
                 {
@@ -236,6 +238,8 @@ class LearningReportGenerator:
                     "evidence_note": prerequisite.evidence_note,
                     "evidence_strength": prerequisite.evidence_strength,
                     "strength_reasons": prerequisite.strength_reasons,
+                    "provenance": getattr(prerequisite, "provenance", "inferred"),
+                    "stated_by_paper": getattr(prerequisite, "stated_by_paper", []),
                 }
 
                 for prerequisite in ranked
