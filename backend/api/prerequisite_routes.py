@@ -94,6 +94,23 @@ def _server_limits():
     return AnalysisLimits(max_seconds=seconds)
 
 
+def _guard_upload(path):
+    """The structured response for an upload the isolated PDF worker could not handle (see backend/ingestion/pdf_guard.py), or None."""
+    from backend.api.workflow_result import failure_body, timeout_body
+    from backend.ingestion.pdf_guard import PdfGuardError, guard_pdf
+
+    try:
+        guard_pdf(path)
+    except PdfGuardError as error:
+        hint = "Nothing was kept. Try a smaller or undamaged PDF."
+        if error.kind == "timeout":
+            return timeout_body("ingestion", error.message, hint=hint)
+        if error.kind in ("too_many_pages", "resource_exhausted"):
+            return limit_exceeded_body("ingestion", error.message, hint=hint)
+        return failure_body("ingestion", error.message, hint=hint)
+    return None
+
+
 def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], diagnostics: bool = False, hours_per_day=None) -> dict:
     """Blocking work (copy the upload, run the analysis): called off the event loop."""
 
@@ -125,6 +142,10 @@ def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], dia
                     )
 
                 temp_file.write(chunk)
+
+        refused = _guard_upload(temp_path)
+        if refused:
+            return refused
 
         outcome = platform.analyze(
             temp_path,

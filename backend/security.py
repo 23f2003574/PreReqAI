@@ -14,7 +14,8 @@ import os
 import secrets
 
 TRUSTED_ENV = "PREREQAI_TRUSTED_HOSTS"
-DEFAULT_HOSTS = ("localhost", "127.0.0.1", "[::1]", "testserver")  # testserver: the name Starlette's test client sends
+DEFAULT_HOSTS = ("localhost", "127.0.0.1", "[::1]")
+TEST_ENV = "PREREQAI_ALLOW_TESTSERVER"  # set to 1 only by the test suite: "testserver" is the name Starlette's test client sends, and is not a production host
 STATE_CHANGING = {"POST", "PUT", "PATCH", "DELETE"}
 BODY_TYPES = ("application/json", "multipart/form-data", "application/x-www-form-urlencoded")
 DOC_PATHS = ("/docs", "/redoc", "/openapi.json")
@@ -22,7 +23,7 @@ DOC_PATHS = ("/docs", "/redoc", "/openapi.json")
 
 def trusted_hosts():
     extra = {item.strip().lower() for item in os.environ.get(TRUSTED_ENV, "").split(",") if item.strip()}
-    return {*DEFAULT_HOSTS, *extra}
+    return {*DEFAULT_HOSTS, *extra, *(({"testserver"}) if os.environ.get(TEST_ENV) == "1" else ())}
 
 
 def host_allowed(host_header):

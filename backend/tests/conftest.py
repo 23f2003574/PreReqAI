@@ -1,8 +1,11 @@
+import os
 from pathlib import Path
 
 import pytest
 
 from backend.ingestion.arxiv_resolver import ArxivResolver
+
+os.environ["PREREQAI_ALLOW_TESTSERVER"] = "1"  # the test client's Host is "testserver", accepted only when this is set (see backend/security.py)
 
 
 @pytest.fixture(autouse=True)
