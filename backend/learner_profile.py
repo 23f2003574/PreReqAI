@@ -94,7 +94,10 @@ def _quiz_entries(value):
                 or entry.get("last_outcome") not in ("knew", "missed") or any(spaced_review.parse_time(entry.get(f)) is None for f in ("first_seen", "last_seen", "due"))
                 or isinstance(entry.get("interval_hours"), bool) or not isinstance(entry.get("interval_hours"), (int, float)) or not math.isfinite(entry["interval_hours"])):
             raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
-        result[identifier] = {"concept": entry["concept"].strip(), **{name: entry[name] for name in _COUNTS}, "last_outcome": entry["last_outcome"],
+        graded = {name: entry[name] for name in spaced_review.GRADED_FIELDS if name in entry}  # optional: an entry saved before assessed answers existed has none (read as zero)
+        if not all(isinstance(n, int) and not isinstance(n, bool) and 0 <= n <= 10**6 for n in graded.values()) or graded.get("graded_correct", 0) > graded.get("graded_attempts", 0):
+            raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
+        result[identifier] = {**graded, "concept": entry["concept"].strip(), **{name: entry[name] for name in _COUNTS}, "last_outcome": entry["last_outcome"],
                               "first_seen": entry["first_seen"], "last_seen": entry["last_seen"], "interval_hours": entry["interval_hours"], "due": entry["due"]}
     return result
 
@@ -170,7 +173,7 @@ def save(path, known, studied, quiz=None):
         quiz = quiz["quiz"]
     text = json.dumps({"format": FORMAT, "schema_version": SCHEMA_VERSION, "known": known, "studied": studied, "quiz": quiz}, indent=2) + "\n"
     written = parse_full(text.encode("utf-8"))  # a faulty rewrite raises here, before the previous file is touched
-    if written["quiz"] != quiz:
+    if written["quiz"] != _quiz_entries(quiz):
         raise ProfileError("the quiz history did not survive being written; the profile was not changed")
     target.parent.mkdir(parents=True, exist_ok=True)
     temp = target.with_name(f".{target.name}.{os.getpid()}.{threading.get_ident()}.tmp")
@@ -186,7 +189,7 @@ def save(path, known, studied, quiz=None):
         raise
 
 
-def record_quiz(path, question_id, concept, outcome, moment=None):
+def record_quiz(path, question_id, concept, outcome, moment=None, graded=None):
     """Remember one answered question in the profile (its history and next review time); returns the question's entry. ProfileError when the
     profile cannot be used (it is then left untouched) or the question or outcome is invalid; a concept PreReqAI does not know is refused."""
     from backend import spaced_review
@@ -203,7 +206,7 @@ def record_quiz(path, question_id, concept, outcome, moment=None):
         quiz = profile["quiz"]
         if question_id not in quiz and len(quiz) >= MAX_QUESTIONS:
             raise ProfileError(f"the profile already holds {MAX_QUESTIONS} questions")
-        quiz[question_id] = spaced_review.update(quiz.get(question_id), name, outcome, moment or spaced_review.now())
+        quiz[question_id] = spaced_review.update(quiz.get(question_id), name, outcome, moment or spaced_review.now(), graded)
         save(path, profile["known"], profile["studied"], quiz)
     return quiz[question_id]
 
@@ -217,23 +220,30 @@ def review_queue(path, moment=None, upcoming_limit=10):
 
 
 def mastery(quiz):
-    """[{concept, questions, attempts, knew, missed, status, last_seen}] per concept of a profile's quiz history, by name. status: "mastered" when at least two
-    different questions were answered and each was last answered "knew" with a streak of at least 2; "needs_practice" when any question was last missed;
-    otherwise "progressing". It is a summary of self-graded answers, not a test result."""
+    """[{concept, questions, attempts, knew, missed, status, evidence, graded_attempts, graded_correct, high_confidence_wrong, last_seen}] per concept of a profile's quiz history, by name.
+    Mastery needs ASSESSED evidence, answers the system checked itself (see backend/tutor/diagnostic.py); a self-reported "knew" never establishes it.
+    status: "needs_practice" when any question was last missed; "mastered" when at least two different questions each have an assessed correct streak of at least 2 and fewer than two
+    high-confidence answers were wrong (a learner who is often confidently wrong has not shown understanding); "self_reported" when the old self-graded rule (two questions, each "knew" with a
+    streak of 2) holds but the assessed evidence does not; otherwise "progressing". evidence: "assessed" when the concept has any assessed answer, else "self_reported"."""
     by_concept = {}
     for entry in quiz.values():
         by_concept.setdefault(entry["concept"], []).append(entry)
     result = []
     for concept in sorted(by_concept):
         entries = by_concept[concept]
+        graded = sum(e.get("graded_attempts", 0) for e in entries)
+        confident_wrong = sum(e.get("high_confidence_wrong", 0) for e in entries)
         if any(e["last_outcome"] == "missed" for e in entries):
             status = "needs_practice"
-        elif len(entries) >= 2 and all(e["streak"] >= 2 for e in entries):
+        elif len(entries) >= 2 and all(e.get("graded_streak", 0) >= 2 for e in entries) and confident_wrong < 2:
             status = "mastered"
+        elif not graded and len(entries) >= 2 and all(e["streak"] >= 2 for e in entries):
+            status = "self_reported"
         else:
             status = "progressing"
         result.append({"concept": concept, "questions": len(entries), "attempts": sum(e["attempts"] for e in entries), "knew": sum(e["knew"] for e in entries),
-                       "missed": sum(e["missed"] for e in entries), "status": status, "last_seen": max(e["last_seen"] for e in entries)})
+                       "missed": sum(e["missed"] for e in entries), "status": status, "evidence": "assessed" if graded else "self_reported", "graded_attempts": graded,
+                       "graded_correct": sum(e.get("graded_correct", 0) for e in entries), "high_confidence_wrong": confident_wrong, "last_seen": max(e["last_seen"] for e in entries)})
     return result
 
 

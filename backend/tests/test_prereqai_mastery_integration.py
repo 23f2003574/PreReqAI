@@ -31,11 +31,11 @@ def analyse(profile="me"):
 
 
 def master(env, concept="Probability"):
-    """Two different questions answered correctly twice each, saved in the profile the way the quiz saves them."""
+    """Two different questions answered correctly twice each, checked by the system (assessed), saved in the profile the way the diagnostic saves them."""
     path = env / "profiles" / "me.json"
     for number in (1, 2):
         for _ in range(2):
-            learner_profile.record_quiz(path, f"{concept}:{number}", concept, "knew")
+            learner_profile.record_quiz(path, f"{concept}:{number}", concept, "knew", graded={"correct": True, "confidence": "medium"})
     assert concept in learner_profile.mastered(learner_profile.load_full(path)[0]["quiz"])
 
 

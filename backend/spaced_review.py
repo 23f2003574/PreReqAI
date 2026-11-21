@@ -37,13 +37,32 @@ def interval(streak, knew, missed):
     return timedelta(days=days)
 
 
-def update(entry, concept, outcome, moment):
+GRADED_FIELDS = ("graded_attempts", "graded_correct", "graded_streak", "high_confidence_right", "high_confidence_wrong")
+
+
+def _graded(entry, graded):
+    """The assessment counters of an entry after one more answer. `graded` is None for a self-reported answer (the counters are then only carried over, and are absent from an entry that
+    never had an assessed answer) or {"correct": bool, "confidence": "low"|"medium"|"high"} for an answer the system checked itself."""
+    carried = {name: entry[name] for name in GRADED_FIELDS if name in entry}
+    if graded is None:
+        return carried
+    counters = {name: carried.get(name, 0) for name in GRADED_FIELDS}
+    counters["graded_attempts"] += 1
+    counters["graded_correct"] += bool(graded["correct"])
+    counters["graded_streak"] = counters["graded_streak"] + 1 if graded["correct"] else 0
+    if graded.get("confidence") == "high":
+        counters["high_confidence_right" if graded["correct"] else "high_confidence_wrong"] += 1
+    return counters
+
+
+def update(entry, concept, outcome, moment, graded=None):
     """The entry of a question after one more answer (`knew` or `missed`) at `moment`; `entry` (or None for a first answer) is not changed."""
     entry = dict(entry or {})
     knew, missed = entry.get("knew", 0) + (outcome == "knew"), entry.get("missed", 0) + (outcome != "knew")
     streak = entry.get("streak", 0) + 1 if outcome == "knew" else 0
     wait = interval(streak, knew, missed)
-    return {"concept": concept, "attempts": knew + missed, "knew": knew, "missed": missed, "streak": streak, "last_outcome": outcome,
+    extra = _graded(entry, graded)
+    return {**extra, "concept": concept, "attempts": knew + missed, "knew": knew, "missed": missed, "streak": streak, "last_outcome": outcome,
             "first_seen": entry.get("first_seen") or stamp(moment), "last_seen": stamp(moment), "interval_hours": round(wait.total_seconds() / 3600, 2),
             "due": stamp(moment + wait)}
 

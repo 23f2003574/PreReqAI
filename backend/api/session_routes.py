@@ -9,7 +9,7 @@ from backend.platform.prereqai_platform import _concept_key
 from backend.prerequisites.personalised_plan import build_plan
 from backend.prerequisites.prerequisite_paths import build_paths
 from backend.study_plan_markdown import plan_markdown, studied_concepts
-from backend.tutor import paper_quiz as paper_quiz_module, quiz_session
+from backend.tutor import diagnostic, paper_quiz as paper_quiz_module, quiz_session
 from backend.tutor.tutor_provider import TutorConfig
 from backend.tutor.rule_based_tutor import ANSWERABLE_HINT, EXTRACTIVE_PREFIX
 
@@ -346,6 +346,15 @@ class QuizOutcome(BaseModel):
     outcome: str
 
 
+class DiagnosticAnswer(BaseModel):
+
+    question_id: str
+
+    choice: int  # the position of the option picked, as served
+
+    confidence: str  # low, medium or high
+
+
 _QUIZ_STATUS = {"unsupported": 422, "unknown": 404, "state": 409, "outcome": 422}
 
 
@@ -378,6 +387,23 @@ def _quiz(session_id, action, saves=True):
 def quiz_question(session_id: str, concept: str | None = None):
     """One practice question without its answer: for `concept`, or the paper's concept that needs practice most."""
     return _quiz(session_id, lambda session: quiz_session.next_question(session, concept))
+
+
+@router.get("/{session_id}/diagnostic/question")
+def diagnostic_question(session_id: str, concept: str | None = None):
+    """A practice question with four options and no answer, graded by the system when answered (POST /diagnostic/answer)."""
+    return _quiz(session_id, lambda session: diagnostic.serve(session, concept))
+
+
+@router.post("/{session_id}/diagnostic/answer")
+def diagnostic_answer(session_id: str, body: DiagnosticAnswer):
+    """Check the chosen option, record it as an assessed answer with the learner's confidence, and answer with the verdict, the explanation and the updated progress."""
+    def act(session):
+        verdict = diagnostic.grade(session, body.question_id, body.choice, body.confidence)
+        review = _remember_outcome(session)
+        return {"verdict": verdict, "progress": quiz_session.progress(session), "assessed": diagnostic.assessed_summary(session), **({"review": review} if review else {})}
+
+    return _quiz(session_id, act)
 
 
 @router.post("/{session_id}/quiz/reveal")
@@ -490,7 +516,8 @@ def _remember_outcome(session):
         return None
     attempt = session.quiz_attempts[-1]
     try:
-        entry = learner_profile.record_quiz(path, attempt["question_id"], attempt["concept"], attempt["outcome"])
+        graded = {"correct": attempt["correct"], "confidence": attempt["confidence"]} if attempt.get("graded") else None
+        entry = learner_profile.record_quiz(path, attempt["question_id"], attempt["concept"], attempt["outcome"], graded=graded)
     except (learner_profile.ProfileError, OSError) as error:
         return {"saved": False, "warning": f"this answer was not saved to your learner profile: {error}"}
     return {"saved": True, "profile": session.profile, "question_id": attempt["question_id"], "next_review": entry["due"], "interval_hours": entry["interval_hours"]}
