@@ -207,10 +207,36 @@ ROTATIONS = (90, 180, 270)
 _TOKEN = re.compile(r"[^\W_]+(?:[-'][^\W_]+)*")
 
 
-def ocr_quality(text):
-    """0..1 plausibility of recognised text: the share of its characters that are letters, digits or ordinary punctuation, and the share
-    of its words that look like words (letters and digits, and a vowel in a long lower-case Latin word). Garbage from a rotated or
-    degraded scan ("xq7#~ zkvt |||") scores low; prose, and acronyms such as "RNN", score high."""
+_COMMON_ENGLISH = frozenset("""the of and to in is that for it as with was on are by this be at or from an have not which we our can has but they their these been
+more its also all one two than other such when used using use each both into only then over under between where while how what who will would could should may
+such given let thus hence since because however results result show shown method methods model models data set paper work approach study analysis based
+first second new large small high low number time function value values input output training test performance table figure section proposed""".split())
+
+
+def _vocabulary():
+    """Words that real English academic text is made of: common function and content words, and every registry concept name and alias."""
+    global _VOCABULARY
+    if _VOCABULARY is None:
+        from backend.concepts.concept_registry import ConceptRegistry
+
+        words = set(_COMMON_ENGLISH)
+        for concept in ConceptRegistry().all():
+            for term in (concept.name, *concept.aliases):
+                words.update(re.findall(r"[a-z]{2,}", term.lower()))
+        _VOCABULARY = frozenset(words)
+    return _VOCABULARY
+
+
+_VOCABULARY = None
+MIN_VOCABULARY_WORDS = 6  # fewer alphabetic words than this say nothing about the language, so the vocabulary is not consulted
+
+
+def ocr_quality(text, english=True):
+    """0..1 plausibility of recognised text. Three parts: the share of characters that are ordinary (letters, digits, punctuation), the
+    share of words shaped like words, and, for English text of MIN_VOCABULARY_WORDS or more words, the share of words found in the
+    vocabulary (common English and registry terms). The shape parts alone were fooled by upside-down text and by random noise, which
+    are made of letters; real prose is a third or more known words and these are almost none. `english=False` (another OCR language is
+    configured) leaves the vocabulary out."""
     chars = [char for char in text if not char.isspace()]
     if not chars:
         return 0.0
@@ -223,7 +249,19 @@ def ocr_quality(text):
             return False
         return not (word.isascii() and word.isalpha() and word.islower() and len(word) >= 4 and not set(word) & set("aeiouy"))
 
-    return round(0.4 * ordinary + 0.6 * sum(plausible(token) for token in tokens) / len(tokens), 3)
+    shape = 0.4 * ordinary + 0.6 * sum(plausible(token) for token in tokens) / len(tokens)
+    alpha = [word for word in re.findall(r"[A-Za-z]{2,}", text.lower())]
+    if not english or len(alpha) < MIN_VOCABULARY_WORDS:
+        return round(shape, 3)
+    known = sum(1 for word in alpha if word in _vocabulary()) / len(alpha)
+    return round(0.4 * shape + 0.6 * min(1.0, known / 0.3), 3)
+
+
+def _english_only():
+    try:
+        return ocr_languages() in (["eng"], [])
+    except OcrLanguageError:
+        return True
 
 
 def _pixmap_text(pixmap, language):
@@ -466,13 +504,14 @@ def _recognise(first, rotated, stop):
     90, 180 and 270 degrees through `rotated(angle)` (each attempt asks `stop` first, so the OCR budget holds); the best of them, the
     first one that is good enough winning at once."""
     text = clean_pdf_text(first()).strip()
-    best = (ocr_quality(text), text, 0)
+    english = _english_only()
+    best = (ocr_quality(text, english), text, 0)
     if rotated is not None and len(text) >= 10 and best[0] < QUALITY_MIN:
         for angle in ROTATIONS:
             if stop is not None and stop():
                 break
             turned = clean_pdf_text(rotated(angle)).strip()
-            candidate = (ocr_quality(turned), turned, angle)
+            candidate = (ocr_quality(turned, english), turned, angle)
             if candidate[0] > best[0]:
                 best = candidate
             if best[0] >= QUALITY_MIN:

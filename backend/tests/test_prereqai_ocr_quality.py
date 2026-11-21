@@ -39,6 +39,21 @@ def test_quality_separates_prose_and_acronyms_from_noise():
     assert ocr_quality(NOISE) < 0.6 and ocr_quality("") == 0.0
 
 
+def test_letter_soup_is_rejected_even_though_it_is_made_of_letters():
+    """Regression: upside-down text and random noise read as words by shape (0.84 and 0.99 in CI) and so were trusted and never rotated."""
+    upside_down = "'uolebedoidyoeg UM YJOMIJSU 9} SUICJ] JUBDSAP JUSIDEID \"SenyjeA oul S]UBIOM S8JOOS BU] JOAO XBWIJOS V/ \"UO!]US}]E-JJ9S UO SOIJoJ JOWUOJSUBI] SU]"
+    noise = "BE cae ee e nea hen eee Anzaaes Scieaes oteera Stee he ee arinOeeeeeeancesCawpee ee Mee Seeaeu CoesVeeteeSeeae oeee esas dotsates pee ances eeeet"
+    assert ocr_quality(upside_down) < 0.6 and ocr_quality(noise) < 0.6
+    assert ocr_quality(GOOD) > 0.9
+    assert ocr_quality("The Transformer relies on self-attention. A softmax over the scores weights the values. Gradient descent trains the network with backpropagation.") > 0.9
+
+
+def test_the_vocabulary_is_left_out_for_other_languages_and_for_very_short_text():
+    german = "Die Aufmerksamkeit gewichtet jedes Element der Eingabesequenz mit einem gelernten Gewicht fuer die Ausgabe"
+    assert ocr_quality(german) < 0.6 <= ocr_quality(german, english=False)
+    assert ocr_quality("Figure 3") >= 0.6  # too few words to judge by vocabulary
+
+
 def test_an_upside_down_scan_is_turned_and_read(tmp_path):
     asked = []
 
