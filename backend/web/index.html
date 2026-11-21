@@ -119,6 +119,10 @@
       <p class="meta">Fill in the blank: each question is a sentence this paper really contains with one term hidden. After you answer you see the sentence, its page and section. Your answers count toward your mastery (and spaced review, with a profile).</p>
       <button id="pqNext" type="button">Get a question about this paper</button>
       <div id="pqMsg" role="status" aria-live="polite"></div><div id="pqCard"></div></section>
+    <section id="adaptivepanel"><h2>Adapt my plan to what I know</h2>
+      <p class="meta">Answer a short set of multiple-choice questions on your plan's subjects, saying how sure you are. The system checks each answer itself; subjects you show you know are shortened and subjects you miss get more time and a list of what to review. You can undo any change.</p>
+      <button id="adStart" type="button">Start the short assessment</button>
+      <div id="adMsg" role="status" aria-live="polite"></div><div id="adQuestions"></div><div id="adPlan"></div></section>
     <section id="quizpanel"><h2>Practice quiz</h2>
       <label for="quizConcept">Concept</label>
       <select id="quizConcept"><option value="">Choose for me (the one that needs the most practice)</option></select>
@@ -889,6 +893,60 @@ $("treeOpen").addEventListener("click", function () { setTree(true); });
 $("treeClose").addEventListener("click", function () { setTree(false); });
 $("askForm").addEventListener("submit", function (event) { event.preventDefault(); ask($("question").value); });
 $("quizNext").addEventListener("click", nextQuestion);
+
+// ---- adaptive plan: a graded pre-assessment (GET /adaptive-plan/assessment, POST /diagnostic/answer), then the adapted plan with each change and its override (GET /adaptive-plan, POST /adaptive-plan/override) ----
+function adUrl(tail) { return "/api/session/" + encodeURIComponent(state.sid) + "/" + tail; }
+
+async function adStart() {
+  $("adMsg").textContent = ""; $("adQuestions").textContent = "";
+  var response = await fetch(adUrl("adaptive-plan/assessment")), body = await response.json();
+  if (!response.ok) { $("adMsg").textContent = body.detail || "The assessment could not be started."; return; }
+  if (!body.questions.length) { $("adMsg").textContent = body.note; adShowPlan(); return; }
+  body.questions.forEach(function (q) {
+    var card = el("div", null, "card"), choice = null, confidence = el("select");
+    card.appendChild(el("h3", q.concept + ": " + q.question));
+    q.options.forEach(function (text, index) {
+      var label = el("label"), radio = document.createElement("input"); radio.type = "radio"; radio.name = "ad-" + q.question_id; radio.value = String(index);
+      radio.addEventListener("change", function () { choice = index; });
+      label.appendChild(radio); label.appendChild(document.createTextNode(" " + text)); card.appendChild(label); card.appendChild(el("br"));
+    });
+    ["low", "medium", "high"].forEach(function (level) { var o = el("option", "I am " + level + " confidence"); o.value = level; confidence.appendChild(o); });
+    confidence.value = "medium"; card.appendChild(confidence);
+    var send = el("button", "Check my answer"); send.type = "button";
+    send.addEventListener("click", async function () {
+      if (choice === null) { $("adMsg").textContent = "Pick an option first."; return; }
+      var r = await fetch(adUrl("diagnostic/answer"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question_id: q.question_id, choice: choice, confidence: confidence.value }) });
+      var b = await r.json();
+      if (!r.ok) { $("adMsg").textContent = b.detail || "The answer was not accepted."; return; }
+      card.appendChild(el("p", (b.verdict.correct ? "Correct. " : "Not correct. The answer is: " + b.verdict.answer + ". ") + (b.verdict.explanation || "") + " " + (b.verdict.calibration || ""), "msg " + (b.verdict.correct ? "info" : "error")));
+      send.disabled = true; adShowPlan();
+    });
+    card.appendChild(send); $("adQuestions").appendChild(card);
+  });
+}
+
+async function adShowPlan() {
+  var response = await fetch(adUrl("adaptive-plan")), body = await response.json(), box = el("div");
+  if (!response.ok) { fill("adPlan", el("p", body.detail || "The adapted plan is not available.", "msg error")); return; }
+  box.appendChild(el("h3", "Your plan: " + body.hours_before + " h planned, " + body.hours_after + " h after adapting"));
+  if (!body.adjustments.length) box.appendChild(el("p", "Nothing has changed yet: answer some questions above.", "msg info"));
+  body.adjustments.forEach(function (a) {
+    var card = el("div", null, "card");
+    card.appendChild(el("p", a.concept + ": " + a.original_hours + " h to " + a.adjusted_hours + " h (" + a.action + (a.overridden ? ", changed back by you" : "") + "). " + a.reason));
+    (body.remediation[a.concept] || []).forEach(function (item) { card.appendChild(el("p", "Review: " + item.question + " " + item.answer + (item.explanation ? " " + item.explanation : ""), "meta")); });
+    if (a.can_override) {
+      var undo = el("button", a.overridden ? "Adapt this step again" : "Keep my original hours", "small"); undo.type = "button";
+      undo.addEventListener("click", async function () {
+        await fetch(adUrl("adaptive-plan/override"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ concept: a.concept, action: a.overridden ? "restore" : "reject" }) });
+        adShowPlan();
+      });
+      card.appendChild(undo);
+    }
+    box.appendChild(card);
+  });
+  fill("adPlan", box);
+}
+$("adStart").addEventListener("click", adStart);
 loadHistory();
 restore();
 

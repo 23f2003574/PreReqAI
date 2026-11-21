@@ -21,7 +21,7 @@ from backend.api.workflow_result import (
 
 from datetime import datetime, time, timezone
 
-from backend import learner_profile, study_calendar
+from backend import adaptive_plan, learner_profile, study_calendar
 from backend import learning_services
 from backend.prerequisites.study_time_estimator import parse_hours_per_day
 from backend.session import (
@@ -346,6 +346,13 @@ class QuizOutcome(BaseModel):
     outcome: str
 
 
+class AdaptiveOverride(BaseModel):
+
+    concept: str
+
+    action: str  # "reject": keep the original hours; "restore": adapt again
+
+
 class DiagnosticAnswer(BaseModel):
 
     question_id: str
@@ -404,6 +411,55 @@ def diagnostic_answer(session_id: str, body: DiagnosticAnswer):
         return {"verdict": verdict, "progress": quiz_session.progress(session), "assessed": diagnostic.assessed_summary(session), **({"review": review} if review else {})}
 
     return _quiz(session_id, act)
+
+
+@router.get("/{session_id}/adaptive-plan/assessment")
+def adaptive_assessment(session_id: str, limit: int = 6):
+    """A short pre-assessment: one diagnostic question (with options, no answer) for each step of the plan that has fewer than 3 assessed answers, at most `limit` (1 to 12) of them."""
+    def act(session):
+        have = diagnostic.assessed_summary(session)
+        wanted = [step["concept"] for step in session.report.get("learning_plan", []) if step["concept"] in quiz_session.ASKABLE and have.get(step["concept"], {}).get("graded", 0) < adaptive_plan.MIN_GRADED]
+        questions = [diagnostic.serve(session, name) for name in wanted[:max(1, min(limit, 12))]]
+        return {"questions": questions, "note": "Answer each with how sure you are; then GET /adaptive-plan shows what changes." if questions else "Every step already has enough assessed answers or no questions."}
+
+    return _quiz(session_id, act)
+
+
+@router.get("/{session_id}/adaptive-plan")
+def adaptive_plan_view(session_id: str, deadline: str | None = None, hours_per_day: float = 3.0, today: str | None = None):
+    """The plan adapted to the learner's assessed answers: each change with its reason, the remediation lists, hours before and after, and (with a deadline) feasibility before and after."""
+    session = session_manager.get(session_id)
+    if session is None:
+        return session_not_found(session_id)
+    calendar = None
+    try:
+        if deadline:
+            day = study_calendar.parse_date(today, "today") if today else datetime.now(timezone.utc).date()
+            calendar = {"today": day, "deadline": study_calendar.parse_date(deadline, "deadline"), "daily_hours": hours_per_day}
+        result = adaptive_plan.propose(session.report, session.quiz_attempts, session.report.get("adaptive_overrides", {}), calendar)
+    except study_calendar.CalendarError as error:
+        return failure_response(422, "adaptive_plan", str(error), hint="Send dates as YYYY-MM-DD and hours per day above 0 and at most 24.")
+    return success_body("Adaptive Plan", "adaptive_plan", session_id=session_id, **result)
+
+
+@router.post("/{session_id}/adaptive-plan/override")
+def adaptive_override(session_id: str, body: AdaptiveOverride):
+    """Reverse (action "reject") or bring back (action "restore") the adaptation of one step; the choice is saved with the session."""
+    session = session_manager.get(session_id)
+    if session is None:
+        return session_not_found(session_id)
+    if body.action not in ("reject", "restore"):
+        return failure_response(422, "adaptive_plan", f"action must be 'reject' or 'restore', not {body.action!r}.", hint="Send {\"concept\": ..., \"action\": \"reject\"}.")
+    if body.concept not in {step["concept"] for step in session.report.get("learning_plan", [])}:
+        return failure_response(404, "adaptive_plan", f"{body.concept!r} is not a step of this plan.", hint="Use a concept from the plan.")
+    overrides = dict(session.report.get("adaptive_overrides", {}))
+    if body.action == "reject":
+        overrides[body.concept] = "reject"
+    else:
+        overrides.pop(body.concept, None)
+    session.report["adaptive_overrides"] = overrides
+    session_manager.save(session)
+    return success_body("Adaptive Plan", "adaptive_plan", session_id=session_id, overrides=overrides)
 
 
 @router.post("/{session_id}/quiz/reveal")
