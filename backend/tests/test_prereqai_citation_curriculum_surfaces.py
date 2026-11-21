@@ -45,5 +45,5 @@ def test_the_command_line_prints_the_citation_and_the_page_shows_it(pair, capsys
     assert main(["prerequisites", "curriculum", *pair]) == 0
     out = capsys.readouterr().out
     assert f"citation: {CITING!r} cites {CITED!r} (reference 7), so it comes after it" in out
-    assert "citations || {}).ordering" in PAGE.replace("(body.citations", "citations ||").replace(" ", " ") or "body.citations" in PAGE
+    assert "(body.citations || {}).ordering" in PAGE
     assert "so it comes after it." in PAGE and "shared by several of these papers" in PAGE
