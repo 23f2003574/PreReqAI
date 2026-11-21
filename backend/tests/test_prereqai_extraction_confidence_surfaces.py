@@ -47,7 +47,7 @@ def env(tmp_path, monkeypatch):
 @pytest.mark.parametrize("name, options", [("single", {}), ("two-column", {"columns": 2}), ("footnotes", {"footnotes": True})])
 def test_well_formed_layouts_report_a_trustworthy_text_layer_and_no_text_warnings(env, name, options):
     outcome = platform.analyze(build(env / f"{name}.pdf", **options))
-    report = outcome["output"]["report"]["extraction_confidence"] if "output" in outcome else outcome["report"]["extraction_confidence"]
+    report = outcome["report"]["extraction_confidence"]
     statuses = {s["name"]: s["status"] for s in report["signals"]}
     assert statuses["text_layer"] == "ok" and statuses["ocr"] == "ok" and statuses["headings"] in ("ok", "warn") and len(report["signals"]) == 7
     assert not any(w.startswith("Extraction confidence is low") for w in outcome["warnings"]), outcome["warnings"]
@@ -56,7 +56,7 @@ def test_well_formed_layouts_report_a_trustworthy_text_layer_and_no_text_warning
 def test_the_api_and_the_command_line_carry_the_confidence(env, capsys):
     with open("examples/prerequisites/sample-paper.pdf", "rb") as handle:
         body = client.post("/api/prerequisites/analyze", files={"paper": ("p.pdf", handle, "application/pdf")}).json()
-    confidence = body["output"]["report"]["extraction_confidence"]
+    confidence = body["report"]["extraction_confidence"]
     assert confidence["level"] in ("high", "medium", "low") and len(confidence["signals"]) == 7 and all({"name", "status", "detail", "action"} <= set(s) for s in confidence["signals"])
     assert main(["prerequisites", "analyze", "examples/prerequisites/sample-paper.pdf", "--json"]) == 0
-    assert json.loads(capsys.readouterr().out)["output"]["report"]["extraction_confidence"]["level"] == confidence["level"]
+    assert json.loads(capsys.readouterr().out)["report"]["extraction_confidence"]["level"] == confidence["level"]

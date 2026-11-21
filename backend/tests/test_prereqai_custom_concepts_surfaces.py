@@ -28,7 +28,7 @@ def env(tmp_path, monkeypatch):
 
 def test_the_report_lists_candidates_and_the_api_confirms_one_only_on_request(env):
     outcome = platform.analyze(MIXTRAL)
-    report = outcome["output"]["report"]
+    report = outcome["report"]
     candidates = report["candidate_concepts"]
     assert isinstance(candidates, list) and all({"term", "sentence", "page_number", "section", "reason", "mentions"} <= set(c) for c in candidates)
     assert client.get("/api/custom-concepts").json()["concepts"] == []  # listing candidates added nothing
@@ -50,9 +50,9 @@ def test_the_command_line_lists_confirms_and_forgets_and_shows_candidates(env, c
 
 
 def test_a_confirmed_concept_is_detected_in_the_next_analysis_and_the_page_offers_confirmation(env):
-    assert "Mixtral" not in platform.analyze(MIXTRAL)["output"]["report"]["concepts"]  # the model's own name appears throughout the paper and is not in the registry
+    assert "Mixtral" not in platform.analyze(MIXTRAL)["report"]["concepts"]  # the model's own name appears throughout the paper and is not in the registry
     custom_concepts.add("Mixtral")
-    report = platform.analyze(MIXTRAL)["output"]["report"]
+    report = platform.analyze(MIXTRAL)["report"]
     assert "Mixtral" in report["concepts"] and "Mixtral" in report["concepts_without_prerequisite_rules"]  # detected, and reported as having no rules rather than as needing nothing
     assert "mixtral" not in {c["term"].lower() for c in report["candidate_concepts"]}
     assert 'id="candidatebox"' in PAGE and "/api/custom-concepts" in PAGE and "Suggestions only" in PAGE
