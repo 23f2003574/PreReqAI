@@ -121,6 +121,7 @@
     <section id="paperquizpanel"><h2>Questions about this paper</h2>
       <p class="meta">Fill in the blank: each question is a sentence this paper really contains with one term hidden. After you answer you see the sentence, its page and section. Your answers count toward your mastery (and spaced review, with a profile).</p>
       <button id="pqNext" type="button">Get a question about this paper</button>
+      <button id="pqThink" type="button">Get a comprehension question (true or false, equation, method order)</button>
       <div id="pqMsg" role="status" aria-live="polite"></div><div id="pqCard"></div></section>
     <section id="adaptivepanel"><h2>Adapt my plan to what I know</h2>
       <p class="meta">Answer a short set of multiple-choice questions on your plan's subjects, saying how sure you are. The system checks each answer itself; subjects you show you know are shortened and subjects you miss get more time and a list of what to review. You can undo any change.</p>
@@ -985,7 +986,7 @@ function renderPaperCard() {
     card.appendChild(el("p", "Question " + c.number + " of " + c.of + " (" + c.concept + ")", "meta"));
     card.appendChild(el("p", c.prompt)); card.lastChild.id = "pqPrompt";
     if (c.answer === undefined) {
-      var input = el("input"); input.type = "text"; input.id = "pqAttempt"; input.maxLength = 200; input.setAttribute("aria-label", "Your answer for the blank"); input.autocomplete = "off";
+      var input = el("input"); input.type = "text"; input.id = "pqAttempt"; input.maxLength = 200; input.setAttribute("aria-label", "Your answer"); input.autocomplete = "off";
       var show = el("button", "Check and show the answer", "small"); show.type = "button"; show.disabled = pq.busy;
       show.addEventListener("click", function () { pqReveal(input.value); });
       card.appendChild(input); card.appendChild(document.createTextNode(" ")); card.appendChild(show);
@@ -1003,7 +1004,7 @@ function renderPaperCard() {
     box.appendChild(card);
   }
   fill("pqCard", box);
-  $("pqNext").disabled = pq.busy;
+  $("pqNext").disabled = pq.busy; $("pqThink").disabled = pq.busy;
 }
 
 async function pqCall(label, request, onOk) {
@@ -1020,8 +1021,8 @@ async function pqCall(label, request, onOk) {
   } finally { pq.busy = false; renderPaperCard(); }
 }
 
-function pqNext() {
-  pqCall("Getting a question", function () { return fetch(pqUrl("")); }, function (body) {
+function pqNext(kinds) {
+  pqCall("Getting a question", function () { return fetch(pqUrl("") + (kinds === "comprehension" ? "?kinds=comprehension" : "")); }, function (body) {
     pq.list = body.questions || [];
     var next = pq.list.filter(function (q) { return !pq.done[q.question_id]; })[0];
     if (!pq.list.length) { pq.card = null; pqShow("info", body.note || "This paper has no fill-in-the-blank questions."); }
@@ -1047,7 +1048,8 @@ function pqRecord(outcome) {
     pqShow("info", "Recorded: " + (outcome === "knew" ? "you knew it" : "you missed it") + ". Ask for another question to keep going.");
   });
 }
-$("pqNext").addEventListener("click", pqNext);
+$("pqNext").addEventListener("click", function () { pqNext(); });
+$("pqThink").addEventListener("click", function () { pqNext("comprehension"); });
 
 // ---- spaced review: the learner profile's due questions (GET /api/review) ----
 async function loadReviews() {

@@ -469,13 +469,17 @@ def quiz_reveal(session_id: str, body: QuizReveal):
 
 
 @router.get("/{session_id}/paper-quiz")
-def paper_quiz(session_id: str):
-    """Fill-in-the-blank questions about this paper, made from its own verified sentences (without answers). They are separate from the global concept questions."""
+def paper_quiz(session_id: str, kinds: str = "cloze"):
+    """Questions about this paper made from its own verified sentences (without answers), separate from the global concept questions. kinds=cloze (default): fill in the blank;
+    kinds=comprehension: true/false claims, equation-to-subject questions and method-step ordering."""
     def act(session):
-        questions = paper_quiz_module.build(session)
+        if kinds not in ("cloze", "comprehension"):
+            raise quiz_session.QuizError("unsupported", f"kinds must be 'cloze' or 'comprehension', not {kinds!r}.", "Use /paper-quiz?kinds=comprehension.")
+        questions = paper_quiz_module.build(session) if kinds == "cloze" else paper_quiz_module.build_comprehension(session)
         return {"questions": [paper_quiz_module.public(q, n, len(questions)) for n, q in enumerate(questions, start=1)],
-                "note": "Each blank is a term from a sentence the paper really contains; revealing shows the sentence, its page and its section." if questions else
-                        "This paper has no sentence that makes a good fill-in-the-blank question."}
+                "note": ("Each question comes from a sentence (or equation) the paper really contains; revealing shows it, its page and its section." if kinds == "comprehension" else
+                         "Each blank is a term from a sentence the paper really contains; revealing shows the sentence, its page and its section.") if questions else
+                        "This paper has no passage that makes a good question of this kind."}
 
     return _quiz(session_id, act, saves=False)
 
@@ -490,7 +494,7 @@ def paper_quiz_reveal(session_id: str, body: PaperQuizReveal):
         session.quiz_pending[question["question_id"]] = {"revealed": True}
         found = {"question_id": question["question_id"], "concept": question["concept"], "answer": question["answer"], "quotation": question["quotation"],
                  "page_number": question["page_number"], "section": question["section"]}
-        return {**found, **({"attempt_correct": paper_quiz_module.matches(body.attempt, question["answer"])} if body.attempt is not None else {})}
+        return {**found, **({"attempt_correct": paper_quiz_module.check(question, body.attempt)} if body.attempt is not None else {})}
 
     return _quiz(session_id, act)
 
