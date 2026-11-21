@@ -72,6 +72,9 @@
     <section><h2>Paper</h2><dl id="meta"></dl></section>
     <section><h2>Detected concepts</h2><div id="concepts"></div></section>
     <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
+    <section id="candidatebox"><h2>Terms this paper uses that PreReqAI does not know</h2>
+      <p class="meta">Suggestions only: nothing here is added to the analysis unless you confirm it. A confirmed term is detected the next time you analyse a paper (it has no prerequisite rules).</p>
+      <div id="candidates"></div><div id="candidateMsg" role="status" aria-live="polite"></div></section>
     <section><h2>Prerequisite gaps</h2><div id="gaps"></div></section>
     <section id="treebox"><h2>Prerequisite tree</h2>
       <p class="lead">Each concept of the paper with what it builds on; open a branch to see the prerequisites of its prerequisites.</p>
@@ -320,6 +323,25 @@ function renderMath(report) {
   fill("math", box);
 }
 
+function renderCandidates(report) {
+  var box = el("div"), items = report.candidate_concepts || [];
+  if (!items.length) box.appendChild(el("p", "No unfamiliar terms stand out in this paper.", "msg info"));
+  items.forEach(function (c) {
+    var card = el("div", null, "card");
+    card.appendChild(el("h3", c.term));
+    card.appendChild(el("p", (c.page_number ? "Page " + c.page_number + ", " : "") + (c.section || "") + ": " + c.sentence, "meta"));
+    card.appendChild(el("p", c.reason + "; " + c.mentions + " mention" + (c.mentions === 1 ? "" : "s"), "meta"));
+    var add = el("button", "Confirm \"" + c.term + "\" as a concept", "small"); add.type = "button";
+    add.addEventListener("click", async function () {
+      var r = await fetch("/api/custom-concepts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: c.term, definition: c.sentence }) }), b = await r.json();
+      $("candidateMsg").textContent = r.ok ? c.term + " was confirmed. " + b.note : (b.detail || "It could not be confirmed.");
+      if (r.ok) add.disabled = true;
+    });
+    card.appendChild(add); box.appendChild(card);
+  });
+  fill("candidates", box);
+}
+
 function renderWhy(report) {
   var box = el("div"), difficulty = report.paper_difficulty, reasons = report.difficulty_explanations || [];
   if (!difficulty && !reasons.length) box.appendChild(el("p", "No difficulty estimate is available for this paper.", "msg info"));
@@ -389,7 +411,7 @@ function render(body) {
   state.planStart = (body && body.plan_start) || null; state.paper = paper; state.difficulty = report.paper_difficulty || null;
   state.paths = report.study_paths || null; renderPaths();
   pq.list = null; pq.card = null; pq.done = {}; renderPaperCard();
-  renderTree(report.prerequisite_tree); renderMath(report); renderWhy(report); renderRoadmap(report);
+  renderTree(report.prerequisite_tree); renderMath(report); renderCandidates(report); renderWhy(report); renderRoadmap(report);
   state.mine = report.personalised_plan || null; renderMine();
   state.studyTime = report.study_time || null; state.readiness = report.readiness || null;
   state.studied = {}; (report.study_progress || []).forEach(function (p) { if (p.completed) state.studied[p.concept] = true; });

@@ -33,7 +33,8 @@ class ConceptRegistry:
     future concept extraction pipelines.
     """
 
-    def __init__(self):
+    def __init__(self, custom=False):
+        """`custom=True` adds the learner's confirmed custom concepts (backend/custom_concepts.py): used by detection and evidence only, so evaluation and the vocabulary stay the built-in registry."""
 
         self._concepts = [
 
@@ -142,6 +143,12 @@ class ConceptRegistry:
         for name, domain, aliases, *_ in EXPANSION:
             technical, context = AMBIGUOUS.get(name, ((), ()))
             self._concepts.append(Concept(name, domain, aliases=tuple(aliases), ambiguous=name in AMBIGUOUS, technical=technical, context=context, alias_context=ALIAS_CONTEXT.get(name, ())))
+
+        if custom:
+            from backend.custom_concepts import load
+
+            known = {c.name for c in self._concepts}
+            self._concepts += [Concept(item["name"], "custom", aliases=tuple(item["aliases"])) for item in load()[0] if item["name"] not in known]
 
     def all(self):
 

@@ -192,6 +192,17 @@ def add_session_commands(commands):
     evidence.add_argument("session", type=_nonblank, help="The session id of an analysis (needs PREREQAI_SESSION_DIR)")
     evidence.add_argument("--concept", type=_nonblank, default=None, help="Only this concept")
     evidence.add_argument("--json", action="store_true", dest="as_json", help="Print the API's JSON")
+    candidates = commands.add_parser("candidates", help="Show terms a saved analysis's paper uses that PreReqAI does not know (to confirm as custom concepts)",
+                                     description="Candidate terms with the paper's sentence, page and section. Same data as the candidate_concepts of GET /api/session/{id}. Nothing is added by this command.")
+    candidates.add_argument("session", type=_nonblank, help="The session id of an analysis (needs PREREQAI_SESSION_DIR)")
+    candidates.add_argument("--json", action="store_true", dest="as_json", help="Print the candidates as JSON")
+    custom = commands.add_parser("custom-concept", help="List, confirm or forget the custom concepts you added",
+                                 description="Custom concepts are detected in papers analysed afterwards. They need PREREQAI_PROFILE_DIR or PREREQAI_CUSTOM_CONCEPTS. Same data as /api/custom-concepts.")
+    custom.add_argument("action", choices=["list", "add", "remove"])
+    custom.add_argument("name", nargs="?", type=_nonblank, default=None, help="The concept's name (for add and remove)")
+    custom.add_argument("--alias", action="append", default=[], help="Another spelling (add only; repeatable)")
+    custom.add_argument("--definition", default="", help="A short definition of your own (add only)")
+    custom.add_argument("--json", action="store_true", dest="as_json", help="Print JSON")
     curriculum = commands.add_parser("curriculum", help="Plan several saved analyses together",
                                      description="Shared prerequisites once, known subjects left out, one paper order and one schedule. Same data as POST /api/curriculum.")
     curriculum.add_argument("sessions", nargs="+", type=_nonblank, metavar="SESSION", help="Two to ten session ids (needs PREREQAI_SESSION_DIR)")
@@ -229,6 +240,46 @@ def run_prerequisites_readings(args) -> int:
         if item["source"]:
             print(f"    read next with: python -m backend.cli prerequisites analyze {item['source']}")
     return 0
+
+
+def run_prerequisites_candidates(args) -> int:
+    session, problem = _load_session(args.session)
+    if problem:
+        return _fail(problem)
+    found = (session.report or {}).get("candidate_concepts", [])
+    if args.as_json:
+        print(json.dumps({"session_id": args.session, "candidate_concepts": found}, indent=2))
+        return 0
+    if not found:
+        print("No candidate terms: every phrase the paper defines or repeats is already a concept PreReqAI knows, or none stands out.")
+    for item in found:
+        where = f"p. {item['page_number']}, " if item["page_number"] else ""
+        print(f"{item['term']}  ({item['reason']}; {item['mentions']} mention{'s' if item['mentions'] != 1 else ''})\n  {where}{item['section'] or 'untitled section'}: \u201c{' '.join(item['sentence'].split())}\u201d")
+    return 0
+
+
+def run_prerequisites_custom_concept(args) -> int:
+    from backend import custom_concepts
+
+    try:
+        if args.action == "list":
+            concepts, problem = custom_concepts.load()
+            if problem:
+                return _fail(problem)
+            print(json.dumps({"concepts": concepts}, indent=2) if args.as_json else ("\n".join(f"{c['name']}" + (f" (also: {', '.join(c['aliases'])})" if c["aliases"] else "") for c in concepts) or "No custom concepts."))
+            return 0
+        if not args.name:
+            return _fail(f"{args.action} needs the concept's name", EXIT_USAGE)
+        if args.action == "add":
+            entry = custom_concepts.add(args.name, args.alias, args.definition)
+            print(json.dumps(entry, indent=2) if args.as_json else f"Confirmed {entry['name']}: it is detected in papers analysed from now on (it has no prerequisite rules).")
+            return 0
+        if not custom_concepts.remove(args.name):
+            return _fail(f"{args.name!r} is not a confirmed custom concept", EXIT_USAGE)
+        print(f"Removed {args.name}.")
+        return 0
+    except custom_concepts.CustomConceptError as error:
+        return _fail(str(error), EXIT_USAGE)
 
 
 def run_prerequisites_evidence(args) -> int:

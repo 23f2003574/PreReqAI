@@ -38,6 +38,7 @@ from backend.api.recovery_decision_routes import (
     router as recovery_decision_router,
 )
 
+from backend.api.custom_concept_routes import router as custom_concept_router
 from backend.api.web_routes import (
     router as web_router,
 )
@@ -91,6 +92,10 @@ app.include_router(
 
 app.include_router(
     recovery_decision_router,
+)
+
+app.include_router(
+    custom_concept_router,
 )
 
 app.include_router(

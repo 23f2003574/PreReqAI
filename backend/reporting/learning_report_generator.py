@@ -93,6 +93,15 @@ class LearningReportGenerator:
         ]
 
     @staticmethod
+    def _candidates(paper: Paper) -> list:
+        """Terms the paper uses that the registry does not know, for the learner to confirm (see backend/concepts/candidate_terms.py); the registry plus the confirmed custom concepts are left out."""
+        from backend.concepts.candidate_terms import find
+        from backend.concepts.concept_registry import ConceptRegistry
+
+        known = {term.lower() for concept in ConceptRegistry(custom=True).all() for term in (concept.name, *concept.aliases)}
+        return find(paper, known)
+
+    @staticmethod
     def _math_subtopics(paper: Paper) -> list:
         """The specific mathematical skills the paper's equations need, each with the equations that need it (see backend/parsing/math_subtopics.py)."""
         from backend.parsing.math_subtopics import analyse
@@ -201,6 +210,7 @@ class LearningReportGenerator:
             "equations": self._equations(paper),
 
             "math_subtopics": self._math_subtopics(paper),
+            "candidate_concepts": self._candidates(paper),
 
             "concept_evidence": self._concept_evidence(paper),
 

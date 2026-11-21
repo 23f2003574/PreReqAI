@@ -103,7 +103,7 @@ def quotable_sentences(paper):
 def build_evidence(paper, limit=MAX_PER_CONCEPT):
     """{concept name: [passage, ...]} for the paper's detected concepts that have at least one quotable sentence, strongest first."""
     concepts = list(getattr(paper, "concepts", []) or [])
-    registry = {c.name: c for c in ConceptRegistry().all()}
+    registry = {c.name: c for c in ConceptRegistry(custom=True).all()}
     pages = {page.page_number: page.text for page in getattr(paper, "pages", []) or []}
     candidates = quotable_sentences(paper)
     candidates.sort(key=lambda item: item[:3])  # paper order; the ranking per concept below decides which of them are shown

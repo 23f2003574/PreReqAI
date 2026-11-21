@@ -195,7 +195,7 @@ class RuleBasedConceptDetector:
 
     def __init__(self):
 
-        self.registry = ConceptRegistry()
+        self.registry = ConceptRegistry(custom=True)
 
     def detect(
         self,
