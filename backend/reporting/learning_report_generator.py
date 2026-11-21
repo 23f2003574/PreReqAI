@@ -93,6 +93,13 @@ class LearningReportGenerator:
         ]
 
     @staticmethod
+    def _confidence(paper: Paper) -> dict:
+        """How far the extraction can be trusted, signal by signal (see backend/extraction_confidence.py)."""
+        from backend.extraction_confidence import assess
+
+        return assess(paper)
+
+    @staticmethod
     def _candidates(paper: Paper) -> list:
         """Terms the paper uses that the registry does not know, for the learner to confirm (see backend/concepts/candidate_terms.py); the registry plus the confirmed custom concepts are left out."""
         from backend.concepts.candidate_terms import find
@@ -211,6 +218,7 @@ class LearningReportGenerator:
 
             "math_subtopics": self._math_subtopics(paper),
             "candidate_concepts": self._candidates(paper),
+            "extraction_confidence": self._confidence(paper),
 
             "concept_evidence": self._concept_evidence(paper),
 

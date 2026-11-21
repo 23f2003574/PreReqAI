@@ -215,6 +215,7 @@ def test_mathematics_difficulty_roadmap_and_actions_panels_show_the_report(brows
     context, page = open_page(browser, plain)
     analyse(page)
     math = page.locator("#math").inner_text()
+    assert "Extraction confidence:" in page.locator("#confidence").inner_text()  # the learner is told how far to trust the extraction
     assert "Linear Algebra" in math and "Calculus" in math and "No display equations were found" in math and "No specific mathematical notation PreReqAI knows was recognised" in math  # the sample paper has no equations: said, not blank
     assert page.locator("#why").inner_text().startswith("Advanced") and "Missing Prerequisites" in page.locator("#why").inner_text()
     roadmap = page.locator("#roadmap").inner_text()

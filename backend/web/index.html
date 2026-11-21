@@ -72,6 +72,7 @@
     <section><h2>Paper</h2><dl id="meta"></dl></section>
     <section><h2>Detected concepts</h2><div id="concepts"></div></section>
     <section id="notanalysed" hidden><h2>Terms not analysed</h2><div id="notanalysedbody"></div></section>
+    <section id="confidencebox"><h2>How far to trust this extraction</h2><div id="confidence"></div></section>
     <section id="candidatebox"><h2>Terms this paper uses that PreReqAI does not know</h2>
       <p class="meta">Suggestions only: nothing here is added to the analysis unless you confirm it. A confirmed term is detected the next time you analyse a paper (it has no prerequisite rules).</p>
       <div id="candidates"></div><div id="candidateMsg" role="status" aria-live="polite"></div></section>
@@ -324,6 +325,14 @@ function renderMath(report) {
   fill("math", box);
 }
 
+function renderConfidence(report) {
+  var box = el("div"), c = report.extraction_confidence;
+  if (!c) { box.appendChild(el("p", "This analysis was saved before extraction confidence existed; analyse the paper again to see it.", "msg info")); fill("confidence", box); return; }
+  box.appendChild(el("p", "Extraction confidence: " + c.level + ". " + c.note, c.level === "high" ? "msg info" : c.level === "medium" ? "msg warn" : "msg error"));
+  (c.warnings || []).forEach(function (w) { box.appendChild(el("p", w.signal.replace("_", " ") + ": " + w.message + (w.action ? " " + w.action : ""), "meta")); });
+  fill("confidence", box);
+}
+
 function renderCandidates(report) {
   var box = el("div"), items = report.candidate_concepts || [];
   if (!items.length) box.appendChild(el("p", "No unfamiliar terms stand out in this paper.", "msg info"));
@@ -412,7 +421,7 @@ function render(body) {
   state.planStart = (body && body.plan_start) || null; state.paper = paper; state.difficulty = report.paper_difficulty || null;
   state.paths = report.study_paths || null; renderPaths();
   pq.list = null; pq.card = null; pq.done = {}; renderPaperCard();
-  renderTree(report.prerequisite_tree); renderMath(report); renderCandidates(report); renderWhy(report); renderRoadmap(report);
+  renderTree(report.prerequisite_tree); renderMath(report); renderConfidence(report); renderCandidates(report); renderWhy(report); renderRoadmap(report);
   state.mine = report.personalised_plan || null; renderMine();
   state.studyTime = report.study_time || null; state.readiness = report.readiness || null;
   state.studied = {}; (report.study_progress || []).forEach(function (p) { if (p.completed) state.studied[p.concept] = true; });

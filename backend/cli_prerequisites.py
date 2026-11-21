@@ -671,6 +671,11 @@ def run_prerequisites_analyze(args, platform=None) -> int:
             print(f"  time: {sum(timings.values()):.2f}s (slowest stage: {slowest} {seconds:.2f}s)")
         for warning in outcome["warnings"]:
             print(f"  warning: {warning}")
+        confidence = (report or {}).get("extraction_confidence")
+        if confidence and confidence["level"] != "high":  # nothing is printed for a paper that extracted normally
+            print(f"  extraction confidence: {confidence['level']}. {confidence['note']}")
+            for item in confidence["warnings"]:
+                print(f"    {item['signal']}: {item['message']}" + (f" {item['action']}" if item["action"] else ""))
         if args.diagnose:
             info = outcome["diagnostics"]
             print(f"Diagnostics: {info['status']} at stage {info['stage']}; {len(info['completed_stages'])} stages, "

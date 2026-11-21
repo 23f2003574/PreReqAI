@@ -109,6 +109,13 @@ def _page_list(numbers) -> str:
     return ", ".join(str(n) for n in numbers)
 
 
+def _confidence_warning(paper) -> list:
+    """A low extraction confidence (see backend/extraction_confidence.py) as run warnings; nothing for a paper that extracted normally."""
+    from backend.extraction_confidence import assess, warning_lines
+
+    return warning_lines(assess(paper))
+
+
 def _ocr_warning(paper) -> list:
     """Pages whose text came from OCR (recognition errors are possible) and scanned pages that could not be read at all."""
     pages = paper.pages or []
@@ -470,7 +477,7 @@ class PreReqAIPlatform:
         outcome = success_body(
             "Prerequisite Explorer", "session_created", session_id=session.session_id, report=result.report,
             timings=result.timings,
-            warnings=unsaved + _repair_warning(file_path) + _absorbed_heading_warning(result.paper) + _ocr_warning(result.paper) + _running_text_warning(result.paper) + no_concepts + [f"{known_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
+            warnings=unsaved + _repair_warning(file_path) + _absorbed_heading_warning(result.paper) + _ocr_warning(result.paper) + _confidence_warning(result.paper) + _running_text_warning(result.paper) + no_concepts + [f"{known_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in unmatched]
             + [f"{studied_label} {name!r} was ignored because you also said you already know it, so it is not in the study plan" for name in also_known]
             + [f"{studied_label} {name!r} is not in this paper's study plan and was ignored{_did_you_mean(name, concept_names)}" for name in not_studied],
         )
