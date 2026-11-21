@@ -101,3 +101,18 @@ def test_the_gate_compares_hybrid_with_lexical_and_requires_exact_quotations(mon
 
 def test_the_measurement_is_reproducible():
     assert retrieval_benchmark.evaluate([synthetic()]) == retrieval_benchmark.evaluate([synthetic()])
+
+
+def test_equal_recalls_that_are_not_round_numbers_pass_and_the_report_agrees_with_itself(monkeypatch):
+    """Regression (CI): 5/6 printed as 0.833 failed 'value >= threshold' against an unrounded 0.8333 lexical recall although the check had passed."""
+    from backend.prereqai_eval import gate, heldout
+
+    monkeypatch.setattr(heldout, "load_manifest", lambda manifest=None: [{"pdf_path": "x.pdf"}])
+    import backend.pipeline as pipeline
+
+    monkeypatch.setattr(pipeline, "ResearchPaperPipeline", lambda: SimpleNamespace(run=lambda path: SimpleNamespace(paper=synthetic())))
+    system = {"recall_at_k": 5 / 6, "quotations_verified": 1.0, "recall_by_style": {}}
+    monkeypatch.setattr("backend.prereqai_eval.retrieval_benchmark.evaluate", lambda papers: {"questions": 12, "k": 5, "styles": {}, "systems": {"lexical": dict(system), "hybrid": dict(system)}})
+    checks = []
+    gate.retrieval_checks(checks)
+    assert all(c["passed"] and c["value"] >= c["threshold"] for c in checks)

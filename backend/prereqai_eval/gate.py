@@ -96,7 +96,7 @@ def retrieval_checks(checks, manifest=None):
     lexical, hybrid = report["systems"]["lexical"], report["systems"]["hybrid"]
     detail = (f"{report['questions']} questions: lexical recall@{report['k']} {lexical['recall_at_k']:.3f}, hybrid {hybrid['recall_at_k']:.3f}; by style lexical {lexical['recall_by_style']}, "
               f"hybrid {hybrid['recall_by_style']}")
-    _check(checks, "retrieval", "hybrid_recall_not_below_lexical", hybrid["recall_at_k"], lexical["recall_at_k"], detail)
+    _check(checks, "retrieval", "hybrid_recall_not_below_lexical", round(hybrid["recall_at_k"], 3), round(lexical["recall_at_k"], 3), detail)  # both rounded as the report prints them, so the check and the report agree
     _check(checks, "retrieval", "quotations_verified", min(lexical["quotations_verified"], hybrid["quotations_verified"]), 1.0, detail)
     _check(checks, "retrieval", "questions_generated", float(report["questions"]), 6.0, detail)
     return report
