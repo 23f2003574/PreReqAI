@@ -75,6 +75,9 @@ def heldout_checks(checks, floors, manifest=None):
     for name in heldout.INVARIANTS:
         broken = [f"{row['id']}: {message}" for row in report["papers"] for message in row["violations"][name]]
         _check(checks, "heldout_invariants", name, report["invariants"][name], floors.get(name, 1.0), "; ".join(broken[:6]) + (f"; and {len(broken) - 6} more" if len(broken) > 6 else ""))
+    caught = [flag for row in report["papers"] for flag in (row.get("self_test") or {}).values()]
+    missed = [f"{row['id']}: {name} was not reported" for row in report["papers"] for name, flag in (row.get("self_test") or {}).items() if not flag]
+    _check(checks, "heldout_invariants", "gate_detects_degradation", (sum(caught) / len(caught)) if caught else 0.0, 1.0, "; ".join(missed) or "no paper passed, so the degradation self-test did not run")
     return report
 
 
