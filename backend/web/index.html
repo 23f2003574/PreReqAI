@@ -294,6 +294,15 @@ function renderMath(report) {
     var g = gaps[p.concept] || {}, status = g.status === "known" ? "Marked as known" : g.satisfied ? "Covered in the paper" : "To study";
     return [p.concept, p.evidence_strength ? p.evidence_strength.charAt(0).toUpperCase() + p.evidence_strength.slice(1) : "-", status, hours[p.concept] === undefined ? "-" : String(hours[p.concept])];
   })));
+  var topics = report.math_subtopics || [];
+  box.appendChild(el("h3", "Specific skills your equations need (" + topics.length + ")"));
+  if (!topics.length) box.appendChild(el("p", "No specific mathematical notation PreReqAI knows was recognised in this paper's equations.", "msg info"));
+  else box.appendChild(table(["Skill", "Subject", "Equations that need it", "Study"], topics.map(function (t) {
+    var where = t.equations.slice(0, 4).map(function (q) { return (q.tag ? "Eq. (" + q.tag + ")" : "Eq. #" + q.equation_id) + (q.page_number ? ", p. " + q.page_number : ""); }).join("; ") + (t.equations.length > 4 ? "; and " + (t.equations.length - 4) + " more" : "");
+    var study = el("span", "-");
+    if (t.resource) { study = el("span"); if (/^https:\/\//.test(t.resource.url)) { var a = el("a", t.resource.title); a.href = t.resource.url; a.rel = "noopener noreferrer"; a.target = "_blank"; study.appendChild(a); } else study.textContent = t.resource.title; }
+    return [t.subtopic, t.subject, where, study];
+  })));
   var equations = report.equations || [];
   box.appendChild(el("h3", "Equations in the paper (" + equations.length + ")"));
   if (!equations.length) box.appendChild(el("p", "No display equations were found in this paper.", "msg info"));

@@ -215,7 +215,7 @@ def test_mathematics_difficulty_roadmap_and_actions_panels_show_the_report(brows
     context, page = open_page(browser, plain)
     analyse(page)
     math = page.locator("#math").inner_text()
-    assert "Linear Algebra" in math and "Calculus" in math and "No display equations were found" in math  # the sample paper has no equations: said, not blank
+    assert "Linear Algebra" in math and "Calculus" in math and "No display equations were found" in math and "No specific mathematical notation PreReqAI knows was recognised" in math  # the sample paper has no equations: said, not blank
     assert page.locator("#why").inner_text().startswith("Advanced") and "Missing Prerequisites" in page.locator("#why").inner_text()
     roadmap = page.locator("#roadmap").inner_text()
     assert "Roadmap (in study order)" in roadmap and "MIT 18.06 Linear Algebra" in roadmap and "Next actions" in roadmap and "Study Linear Algebra" in roadmap
@@ -227,6 +227,7 @@ def test_a_real_papers_equations_and_empty_states_are_readable(browser, plain):
     analyse(page, DPO)
     math = page.locator("#math").inner_text()
     assert re.search(r"Equation \(7\), page 4, section 4 Direct Preference Optimization", math) and "LDPO" in math
+    assert "Specific skills your equations need" in math and "Expectation of a random variable" in math and "Eq. (7), p. 4" in math  # the skills, each with its equation
     context.close()
 
 

@@ -93,6 +93,13 @@ class LearningReportGenerator:
         ]
 
     @staticmethod
+    def _math_subtopics(paper: Paper) -> list:
+        """The specific mathematical skills the paper's equations need, each with the equations that need it (see backend/parsing/math_subtopics.py)."""
+        from backend.parsing.math_subtopics import analyse
+
+        return analyse(paper.equations)
+
+    @staticmethod
     def _equations(paper: Paper) -> list:
         """Each extracted equation with the detected concepts its section discusses, so a reader knows which
         concepts to be comfortable with before the mathematics. The link is the equation itself plus the 300
@@ -192,6 +199,8 @@ class LearningReportGenerator:
             "concepts_without_prerequisite_rules": list(paper.concepts_without_rules),  # their prerequisites are unknown, not absent
 
             "equations": self._equations(paper),
+
+            "math_subtopics": self._math_subtopics(paper),
 
             "concept_evidence": self._concept_evidence(paper),
 
