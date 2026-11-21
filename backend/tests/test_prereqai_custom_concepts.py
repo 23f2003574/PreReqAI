@@ -107,3 +107,11 @@ def test_four_processes_adding_concepts_lose_none(store):
     with multiprocessing.get_context("spawn").Pool(4) as pool:
         pool.map(_add, [(str(store), n) for n in names])
     assert sorted(c["name"] for c in custom_concepts.load()[0]) == sorted(names)
+
+
+def test_a_repeated_phrase_that_crosses_punctuation_or_a_number_never_crashes_the_search():
+    """Regression (CI, every real paper): word pairs built from separate tokens were looked up as a substring of the paragraph and raised StopIteration."""
+    result = Paper(source_path="x.pdf", metadata=None)
+    result.paragraphs = [Paragraph(i, "1 Intro", "The tidal model, 3 data points; (tidal model) and tidal model 3 data points again. Tidal energy, data.", i) for i in (1, 2, 3)]
+    found = find(result)
+    assert all(c["sentence"] for c in found) and "tidal model" in {c["term"].lower() for c in found}

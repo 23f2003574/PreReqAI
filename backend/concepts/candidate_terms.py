@@ -72,18 +72,21 @@ def find(paper, known=None, limit=MAX_CANDIDATES):
     text = [(p, " ".join((p.content or "").lower().replace("­", "").split())) for p in paragraphs]
     counts, spread = {}, {}
     for position, (paragraph, lowered) in enumerate(text):
-        words = re.findall(r"[a-z][a-z\-]{2,}", lowered)
-        for size in (2, 3):
-            for i in range(len(words) - size + 1):
-                gram = words[i:i + size]
-                if gram[0] in _STOP or gram[-1] in _STOP or any(w in _STOP for w in gram[1:-1] if size == 3 and w in ("the", "a", "an")):
-                    continue
-                phrase = " ".join(gram)
-                counts[phrase] = counts.get(phrase, 0) + 1
-                spread.setdefault(phrase, set()).add(position)
+        for chunk in re.split(r"[.,;:!?()\[\]\"\u201c\u201d]", lowered):  # a phrase never runs across punctuation, so it is a real substring of the paragraph
+            words = chunk.split()
+            for size in (2, 3):
+                for i in range(len(words) - size + 1):
+                    gram = words[i:i + size]
+                    if not all(re.fullmatch(r"[a-z][a-z\-]{2,}", w) for w in gram) or gram[0] in _STOP or gram[-1] in _STOP or any(w in ("the", "a", "an") for w in gram[1:-1]):
+                        continue
+                    phrase = " ".join(gram)
+                    counts[phrase] = counts.get(phrase, 0) + 1
+                    spread.setdefault(phrase, set()).add(position)
     for phrase, count in counts.items():
         if count >= MIN_MENTIONS and len(spread[phrase]) >= MIN_PARAGRAPHS and phrase not in known and _usable(phrase):
-            first = next(p for p, lowered in text if phrase in lowered)
+            first = next((p for p, lowered in text if phrase in lowered), None)
+            if first is None:
+                continue
             sentence = next((s for s in _SENTENCES.split(" ".join(first.content.split())) if phrase in s.lower()), "")
             if sentence:
                 entry = found.setdefault(phrase, {"term": phrase, "definition": 0, "reasons": [], "sentence": sentence, "page_number": first.page_number, "section": first.section_title})
