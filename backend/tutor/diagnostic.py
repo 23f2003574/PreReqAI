@@ -18,19 +18,74 @@ def _rank(identifier, text):
     return hashlib.sha256(f"{identifier}|{text}".encode("utf-8")).hexdigest()
 
 
-def options_for(identifier):
-    """The four answer texts of a question in their fixed order; QuizError("unknown") for an id that is not a question."""
+def _norm(text):
+    return " ".join(str(text).lower().split())
+
+
+def _siblings(concept):
+    """Concepts the prerequisite graph puts next to `concept`: its prerequisites, the concepts that need it and those that share a prerequisite with it, sorted."""
+    from backend.prerequisites.prerequisite_detector import PrerequisiteDetector
+
+    rules = PrerequisiteDetector.PREREQUISITE_RULES
+    own = set(rules.get(concept, ()))
+    return sorted({*own, *(name for name, needs in rules.items() if concept in needs), *(name for name, needs in rules.items() if name != concept and own & set(needs))} - {concept})
+
+
+def distractor_pool(identifier):
+    """(related, unrelated, correct): the candidate wrong answers of a question, each tier ordered so that texts close to the correct one in length come first (then by a hash of the question id, so
+    the order is fixed). related: the other answers of the same concept, the common misconceptions the tutor knows for it, then the answers of its siblings in the prerequisite graph; unrelated:
+    answers to other concepts' questions (a learner can rule these out without knowing the concept). A candidate equal to, containing or contained in the correct answer is never used."""
     concept, number, item = quiz_session._lookup(identifier)
     identifier, correct = question_id(concept, number), item["answer"]
-    pool = sorted({q["answer"] for name, items in ASKABLE.items() if name != concept for q in items if q["answer"] != correct and len(q["answer"]) <= 2 * max(len(correct), 40)},
-                  key=lambda text: _rank(identifier, text))
-    return sorted([correct, *pool[:OPTIONS - 1]], key=lambda text: _rank(identifier, text))
+    from .misconception_registry import COMMON_MISCONCEPTIONS
+
+    def usable(text):
+        low, mine = _norm(text), _norm(correct)
+        return bool(low) and low != mine and low not in mine and mine not in low
+
+    def ordered(texts):
+        unique = list(dict.fromkeys(t for t in texts if usable(t)))
+        return sorted(unique, key=lambda t: (abs(len(t) - len(correct)) // 12, _rank(identifier, t)))
+
+    same = [q["answer"] for q in ASKABLE.get(concept, []) if q is not item]
+    sibling = [q["answer"] for name in _siblings(concept) for q in ASKABLE.get(name, [])]
+    related = list(dict.fromkeys([*ordered(same), *ordered(COMMON_MISCONCEPTIONS.get(concept, [])), *ordered(sibling)]))
+    other = [q["answer"] for name, items in ASKABLE.items() if name != concept for q in items if len(q["answer"]) <= 2 * max(len(correct), 40)]
+    return related, [t for t in ordered(other) if t not in related], correct
+
+
+def options_for(identifier):
+    """The four answer texts of a question in their fixed order; QuizError("unknown") for an id that is not a question. Distractors come from the same concept and its neighbours first; answers to
+    unrelated concepts fill in only when fewer than three related ones exist (see `distractor_report`, `weak_distractors`)."""
+    concept, number, item = quiz_session._lookup(identifier)
+    identifier = question_id(concept, number)
+    related, unrelated, correct = distractor_pool(identifier)
+    chosen = [*related, *unrelated][:OPTIONS - 1]
+    return sorted([correct, *chosen], key=lambda text: _rank("order|" + identifier, text))  # a different hash from the one that picked the distractors, or the answer would tend to come last
+
+
+def weak_distractors(identifier):
+    """True when fewer than three related distractors exist for the question, so the learner can rule some options out without knowing the concept."""
+    related, _, _ = distractor_pool(identifier)
+    return len(related) < OPTIONS - 1
+
+
+def distractor_report():
+    """{"questions", "weak": [question ids], "concepts_without_related": [concepts whose every question is weak]} over every askable question."""
+    weak, by_concept = [], {}
+    for concept, items in ASKABLE.items():
+        for number in range(1, len(items) + 1):
+            identifier = question_id(concept, number)
+            by_concept.setdefault(concept, []).append(weak_distractors(identifier))
+            if by_concept[concept][-1]:
+                weak.append(identifier)
+    return {"questions": sum(len(v) for v in by_concept.values()), "weak": weak, "concepts_without_related": sorted(c for c, flags in by_concept.items() if all(flags))}
 
 
 def serve(session, concept=None):
     """The next question (as quiz_session.next_question picks it) with its options and no answer."""
     question = quiz_session.next_question(session, concept)
-    return {**question, "options": options_for(question["question_id"]), "confidence_levels": list(CONFIDENCE), "graded": True}
+    return {**question, "options": options_for(question["question_id"]), "weak_distractors": weak_distractors(question["question_id"]), "confidence_levels": list(CONFIDENCE), "graded": True}
 
 
 def grade(session, identifier, choice, confidence):
