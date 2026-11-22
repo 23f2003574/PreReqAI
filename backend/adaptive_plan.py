@@ -10,16 +10,18 @@ Self-reported answers are not evidence here. A learner's override ("reject") res
 from math import isfinite
 
 MIN_GRADED, MIN_DISTINCT = 3, 2
+COMPRESS_LOWER = 0.80  # the lower end of the mastery estimate (backend/mastery_model.py) must reach this before a step is compressed
 COMPRESS_ACCURACY, COMPRESS_FACTOR, MIN_HOURS = 0.85, 0.3, 0.5
 REMEDIATE_ACCURACY, REMEDIATE_FACTOR = 0.5, 1.5
 
 
 def evidence_from_attempts(attempts):
     """{concept: {graded, correct, distinct_correct, high_confidence_wrong, missed: [question ids]}} from the assessed attempts only."""
-    found = {}
+    found, per_concept = {}, {}
     for attempt in attempts:
         if not attempt.get("graded"):
             continue
+        per_concept.setdefault(attempt["concept"], []).append(attempt)
         entry = found.setdefault(attempt["concept"], {"graded": 0, "correct": 0, "correct_questions": set(), "high_confidence_wrong": 0, "missed": []})
         entry["graded"] += 1
         if attempt["correct"]:
@@ -31,6 +33,11 @@ def evidence_from_attempts(attempts):
     for entry in found.values():
         entry["distinct_correct"] = len(entry.pop("correct_questions"))
         entry["missed"] = list(dict.fromkeys(entry["missed"]))
+    from backend import mastery_model
+
+    for concept, entry in found.items():  # the same estimate the profile uses, over this session's answers in the order they were given
+        estimate = mastery_model.estimate_attempts(per_concept[concept])
+        entry.update({"p_mastery": estimate["p"], "mastery_low": estimate["low"], "mastery_high": estimate["high"]})
     return found
 
 
@@ -57,9 +64,10 @@ def decide(concept, hours, evidence):
     if evidence["high_confidence_wrong"] >= 2 or (graded >= 2 and accuracy <= REMEDIATE_ACCURACY):
         why = f"{summary}" + (f", {evidence['high_confidence_wrong']} of the misses with high confidence" if evidence["high_confidence_wrong"] else "")
         return "remediate", REMEDIATE_FACTOR, f"{why}: more time is planned and the questions you missed are listed to review."
-    if graded >= MIN_GRADED and evidence["distinct_correct"] >= MIN_DISTINCT and accuracy >= COMPRESS_ACCURACY and not evidence["high_confidence_wrong"]:
+    if graded >= MIN_GRADED and evidence["distinct_correct"] >= MIN_DISTINCT and accuracy >= COMPRESS_ACCURACY and not evidence["high_confidence_wrong"] \
+            and evidence.get("mastery_low", 1.0) >= COMPRESS_LOWER:
         return "compress", COMPRESS_FACTOR, f"{summary} across {evidence['distinct_correct']} different questions: a short refresher is planned instead of the full study time."
-    return "keep", 1.0, f"{summary}: not yet enough to change the plan (compressing needs {MIN_GRADED} answers on {MIN_DISTINCT} questions at {int(COMPRESS_ACCURACY * 100)}%)."
+    return "keep", 1.0, f"{summary}{' (estimated probability of knowing it ' + format(evidence['p_mastery'], '.2f') + ', at least ' + format(evidence['mastery_low'], '.2f') + ')' if 'p_mastery' in evidence else ''}: not yet enough to change the plan (compressing needs {MIN_GRADED} answers on {MIN_DISTINCT} questions at {int(COMPRESS_ACCURACY * 100)}%)."
 
 
 def propose(report, attempts, overrides=None, calendar=None):

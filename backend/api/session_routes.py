@@ -21,7 +21,7 @@ from backend.api.workflow_result import (
 
 from datetime import datetime, time, timezone
 
-from backend import adaptive_plan, learner_profile, study_calendar
+from backend import adaptive_plan, learner_profile, mastery_model, study_calendar
 from backend import learning_services
 from backend.prerequisites.study_time_estimator import parse_hours_per_day
 from backend.session import (
@@ -430,7 +430,8 @@ def diagnostic_answer(session_id: str, body: DiagnosticAnswer):
     def act(session):
         verdict = diagnostic.grade(session, body.question_id, body.choice, body.confidence)
         review = _remember_outcome(session)
-        return {"verdict": verdict, "progress": quiz_session.progress(session), "assessed": diagnostic.assessed_summary(session), **({"review": review} if review else {})}
+        return {"verdict": verdict, "progress": quiz_session.progress(session), "assessed": diagnostic.assessed_summary(session), "calibration": mastery_model.calibration(session.quiz_attempts),
+                **({"review": review} if review else {})}
 
     return _quiz(session_id, act)
 

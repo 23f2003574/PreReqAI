@@ -259,8 +259,8 @@ def review_queue(path, moment=None, upcoming_limit=10):
 def mastery(quiz):
     """[{concept, questions, attempts, knew, missed, status, evidence, graded_attempts, graded_correct, high_confidence_wrong, last_seen}] per concept of a profile's quiz history, by name.
     Mastery needs ASSESSED evidence, answers the system checked itself (see backend/tutor/diagnostic.py); a self-reported "knew" never establishes it.
-    status: "needs_practice" when any question was last missed; "mastered" when at least two different questions each have an assessed correct streak of at least 2 and fewer than two
-    high-confidence answers were wrong (a learner who is often confidently wrong has not shown understanding); "self_reported" when the old self-graded rule (two questions, each "knew" with a
+    status: "needs_practice" when any question was last missed; "mastered" when the uncertainty-aware estimate of backend/mastery_model.py says so (a high probability whose lower end is also high,
+    from enough graded answers on at least two different questions; confident wrong answers weigh heavily); p_mastery, mastery_low, mastery_high and mastery_reason explain it; "self_reported" when the old self-graded rule (two questions, each "knew" with a
     streak of 2) holds but the assessed evidence does not; otherwise "progressing". evidence: "assessed" when the concept has any assessed answer, else "self_reported"."""
     by_concept = {}
     for entry in quiz.values():
@@ -270,9 +270,12 @@ def mastery(quiz):
         entries = by_concept[concept]
         graded = sum(e.get("graded_attempts", 0) for e in entries)
         confident_wrong = sum(e.get("high_confidence_wrong", 0) for e in entries)
+        from backend import mastery_model
+
+        estimate = mastery_model.estimate_entries([(e.get("question_id", str(n)), e) for n, e in enumerate(sorted(entries, key=lambda e: (e.get("first_seen", ""), e.get("last_seen", ""))))])
         if any(e["last_outcome"] == "missed" for e in entries):
             status = "needs_practice"
-        elif len(entries) >= 2 and all(e.get("graded_streak", 0) >= 2 for e in entries) and confident_wrong < 2:
+        elif estimate is not None and estimate["mastered"]:
             status = "mastered"
         elif not graded and len(entries) >= 2 and all(e["streak"] >= 2 for e in entries):
             status = "self_reported"
@@ -280,7 +283,8 @@ def mastery(quiz):
             status = "progressing"
         result.append({"concept": concept, "questions": len(entries), "attempts": sum(e["attempts"] for e in entries), "knew": sum(e["knew"] for e in entries),
                        "missed": sum(e["missed"] for e in entries), "status": status, "evidence": "assessed" if graded else "self_reported", "graded_attempts": graded,
-                       "graded_correct": sum(e.get("graded_correct", 0) for e in entries), "high_confidence_wrong": confident_wrong, "last_seen": max(e["last_seen"] for e in entries)})
+                       "graded_correct": sum(e.get("graded_correct", 0) for e in entries), "high_confidence_wrong": confident_wrong, "last_seen": max(e["last_seen"] for e in entries),
+                       **({"p_mastery": estimate["p"], "mastery_low": estimate["low"], "mastery_high": estimate["high"], "mastery_reason": estimate["reason"]} if estimate else {})})
     return result
 
 
