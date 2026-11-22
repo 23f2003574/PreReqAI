@@ -6,7 +6,7 @@ A deterministic Bayesian-knowledge-tracing-style update. The state is P(learner 
 * a wrong answer is likelier from someone who does not know it, and a confident wrong answer is the strongest evidence of that: the slip probability is 0.20 (low), 0.10 (medium), 0.05 (high).
 Self-reported answers never enter. The result carries the probability, a standard error SE = sqrt(p (1 - p) / (n + 1)) over the n graded answers (a simple, explicit uncertainty measure,
 not a Bayesian credible interval) and the interval p +/- 1.645 SE clamped to [0, 1]. A concept counts as mastered only when p >= MASTERED_P, the lower end of the interval reaches
-MASTERED_LOWER, at least MIN_ANSWERS answers were graded and at least MIN_QUESTIONS different questions were answered correctly, so three lucky guesses (p about 0.98, lower end about 0.86) are
+MASTERED_LOWER, at least MIN_ANSWERS answers were graded and at least MIN_QUESTIONS different questions were answered correctly and no more than MAX_CONFIDENT_WRONG answers were confidently wrong, so three lucky guesses (p about 0.98, lower end about 0.86) are
 not enough: the answer minimum is what stops them. The parameters are fixed, reasoned values, NOT fitted to real learners: the probabilities are an explainable ranking of evidence, not calibrated predictions.
 A profile stores counters per question, not the answer sequence, so `sequence_from_counters` rebuilds a canonical order from them (earlier correct answers, then the misses, then the final correct streak)."""
 from math import sqrt
@@ -15,6 +15,7 @@ PRIOR, LEARN = 0.30, 0.15
 GUESS = {"low": 0.35, "medium": 0.25, "high": 0.15}
 SLIP = {"low": 0.20, "medium": 0.10, "high": 0.05}
 MASTERED_P, MASTERED_LOWER, MIN_ANSWERS, MIN_QUESTIONS, Z = 0.95, 0.85, 4, 2, 1.645
+MAX_CONFIDENT_WRONG = 1  # a learner who was confidently wrong twice has not shown understanding, whatever they answered since (the rule the streak-based mastery had)
 CONFIDENCE_P = {"low": 0.4, "medium": 0.65, "high": 0.9}  # what each stated confidence claims about being right, for the Brier score
 
 
@@ -40,7 +41,8 @@ def estimate(answers):
     se = sqrt(p * (1 - p) / (n + 1))
     low, high = max(0.0, p - Z * se), min(1.0, p + Z * se)
     questions = len({q for correct, _, q in answers if correct})
-    mastered = p >= MASTERED_P and low >= MASTERED_LOWER and n >= MIN_ANSWERS and questions >= MIN_QUESTIONS
+    confident_wrong = sum(1 for correct, confidence, _ in answers if not correct and confidence == "high")
+    mastered = p >= MASTERED_P and low >= MASTERED_LOWER and n >= MIN_ANSWERS and questions >= MIN_QUESTIONS and confident_wrong <= MAX_CONFIDENT_WRONG
     if mastered:
         reason = f"{p:.2f} probability of knowing it (at least {low:.2f} with some confidence) from {n} graded answers on {questions} different questions"
     else:
@@ -49,6 +51,8 @@ def estimate(answers):
             need.append(f"the estimate is {p:.2f} (lower end {low:.2f}); mastery needs {MASTERED_P:.2f} and {MASTERED_LOWER:.2f}")
         if n < MIN_ANSWERS:
             need.append(f"only {n} graded answer{'s' if n != 1 else ''} (at least {MIN_ANSWERS} needed)")
+        if confident_wrong > MAX_CONFIDENT_WRONG:
+            need.append(f"{confident_wrong} confidently wrong answers (mastery allows at most {MAX_CONFIDENT_WRONG})")
         if questions < MIN_QUESTIONS:
             need.append(f"only {questions} question{'s' if questions != 1 else ''} answered correctly (at least {MIN_QUESTIONS} different ones needed)")
         reason = "; ".join(need)

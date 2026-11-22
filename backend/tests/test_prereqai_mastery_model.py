@@ -32,6 +32,12 @@ def test_recovery_after_confident_misses_needs_more_evidence_than_a_clean_run():
     assert recovered["mastered"] is False
 
 
+def test_two_confident_misses_block_mastery_even_after_a_long_recovery():
+    run = [(False, "high", "a"), (True, "medium", "a"), (True, "medium", "b"), (True, "medium", "a"), (False, "high", "b")] + [(True, "medium", "ab"[n % 2]) for n in range(8)]
+    estimate = m.estimate(run)
+    assert estimate["p"] > 0.95 and estimate["mastered"] is False and "confidently wrong" in estimate["reason"]
+
+
 def test_the_estimate_is_deterministic_and_explains_itself():
     first = m.estimate(answers(True, False, True, True))
     assert first == m.estimate(answers(True, False, True, True)) and first["reason"] and 0 <= first["low"] <= first["p"] <= first["high"] <= 1

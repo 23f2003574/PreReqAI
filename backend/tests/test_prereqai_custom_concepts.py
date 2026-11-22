@@ -55,7 +55,7 @@ def test_nothing_enters_the_analysis_until_the_learner_confirms_it_and_then_it_i
     unconfirmed = RuleBasedConceptDetector().detect(paper())
     assert [c.name for c in unconfirmed.concepts] == []  # candidates are only suggestions
     entry = custom_concepts.add("Genetic Drift", ["genetic-drift"], "Random change in allele frequencies.")
-    assert entry["name"] == "Genetic Drift" and json.loads(store.read_text())["schema_version"] == 1
+    assert entry["name"] == "Genetic Drift" and json.loads(store.read_text())["schema_version"] == custom_concepts.SCHEMA_VERSION == 2  # version 2 adds per-concept prerequisites; version 1 files still load (test_prereqai_custom_prerequisites.py)
     confirmed = RuleBasedConceptDetector().detect(paper())
     names = {c.name: c for c in confirmed.concepts}
     assert "Genetic Drift" in names and names["Genetic Drift"].occurrences >= 3 and names["Genetic Drift"].domain == "custom"

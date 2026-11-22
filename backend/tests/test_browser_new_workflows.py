@@ -259,6 +259,6 @@ def test_paper_questions_are_answered_checked_against_the_paper_and_recorded(bro
     page.wait_for_function("document.querySelector('#pqMsg').innerText.indexOf('Assessed') >= 0")
     assert page.locator("#mastery").inner_text().strip() != ""
     page.click("#pqNext")
-    page.wait_for_selector("#pqPrompt")
+    page.wait_for_function("(old) => { var e = document.querySelector('#pqPrompt'); return e && e.innerText !== old; }", arg=prompt)  # the answered card stays on screen until the next one arrives
     assert page.locator("#pqPrompt").inner_text() != prompt  # the next question is a different one
     context.close()
