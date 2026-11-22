@@ -5,6 +5,7 @@
   "synthetic_pdf": {"headings_f1": 0.93, "concepts_precision": 0.98, "concepts_recall": 0.98, "roles_accuracy": 0.90, "coverage_recall": 0.95, "coverage_f1": 0.78, "pipeline_success": 1.0},
   "synthetic_evidence": {"concept_coverage": 0.90, "exact_quotation": 1.0, "residue_free": 1.0, "mentions_concept": 1.0, "page_known": 1.0},
   "real_papers_provisional": {"evaluated_papers": 3, "headings_f1": 0.85, "headings_precision": 0.92, "concepts_precision": 0.95, "concepts_recall": 0.95, "roles_accuracy": 0.85},
+  "retrieval_real": {"questions": 30},
   "math_subtopics": {"precision": 0.97, "recall": 0.97, "equations": 30},
   "prerequisite_graph": {"graph_valid": 1.0, "rule_coverage": 0.98},
   "heldout_invariants": {"references_extracted": 1.0, "no_duplicate_headings": 1.0, "no_short_headings": 1.0, "no_bibliography_only_concepts": 1.0, "evidence_quotations_verified": 1.0}

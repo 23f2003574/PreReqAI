@@ -102,6 +102,32 @@ def retrieval_checks(checks, manifest=None):
     return report
 
 
+def real_retrieval_checks(checks, floors):
+    """Retrieval on the six real papers (retrieval_real.py): per paper the hybrid search must recall at least as many gold phrases as the lexical one, every returned passage must be an exact quotation,
+    and the question set must not shrink. No absolute recall floor is held: none had been measured when this was written. Returns the measurements, or None when the papers cannot be analysed."""
+    from backend.pipeline import ResearchPaperPipeline
+
+    from . import retrieval_real
+
+    data = retrieval_real.load()
+    paths = retrieval_real.pdf_paths({q["paper"] for q in data["questions"]})
+    try:
+        papers = {paper_id: ResearchPaperPipeline().run(path).paper for paper_id, path in paths.items()}
+    except Exception as error:  # a paper that cannot be analysed is a failed check, never a crash of the gate
+        checks.append({"group": "retrieval_real", "metric": "papers", "value": 0.0, "threshold": 1.0, "passed": False, "detail": f"{type(error).__name__}: {error}"})
+        return None
+    report = retrieval_real.evaluate(papers, data)
+    lexical, hybrid = report["systems"]["lexical"], report["systems"]["hybrid"]
+    detail = (f"{report['questions']} questions over {len(report['papers'])} papers, recall@{report['k']} lexical {lexical['recall_at_k']:.3f} hybrid {hybrid['recall_at_k']:.3f}, MRR lexical "
+              f"{lexical['mrr']:.3f} hybrid {hybrid['mrr']:.3f}, gold phrase in extracted text {report['gold_in_text']:.3f}")
+    for paper_id in report["papers"]:
+        a, b = lexical["by_paper"][paper_id]["recall_at_k"], hybrid["by_paper"][paper_id]["recall_at_k"]
+        _check(checks, "retrieval_real", f"hybrid_not_below_lexical:{paper_id}", b, a, f"{paper_id}: lexical {a}, hybrid {b}; {detail}")
+    _check(checks, "retrieval_real", "quotations_verified", min(lexical["quotations_verified"], hybrid["quotations_verified"]), 1.0, detail)
+    _check(checks, "retrieval_real", "questions", float(report["questions"]), float(floors.get("questions", 30)), "the real-paper question set must not shrink: " + detail)
+    return report
+
+
 def math_checks(checks, floors):
     """Precision and recall of the mathematical-subtopic rules on the labelled equations (math_eval.py). The equations are AI-written and unreviewed, not extracted from real PDFs: the floors guard the
     rules against regressions, they say nothing about real papers (those are reported as not annotated)."""
@@ -166,7 +192,8 @@ def run_gate(thresholds=None, benchmark_manifest=None):
     retrieval_checks(checks)
     graph_checks(checks, floors.get("prerequisite_graph", {}))
     math_checks(checks, floors.get("math_subtopics", {}))
-    return {"passed": all(c["passed"] for c in checks), "checks": checks, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
+    measured = real_retrieval_checks(checks, floors.get("retrieval_real", {}))
+    return {"passed": all(c["passed"] for c in checks), "checks": checks, "retrieval_real": measured, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
             "real_papers": {"status": real["status"], "per_paper": [{"id": r["id"], "review_kind": r.get("review_kind"), "headings_f1": r["headings"]["f1"], "concepts_f1": r["concepts"]["f1"]}
                                                                   for r in real["papers"] if r["ok"]],
                             "aggregate": {key: real.get(key) for key in ("headings", "concepts", "coverage", "roles")},
@@ -181,6 +208,13 @@ def render_gate(report):
             lines.append(f"        what to look at: {check['detail']}")
     for paper in (report.get("heldout") or {}).get("papers", []):
         lines.append(f"held-out {paper['id']:<18} arXiv {paper['arxiv_id']} {paper['licence']} sha256 {paper['sha256'][:12]}: licence read by {paper['licence_checked_by'].split(',')[0]} (not a human reviewer)")
+    measured = report.get("retrieval_real")
+    if measured:
+        lexical, hybrid = measured["systems"]["lexical"], measured["systems"]["hybrid"]
+        lines.append(f"retrieval on real papers ({measured['questions']} AI-written, unreviewed questions, no absolute floor held): recall@{measured['k']} lexical {lexical['recall_at_k']:.3f}, hybrid {hybrid['recall_at_k']:.3f}; "
+                     f"MRR lexical {lexical['mrr']:.3f}, hybrid {hybrid['mrr']:.3f}; gold phrase in extracted text {measured['gold_in_text']:.3f}")
+        for paper_id in measured["papers"]:
+            lines.append(f"  {paper_id:<18} lexical recall {lexical['by_paper'][paper_id]['recall_at_k']:.2f} MRR {lexical['by_paper'][paper_id]['mrr']:.2f}; hybrid recall {hybrid['by_paper'][paper_id]['recall_at_k']:.2f} MRR {hybrid['by_paper'][paper_id]['mrr']:.2f}")
     real = report["real_papers"]
     lines.append(f"real papers: {real['status'].upper()} " + ("(annotations approved by an AI, not a human reviewer: the floors above guard against regressions but are not validated ground truth)"
                  if real["status"] == "provisional" else "(human-reviewed annotations)" if real["status"] == "human_reviewed" else "(no scored paper)"))

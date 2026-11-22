@@ -119,3 +119,11 @@ twice (once now). Nothing else was tuned. Results are unchanged: the `--pdf` eva
 The rules were tightened against this set (the first run scored precision 0.949 and recall 0.918 with 3 false positives and 5 false negatives; they now score 1.0 and 1.0), so the numbers are
 optimistic by construction: they are a regression guard, not a measure of real papers. Real-paper equations are **not annotated**: doing it honestly needs the PDF text extraction of the real
 papers run and read by a person, because what a rule can see (flattened fractions, lost subscripts, glyph names) is decided there; this was not possible where the evaluation was written (no PyMuPDF).
+
+## Retrieval on real papers (`--gate`, group `retrieval_real`)
+
+`retrieval_real.py` runs 36 questions with gold phrases (`fixtures/retrieval_questions.json`) over the six licensed PDFs and reports recall@5 and MRR for the lexical and the hybrid search, per
+paper. **The questions are AI-written and not reviewed by a human**; gold phrases were checked to occur in the papers, but some are generic words, so a hit shows the right region was found. The gate
+requires the hybrid search to do at least as well as the lexical one on every paper, every quotation to be exact and the set not to shrink; it holds **no absolute recall floor**, because no real
+measurement existed when it was written (the evaluation could not be run where it was written: no PyMuPDF). Set a floor from the first CI numbers (`--gate` prints them). Improving the most
+consequential measured failure mode is therefore **not done**: there is nothing measured yet to improve against.

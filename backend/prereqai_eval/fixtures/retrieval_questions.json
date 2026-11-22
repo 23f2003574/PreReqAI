@@ -1,0 +1,259 @@
+{
+ "format": "prereqai-retrieval-questions",
+ "status": "ai_written_unreviewed",
+ "provenance": "The 36 questions and their gold phrases were written by the AI assistant that built this evaluation after checking, in the PDF text read by pdfplumber, that each gold phrase occurs in its paper (comparison ignores case, spaces and punctuation because that reader drops spaces in some PDFs). A passage counts as a hit when its quotation contains the gold phrase. NOT reviewed by a human; some gold phrases are generic words, so a hit shows the right region was found, not that the question was answered. Papers: DPO, Mixtral and Chain-of-Thought (benchmark/) and Constitutional AI, GQA and Mistral 7B (heldout/), all CC BY 4.0 as recorded in their manifests.",
+ "questions": [
+  {
+   "id": "dpo-1",
+   "paper": "dpo",
+   "question": "How does DPO avoid fitting an explicit reward model?",
+   "gold": "explicit reward model",
+   "style": "clean"
+  },
+  {
+   "id": "dpo-2",
+   "paper": "dpo",
+   "question": "Which preference model underlies the DPO loss?",
+   "gold": "Bradley-Terry model",
+   "style": "clean"
+  },
+  {
+   "id": "dpo-3",
+   "paper": "dpo",
+   "question": "What KL constraint keeps the policy close to the reference?",
+   "gold": "KL constraint",
+   "style": "clean"
+  },
+  {
+   "id": "dpo-4",
+   "paper": "dpo",
+   "question": "Which movie review dataset is used for controlled sentiment generation?",
+   "gold": "IMDb dataset",
+   "style": "loose"
+  },
+  {
+   "id": "dpo-5",
+   "paper": "dpo",
+   "question": "Which text-condensing task is evaluated against human reference summaries?",
+   "gold": "summarization",
+   "style": "loose"
+  },
+  {
+   "id": "dpo-6",
+   "paper": "dpo",
+   "question": "What divergence appears in the RLHF objective?",
+   "gold": "KL divergence",
+   "style": "clean"
+  },
+  {
+   "id": "mixtral-7",
+   "paper": "mixtral",
+   "question": "How many tokens of context does Mixtral handle?",
+   "gold": "32k tokens",
+   "style": "clean"
+  },
+  {
+   "id": "mixtral-8",
+   "paper": "mixtral",
+   "question": "Which network decides which experts process a token?",
+   "gold": "router",
+   "style": "clean"
+  },
+  {
+   "id": "mixtral-9",
+   "paper": "mixtral",
+   "question": "How are the outputs of the selected experts weighted and combined?",
+   "gold": "gating network",
+   "style": "loose"
+  },
+  {
+   "id": "mixtral-10",
+   "paper": "mixtral",
+   "question": "What licence covers the Mixtral weights?",
+   "gold": "Apache 2.0",
+   "style": "clean"
+  },
+  {
+   "id": "mixtral-11",
+   "paper": "mixtral",
+   "question": "How many active parameters does a token use?",
+   "gold": "13B active parameters",
+   "style": "clean"
+  },
+  {
+   "id": "mixtral-12",
+   "paper": "mixtral",
+   "question": "Which ability beyond English does the model show?",
+   "gold": "multilingual",
+   "style": "loose"
+  },
+  {
+   "id": "chain-of-thought-13",
+   "paper": "chain-of-thought",
+   "question": "What is a chain of thought?",
+   "gold": "series of intermediate reasoning steps",
+   "style": "clean"
+  },
+  {
+   "id": "chain-of-thought-14",
+   "paper": "chain-of-thought",
+   "question": "Which prompts include examples with reasoning written out?",
+   "gold": "few-shot exemplars",
+   "style": "clean"
+  },
+  {
+   "id": "chain-of-thought-15",
+   "paper": "chain-of-thought",
+   "question": "On which kind of task, such as grade-school maths, does the prompting help?",
+   "gold": "arithmetic reasoning",
+   "style": "loose"
+  },
+  {
+   "id": "chain-of-thought-16",
+   "paper": "chain-of-thought",
+   "question": "When does the reasoning ability appear as models grow?",
+   "gold": "emerges only",
+   "style": "loose"
+  },
+  {
+   "id": "chain-of-thought-17",
+   "paper": "chain-of-thought",
+   "question": "Which benchmark covers everyday knowledge questions?",
+   "gold": "commonsense reasoning",
+   "style": "loose"
+  },
+  {
+   "id": "chain-of-thought-18",
+   "paper": "chain-of-thought",
+   "question": "Which task type involves manipulating letters and sequences?",
+   "gold": "symbolic reasoning",
+   "style": "loose"
+  },
+  {
+   "id": "constitutional-ai-19",
+   "paper": "constitutional-ai",
+   "question": "What list of principles guides the model?",
+   "gold": "list of principles",
+   "style": "clean"
+  },
+  {
+   "id": "constitutional-ai-20",
+   "paper": "constitutional-ai",
+   "question": "What do critiques and revisions do in the supervised phase?",
+   "gold": "critiques and revisions",
+   "style": "clean"
+  },
+  {
+   "id": "constitutional-ai-21",
+   "paper": "constitutional-ai",
+   "question": "Which pair of goals is the assistant trained towards?",
+   "gold": "helpful and harmless",
+   "style": "loose"
+  },
+  {
+   "id": "constitutional-ai-22",
+   "paper": "constitutional-ai",
+   "question": "What is RLAIF?",
+   "gold": "RLAIF",
+   "style": "clean"
+  },
+  {
+   "id": "constitutional-ai-23",
+   "paper": "constitutional-ai",
+   "question": "Which adversarial technique probes for harmful outputs?",
+   "gold": "red teaming",
+   "style": "loose"
+  },
+  {
+   "id": "constitutional-ai-24",
+   "paper": "constitutional-ai",
+   "question": "How is chain-of-thought used in AI feedback?",
+   "gold": "chain-of-thought",
+   "style": "clean"
+  },
+  {
+   "id": "gqa-25",
+   "paper": "gqa",
+   "question": "What is grouped-query attention?",
+   "gold": "grouped-query attention",
+   "style": "clean"
+  },
+  {
+   "id": "gqa-26",
+   "paper": "gqa",
+   "question": "How many key-value heads does GQA use?",
+   "gold": "key-value heads",
+   "style": "clean"
+  },
+  {
+   "id": "gqa-27",
+   "paper": "gqa",
+   "question": "How is an existing checkpoint converted to the new attention form?",
+   "gold": "uptrain",
+   "style": "loose"
+  },
+  {
+   "id": "gqa-28",
+   "paper": "gqa",
+   "question": "What controls the number of groups?",
+   "gold": "number of groups",
+   "style": "clean"
+  },
+  {
+   "id": "gqa-29",
+   "paper": "gqa",
+   "question": "Which encoder-decoder model family is used in the experiments?",
+   "gold": "T5",
+   "style": "loose"
+  },
+  {
+   "id": "gqa-30",
+   "paper": "gqa",
+   "question": "What uses a single key and value head?",
+   "gold": "single key and value head",
+   "style": "clean"
+  },
+  {
+   "id": "mistral-7b-31",
+   "paper": "mistral-7b",
+   "question": "What is the Instruct variant?",
+   "gold": "Mistral 7B Instruct",
+   "style": "clean"
+  },
+  {
+   "id": "mistral-7b-32",
+   "paper": "mistral-7b",
+   "question": "Which cache has a fixed size W?",
+   "gold": "rolling buffer cache",
+   "style": "clean"
+  },
+  {
+   "id": "mistral-7b-33",
+   "paper": "mistral-7b",
+   "question": "How are long prompts handled before generation starts?",
+   "gold": "pre-fill",
+   "style": "loose"
+  },
+  {
+   "id": "mistral-7b-34",
+   "paper": "mistral-7b",
+   "question": "How is a long prompt split to fit the window?",
+   "gold": "chunk",
+   "style": "loose"
+  },
+  {
+   "id": "mistral-7b-35",
+   "paper": "mistral-7b",
+   "question": "Which attention variant limits how far each token reaches?",
+   "gold": "sliding window attention",
+   "style": "clean"
+  },
+  {
+   "id": "mistral-7b-36",
+   "paper": "mistral-7b",
+   "question": "Which model does Mistral 7B surpass at 13B?",
+   "gold": "Llama 2 13B",
+   "style": "clean"
+  }
+ ]
+}
