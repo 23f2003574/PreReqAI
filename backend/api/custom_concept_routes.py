@@ -26,7 +26,36 @@ def confirm_custom_concept(body: NewConcept):
         concept = custom_concepts.add(body.name, body.aliases, body.definition)
     except custom_concepts.CustomConceptError as error:
         return failure_response(422, "custom_concepts", str(error), hint="Use a new name of 3 to 80 letters, digits, spaces or hyphens, and set PREREQAI_PROFILE_DIR or PREREQAI_CUSTOM_CONCEPTS.")
-    return success_body("Custom Concepts", "custom_concepts", concept=concept, note="It is used the next time a paper is analysed; it has no prerequisite rules.")
+    return success_body("Custom Concepts", "custom_concepts", concept=concept, note="It is used the next time a paper is analysed; it has no prerequisites until you confirm some the paper states.")
+
+
+class NewPrerequisite(BaseModel):
+    concept: str
+    prerequisite: str
+    quote: str = ""  # the paper's sentence that states it
+    page_number: int | None = None
+    section: str = ""
+
+
+@router.post("/prerequisites")
+def confirm_custom_prerequisite(body: NewPrerequisite):
+    """Confirm that a custom concept needs a registry concept or subject, with the paper's sentence: only then does it enter a plan."""
+    try:
+        edge = custom_concepts.add_prerequisite(body.concept, body.prerequisite, body.quote, body.page_number, body.section)
+    except custom_concepts.CustomConceptError as error:
+        return failure_response(422, "custom_concepts", str(error), hint="Confirm the concept first, then a prerequisite PreReqAI has study material for.")
+    return success_body("Custom Concepts", "custom_concepts", prerequisite=edge, note="It is part of the plan the next time a paper is analysed.")
+
+
+@router.delete("/prerequisites")
+def forget_custom_prerequisite(concept: str, prerequisite: str):
+    try:
+        removed = custom_concepts.remove_prerequisite(concept, prerequisite)
+    except custom_concepts.CustomConceptError as error:
+        return failure_response(422, "custom_concepts", str(error))
+    if not removed:
+        return failure_response(404, "custom_concepts", f"{prerequisite!r} is not a confirmed prerequisite of {concept!r}.", hint="GET /api/custom-concepts lists them.")
+    return success_body("Custom Concepts", "custom_concepts", removed={"concept": concept, "prerequisite": prerequisite})
 
 
 @router.delete("")

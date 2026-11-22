@@ -198,10 +198,12 @@ def add_session_commands(commands):
     candidates.add_argument("--json", action="store_true", dest="as_json", help="Print the candidates as JSON")
     custom = commands.add_parser("custom-concept", help="List, confirm or forget the custom concepts you added",
                                  description="Custom concepts are detected in papers analysed afterwards. They need PREREQAI_PROFILE_DIR or PREREQAI_CUSTOM_CONCEPTS. Same data as /api/custom-concepts.")
-    custom.add_argument("action", choices=["list", "add", "remove"])
+    custom.add_argument("action", choices=["list", "add", "remove", "needs", "unneeds"])
     custom.add_argument("name", nargs="?", type=_nonblank, default=None, help="The concept's name (for add and remove)")
     custom.add_argument("--alias", action="append", default=[], help="Another spelling (add only; repeatable)")
     custom.add_argument("--definition", default="", help="A short definition of your own (add only)")
+    custom.add_argument("--prerequisite", default=None, help="A registry concept or subject the custom concept needs (needs and unneeds only)")
+    custom.add_argument("--quote", default="", help="The paper's sentence that states it (needs only)")
     custom.add_argument("--json", action="store_true", dest="as_json", help="Print JSON")
     curriculum = commands.add_parser("curriculum", help="Plan several saved analyses together",
                                      description="Shared prerequisites once, known subjects left out, one paper order and one schedule. Same data as POST /api/curriculum.")
@@ -273,6 +275,17 @@ def run_prerequisites_custom_concept(args) -> int:
         if args.action == "add":
             entry = custom_concepts.add(args.name, args.alias, args.definition)
             print(json.dumps(entry, indent=2) if args.as_json else f"Confirmed {entry['name']}: it is detected in papers analysed from now on (it has no prerequisite rules).")
+            return 0
+        if args.action in ("needs", "unneeds"):
+            if not args.prerequisite:
+                return _fail(f"{args.action} needs --prerequisite", EXIT_USAGE)
+            if args.action == "needs":
+                edge = custom_concepts.add_prerequisite(args.name, args.prerequisite, args.quote)
+                print(json.dumps(edge, indent=2) if args.as_json else f"Confirmed: {edge['concept']} needs {edge['name']}; it is part of the plan the next time a paper is analysed.")
+                return 0
+            if not custom_concepts.remove_prerequisite(args.name, args.prerequisite):
+                return _fail(f"{args.prerequisite!r} is not a confirmed prerequisite of {args.name!r}", EXIT_USAGE)
+            print(f"Removed {args.prerequisite} from the prerequisites of {args.name}.")
             return 0
         if not custom_concepts.remove(args.name):
             return _fail(f"{args.name!r} is not a confirmed custom concept", EXIT_USAGE)

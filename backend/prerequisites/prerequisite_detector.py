@@ -27,10 +27,14 @@ class PrerequisiteDetector:
         paper: Paper,
     ) -> Paper:
 
+        from backend import custom_concepts
+
+        rules = {**self.PREREQUISITE_RULES, **custom_concepts.confirmed_rules()}  # plus the prerequisites the learner confirmed for their own concepts (never the unconfirmed proposals)
+
         paper.prerequisites.clear()
 
         paper.concepts_without_rules = [
-            concept.name for concept in paper.concepts if concept.name not in self.PREREQUISITE_RULES
+            concept.name for concept in paper.concepts if concept.name not in rules
         ]
 
         if paper.concepts_without_rules:
@@ -46,7 +50,7 @@ class PrerequisiteDetector:
 
         for concept in paper.concepts:
 
-            for prerequisite in self.PREREQUISITE_RULES.get(
+            for prerequisite in rules.get(
                 concept.name,
                 [],
             ):
@@ -58,7 +62,7 @@ class PrerequisiteDetector:
         # assumes knowledge the plan never covers. Only prerequisites not already listed are added this way.
         direct = list(needed_by)
         for prerequisite in direct:
-            pending, seen = list(self.PREREQUISITE_RULES.get(prerequisite, [])), {prerequisite}
+            pending, seen = list(rules.get(prerequisite, [])), {prerequisite}
             while pending:
                 deeper = pending.pop(0)
                 if deeper in seen:
@@ -68,7 +72,7 @@ class PrerequisiteDetector:
                     for concept in needed_by[prerequisite]:
                         if concept not in needed_by.setdefault(deeper, []):
                             needed_by[deeper].append(concept)
-                pending.extend(self.PREREQUISITE_RULES.get(deeper, []))
+                pending.extend(rules.get(deeper, []))
         # Importance comes only from dependency evidence, with no tuned weights. `confidence` is the share of the paper's
         # rule-bearing concepts (those with at least one prerequisite) that need the prerequisite, directly or through
         # another prerequisite: a measured fraction, not a certainty. A prerequisite needed by at least half of them
@@ -78,7 +82,7 @@ class PrerequisiteDetector:
         for concept in paper.concepts:  # a missing or non-positive count is "unknown", never an invented zero
             count = getattr(concept, "occurrences", None)
             occurrences[concept.name] = count if isinstance(count, int) and count > 0 else None
-        total = sum(1 for concept in paper.concepts if self.PREREQUISITE_RULES.get(concept.name))
+        total = sum(1 for concept in paper.concepts if rules.get(concept.name))
 
         # Where each dependent concept is discussed: its sections, and the instructional ones among them (from the paper's own paragraphs).
         where = {}
@@ -100,7 +104,7 @@ class PrerequisiteDetector:
             unknown = [name for name in concepts if occurrences.get(name) is None]
             reasons = []
             evidence = [
-                {"concept": name, "relation": "direct" if prerequisite in self.PREREQUISITE_RULES.get(name, ()) else "indirect",
+                {"concept": name, "relation": "direct" if prerequisite in rules.get(name, ()) else "indirect",
                  "occurrences": occurrences.get(name)}
                 for name in concepts
             ]

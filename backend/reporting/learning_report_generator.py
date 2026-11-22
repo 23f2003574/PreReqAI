@@ -110,6 +110,13 @@ class LearningReportGenerator:
         return find(paper, known)
 
     @staticmethod
+    def _custom_prerequisite_proposals(paper: Paper) -> list:
+        """Prerequisites the paper states for the learner's confirmed custom concepts, quoted, for the learner to confirm (see backend/concepts/custom_prerequisites.py); never part of the plan."""
+        from backend.concepts.custom_prerequisites import propose
+
+        return propose(paper)
+
+    @staticmethod
     def _math_subtopics(paper: Paper) -> list:
         """The specific mathematical skills the paper's equations need, each with the equations that need it (see backend/parsing/math_subtopics.py)."""
         from backend.parsing.math_subtopics import analyse
@@ -218,6 +225,7 @@ class LearningReportGenerator:
             "equations": self._equations(paper),
 
             "math_subtopics": self._math_subtopics(paper),
+            "custom_prerequisite_proposals": self._custom_prerequisite_proposals(paper),
             "candidate_concepts": self._candidates(paper),
             "extraction_confidence": self._confidence(paper),
 
