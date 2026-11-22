@@ -14,7 +14,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-DEFAULTS = {"PREREQAI_MAX_PDF_PAGES": 1000, "PREREQAI_PARSE_SECONDS": 120.0, "PREREQAI_PARSE_MEMORY_MB": 2048}
+DEFAULTS = {"PREREQAI_MAX_PDF_PAGES": 1000, "PREREQAI_PARSE_SECONDS": 120.0, "PREREQAI_PARSE_MEMORY_MB": 2048,
+            "PREREQAI_MAX_PAGE_PIXELS": 200_000_000, "PREREQAI_WORKER_SECONDS": 600.0, "PREREQAI_MAX_WORKER_OUTPUT_MB": 256}  # the last three are read by isolated_parse.py
 ROOT = Path(__file__).resolve().parents[2]
 EXIT_MEMORY = 3
 
