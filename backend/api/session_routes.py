@@ -352,6 +352,15 @@ class PaperQuizReveal(BaseModel):
     attempt: str | None = None  # what the learner typed in the blank, if anything: only compared with the answer, never required
 
 
+class PaperQuizAnswer(BaseModel):
+
+    question_id: str
+
+    attempt: str
+
+    confidence: str = "medium"  # low, medium or high: how sure the learner is
+
+
 class QuizOutcome(BaseModel):
 
     question_id: str
@@ -498,6 +507,18 @@ def paper_quiz(session_id: str, kinds: str = "cloze"):
     return _quiz(session_id, act, saves=False)
 
 
+@router.post("/{session_id}/paper-quiz/answer")
+def paper_quiz_answer(session_id: str, body: PaperQuizAnswer):
+    """Assess the learner's answer to a paper question before anything is shown: the system checks it, records it as an assessed answer with the learner's confidence (it counts as evidence for
+    mastery and the adaptive plan) and answers with the verdict, the exact quotation, its page and section."""
+    def act(session):
+        verdict = paper_quiz_module.grade(session, body.question_id, body.attempt, body.confidence)
+        review = _remember_outcome(session)
+        return {"verdict": verdict, "progress": quiz_session.progress(session), "assessed": diagnostic.assessed_summary(session), **({"review": review} if review else {})}
+
+    return _quiz(session_id, act)
+
+
 @router.post("/{session_id}/paper-quiz/reveal")
 def paper_quiz_reveal(session_id: str, body: PaperQuizReveal):
     """The answer to a paper question, with the exact quotation, its page and section; `attempt` (optional) is compared with the answer."""
@@ -505,6 +526,8 @@ def paper_quiz_reveal(session_id: str, body: PaperQuizReveal):
         _, question = paper_quiz_module.find(session, body.question_id)
         if question is None:
             raise quiz_session.QuizError("unknown", f"There is no paper question {body.question_id!r}.", "Use a question_id from GET /paper-quiz.")
+        if paper_quiz_module.assessed(session, question["question_id"]):  # an assessed question shows its answer in the verdict; revealing it again adds nothing
+            raise quiz_session.QuizError("state", f"Question {body.question_id!r} was already assessed; its quotation came with the verdict.", "Ask another question.")
         session.quiz_pending[question["question_id"]] = {"revealed": True}
         found = {"question_id": question["question_id"], "concept": question["concept"], "answer": question["answer"], "quotation": question["quotation"],
                  "page_number": question["page_number"], "section": question["section"]}
@@ -522,6 +545,8 @@ def paper_quiz_outcome(session_id: str, body: QuizOutcome):
             raise quiz_session.QuizError("unknown", f"There is no paper question {body.question_id!r}.", "Use a question_id from GET /paper-quiz.")
         if body.outcome not in quiz_session.OUTCOMES:
             raise quiz_session.QuizError("outcome", f"outcome must be 'knew' or 'missed', not {body.outcome!r}.", "Send {\"outcome\": \"knew\"} or {\"outcome\": \"missed\"}.")
+        if paper_quiz_module.assessed(session, question["question_id"]):
+            raise quiz_session.QuizError("state", f"Question {body.question_id!r} was assessed; a self-reported outcome would count it twice.", "Ask another question.")
         state = session.quiz_pending.pop(question["question_id"], None)
         if state is None:
             raise quiz_session.QuizError("state", f"No outcome is awaited for {body.question_id!r}: reveal the question first, and answer it once.", "POST /paper-quiz/reveal, then record the outcome.")

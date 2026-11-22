@@ -997,18 +997,16 @@ function renderPaperCard() {
     if (c.answer === undefined) {
       var input = el("input"); input.type = "text"; input.id = "pqAttempt"; input.maxLength = 200; input.setAttribute("aria-label", "Your answer"); input.autocomplete = "off";
       var show = el("button", "Check and show the answer", "small"); show.type = "button"; show.disabled = pq.busy;
+      var sure = el("select"); sure.id = "pqConfidence"; sure.setAttribute("aria-label", "How sure are you?");
+      [["low", "Not sure"], ["medium", "Fairly sure"], ["high", "Very sure"]].forEach(function (o, i) { var opt = el("option", o[1]); opt.value = o[0]; if (i === 1) opt.selected = true; sure.appendChild(opt); });
       show.addEventListener("click", function () { pqReveal(input.value); });
-      card.appendChild(input); card.appendChild(document.createTextNode(" ")); card.appendChild(show);
+      card.appendChild(input); card.appendChild(document.createTextNode(" ")); card.appendChild(sure); card.appendChild(document.createTextNode(" ")); card.appendChild(show);
     } else {
       if (c.typed) card.appendChild(el("p", c.correct ? "Your answer matches." : "Your answer was: " + c.typed, "meta"));
       var a = el("p", "Answer: " + c.answer); a.id = "pqAnswer"; card.appendChild(a);
       var q = el("blockquote", "\u201c" + c.quotation + "\u201d"); card.appendChild(q);
       card.appendChild(el("p", (c.page_number ? "Page " + c.page_number + ", " : "") + "section " + (c.section || "untitled"), "meta"));
-      card.appendChild(el("p", "How did you do?", "meta"));
-      [["knew", "I knew it"], ["missed", "I missed it"]].forEach(function (o) {
-        var b = el("button", o[1], "small"); b.type = "button"; b.disabled = pq.busy;
-        b.addEventListener("click", function () { pqRecord(o[0]); }); card.appendChild(b); card.appendChild(document.createTextNode(" "));
-      });
+      card.appendChild(el("p", c.correct ? "Assessed: correct." : "Assessed: not correct.", "meta"));
     }
     box.appendChild(card);
   }
@@ -1040,11 +1038,16 @@ function pqNext(kinds) {
   });
 }
 
-function pqReveal(typed) {
+function pqReveal(typed) {  // the answer is assessed by the server first (POST /paper-quiz/answer); only then are the quotation and verdict shown
   var card = pq.card;
-  pqCall("Getting the answer", function () {
-    return fetch(pqUrl("reveal"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question_id: card.question_id, attempt: typed }) });
-  }, function (body) { card.answer = body.answer; card.quotation = body.quotation; card.page_number = body.page_number; card.section = body.section; card.typed = typed.trim(); card.correct = !!body.attempt_correct; });
+  pqCall("Checking your answer", function () {
+    return fetch(pqUrl("answer"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question_id: card.question_id, attempt: typed, confidence: $("pqConfidence") ? $("pqConfidence").value : "medium" }) });
+  }, function (body) {
+    var v = body.verdict;
+    card.answer = v.answer; card.quotation = v.quotation; card.page_number = v.page_number; card.section = v.section; card.typed = typed.trim(); card.correct = !!v.correct; card.assessed = true;
+    pq.done[card.question_id] = true; state.quiz = body.progress; renderMastery();
+    pqShow("info", "Assessed: your answer was " + (v.correct ? "correct" : "not correct") + ". Ask for another question to keep going.");
+  });
 }
 
 function pqRecord(outcome) {

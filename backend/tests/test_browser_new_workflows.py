@@ -255,8 +255,8 @@ def test_paper_questions_are_answered_checked_against_the_paper_and_recorded(bro
     page.wait_for_selector("#pqAnswer")
     assert page.locator("#pqCard blockquote").inner_text().startswith("“") and re.search(r"Page \d+, section ", page.locator("#pqCard").inner_text())
     assert "Your answer was: zebra" in page.locator("#pqCard").inner_text()
-    page.click("#pqCard button:has-text('I knew it')")
-    page.wait_for_function("document.querySelector('#pqMsg').innerText.indexOf('Recorded') >= 0")
+    assert "Assessed: not correct" in page.locator("#pqCard").inner_text()  # the server graded the wrong answer before showing the quotation
+    page.wait_for_function("document.querySelector('#pqMsg').innerText.indexOf('Assessed') >= 0")
     assert page.locator("#mastery").inner_text().strip() != ""
     page.click("#pqNext")
     page.wait_for_selector("#pqPrompt")

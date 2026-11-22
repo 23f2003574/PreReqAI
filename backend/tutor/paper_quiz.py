@@ -199,3 +199,40 @@ def matches(typed, answer, aliases=()):
 
     attempt = plain(typed)
     return bool(attempt) and any(same(attempt, plain(candidate)) for candidate in (answer, *aliases))
+
+
+CONFIDENCE = ("low", "medium", "high")
+
+
+def assessed(session, identifier):
+    """Whether the question already has an assessed answer in the session."""
+    return any(a.get("question_id") == identifier and a.get("graded") for a in getattr(session, "quiz_attempts", []))
+
+
+def was_revealed(session, identifier):
+    """Whether the answer of the question was shown (revealed now, or recorded after a reveal): it can no longer be assessed."""
+    return identifier in getattr(session, "quiz_pending", {}) or any(a.get("question_id") == identifier and a.get("revealed") for a in getattr(session, "quiz_attempts", []))
+
+
+def grade(session, identifier, attempt, confidence):
+    """Check the learner's answer to a paper question BEFORE anything is revealed, record it as an assessed attempt (graded, correct, confidence, kind "paper") and return the verdict with the
+    quotation, page and section. QuizError for an unknown question, a bad confidence or an empty answer, a question already assessed, or one whose answer was already shown."""
+    from .quiz_session import QuizError
+
+    _, question = find(session, identifier)
+    if question is None:
+        raise QuizError("unknown", f"There is no paper question {identifier!r}.", "Use a question_id from GET /paper-quiz.")
+    identifier = question["question_id"]
+    if confidence not in CONFIDENCE:
+        raise QuizError("outcome", f"confidence must be one of {', '.join(CONFIDENCE)}, not {confidence!r}.", "Send the learner's confidence: low, medium or high.")
+    if not str(attempt or "").strip():
+        raise QuizError("outcome", "An answer is required to assess a question.", "Send what the learner answered in `attempt`.")
+    if assessed(session, identifier):
+        raise QuizError("state", f"Question {identifier!r} was already assessed in this session.", "Each question is assessed once; ask for another.")
+    if was_revealed(session, identifier):
+        raise QuizError("state", f"The answer to {identifier!r} was already shown, so it can no longer be assessed.", "Answer a question before revealing it; try another question.")
+    correct = check(question, attempt)
+    session.quiz_attempts.append({"question_id": identifier, "concept": question["concept"], "outcome": "knew" if correct else "missed", "revealed": False, "graded": True, "correct": correct,
+                                  "confidence": confidence, "chosen": str(attempt).strip()[:200], "kind": "paper"})
+    return {"question_id": identifier, "concept": question["concept"], "correct": correct, "confidence": confidence, "answer": question["answer"], "quotation": question["quotation"],
+            "page_number": question["page_number"], "section": question["section"]}
