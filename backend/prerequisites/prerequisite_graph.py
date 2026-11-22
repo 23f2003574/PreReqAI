@@ -105,11 +105,11 @@ def validate(found, known=None, has_hours=None):
 
 
 def load(path=None):
-    """The validated entries of the graph; GraphError listing every problem."""
+    """The entries of the graph, validated except for the study-hours check (see `validate`, which the regression gate runs in full); GraphError listing every problem."""
     key = str(path or DATA)
     if key not in _cache:
         found = entries(path)
-        problems = validate(found)
+        problems = validate(found, has_hours=lambda name: True)  # the study-hours check needs the resource library, which imports this module's users: the gate and tests run the full validate()
         if problems:
             raise GraphError(problems)
         _cache[key] = found
