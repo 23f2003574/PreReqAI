@@ -1,0 +1,720 @@
+{
+ "format": "prereqai-prerequisite-graph",
+ "schema_version": 1,
+ "note": "Prerequisite rules of PreReqAI's core concepts. Every edge is curated by the maintainers; no academic source is claimed. The modern ML concepts' rules live in concepts/ml_expansion.py and are merged by prerequisite_graph.py.",
+ "rules": [
+  {
+   "concept": "Transformer",
+   "needs": [
+    "Attention",
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Attention, Neural Networks as background needed to follow Transformer."
+  },
+  {
+   "concept": "Multi-Head Attention",
+   "needs": [
+    "Attention",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Attention, Linear Algebra as background needed to follow Multi-Head Attention."
+  },
+  {
+   "concept": "Attention",
+   "needs": [
+    "Linear Algebra",
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Linear Algebra, Probability as background needed to follow Attention."
+  },
+  {
+   "concept": "Softmax",
+   "needs": [
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability as background needed to follow Softmax."
+  },
+  {
+   "concept": "Graph Neural Network",
+   "needs": [
+    "Graphs",
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Graphs, Neural Networks as background needed to follow Graph Neural Network."
+  },
+  {
+   "concept": "Policy Gradient",
+   "needs": [
+    "Markov Decision Process",
+    "Probability",
+    "Calculus"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Markov Decision Process, Probability, Calculus as background needed to follow Policy Gradient."
+  },
+  {
+   "concept": "Self-Attention",
+   "needs": [
+    "Attention",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Attention, Linear Algebra as background needed to follow Self-Attention."
+  },
+  {
+   "concept": "Diffusion Model",
+   "needs": [
+    "Probability",
+    "Information Theory",
+    "Neural Networks",
+    "Stochastic Processes"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Information Theory, Neural Networks, Stochastic Processes as background needed to follow Diffusion Model."
+  },
+  {
+   "concept": "Information Theory",
+   "needs": [
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability as background needed to follow Information Theory."
+  },
+  {
+   "concept": "Forward Process",
+   "needs": [
+    "Probability",
+    "Stochastic Processes"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Stochastic Processes as background needed to follow Forward Process."
+  },
+  {
+   "concept": "Noise Schedule",
+   "needs": [
+    "Probability",
+    "Stochastic Processes"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Stochastic Processes as background needed to follow Noise Schedule."
+  },
+  {
+   "concept": "Score Matching",
+   "needs": [
+    "Probability",
+    "Information Theory",
+    "Neural Networks",
+    "Calculus"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Information Theory, Neural Networks, Calculus as background needed to follow Score Matching."
+  },
+  {
+   "concept": "U-Net",
+   "needs": [
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks as background needed to follow U-Net."
+  },
+  {
+   "concept": "Cross-Attention",
+   "needs": [
+    "Attention",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Attention, Linear Algebra as background needed to follow Cross-Attention."
+  },
+  {
+   "concept": "Positional Encoding",
+   "needs": [
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Linear Algebra as background needed to follow Positional Encoding."
+  },
+  {
+   "concept": "Layer Normalization",
+   "needs": [
+    "Neural Networks",
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Probability as background needed to follow Layer Normalization."
+  },
+  {
+   "concept": "Residual Connection",
+   "needs": [
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks as background needed to follow Residual Connection."
+  },
+  {
+   "concept": "Feed Forward Network",
+   "needs": [
+    "Neural Networks",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Linear Algebra as background needed to follow Feed Forward Network."
+  },
+  {
+   "concept": "Gradient Descent",
+   "needs": [
+    "Calculus",
+    "Linear Algebra",
+    "Optimization"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Calculus, Linear Algebra, Optimization as background needed to follow Gradient Descent."
+  },
+  {
+   "concept": "Backpropagation",
+   "needs": [
+    "Calculus",
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Calculus, Neural Networks as background needed to follow Backpropagation."
+  },
+  {
+   "concept": "Convolutional Neural Network",
+   "needs": [
+    "Neural Networks",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Linear Algebra as background needed to follow Convolutional Neural Network."
+  },
+  {
+   "concept": "Batch Normalization",
+   "needs": [
+    "Neural Networks",
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Probability as background needed to follow Batch Normalization."
+  },
+  {
+   "concept": "Dropout",
+   "needs": [
+    "Neural Networks",
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Probability as background needed to follow Dropout."
+  },
+  {
+   "concept": "Recurrent Neural Network",
+   "needs": [
+    "Neural Networks",
+    "Calculus"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Calculus as background needed to follow Recurrent Neural Network."
+  },
+  {
+   "concept": "Reinforcement Learning",
+   "needs": [
+    "Probability",
+    "Calculus"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Calculus as background needed to follow Reinforcement Learning."
+  },
+  {
+   "concept": "Large Language Model",
+   "needs": [
+    "Neural Networks",
+    "Linear Algebra",
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Linear Algebra, Probability as background needed to follow Large Language Model."
+  },
+  {
+   "concept": "Cross-Entropy Loss",
+   "needs": [
+    "Probability",
+    "Information Theory"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Information Theory as background needed to follow Cross-Entropy Loss."
+  },
+  {
+   "concept": "Maximum Likelihood Estimation",
+   "needs": [
+    "Probability",
+    "Calculus",
+    "Statistics"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Calculus, Statistics as background needed to follow Maximum Likelihood Estimation."
+  },
+  {
+   "concept": "Overfitting",
+   "needs": [
+    "Probability",
+    "Neural Networks",
+    "Statistics"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Neural Networks, Statistics as background needed to follow Overfitting."
+  },
+  {
+   "concept": "Embedding",
+   "needs": [
+    "Linear Algebra",
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Linear Algebra, Neural Networks as background needed to follow Embedding."
+  },
+  {
+   "concept": "Fine-Tuning",
+   "needs": [
+    "Neural Networks",
+    "Calculus"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Calculus as background needed to follow Fine-Tuning."
+  },
+  {
+   "concept": "Monte Carlo Method",
+   "needs": [
+    "Probability",
+    "Calculus",
+    "Statistics"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Calculus, Statistics as background needed to follow Monte Carlo Method."
+  },
+  {
+   "concept": "Variational Autoencoder",
+   "needs": [
+    "Neural Networks",
+    "Probability",
+    "Information Theory"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Probability, Information Theory as background needed to follow Variational Autoencoder."
+  },
+  {
+   "concept": "Generative Adversarial Network",
+   "needs": [
+    "Neural Networks",
+    "Probability",
+    "Calculus"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Probability, Calculus as background needed to follow Generative Adversarial Network."
+  },
+  {
+   "concept": "Variational Inference",
+   "needs": [
+    "Probability",
+    "Information Theory",
+    "Calculus"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Information Theory, Calculus as background needed to follow Variational Inference."
+  },
+  {
+   "concept": "Adam Optimizer",
+   "needs": [
+    "Calculus",
+    "Probability",
+    "Neural Networks",
+    "Optimization"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Calculus, Probability, Neural Networks, Optimization as background needed to follow Adam Optimizer."
+  },
+  {
+   "concept": "Parameter-Efficient Fine-Tuning",
+   "needs": [
+    "Neural Networks",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Linear Algebra as background needed to follow Parameter-Efficient Fine-Tuning."
+  },
+  {
+   "concept": "LoRA",
+   "needs": [
+    "Linear Algebra",
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Linear Algebra, Neural Networks as background needed to follow LoRA."
+  },
+  {
+   "concept": "Reinforcement Learning from Human Feedback",
+   "needs": [
+    "Markov Decision Process",
+    "Probability",
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Markov Decision Process, Probability, Neural Networks as background needed to follow Reinforcement Learning from Human Feedback."
+  },
+  {
+   "concept": "Proximal Policy Optimization",
+   "needs": [
+    "Markov Decision Process",
+    "Probability",
+    "Calculus"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Markov Decision Process, Probability, Calculus as background needed to follow Proximal Policy Optimization."
+  },
+  {
+   "concept": "Contrastive Learning",
+   "needs": [
+    "Neural Networks",
+    "Probability",
+    "Information Theory"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Probability, Information Theory as background needed to follow Contrastive Learning."
+  },
+  {
+   "concept": "Tokenization",
+   "needs": [
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability as background needed to follow Tokenization."
+  },
+  {
+   "concept": "Vision Transformer",
+   "needs": [
+    "Transformer",
+    "Linear Algebra",
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Transformer, Linear Algebra, Neural Networks as background needed to follow Vision Transformer."
+  },
+  {
+   "concept": "Optimization",
+   "needs": [
+    "Calculus",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Calculus, Linear Algebra as background needed to follow Optimization."
+  },
+  {
+   "concept": "Statistics",
+   "needs": [
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability as background needed to follow Statistics."
+  },
+  {
+   "concept": "Stochastic Processes",
+   "needs": [
+    "Probability",
+    "Calculus"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Calculus as background needed to follow Stochastic Processes."
+  },
+  {
+   "concept": "Reverse Process",
+   "needs": [
+    "Probability",
+    "Information Theory",
+    "Neural Networks",
+    "Calculus",
+    "Stochastic Processes"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Information Theory, Neural Networks, Calculus, Stochastic Processes as background needed to follow Reverse Process."
+  },
+  {
+   "concept": "Markov Decision Process",
+   "needs": [
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability as background needed to follow Markov Decision Process."
+  },
+  {
+   "concept": "Bellman Equation",
+   "needs": [
+    "Markov Decision Process",
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Markov Decision Process, Probability as background needed to follow Bellman Equation."
+  },
+  {
+   "concept": "Value Function",
+   "needs": [
+    "Markov Decision Process"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Markov Decision Process as background needed to follow Value Function."
+  },
+  {
+   "concept": "Q-Learning",
+   "needs": [
+    "Markov Decision Process",
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Markov Decision Process, Probability as background needed to follow Q-Learning."
+  },
+  {
+   "concept": "Actor-Critic",
+   "needs": [
+    "Markov Decision Process",
+    "Neural Networks",
+    "Calculus"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Markov Decision Process, Neural Networks, Calculus as background needed to follow Actor-Critic."
+  },
+  {
+   "concept": "Message Passing",
+   "needs": [
+    "Graphs",
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Graphs, Neural Networks as background needed to follow Message Passing."
+  },
+  {
+   "concept": "Graph Convolution",
+   "needs": [
+    "Graphs",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Graphs, Linear Algebra as background needed to follow Graph Convolution."
+  },
+  {
+   "concept": "Graph Attention Network",
+   "needs": [
+    "Graphs",
+    "Attention"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Graphs, Attention as background needed to follow Graph Attention Network."
+  },
+  {
+   "concept": "Node Embedding",
+   "needs": [
+    "Graphs",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Graphs, Linear Algebra as background needed to follow Node Embedding."
+  },
+  {
+   "concept": "Principal Component Analysis",
+   "needs": [
+    "Linear Algebra",
+    "Statistics"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Linear Algebra, Statistics as background needed to follow Principal Component Analysis."
+  },
+  {
+   "concept": "Support Vector Machine",
+   "needs": [
+    "Linear Algebra",
+    "Optimization"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Linear Algebra, Optimization as background needed to follow Support Vector Machine."
+  },
+  {
+   "concept": "K-Means Clustering",
+   "needs": [
+    "Linear Algebra",
+    "Statistics"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Linear Algebra, Statistics as background needed to follow K-Means Clustering."
+  },
+  {
+   "concept": "Decision Tree",
+   "needs": [
+    "Probability",
+    "Information Theory"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Information Theory as background needed to follow Decision Tree."
+  },
+  {
+   "concept": "Random Forest",
+   "needs": [
+    "Probability",
+    "Statistics"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Statistics as background needed to follow Random Forest."
+  },
+  {
+   "concept": "Logistic Regression",
+   "needs": [
+    "Probability",
+    "Calculus",
+    "Optimization"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Calculus, Optimization as background needed to follow Logistic Regression."
+  },
+  {
+   "concept": "Regularization",
+   "needs": [
+    "Statistics",
+    "Optimization"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Statistics, Optimization as background needed to follow Regularization."
+  },
+  {
+   "concept": "Cross-Validation",
+   "needs": [
+    "Probability",
+    "Statistics"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability, Statistics as background needed to follow Cross-Validation."
+  },
+  {
+   "concept": "Knowledge Distillation",
+   "needs": [
+    "Neural Networks",
+    "Probability",
+    "Information Theory"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Probability, Information Theory as background needed to follow Knowledge Distillation."
+  },
+  {
+   "concept": "Retrieval-Augmented Generation",
+   "needs": [
+    "Transformer",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Transformer, Linear Algebra as background needed to follow Retrieval-Augmented Generation."
+  },
+  {
+   "concept": "Beam Search",
+   "needs": [
+    "Probability"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Probability as background needed to follow Beam Search."
+  },
+  {
+   "concept": "Autoencoder",
+   "needs": [
+    "Neural Networks",
+    "Linear Algebra"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks, Linear Algebra as background needed to follow Autoencoder."
+  },
+  {
+   "concept": "Self-Supervised Learning",
+   "needs": [
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks as background needed to follow Self-Supervised Learning."
+  },
+  {
+   "concept": "Transfer Learning",
+   "needs": [
+    "Neural Networks"
+   ],
+   "kind": "curated",
+   "source": "curated by maintainers",
+   "rationale": "Maintainers list Neural Networks as background needed to follow Transfer Learning."
+  }
+ ]
+}

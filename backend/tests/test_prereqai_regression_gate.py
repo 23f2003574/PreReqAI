@@ -21,7 +21,7 @@ def check(report, group, metric):
 
 
 def test_the_gate_passes_on_the_shipped_pipeline_and_covers_every_group(shipped):
-    assert shipped["passed"] and {c["group"] for c in shipped["checks"]} == {"text_fixtures", "synthetic_pdf", "synthetic_evidence", "real_papers_provisional", "heldout_invariants", "retrieval"}
+    assert shipped["passed"] and {c["group"] for c in shipped["checks"]} == {"text_fixtures", "synthetic_pdf", "synthetic_evidence", "real_papers_provisional", "heldout_invariants", "retrieval", "prerequisite_graph"}
     assert all(c["value"] >= c["threshold"] for c in shipped["checks"]) and len(shipped["checks"]) >= 20
     assert check(shipped, "synthetic_evidence", "exact_quotation")["value"] == 1.0 and check(shipped, "real_papers_provisional", "evaluated_papers")["value"] == 3
 

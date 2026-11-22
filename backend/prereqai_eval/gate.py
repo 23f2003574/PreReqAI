@@ -102,6 +102,17 @@ def retrieval_checks(checks, manifest=None):
     return report
 
 
+def graph_checks(checks, floors):
+    """The prerequisite graph: it must validate (no unknown target, cycle, duplicate or target without study hours) and the share of registry concepts with a rule must reach its floor; the concepts
+    without a rule are named, because their prerequisites are unknown, not absent."""
+    from backend.prerequisites import prerequisite_graph
+
+    problems = prerequisite_graph.validate(prerequisite_graph.entries())
+    _check(checks, "prerequisite_graph", "graph_valid", 0.0 if problems else 1.0, floors.get("graph_valid", 1.0), "; ".join(problems[:6]))
+    covered = prerequisite_graph.coverage()
+    _check(checks, "prerequisite_graph", "rule_coverage", covered["ratio"], floors.get("rule_coverage", 0.98), f"{covered['with_rules']} of {covered['concepts']} registry concepts have a rule; without: {covered['without_rules']}")
+
+
 def run_gate(thresholds=None, benchmark_manifest=None):
     """{"passed", "checks": [...], "real_papers": {...}} for the thresholds (default: thresholds.json). Never raises for a failed score: a failure is a failed check."""
     from . import benchmark
@@ -141,6 +152,7 @@ def run_gate(thresholds=None, benchmark_manifest=None):
         _check(checks, "real_papers_provisional", "roles_accuracy", real["roles"]["accuracy"], group["roles_accuracy"], "wrong roles: " + worst("roles", "wrong"))
     held = heldout_checks(checks, floors.get("heldout_invariants", {}))
     retrieval_checks(checks)
+    graph_checks(checks, floors.get("prerequisite_graph", {}))
     return {"passed": all(c["passed"] for c in checks), "checks": checks, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
             "real_papers": {"status": real["status"], "per_paper": [{"id": r["id"], "review_kind": r.get("review_kind"), "headings_f1": r["headings"]["f1"], "concepts_f1": r["concepts"]["f1"]}
                                                                   for r in real["papers"] if r["ok"]],

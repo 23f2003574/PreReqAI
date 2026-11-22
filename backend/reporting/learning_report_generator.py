@@ -5,6 +5,7 @@ from backend.models import (
 )
 
 from backend.concepts import ConceptRegistry
+from backend.prerequisites import prerequisite_graph
 
 from backend.graph import (
     LearningPathGenerator,
@@ -267,6 +268,7 @@ class LearningReportGenerator:
                     "strength_reasons": prerequisite.strength_reasons,
                     "provenance": getattr(prerequisite, "provenance", "inferred"),
                     "stated_by_paper": getattr(prerequisite, "stated_by_paper", []),
+                    "rule_provenance": prerequisite_graph.edges_into([c.name for c in paper.concepts], prerequisite.concept),  # where each rule edge comes from (kind, source, rationale)
                 }
 
                 for prerequisite in ranked
