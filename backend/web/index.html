@@ -336,6 +336,9 @@ function renderConfidence(report) {
   if (!c) { box.appendChild(el("p", "This analysis was saved before extraction confidence existed; analyse the paper again to see it.", "msg info")); fill("confidence", box); return; }
   box.appendChild(el("p", "Extraction confidence: " + c.level + ". " + c.note, c.level === "high" ? "msg info" : c.level === "medium" ? "msg warn" : "msg error"));
   (c.warnings || []).forEach(function (w) { box.appendChild(el("p", w.signal.replace("_", " ") + ": " + w.message + (w.action ? " " + w.action : ""), "meta")); });
+  var fx = report.confidence_effects, flagged = (report.learning_plan || []).filter(function (s) { return s.confidence_flag; });
+  if (flagged.length) box.appendChild(el("p", flagged.length + " plan step" + (flagged.length === 1 ? " rests" : "s rest") + " on a part of the extraction that is in doubt (" + flagged[0].confidence_flag.stage + "): check " + (flagged.length === 1 ? "it" : "them") + " against the paper.", "msg warn"));
+  if (fx && fx.guard_adaptation) box.appendChild(el("p", "Because the paper's text could not be read reliably, your plan is not changed automatically from your answers until you confirm it.", "msg warn"));
   fill("confidence", box);
 }
 

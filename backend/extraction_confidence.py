@@ -5,7 +5,7 @@ that is not ok has a plain warning with an action. The overall level is "low" wh
 still lists everything found, with the level and warnings beside it, so the learner knows which results to double-check. Thresholds are in THRESHOLDS; they are reading aids, not probabilities."""
 from statistics import median
 
-THRESHOLDS = {"text_pages_ok": 0.9, "text_pages_poor": 0.5, "page_chars": 20, "ocr_quality_ok": 0.75, "headings_min": 3, "citations_unresolved_warn": 0.3, "paragraph_chars_warn": 2500}
+THRESHOLDS = {"text_pages_ok": 0.9, "text_pages_poor": 0.5, "page_chars": 20, "ocr_quality_ok": 0.75, "ocr_quality_poor": 0.4, "headings_min": 3, "citations_unresolved_warn": 0.3, "paragraph_chars_warn": 2500}
 
 
 def _signal(name, status, value, detail, action=""):
@@ -36,6 +36,8 @@ def _ocr(paper):
     mean = round(sum(qualities) / len(qualities), 2) if qualities else None
     if stopped:
         return _signal("ocr", "warn", mean, f"OCR stopped before {len(stopped)} page{'s' if len(stopped) != 1 else ''} were read, so the analysis is partial.", "Raise the OCR limits or analyse a smaller part of the paper.")
+    if mean is not None and mean < THRESHOLDS["ocr_quality_poor"]:  # found by the controlled degradation (confidence_eval.py): text this noisy stayed at "medium" before
+        return _signal("ocr", "poor", mean, f"Recognised text scores only {mean} of 1: most words are probably wrong.", "Use a clearer scan, or a text-based PDF.")
     if failed or (mean is not None and mean < THRESHOLDS["ocr_quality_ok"]):
         return _signal("ocr", "warn", mean, f"{len(failed)} scanned page(s) were left unread and the recognised text scores {mean} of 1." if failed else f"Recognised text scores {mean} of 1: some words may be wrong.",
                        "Check the quoted evidence against the page, or use a text-based PDF.")
@@ -104,3 +106,46 @@ def warning_lines(confidence):
     """The lines worth adding to a run's warnings: only a poor text layer or OCR (the text itself is unreliable), so a normal paper adds nothing; structure signals (headings, layout) are
     reported in the report and on the page, where a paper without headings is a normal case."""
     return [f"Extraction confidence is low: {w['message']} {w['action']}".strip() for w in confidence["warnings"] if w["severity"] == "poor" and w["signal"] in ("text_layer", "ocr")]
+
+
+# What each signal means for the results built on it. Text and OCR problems make every detected concept, and so every prerequisite and plan step derived from them, doubtful; heading and
+# paragraph-layout problems make the quoted evidence and section-based importance doubtful; references and citations only affect the reading list. These are reading aids, NOT calibrated
+# probabilities: the thresholds were chosen by reasoning and are only checked for being monotone on controlled degradations (prereqai_eval/confidence_eval.py).
+STAGE = {"text_layer": "the PDF's text layer", "ocr": "OCR of scanned pages", "headings": "section heading detection", "references": "the reference list", "citations": "citation linking",
+         "layout": "paragraph layout recovery", "concepts": "concept detection"}
+DOUBTS_CONCEPTS = ("text_layer", "ocr", "concepts")
+DOUBTS_EVIDENCE = ("headings", "layout")
+RANK = {"ok": 0, "warn": 1, "poor": 2}
+
+
+def effects(confidence):
+    """{"level", "guard_adaptation", "concepts": [reasons], "evidence": [reasons], "note"}: `concepts` are the not-ok signals that put every concept-derived result in doubt, `evidence` those that put
+    quoted evidence and section-based importance in doubt (each {signal, stage, severity, message}). The adaptation guard is on when the text itself is unreliable (a poor text layer or poor OCR):
+    a plan must not be changed on its own from results the extraction makes unreliable, until the learner confirms it. Weak structure alone (few headings) does not switch it on."""
+    signals = {s["name"]: s for s in confidence.get("signals", [])}
+    make = lambda names: [{"signal": n, "stage": STAGE[n], "severity": signals[n]["status"], "message": signals[n]["detail"]} for n in names if n in signals and signals[n]["status"] != "ok"]
+    return {"level": confidence.get("level"), "guard_adaptation": any(signals.get(name, {}).get("status") == "poor" for name in ("text_layer", "ocr")), "concepts": make(DOUBTS_CONCEPTS), "evidence": make(DOUBTS_EVIDENCE),
+            "note": "Results marked unreliable rest on a part of the extraction that failed; check them against the paper." if confidence.get("level") in ("medium", "low") else ""}
+
+
+def _flag(reasons):
+    worst = max(reasons, key=lambda r: RANK[r["severity"]])
+    return {"level": "low" if worst["severity"] == "poor" else "medium", "stage": worst["stage"], "message": worst["message"], "stages": sorted({r["stage"] for r in reasons})}
+
+
+def propagate(report):
+    """The report with `confidence_effects` and a `confidence_flag` on every prerequisite, plan step and math step that rests on a doubtful stage (None when nothing does). Nothing is removed or
+    reworded: the learner sees the result and why it is in doubt. A report without extraction confidence (saved before it existed) is returned unchanged."""
+    confidence = report.get("extraction_confidence")
+    if not confidence:
+        return report
+    found = effects(confidence)
+    report["confidence_effects"] = found
+    flag = _flag(found["concepts"]) if found["concepts"] else None
+    evidence_flag = _flag(found["evidence"]) if found["evidence"] else None
+    for prerequisite in report.get("prerequisites", []):
+        prerequisite["confidence_flag"] = flag or (evidence_flag if prerequisite.get("evidence") else None)
+    flagged = {p["concept"]: p["confidence_flag"] for p in report.get("prerequisites", [])}
+    for step in [*report.get("learning_plan", []), *report.get("math_plan", [])]:
+        step["confidence_flag"] = flagged.get(step["concept"]) or flag
+    return report

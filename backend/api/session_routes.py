@@ -471,6 +471,17 @@ def adaptive_plan_view(session_id: str, deadline: str | None = None, hours_per_d
     return success_body("Adaptive Plan", "adaptive_plan", session_id=session_id, **result)
 
 
+@router.post("/{session_id}/adaptive-plan/confirm")
+def adaptive_confirm(session_id: str, confirm: bool = True):
+    """Allow (or withdraw the permission for) adapting the plan although the extraction of this paper is unreliable (see report.confidence_effects); saved with the session."""
+    session = session_manager.get(session_id)
+    if session is None:
+        return session_not_found(session_id)
+    session.report["adaptation_confirmed"] = bool(confirm)
+    session_manager.save(session)
+    return success_body("Adaptive Plan", "adaptive_plan", session_id=session_id, adaptation_confirmed=bool(confirm), guarded=adaptive_plan.guarded(session.report))
+
+
 @router.post("/{session_id}/adaptive-plan/override")
 def adaptive_override(session_id: str, body: AdaptiveOverride):
     """Reverse (action "reject") or bring back (action "restore") the adaptation of one step; the choice is saved with the session."""

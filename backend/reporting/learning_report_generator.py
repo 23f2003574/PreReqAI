@@ -184,7 +184,7 @@ class LearningReportGenerator:
         strength = {prerequisite.concept: prerequisite.evidence_strength for prerequisite in ranked}
         reasons = {prerequisite.concept: prerequisite.strength_reasons for prerequisite in ranked}
 
-        return {
+        report = {
 
             "paper": {
 
@@ -470,3 +470,7 @@ class LearningReportGenerator:
                 in paper.prerequisite_justifications
             ],
         }
+
+        from backend.extraction_confidence import propagate
+
+        return propagate(report)  # flags what rests on an unreliable extraction (see backend/extraction_confidence.py)

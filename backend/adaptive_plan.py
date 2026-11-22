@@ -99,7 +99,7 @@ def propose(report, attempts, overrides=None, calendar=None):
             adjustments.append({"concept": step.concept, "action": action, "original_hours": original, "adjusted_hours": adjusted, "reason": reason, "overridden": overridden,
                                 "evidence": {k: v for k, v in evidence.get(step.concept, {}).items()}, "can_override": action != "keep"})
         plan.append({"concept": step.concept, "hours": adjusted, "original_hours": original, "adapted": adjusted != original, "importance": importance.get(step.concept)})
-    result = {"adjustments": adjustments, "plan": plan, "remediation": remediation, "hours_before": round(sum(s.estimated_hours for s in steps), 2), "hours_after": round(sum(p["hours"] for p in plan), 2)}
+    result = {"guarded": guarded(report), "adjustments": adjustments, "plan": plan, "remediation": remediation, "hours_before": round(sum(s.estimated_hours for s in steps), 2), "hours_after": round(sum(p["hours"] for p in plan), 2)}
     if calendar:
         from types import SimpleNamespace
 
@@ -117,9 +117,16 @@ def clean_hours(value):
     return isinstance(value, (int, float)) and isfinite(value)
 
 
+def guarded(report):
+    """True when the report's extraction confidence is low and the learner has not confirmed adapting the plan from it anyway."""
+    return bool((report.get("confidence_effects") or {}).get("guard_adaptation")) and not report.get("adaptation_confirmed")
+
+
 def adapted_report(report, attempts, overrides=None):
     """The report with its learning_plan hours replaced by the adapted ones (steps carry `adapted: True` and `original_hours`; `adapted_concepts` lists them), so the calendar, plan
     text and curriculum all schedule what the learner's assessed answers call for. Without any adaptation the very same report object is returned, so nothing downstream changes."""
+    if guarded(report):  # the extraction is unreliable: no plan change on its own until the learner confirms (POST /adaptive-plan/confirm)
+        return report
     changed = {item["concept"]: item["hours"] for item in propose(report, attempts, overrides)["plan"] if item["adapted"]}
     if not changed:
         return report
