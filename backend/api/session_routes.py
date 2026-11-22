@@ -229,18 +229,18 @@ class CalendarMarkdown(PlainTextResponse):
     media_type = "text/calendar"
 
 
-def _add_reviews(session, calendar, today, cap):
-    """Spaced reviews from the session's learner profile, capped per day, into the calendar; nothing is added without a profile or when it cannot be read."""
+def _review_schedule(session, today, cap, daily, minutes):
+    """The capped spaced-review schedule from the session's learner profile, or None without a profile or when it cannot be read. The cap also keeps a day's reviews inside the daily hours."""
     directory = learner_profile.configured_directory()
     path = learner_profile.profile_path(directory, session.profile) if directory and getattr(session, "profile", None) else None
     if path is None:
-        return
-    schedule, problem = learner_profile.review_schedule(path, today, cap)
-    if not problem:
-        study_calendar.add_reviews(calendar, schedule)
+        return None
+    fits = max(1, int(daily * 60 // minutes))  # reviews that fit in one day's hours
+    schedule, problem = learner_profile.review_schedule(path, today, min(cap, fits))
+    return None if problem else schedule
 
 
-def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone_name, start_time, review_cap=10, adapted=True):
+def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone_name, start_time, review_cap=10, adapted=True, minutes_per_review=1.5):
     """(session, calendar, timezone name, start time) for the calendar endpoints, or a failure response. Hours default to the session's own daily hours."""
     session = session_manager.get(session_id)
     if session is None:
@@ -251,12 +251,17 @@ def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timez
         today_date = study_calendar.parse_date(today, "today") if today else datetime.now(timezone.utc).date()
         steps, importance, studied = study_calendar.plan_inputs(report)
         begun = study_calendar.parse_date(start, "start") if start else min(session.plan_start_date(), today_date)  # the plan's own start unless the caller names one
+        if not isinstance(minutes_per_review, (int, float)) or not 0.1 <= minutes_per_review <= 60:
+            raise ValueError("minutes per review must be between 0.1 and 60")
+        reviews = _review_schedule(session, today_date, review_cap, daily, minutes_per_review)
         calendar = study_calendar.build_calendar(
             steps, importance, daily, today_date, study_calendar.parse_weekdays(weekdays),
-            study_calendar.parse_date(deadline, "deadline") if deadline else None, begun, studied, study_calendar.planned_steps(report))
+            study_calendar.parse_date(deadline, "deadline") if deadline else None, begun, studied, study_calendar.planned_steps(report),
+            study_calendar.review_hours(reviews, minutes_per_review) if reviews else None)
         calendar["plan_start"] = begun.isoformat()
         study_calendar.mark_adapted(calendar, report)
-        _add_reviews(session, calendar, today_date, review_cap)
+        if reviews:
+            study_calendar.add_reviews(calendar, reviews, minutes_per_review)
         hours, _, minutes = (start_time or "09:00").partition(":")
         begin = time(int(hours), int(minutes or 0))
     except (ValueError, study_calendar.CalendarError) as error:  # CalendarError is a ValueError; so are bad hours and bad times
@@ -266,11 +271,11 @@ def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timez
 
 @router.get("/{session_id}/calendar")
 def study_calendar_json(session_id: str, deadline: str | None = None, hours_per_day: float | None = None, weekdays: str | None = None,
-                        today: str | None = None, start: str | None = None, review_cap: int = 10, adapted: bool = True):
+                        today: str | None = None, start: str | None = None, review_cap: int = 10, adapted: bool = True, minutes_per_review: float = 1.5):
     """The remaining study plan on real dates: `deadline` (YYYY-MM-DD) adds a feasibility verdict (achievable, or the extra daily hours needed and the date you
     would finish), `weekdays` (mon,tue,...) limits the study days, `today` is the first day work can happen (default: today, UTC), and `start` the day the plan
     began, so work planned for earlier days that is still not done is listed as `missed_sessions` and laid out again from `today`. Studied concepts are not scheduled."""
-    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, None, None, max(1, min(review_cap, 200)), adapted)
+    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, None, None, max(1, min(review_cap, 200)), adapted, minutes_per_review)
     if not isinstance(found, tuple):
         return found
     return success_body("Study Calendar", "calendar", session_id=session_id, **found[1])
@@ -279,9 +284,9 @@ def study_calendar_json(session_id: str, deadline: str | None = None, hours_per_
 @router.get("/{session_id}/calendar.ics", response_class=CalendarMarkdown,
             responses={404: {"description": "Unknown session", "content": _FAILURE_JSON}, 422: {"description": "Invalid request", "content": _FAILURE_JSON}})
 def study_calendar_ics(session_id: str, deadline: str | None = None, hours_per_day: float | None = None, weekdays: str | None = None,
-                       today: str | None = None, start: str | None = None, timezone: str = "UTC", start_time: str = "09:00", adapted: bool = True):
+                       today: str | None = None, start: str | None = None, timezone: str = "UTC", start_time: str = "09:00", adapted: bool = True, minutes_per_review: float = 1.5):
     """The same calendar as an iCalendar file: one event per scheduled item, back to back from `start_time` local time in `timezone` (an IANA name)."""
-    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone, start_time, 10, adapted)
+    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone, start_time, 10, adapted, minutes_per_review)
     if not isinstance(found, tuple):
         return found
     try:

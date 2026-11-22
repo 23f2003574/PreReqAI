@@ -53,9 +53,11 @@ def plan_inputs(report):
     return [step for step in steps if step.concept not in done], importance, sorted(done)
 
 
-def _lay_out(steps, importance, daily_hours, weekdays, first_day, limit):
-    """([{date, weekday, hours, items}], finish date or None) placing the steps on available days from `first_day`, at most `limit` days ahead."""
+def _lay_out(steps, importance, daily_hours, weekdays, first_day, limit, reserved=None):
+    """([{date, weekday, hours, items}], finish date or None) placing the steps on available days from `first_day`, at most `limit` days ahead. `reserved` ({ISO date: hours}) is time a
+    day already owes to something else (spaced reviews): the day's study room is the daily hours less that, never below 0."""
     days, items, room, day = [], [], daily_hours, first_day
+    reserved = reserved or {}
     queue = [[step.concept, float(step.estimated_hours)] for step in schedule_order(steps, importance)]
 
     def close():
@@ -70,6 +72,7 @@ def _lay_out(steps, importance, daily_hours, weekdays, first_day, limit):
             break
         if day.weekday() not in weekdays:
             continue
+        room = max(0.0, daily_hours - reserved.get(day.isoformat(), 0.0))
         while queue and room > _EPS:
             concept, left = queue[0]
             take = min(left, room)
@@ -82,11 +85,11 @@ def _lay_out(steps, importance, daily_hours, weekdays, first_day, limit):
     return days, (date.fromisoformat(days[-1]["date"]) if days and not queue else None)
 
 
-def build_calendar(steps, importance, daily_hours, today, weekdays=None, deadline=None, start=None, studied=(), planned=None):
+def build_calendar(steps, importance, daily_hours, today, weekdays=None, deadline=None, start=None, studied=(), planned=None, reserved=None):
     """The dated schedule and its assessment (see the module description). `steps` are the plan's steps still to study (objects with `concept` and
     `estimated_hours`), `today` the first day work can happen, `start` (default `today`) the day the plan began, used only to report missed sessions. `planned` (default `steps`)
     is the whole plan including what is already studied: the original schedule is laid out from it, so work finished on time is not reported as missed and the days the unfinished
-    work was planned for are the days it really had."""
+    work was planned for are the days it really had. `reserved` ({ISO date: hours}) is the time spaced reviews take on each day: it is deducted from that day's study room and from the feasibility check."""
     weekdays = weekdays if weekdays is not None else set(range(7))
     if isinstance(daily_hours, bool) or not isinstance(daily_hours, (int, float)) or not math.isfinite(daily_hours) or not 0 < daily_hours <= 24:
         raise CalendarError("hours per day must be above 0 and at most 24")
@@ -98,10 +101,10 @@ def build_calendar(steps, importance, daily_hours, today, weekdays=None, deadlin
     if deadline is not None and deadline < today:
         raise CalendarError(f"the deadline {deadline.isoformat()} is before today ({today.isoformat()})")
     remaining = sum(step.estimated_hours for step in steps)
-    days, finish = _lay_out(steps, importance, daily_hours, weekdays, today, MAX_DAYS)
+    days, finish = _lay_out(steps, importance, daily_hours, weekdays, today, MAX_DAYS, reserved)
     moved = []
     if start < today:  # what the original plan put on the days that have passed and is still not done
-        original, _ = _lay_out(planned if planned is not None else steps, importance, daily_hours, weekdays, start, (today - start).days)
+        original, _ = _lay_out(planned if planned is not None else steps, importance, daily_hours, weekdays, start, (today - start).days, reserved)
         finished = set(studied)
         later = {}
         for day in days:
@@ -122,6 +125,19 @@ def build_calendar(steps, importance, daily_hours, today, weekdays=None, deadlin
     elif usable == 0:
         feasibility = {"status": "infeasible", "required_daily_hours": None, "additional_daily_hours": None,
                        "message": f"No study day falls between {today.isoformat()} and {deadline.isoformat()}: choose more weekdays or a later deadline."}
+    elif reserved:  # reviews take part of the days: how much more each study day would need to cover what is left
+        study_days = [today + timedelta(days=offset) for offset in range((deadline - today).days + 1) if (today + timedelta(days=offset)).weekday() in weekdays]
+        room = lambda extra: sum(max(0.0, daily_hours + extra - reserved.get(d.isoformat(), 0.0)) for d in study_days)
+        low, high = 0.0, 1000.0
+        for _ in range(60):
+            middle = (low + high) / 2
+            low, high = (low, middle) if room(middle) >= remaining else (middle, high)
+        required = daily_hours + high
+        taken = round(sum(min(daily_hours, reserved.get(d.isoformat(), 0.0)) for d in study_days), 2)
+        feasibility = {"status": "infeasible", "required_daily_hours": round(required, 2), "additional_daily_hours": round(high, 2),
+                       "message": f"Spaced reviews take {taken:g} h of the {usable} study days before {deadline.isoformat()}, so at {daily_hours:g} h a day you finish on "
+                                  f"{finish.isoformat() if finish else 'no date within ten years'}, after the deadline. To finish by then you need about {required:.2f} h on each study day "
+                                  f"(about {high:.2f} h more a day)." + (" That is more than 24 hours a day." if required > 24 else "")}
     else:
         required = remaining / usable
         feasibility = {"status": "infeasible", "required_daily_hours": round(required, 2), "additional_daily_hours": round(max(0.0, required - daily_hours), 2),
@@ -149,6 +165,11 @@ def _fold(line):
     return "\r\n ".join(out)
 
 
+def review_hours(review_schedule, minutes_per_review=1.5):
+    """{ISO date: hours} the scheduled reviews take (count times minutes_per_review), to be reserved in the daily study budget."""
+    return {day["date"]: day["count"] * minutes_per_review / 60 for day in review_schedule["days"]}
+
+
 def add_reviews(calendar, review_schedule, minutes_per_review=1.5):
     """Put spaced reviews into a built calendar: `calendar["reviews"]` is [{date, count, minutes, concepts}] for each review day of the schedule (see spaced_review.schedule) within the
     calendar's span or beyond it, and `deferred_reviews` the count the cap and horizon left out. Study items are not changed."""
@@ -156,6 +177,11 @@ def add_reviews(calendar, review_schedule, minutes_per_review=1.5):
     for day in review_schedule["days"]:
         days.append({"date": day["date"], "count": day["count"], "minutes": round(day["count"] * minutes_per_review, 1), "concepts": sorted({i["concept"] for i in day["items"] if i.get("concept")})})
     calendar["reviews"], calendar["deferred_reviews"], calendar["review_cap"] = days, len(review_schedule["deferred"]), review_schedule["cap"]
+    calendar["minutes_per_review"] = minutes_per_review
+    study = {day["date"]: day["hours"] for day in calendar["days"]}
+    limit = calendar["daily_hours"]  # what a day holds in total: its study and its reviews, never more
+    calendar["workload"] = [{"date": day["date"], "study_hours": study.get(day["date"], 0.0), "review_minutes": day["minutes"], "total_hours": round(study.get(day["date"], 0.0) + day["minutes"] / 60, 2),
+                             "limit_hours": limit} for day in days]
     return calendar
 
 
@@ -187,7 +213,7 @@ def to_ics(calendar, title="PreReqAI study plan", timezone_name="UTC", start_at=
         uid = hashlib.sha1(f"{title}|{day['date']}|reviews".encode("utf-8")).hexdigest()[:24] + "@prereqai"
         lines += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{stamp}", f"DTSTART:{begin.astimezone(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}",
                   f"DTEND:{end.astimezone(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}", "SUMMARY:" + _escape(f"Review {day['count']} question{'s' if day['count'] != 1 else ''}"),
-                  "DESCRIPTION:" + _escape("Spaced review of " + (", ".join(day["concepts"]) or "your questions") + " (" + title + ")"), "END:VEVENT"]
+                  "DESCRIPTION:" + _escape("Spaced review of " + (", ".join(day["concepts"]) or "your questions") + " (" + title + "), about " + format(round(day["minutes"]), "d") + " min of the day's hours"), "END:VEVENT"]
     lines.append("END:VCALENDAR")
     return "\r\n".join(_fold(line) for line in lines) + "\r\n"
 
