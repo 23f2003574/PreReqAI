@@ -16,9 +16,13 @@ from backend.prerequisites.study_time_estimator import schedule_order
 MAX_PAPERS = 10
 
 
-def _paper_view(session):
+def _paper_view(session, adapted=True):
     """What the curriculum needs of one session: its title, remaining plan steps with importance, and the concepts it already counts as done."""
     report = session.report or {}
+    if adapted and report:
+        from backend import adaptive_plan
+
+        report = adaptive_plan.session_report(session)  # hours adapted to the paper's assessed answers
     importance = {item["concept"]: item.get("importance") for item in report.get("missing_prerequisites", [])}
     done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
     known = {item["concept"] for item in report.get("missing_prerequisites", []) if str(item.get("reason", "")).startswith("Already known")}
@@ -27,10 +31,10 @@ def _paper_view(session):
             "steps": steps, "importance": importance, "done": done, "known": known}
 
 
-def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_per_day=3.0, weekdays=None, accept_mastered=()):
+def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_per_day=3.0, weekdays=None, accept_mastered=(), adapted=True):
     """The curriculum for `sessions` (LearningSession objects, 1 to MAX_PAPERS) as a plain dict. `profile` is {"known": [...], "studied": [...], "quiz": {...}}
     or None. `today` is a date (required when the calendar is wanted); with it the combined schedule and its feasibility are included. Sessions are not changed."""
-    views = [_paper_view(session) for session in sessions]
+    views = [_paper_view(session, adapted) for session in sessions]
     profile = deepcopy(profile) if profile else {"known": [], "studied": [], "quiz": {}}
     mastered = {key(name): ("known in your learner profile" if name in profile["known"] else "studied, according to your learner profile")
                 for name in (*profile["known"], *profile["studied"])}

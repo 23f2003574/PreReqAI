@@ -179,7 +179,7 @@ _FAILURE_JSON = {"application/json": {"schema": {"$ref": "#/components/schemas/F
 @router.get("/{session_id}/plan", response_class=MarkdownResponse,
             responses={404: {"description": "Unknown session", "content": _FAILURE_JSON},
                        422: {"description": "Invalid request", "content": _FAILURE_JSON}})
-def get_study_plan(session_id: str):
+def get_study_plan(session_id: str, adapted: bool = True):
     """The session's study plan as a Markdown checklist, with progress ticked (same text as `analyze --plan-file`)."""
 
     session = session_manager.get(session_id)
@@ -188,7 +188,7 @@ def get_study_plan(session_id: str):
 
         return session_not_found(session_id)
 
-    return MarkdownResponse(plan_markdown(session.report, session.plan_start_date().isoformat()))
+    return MarkdownResponse(plan_markdown(adaptive_plan.session_report(session, adapted), session.plan_start_date().isoformat()))
 
 
 @router.get("/{session_id}/reading-list")
@@ -240,13 +240,13 @@ def _add_reviews(session, calendar, today, cap):
         study_calendar.add_reviews(calendar, schedule)
 
 
-def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone_name, start_time, review_cap=10):
+def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone_name, start_time, review_cap=10, adapted=True):
     """(session, calendar, timezone name, start time) for the calendar endpoints, or a failure response. Hours default to the session's own daily hours."""
     session = session_manager.get(session_id)
     if session is None:
         return session_not_found(session_id)
     try:
-        report = session.report
+        report = adaptive_plan.session_report(session, adapted)  # the plan as the learner's assessed answers adapt it
         daily = parse_hours_per_day(hours_per_day if hours_per_day is not None else (report.get("study_time") or {}).get("daily_hours"))
         today_date = study_calendar.parse_date(today, "today") if today else datetime.now(timezone.utc).date()
         steps, importance, studied = study_calendar.plan_inputs(report)
@@ -255,6 +255,7 @@ def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timez
             steps, importance, daily, today_date, study_calendar.parse_weekdays(weekdays),
             study_calendar.parse_date(deadline, "deadline") if deadline else None, begun, studied, study_calendar.planned_steps(report))
         calendar["plan_start"] = begun.isoformat()
+        study_calendar.mark_adapted(calendar, report)
         _add_reviews(session, calendar, today_date, review_cap)
         hours, _, minutes = (start_time or "09:00").partition(":")
         begin = time(int(hours), int(minutes or 0))
@@ -265,11 +266,11 @@ def _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timez
 
 @router.get("/{session_id}/calendar")
 def study_calendar_json(session_id: str, deadline: str | None = None, hours_per_day: float | None = None, weekdays: str | None = None,
-                        today: str | None = None, start: str | None = None, review_cap: int = 10):
+                        today: str | None = None, start: str | None = None, review_cap: int = 10, adapted: bool = True):
     """The remaining study plan on real dates: `deadline` (YYYY-MM-DD) adds a feasibility verdict (achievable, or the extra daily hours needed and the date you
     would finish), `weekdays` (mon,tue,...) limits the study days, `today` is the first day work can happen (default: today, UTC), and `start` the day the plan
     began, so work planned for earlier days that is still not done is listed as `missed_sessions` and laid out again from `today`. Studied concepts are not scheduled."""
-    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, None, None, max(1, min(review_cap, 200)))
+    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, None, None, max(1, min(review_cap, 200)), adapted)
     if not isinstance(found, tuple):
         return found
     return success_body("Study Calendar", "calendar", session_id=session_id, **found[1])
@@ -278,9 +279,9 @@ def study_calendar_json(session_id: str, deadline: str | None = None, hours_per_
 @router.get("/{session_id}/calendar.ics", response_class=CalendarMarkdown,
             responses={404: {"description": "Unknown session", "content": _FAILURE_JSON}, 422: {"description": "Invalid request", "content": _FAILURE_JSON}})
 def study_calendar_ics(session_id: str, deadline: str | None = None, hours_per_day: float | None = None, weekdays: str | None = None,
-                       today: str | None = None, start: str | None = None, timezone: str = "UTC", start_time: str = "09:00"):
+                       today: str | None = None, start: str | None = None, timezone: str = "UTC", start_time: str = "09:00", adapted: bool = True):
     """The same calendar as an iCalendar file: one event per scheduled item, back to back from `start_time` local time in `timezone` (an IANA name)."""
-    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone, start_time)
+    found = _calendar(session_id, deadline, hours_per_day, weekdays, today, start, timezone, start_time, 10, adapted)
     if not isinstance(found, tuple):
         return found
     try:
@@ -438,7 +439,7 @@ def adaptive_assessment(session_id: str, limit: int = 6):
 
 
 @router.get("/{session_id}/adaptive-plan")
-def adaptive_plan_view(session_id: str, deadline: str | None = None, hours_per_day: float = 3.0, today: str | None = None):
+def adaptive_plan_view(session_id: str, deadline: str | None = None, hours_per_day: float | None = None, today: str | None = None):
     """The plan adapted to the learner's assessed answers: each change with its reason, the remediation lists, hours before and after, and (with a deadline) feasibility before and after."""
     session = session_manager.get(session_id)
     if session is None:
@@ -447,7 +448,8 @@ def adaptive_plan_view(session_id: str, deadline: str | None = None, hours_per_d
     try:
         if deadline:
             day = study_calendar.parse_date(today, "today") if today else datetime.now(timezone.utc).date()
-            calendar = {"today": day, "deadline": study_calendar.parse_date(deadline, "deadline"), "daily_hours": hours_per_day}
+            daily = parse_hours_per_day(hours_per_day if hours_per_day is not None else (session.report.get("study_time") or {}).get("daily_hours"))  # the session's own hours unless told
+            calendar = {"today": day, "deadline": study_calendar.parse_date(deadline, "deadline"), "daily_hours": daily}
         result = adaptive_plan.propose(session.report, session.quiz_attempts, session.report.get("adaptive_overrides", {}), calendar)
     except study_calendar.CalendarError as error:
         return failure_response(422, "adaptive_plan", str(error), hint="Send dates as YYYY-MM-DD and hours per day above 0 and at most 24.")

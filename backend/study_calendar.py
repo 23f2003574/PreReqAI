@@ -179,7 +179,7 @@ def to_ics(calendar, title="PreReqAI study plan", timezone_name="UTC", start_at=
             hours, concept = format(item["hours"], "g"), item["concept"]
             lines += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{stamp}", f"DTSTART:{begin.astimezone(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}",
                       f"DTEND:{end.astimezone(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}", "SUMMARY:" + _escape("Study " + concept),
-                      "DESCRIPTION:" + _escape(hours + " h of " + concept + " (" + title + ")"), "END:VEVENT"]
+                      "DESCRIPTION:" + _escape(hours + " h of " + concept + " (" + title + ")" + (" - adapted to your assessed answers" if item.get("adapted") else "")), "END:VEVENT"]
             begin = end
     for day in calendar.get("reviews", []):  # spaced reviews: one event a day, after that day's study items
         begin = datetime.combine(date.fromisoformat(day["date"]), start_at, tzinfo=zone) + timedelta(minutes=round(sum(i["hours"] for d in calendar["days"] if d["date"] == day["date"] for i in d["items"]) * 60))
@@ -190,3 +190,15 @@ def to_ics(calendar, title="PreReqAI study plan", timezone_name="UTC", start_at=
                   "DESCRIPTION:" + _escape("Spaced review of " + (", ".join(day["concepts"]) or "your questions") + " (" + title + ")"), "END:VEVENT"]
     lines.append("END:VCALENDAR")
     return "\r\n".join(_fold(line) for line in lines) + "\r\n"
+
+
+def mark_adapted(calendar, report):
+    """Flag the calendar items of steps the learner's assessed answers adapted (`adapted: True`, plus `adapted_concepts` on the calendar); nothing is added when no step was adapted."""
+    adapted = set(report.get("adapted_concepts") or [])
+    if adapted:
+        for day in calendar["days"]:
+            for item in day["items"]:
+                if item["concept"] in adapted:
+                    item["adapted"] = True
+        calendar["adapted_concepts"] = sorted(adapted)
+    return calendar

@@ -17,6 +17,7 @@ class CurriculumRequest(BaseModel):
     profile: str | None = None
     deadline: str | None = None
     hours_per_day: float | None = None
+    adapted: bool = True  # schedule the hours adapted to each paper's assessed answers (false: the original plan)
     weekdays: str | None = None
     today: str | None = None
     accept_mastered: list[str] = []  # quiz-mastered concepts (see `mastery_hints` of an earlier answer) the learner chooses to leave out
@@ -52,7 +53,7 @@ def create_curriculum(body: CurriculumRequest):
         daily = parse_hours_per_day(body.hours_per_day)
         result = curriculum.build_curriculum([sessions[sid] for sid in ids], profile, today,
                                              study_calendar.parse_date(body.deadline, "deadline") if body.deadline else None, daily,
-                                             study_calendar.parse_weekdays(body.weekdays), body.accept_mastered)
+                                             study_calendar.parse_weekdays(body.weekdays), body.accept_mastered, body.adapted)
     except ValueError as error:  # CalendarError and bad hours are ValueErrors
         return failure_response(422, "curriculum", str(error), hint="Send dates as YYYY-MM-DD, weekdays as mon,tue,..., and hours per day above 0 and at most 24.")
     return success_body("Curriculum", "curriculum", warnings=warnings, **result)

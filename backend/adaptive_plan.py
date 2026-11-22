@@ -103,3 +103,20 @@ def propose(report, attempts, overrides=None, calendar=None):
 
 def clean_hours(value):
     return isinstance(value, (int, float)) and isfinite(value)
+
+
+def adapted_report(report, attempts, overrides=None):
+    """The report with its learning_plan hours replaced by the adapted ones (steps carry `adapted: True` and `original_hours`; `adapted_concepts` lists them), so the calendar, plan
+    text and curriculum all schedule what the learner's assessed answers call for. Without any adaptation the very same report object is returned, so nothing downstream changes."""
+    changed = {item["concept"]: item["hours"] for item in propose(report, attempts, overrides)["plan"] if item["adapted"]}
+    if not changed:
+        return report
+    plan = [{**step, "estimated_hours": changed[step["concept"]], "original_hours": step["estimated_hours"], "adapted": True} if step["concept"] in changed else step
+            for step in report.get("learning_plan", [])]
+    return {**report, "learning_plan": plan, "adapted_concepts": sorted(changed)}
+
+
+def session_report(session, adapted=True):
+    """The session's report as the schedule should see it: adapted to its assessed answers and the learner's overrides unless `adapted` is False."""
+    report = session.report
+    return adapted_report(report, getattr(session, "quiz_attempts", []) or [], report.get("adaptive_overrides", {})) if adapted else report
