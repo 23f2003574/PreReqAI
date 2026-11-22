@@ -1,0 +1,262 @@
+{
+ "format": "prereqai-math-equations",
+ "provenance": "The equations are hand-written in the style of a PDF text layer (Unicode symbols, loose superscripts) by the AI assistant that built the evaluation; the expected subtopics were decided by it too. They were NOT extracted from a real PDF and NOT reviewed by a human, so the scores measure the rules against a plausible set, not real papers (see README: real-paper annotation is pending).",
+ "status": "ai_written_unreviewed",
+ "equations": [
+  {
+   "id": "attention",
+   "expression": "Attention(Q, K, V) = softmax(QK^T / √d_k) V",
+   "expected": [
+    "Softmax and normalised exponentials",
+    "Matrix multiplication and transpose",
+    "Vector norms and dot products"
+   ]
+  },
+  {
+   "id": "nll-loss",
+   "expression": "L = −E(x,y)∼D [log p_θ(y|x)]",
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Conditional probability",
+    "Cross-entropy and log-likelihood",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "policy-gradient",
+   "expression": "∇θ J(θ) = Eτ∼πθ [Σt ∇θ log πθ(at|st) Rt]",
+   "expected": [
+    "Gradients and partial derivatives",
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Conditional probability",
+    "Summation and product notation",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "kl",
+   "expression": "DKL(p || q) = Σ p(x) log (p(x)/q(x))",
+   "expected": [
+    "Kullback-Leibler divergence",
+    "Summation and product notation",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "sigmoid",
+   "expression": "σ(x) = 1 / (1 + e^{-x})",
+   "expected": [
+    "Sigmoid and logistic functions",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "sgd",
+   "expression": "θ ← θ − η ∇θ L(θ)",
+   "expected": [
+    "Gradients and partial derivatives"
+   ]
+  },
+  {
+   "id": "gaussian",
+   "expression": "x ∼ N(μ, σ²)",
+   "expected": [
+    "Sampling from a distribution (x ~ D)",
+    "Gaussian distribution",
+    "Variance and covariance"
+   ]
+  },
+  {
+   "id": "l2",
+   "expression": "‖w‖₂ ≤ C",
+   "expected": [
+    "Vector norms and dot products"
+   ]
+  },
+  {
+   "id": "argmin",
+   "expression": "θ* = argmin_θ L(θ)",
+   "expected": [
+    "Optimisation objectives (argmin and argmax)"
+   ]
+  },
+  {
+   "id": "integral",
+   "expression": "∫ p(x) dx = 1",
+   "expected": [
+    "Integration"
+   ]
+  },
+  {
+   "id": "variance",
+   "expression": "Var[X] = E[X²] − (E[X])²",
+   "expected": [
+    "Variance and covariance",
+    "Expectation of a random variable"
+   ]
+  },
+  {
+   "id": "softmax-def",
+   "expression": "p(y|x) = exp(f(x,y)) / Σ_y' exp(f(x,y'))",
+   "expected": [
+    "Conditional probability",
+    "Softmax and normalised exponentials",
+    "Logarithms and exponentials",
+    "Summation and product notation"
+   ]
+  },
+  {
+   "id": "linear",
+   "expression": "h = W x + b",
+   "expected": [
+    "Matrix multiplication and transpose"
+   ]
+  },
+  {
+   "id": "layernorm",
+   "expression": "LayerNorm(x) = (x − μ)/√(σ² + ε)",
+   "expected": [
+    "Variance and covariance"
+   ]
+  },
+  {
+   "id": "dpo",
+   "expression": "L_DPO = −E(x,yw,yl)∼D [log σ(β log πθ(yw|x)/πref(yw|x) − β log πθ(yl|x)/πref(yl|x))]",
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Conditional probability",
+    "Cross-entropy and log-likelihood",
+    "Logarithms and exponentials",
+    "Sigmoid and logistic functions"
+   ]
+  },
+  {
+   "id": "cross-entropy",
+   "expression": "H(p, q) = −Σ p(x) log q(x)",
+   "expected": [
+    "Cross-entropy and log-likelihood",
+    "Summation and product notation",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "loglik",
+   "expression": "log p(x; θ) = Σi log p(xi; θ)",
+   "expected": [
+    "Logarithms and exponentials",
+    "Summation and product notation",
+    "Cross-entropy and log-likelihood"
+   ]
+  },
+  {
+   "id": "bellman",
+   "expression": "V(s) = max_a Σ_s' P(s'|s,a)[R(s,a) + γV(s')]",
+   "expected": [
+    "Optimisation objectives (argmin and argmax)",
+    "Summation and product notation",
+    "Conditional probability"
+   ]
+  },
+  {
+   "id": "adam",
+   "expression": "m_t = β1 m_{t-1} + (1 − β1) g_t",
+   "expected": []
+  },
+  {
+   "id": "lora",
+   "expression": "W' = W + BA",
+   "expected": []
+  },
+  {
+   "id": "ema",
+   "expression": "y = a + b",
+   "expected": []
+  },
+  {
+   "id": "accuracy",
+   "expression": "accuracy = correct / total",
+   "expected": []
+  },
+  {
+   "id": "ratio",
+   "expression": "speedup = t_old / t_new",
+   "expected": []
+  },
+  {
+   "id": "count",
+   "expression": "n = 5 apples + 3 pears",
+   "expected": []
+  },
+  {
+   "id": "learning-rate",
+   "expression": "lr = 3e-4",
+   "expected": []
+  },
+  {
+   "id": "grad-clip",
+   "expression": "g ← g · min(1, c / ‖g‖)",
+   "expected": [
+    "Vector norms and dot products"
+   ]
+  },
+  {
+   "id": "elbo",
+   "expression": "ELBO = E_q(z|x)[log p(x|z)] − DKL(q(z|x) || p(z))",
+   "expected": [
+    "Expectation of a random variable",
+    "Conditional probability",
+    "Kullback-Leibler divergence",
+    "Logarithms and exponentials",
+    "Cross-entropy and log-likelihood"
+   ]
+  },
+  {
+   "id": "partial",
+   "expression": "∂L/∂w = (∂L/∂y)(∂y/∂w)",
+   "expected": [
+    "Gradients and partial derivatives"
+   ]
+  },
+  {
+   "id": "prod",
+   "expression": "P(x1..xn) = Π_i p(xi | x<i)",
+   "expected": [
+    "Summation and product notation",
+    "Conditional probability"
+   ]
+  },
+  {
+   "id": "dot",
+   "expression": "s(q, k) = q · k / (‖q‖ ‖k‖)",
+   "expected": [
+    "Vector norms and dot products"
+   ]
+  },
+  {
+   "id": "max-pool",
+   "expression": "y = max(x1, x2)",
+   "expected": [],
+   "note": "expected corrected from an optimisation subtopic: max(x1, x2) is an elementwise maximum, not an objective being optimised (changed together with the optimisation rule)"
+  },
+  {
+   "id": "sentence-log",
+   "expression": "the log of the loss is plotted in the figure",
+   "expected": []
+  },
+  {
+   "id": "tilde-prose",
+   "expression": "about ~10 minutes of training",
+   "expected": []
+  },
+  {
+   "id": "sum-label",
+   "expression": "Σ = total cost (see Table 2)",
+   "expected": [
+    "Summation and product notation"
+   ]
+  }
+ ]
+}

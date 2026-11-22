@@ -111,3 +111,11 @@ twice (once now). Nothing else was tuned. Results are unchanged: the `--pdf` eva
 
 ## Held-out invariants (`--heldout`, part of `--gate`)
 `heldout/manifest.json` holds three CC BY 4.0 papers the rules were not tuned on (GQA 2305.13245, Mistral 7B 2310.06825, Constitutional AI 2212.08073) with their arXiv source, licence evidence and the SHA-256 of each PDF. They carry no annotations, so nothing here is a score: the gate checks invariants a correct extraction always satisfies and prints exactly what is wrong when one fails: references were extracted (at least 10 entries), no two headings are identical, no heading is shorter than 3 characters, every detected concept is named somewhere outside the bibliography, and every evidence quotation is an exact quotation of the page it cites. It is offline and deterministic. The licences were read from the arXiv abstract pages by an AI assistant, which the manifest and the gate output say; a human should confirm them. A PDF whose SHA-256 changed, a licence not recorded as verified, or a missing file stops the gate with that reason.
+
+## Mathematical subtopics (`--gate`, group `math_subtopics`)
+
+`math_eval.py` scores the rules of `backend/parsing/math_subtopics.py` on `fixtures/math_equations.json`: 34 equations in the style of a PDF text layer with the subtopics a reader needs for each.
+**Provenance: written by the AI assistant that built the evaluation, expected subtopics decided by it, not extracted from a real PDF, not reviewed by a human** (`status: ai_written_unreviewed`).
+The rules were tightened against this set (the first run scored precision 0.949 and recall 0.918 with 3 false positives and 5 false negatives; they now score 1.0 and 1.0), so the numbers are
+optimistic by construction: they are a regression guard, not a measure of real papers. Real-paper equations are **not annotated**: doing it honestly needs the PDF text extraction of the real
+papers run and read by a person, because what a rule can see (flattened fractions, lost subscripts, glyph names) is decided there; this was not possible where the evaluation was written (no PyMuPDF).

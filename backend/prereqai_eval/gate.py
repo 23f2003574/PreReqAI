@@ -102,6 +102,18 @@ def retrieval_checks(checks, manifest=None):
     return report
 
 
+def math_checks(checks, floors):
+    """Precision and recall of the mathematical-subtopic rules on the labelled equations (math_eval.py). The equations are AI-written and unreviewed, not extracted from real PDFs: the floors guard the
+    rules against regressions, they say nothing about real papers (those are reported as not annotated)."""
+    from . import math_eval
+
+    report = math_eval.evaluate()
+    detail = f"{report['equations']} equations ({report['status']}); false positives {report['false_positives'][:5]}; false negatives {report['false_negatives'][:5]}"
+    _check(checks, "math_subtopics", "precision", report["precision"], floors.get("precision", 0.97), detail)
+    _check(checks, "math_subtopics", "recall", report["recall"], floors.get("recall", 0.97), detail)
+    _check(checks, "math_subtopics", "equations", float(report["equations"]), float(floors.get("equations", 30)), "the labelled equation set must not shrink")
+
+
 def graph_checks(checks, floors):
     """The prerequisite graph: it must validate (no unknown target, cycle, duplicate or target without study hours) and the share of registry concepts with a rule must reach its floor; the concepts
     without a rule are named, because their prerequisites are unknown, not absent."""
@@ -153,6 +165,7 @@ def run_gate(thresholds=None, benchmark_manifest=None):
     held = heldout_checks(checks, floors.get("heldout_invariants", {}))
     retrieval_checks(checks)
     graph_checks(checks, floors.get("prerequisite_graph", {}))
+    math_checks(checks, floors.get("math_subtopics", {}))
     return {"passed": all(c["passed"] for c in checks), "checks": checks, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
             "real_papers": {"status": real["status"], "per_paper": [{"id": r["id"], "review_kind": r.get("review_kind"), "headings_f1": r["headings"]["f1"], "concepts_f1": r["concepts"]["f1"]}
                                                                   for r in real["papers"] if r["ok"]],
