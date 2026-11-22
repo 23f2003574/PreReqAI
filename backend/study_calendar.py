@@ -48,8 +48,8 @@ def planned_steps(report):
 def plan_inputs(report):
     """(remaining steps, importance, studied concepts) from an analysis report: the plan's steps not yet studied, in plan order."""
     done = {item["concept"] for item in report.get("study_progress", []) if item.get("completed")}
-    steps = [SimpleNamespace(concept=step["concept"], estimated_hours=step["estimated_hours"]) for step in report.get("learning_plan", [])]
-    importance = {item["concept"]: item.get("importance") for item in report.get("missing_prerequisites", [])}
+    steps = [SimpleNamespace(concept=step["concept"], estimated_hours=step["estimated_hours"]) for step in [*report.get("learning_plan", []), *report.get("math_plan", [])] if not step.get("skipped")]
+    importance = {item["concept"]: item.get("importance") for item in report.get("missing_prerequisites", [])}  # the paper's math steps (math_plan.py) follow its own plan steps
     return [step for step in steps if step.concept not in done], importance, sorted(done)
 
 

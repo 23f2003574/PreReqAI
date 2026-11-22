@@ -4,9 +4,10 @@ text-based quiz of the tutor ("Quiz me on Softmax") is separate and unchanged.""
 
 import re
 
+from .math_quiz import MATH_QUIZ
 from .quiz_bank import QUIZ_BANK, QUIZ_EXPLANATIONS, SUBJECT_QUIZ_BANK
 
-ASKABLE = {**QUIZ_BANK, **SUBJECT_QUIZ_BANK}  # questions that can be served by name; the default pick still uses QUIZ_BANK (paper concepts) only
+ASKABLE = {**QUIZ_BANK, **SUBJECT_QUIZ_BANK, **MATH_QUIZ}  # questions that can be served by name; the default pick still uses QUIZ_BANK (paper concepts) only
 
 OUTCOMES = ("knew", "missed")
 MASTERY_STREAK = 2  # this many "knew" in a row, most recent last, is "mastered" ...

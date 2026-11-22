@@ -37,7 +37,7 @@ def evidence_from_attempts(attempts):
 
     for concept, entry in found.items():  # the same estimate the profile uses, over this session's answers in the order they were given
         estimate = mastery_model.estimate_attempts(per_concept[concept])
-        entry.update({"p_mastery": estimate["p"], "mastery_low": estimate["low"], "mastery_high": estimate["high"]})
+        entry.update({"p_mastery": estimate["p"], "mastery_low": estimate["low"], "mastery_high": estimate["high"], "mastered": estimate["mastered"]})
     return found
 
 
@@ -64,6 +64,8 @@ def decide(concept, hours, evidence):
     if evidence["high_confidence_wrong"] >= 2 or (graded >= 2 and accuracy <= REMEDIATE_ACCURACY):
         why = f"{summary}" + (f", {evidence['high_confidence_wrong']} of the misses with high confidence" if evidence["high_confidence_wrong"] else "")
         return "remediate", REMEDIATE_FACTOR, f"{why}: more time is planned and the questions you missed are listed to review."
+    if str(concept).startswith("Math: ") and evidence.get("mastered"):  # a mathematical skill the learner has demonstrated (see math_plan.py): the step can be skipped
+        return "skip", 0.0, f"{summary}, estimated {evidence['p_mastery']:.2f} probability of knowing it: mastery is demonstrated, so this step can be skipped (reject to study it anyway)."
     if graded >= MIN_GRADED and evidence["distinct_correct"] >= MIN_DISTINCT and accuracy >= COMPRESS_ACCURACY and not evidence["high_confidence_wrong"] \
             and evidence.get("mastery_low", 1.0) >= COMPRESS_LOWER:
         return "compress", COMPRESS_FACTOR, f"{summary} across {evidence['distinct_correct']} different questions: a short refresher is planned instead of the full study time."
@@ -86,6 +88,8 @@ def propose(report, attempts, overrides=None, calendar=None):
             adjusted = round(min(original, max(MIN_HOURS, original * factor)), 2)
         elif action == "remediate":
             adjusted = round(original * factor, 2)
+        elif action == "skip":
+            adjusted = 0.0
         overridden = overrides.get(step.concept) == "reject" and action != "keep"
         if overridden:
             adjusted = original
@@ -119,9 +123,16 @@ def adapted_report(report, attempts, overrides=None):
     changed = {item["concept"]: item["hours"] for item in propose(report, attempts, overrides)["plan"] if item["adapted"]}
     if not changed:
         return report
-    plan = [{**step, "estimated_hours": changed[step["concept"]], "original_hours": step["estimated_hours"], "adapted": True} if step["concept"] in changed else step
-            for step in report.get("learning_plan", [])]
-    return {**report, "learning_plan": plan, "adapted_concepts": sorted(changed)}
+    def adapt(step):
+        if step["concept"] not in changed:
+            return step
+        hours = changed[step["concept"]]
+        return {**step, "estimated_hours": hours, "original_hours": step["estimated_hours"], "adapted": True, **({"skipped": True} if hours <= 0 else {})}
+
+    found = {**report, "learning_plan": [adapt(step) for step in report.get("learning_plan", [])], "adapted_concepts": sorted(changed)}
+    if report.get("math_plan"):
+        found["math_plan"] = [adapt(step) for step in report["math_plan"]]
+    return found
 
 
 def session_report(session, adapted=True):

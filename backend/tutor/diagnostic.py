@@ -24,6 +24,10 @@ def _norm(text):
 
 def _siblings(concept):
     """Concepts the prerequisite graph puts next to `concept`: its prerequisites, the concepts that need it and those that share a prerequisite with it, sorted."""
+    from .math_quiz import MATH_SUBJECT
+
+    if concept in MATH_SUBJECT:  # a mathematical subtopic: its neighbours are the other subtopics of the same subject and the subject's own questions
+        return sorted({name for name, subject in MATH_SUBJECT.items() if subject == MATH_SUBJECT[concept] and name != concept} | {MATH_SUBJECT[concept]})
     from backend.prerequisites.prerequisite_detector import PrerequisiteDetector
 
     rules = PrerequisiteDetector.PREREQUISITE_RULES

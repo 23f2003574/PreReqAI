@@ -446,7 +446,7 @@ def adaptive_assessment(session_id: str, limit: int = 6):
     """A short pre-assessment: one diagnostic question (with options, no answer) for each step of the plan that has fewer than 3 assessed answers, at most `limit` (1 to 12) of them."""
     def act(session):
         have = diagnostic.assessed_summary(session)
-        wanted = [step["concept"] for step in session.report.get("learning_plan", []) if step["concept"] in quiz_session.ASKABLE and have.get(step["concept"], {}).get("graded", 0) < adaptive_plan.MIN_GRADED]
+        wanted = [step.concept for step in study_calendar.plan_inputs(session.report)[0] if step.concept in quiz_session.ASKABLE and have.get(step.concept, {}).get("graded", 0) < adaptive_plan.MIN_GRADED]
         questions = [diagnostic.serve(session, name) for name in wanted[:max(1, min(limit, 12))]]
         return {"questions": questions, "note": "Answer each with how sure you are; then GET /adaptive-plan shows what changes." if questions else "Every step already has enough assessed answers or no questions."}
 

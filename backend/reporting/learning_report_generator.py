@@ -5,6 +5,7 @@ from backend.models import (
 )
 
 from backend.concepts import ConceptRegistry
+from backend import math_plan
 from backend.prerequisites import prerequisite_graph
 
 from backend.graph import (
@@ -225,6 +226,7 @@ class LearningReportGenerator:
             "equations": self._equations(paper),
 
             "math_subtopics": self._math_subtopics(paper),
+            "math_plan": math_plan.build(self._math_subtopics(paper)),  # the same skills as study steps with hours and diagnostics (backend/math_plan.py)
             "custom_prerequisite_proposals": self._custom_prerequisite_proposals(paper),
             "candidate_concepts": self._candidates(paper),
             "extraction_confidence": self._confidence(paper),
