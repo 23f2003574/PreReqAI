@@ -91,7 +91,7 @@ def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_pe
         if shared:
             why.append(f"it shares {', '.join(shared)} with the papers before it, so that groundwork is not repeated")
         for link in needs.get(pick["session_id"], []):
-            why.append(f"it cites {link['cited_title']!r} (its reference {link['reference_number']}), which is placed before it" if link["cited"] in placed else f"it cites {link['cited_title']!r}")
+            why.append(f"it cites {link['cited_title']!r} (its reference {link['reference_number']}{'' if link['method'] == 'title' else ', matched by ' + link['method'].replace('_', ' ')}), which is placed before it" if link["cited"] in placed else f"it cites {link['cited_title']!r}")
         if not pick["remaining"]:
             why.append("nothing is left to study for it: you can read it now")
         papers.append({"position": position, "session_id": pick["session_id"], "title": pick["title"], "new_prerequisites": [step.concept for step in new],
@@ -103,7 +103,7 @@ def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_pe
         "shared_prerequisites": [{"concept": name, "hours": hours[name], "papers": titles,
                                   "reason": f"{name} is needed by {len(titles)} papers ({'; '.join(titles)}) and is studied once"}
                                  for name, titles in sorted(needed_by.items(), key=lambda item: (-len(item[1]), item[0])) if len(titles) > 1],
-        "citations": {**cites, "ordering": [{"paper": link["citing_title"], "after": link["cited_title"], "reference_number": link["reference_number"], "evidence": link["evidence"]}
+        "citations": {**cites, "ordering": [{"paper": link["citing_title"], "after": link["cited_title"], "reference_number": link["reference_number"], "evidence": link["evidence"], "method": link["method"]}
                                               for links in needs.values() for link in links]},
         "shared_references": dict(zip(("references", "totals"), paper_citations.shared_references(sessions))),
         "excluded": sorted(excluded.values(), key=lambda item: item["concept"]),
