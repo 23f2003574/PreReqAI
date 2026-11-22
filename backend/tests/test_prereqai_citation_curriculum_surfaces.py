@@ -37,7 +37,7 @@ def pair(tmp_path, monkeypatch):
 def test_the_api_orders_the_cited_paper_first_and_explains_why(pair):
     body = client.post("/api/curriculum", json={"session_ids": pair, "today": "2026-11-20"}).json()
     assert body["status"] == "success" and [p["title"] for p in body["papers"]] == [CITED, CITING]
-    assert body["citations"]["ordering"] == [{"paper": CITING, "after": CITED, "reference_number": 7, "evidence": f"Doe, J. {CITED}. Journal of Models, 2024."}]
+    assert body["citations"]["ordering"] == [{"paper": CITING, "after": CITED, "reference_number": 7, "evidence": f"Doe, J. {CITED}. Journal of Models, 2024.", "method": "title"}]
     assert f"it cites {CITED!r} (its reference 7), which is placed before it" in body["papers"][1]["reason"] and body["shared_references"]["totals"]["total"] >= 1
 
 

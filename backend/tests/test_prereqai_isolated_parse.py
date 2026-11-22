@@ -86,9 +86,9 @@ def test_the_upload_route_analyses_through_the_worker(monkeypatch):
 
     from backend.main import app
 
-    calls = []
-    original = isolated_parse.run_worker
-    monkeypatch.setattr(isolated_parse, "run_worker", lambda *a, **k: calls.append(1) or original(*a, **k))
+    started = []
+    real = subprocess.Popen
+    monkeypatch.setattr(isolated_parse.subprocess, "Popen", lambda command, *a, **k: started.append(list(command)) or real(command, *a, **k))
     with open(SAMPLE, "rb") as handle:
         body = TestClient(app).post("/api/prerequisites/analyze", files={"paper": ("p.pdf", handle, "application/pdf")}).json()
-    assert body["status"] == "success" and calls
+    assert body["status"] == "success" and any("backend.ingestion.isolated_parse" in command for command in started)  # the whole reading ran in the worker process
