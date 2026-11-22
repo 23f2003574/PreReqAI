@@ -16,6 +16,12 @@ def _no_real_backoff_sleep(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _parse_in_process_by_default(monkeypatch):
+    """Most tests patch pipeline stages or OCR in this process, which a worker process cannot see; the worker path is tested by test_prereqai_isolated_parse.py, which removes this."""
+    monkeypatch.setenv("PREREQAI_PARSE_INPROCESS", "1")
+
+
+@pytest.fixture(autouse=True)
 def _empty_analysis_cache(monkeypatch):
     """The analysis cache is a process-wide singleton: an earlier test's analysis of the bundled paper must not stand in for the pipeline run a
     later test (stage cancellation, time limits, patched stages) is about. The cache's own tests fill it on purpose."""

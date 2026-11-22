@@ -147,15 +147,21 @@ def _analyze_upload(paper: UploadFile, known: list[str], studied: list[str], dia
         if refused:
             return refused
 
-        outcome = platform.analyze(
-            temp_path,
-            labels=HTTP_FIELD_LABELS,
-            **({'limits': limits} if (limits := _server_limits()) else {}),
-            **({'diagnostics': True} if diagnostics else {}),
-            **({'known': known} if known else {}),
-            **({'studied': studied} if studied else {}),
-            **({'hours_per_day': hours_per_day} if hours_per_day is not None else {}),
-        )
+        from backend.ingestion import isolated_parse
+
+        mode = isolated_parse.ISOLATED.set(True)  # this request's analysis reads the PDF in the worker process
+        try:
+            outcome = platform.analyze(
+                temp_path,
+                labels=HTTP_FIELD_LABELS,
+                **({'limits': limits} if (limits := _server_limits()) else {}),
+                **({'diagnostics': True} if diagnostics else {}),
+                **({'known': known} if known else {}),
+                **({'studied': studied} if studied else {}),
+                **({'hours_per_day': hours_per_day} if hours_per_day is not None else {}),
+            )
+        finally:
+            isolated_parse.ISOLATED.reset(mode)
 
         return _hide_server_path(outcome, temp_path, Path(paper.filename or "").name or "the uploaded paper")
 

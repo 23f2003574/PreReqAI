@@ -357,7 +357,9 @@ class ResearchPaperPipeline:
 
             timer.check_cancelled()
 
-            return self._run(file_path, timer, max_file_bytes)
+            from backend.ingestion import isolated_parse
+
+            return self._run(file_path, timer, max_file_bytes, isolated_parse.IsolatedStages(ocr_seconds) if isolated_parse.enabled() else None)
 
         except Exception as exc:
 
@@ -378,6 +380,7 @@ class ResearchPaperPipeline:
         file_path: str,
         timer: "_StageTimer",
         max_file_bytes=None,
+        isolated=None,
     ) -> PipelineResult:
 
         context = {"file_path": file_path}
@@ -386,7 +389,10 @@ class ResearchPaperPipeline:
 
             timer.current = stage
 
-            step = getattr(getattr(self, component), method)
+            if isolated is not None and component in ("ingestion", "figure_extractor", "table_extractor"):  # read in the worker process, never in the server
+                step = {"ingestion": isolated.ingest, "figure_extractor": isolated.figures, "table_extractor": isolated.tables}[component]
+            else:
+                step = getattr(getattr(self, component), method)
 
             value = step(*(context[name] for name in inputs))
 

@@ -89,10 +89,14 @@ def _repair_warning(file_path) -> list:
     """A PDF cut short (an interrupted download or copy) is opened by MuPDF after repair and reads as a shorter paper, so the plan
     would silently miss its later sections: say so, so the learner re-fetches the file instead of trusting a partial analysis."""
     try:
-        import pymupdf
+        from backend.ingestion import isolated_parse
 
-        with pymupdf.open(file_path) as pdf:
-            repaired = pdf.is_repaired
+        repaired = isolated_parse.was_repaired(file_path) if isolated_parse.enabled() else None  # the worker already saw the file: the server does not open it
+        if repaired is None:
+            import pymupdf
+
+            with pymupdf.open(file_path) as pdf:
+                repaired = pdf.is_repaired
     except Exception:  # the analysis already read the file; a second open failing must not turn it into a failure
         return []
     return [
