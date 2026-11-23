@@ -18,10 +18,21 @@ MIN_TERMS, MIN_RELATIVE, MIN_LEXICAL = 2, 0.5, 2
 RARE_SHARE, RARE_MIN_CHARS = 0.03, 5  # a single matching term is enough when it occurs in at most this share of the paper's sentences (and has at least RARE_MIN_CHARS letters)
 
 
-def _tokens(text):
-    from backend.session.context_retriever import _terms
+_COMPOUND = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)+")
+_MIXED = re.compile(r"(?<![a-z0-9])(?=[a-z]*\d)(?=\d*[a-z])[a-z0-9]{2,}(?![a-z0-9])")
 
-    return _terms(text)
+
+def _tokens(text):
+    """The stemmed content terms of a text for BM25. Beyond the shared `_terms`: the parts of a hyphenated compound are terms too ("grade-school" also gives "grade" and "school", so a question that
+    writes the words apart still matches the paper's compound and the reverse), and a token that mixes letters and digits ("13b", "t5", "k2") is a term, which `_terms` drops with every number."""
+    from backend.session.context_retriever import _GENERIC, _stem, _terms
+
+    lower = text.lower()
+    terms = _terms(text)
+    for compound in _COMPOUND.findall(lower):
+        terms.extend(_stem(part) for part in compound.split("-") if len(part) > 2 and part not in _GENERIC and not part.isdigit())
+    terms.extend(_MIXED.findall(lower))
+    return terms
 
 
 def _query(paper, question):

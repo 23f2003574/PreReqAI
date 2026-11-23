@@ -77,3 +77,58 @@ def evaluate(papers, data=None, k=K, searches=None):
         styles.setdefault(q["style"], []).append(q)
     return {"questions": len(questions), "k": k, "systems": systems, "gold_in_text": sum(key(q["gold"]) in text[q["paper"]] for q in questions) / len(questions) if questions else 1.0,
             "papers": sorted({q["paper"] for q in questions}), "styles": {s: len(v) for s, v in sorted(styles.items())}, "status": data["status"], "provenance": data["provenance"]}
+
+
+FAILURE_CLASSES = ("evidence_absent", "tokenisation", "vocabulary_mismatch", "below_term_gate", "lexical_crowding", "context_outside", "ranking")
+
+
+def classify_failures(papers, data=None, k=K, search=None):
+    """[{id, paper, question, gold, class, detail}] for each question the search misses in the first `k` passages, with the first of these reasons that holds (reproducible: no model is involved):
+    evidence_absent (the gold phrase is not in the extracted text), tokenisation (no query term meets the gold sentences under the shared `_terms` tokens, but one does under the retrieval tokens, so the
+    tokens, not the wording, were the obstacle), vocabulary_mismatch (no query term occurs in any sentence with the gold phrase: the question and the paper use different words), below_term_gate (a
+    gold sentence shares terms with the question but fewer than the gate needs), context_outside (a returned passage is next to a gold sentence: the answer sits just outside it), lexical_crowding (the
+    lexical search returned enough passages that BM25 was never consulted), ranking (BM25 sees a gold sentence but ranks it below `k`)."""
+    from backend import retrieval
+    from backend.evidence import quotable_sentences
+    from backend.session.context_retriever import _terms
+
+    data = data or load()
+    search = search or (lambda paper, question, limit: retrieval.hybrid_search(paper, question, limit))
+    texts = {pid: key(" ".join(page.text for page in paper.pages)) for pid, paper in papers.items()}
+    rows = []
+    for q in data["questions"]:
+        paper = papers.get(q["paper"])
+        if paper is None:
+            continue
+        found = list(search(paper, q["question"], k))[:k]
+        if rank_of(found, q["gold"]):
+            continue
+        sentences = [c[4] for c in quotable_sentences(paper)]
+        gold_at = [i for i, sentence in enumerate(sentences) if key(q["gold"]) in key(sentence)]
+        query = retrieval._query(paper, q["question"])
+        shared = max((len(query & set(retrieval._tokens(sentences[i]))) for i in gold_at), default=0)
+        old = set(_terms(q["question"]))
+        shared_old = max((len(old & set(_terms(sentences[i]))) for i in gold_at), default=0)
+        returned = {key(p["sentence"]) for p in found}
+        next_to = any(key(sentences[j]) in returned for i in gold_at for j in (i - 1, i + 1) if 0 <= j < len(sentences))
+        if key(q["gold"]) not in texts[q["paper"]] or not gold_at:
+            kind, detail = "evidence_absent", "the gold phrase is not among the paper's quotable sentences"
+        elif shared == 0:
+            kind, detail = "vocabulary_mismatch", "no query term occurs in a sentence containing the gold phrase"
+        elif shared_old == 0:
+            kind, detail = "tokenisation", "only the retrieval tokens (hyphen parts, letter-digit terms) connect the question to the gold sentence"
+        elif next_to:
+            kind, detail = "context_outside", "a returned passage is adjacent to a gold sentence"
+        elif shared < retrieval.MIN_TERMS and len(query) >= retrieval.MIN_TERMS:
+            kind, detail = "below_term_gate", f"a gold sentence shares {shared} query term(s); the gate needs {retrieval.MIN_TERMS} unless the term is rare"
+        elif len(found) >= retrieval.MIN_LEXICAL:
+            kind, detail = "lexical_crowding", f"the lexical search returned {len(found)} passages, so BM25 was not consulted"
+        else:
+            kind, detail = "ranking", "BM25 sees a gold sentence but ranks other sentences first"
+        rows.append({"id": q["id"], "paper": q["paper"], "question": q["question"], "gold": q["gold"], "class": kind, "detail": detail})
+    return rows
+
+
+def failure_summary(rows):
+    """{class: count} over classify_failures rows, every class present."""
+    return {kind: sum(r["class"] == kind for r in rows) for kind in FAILURE_CLASSES}
