@@ -7,6 +7,7 @@ the best score. A question with no usable terms, or a paper with no quotable sen
 (Background, Method...) are weighted ROLE_WEIGHT["instructional"], related-work sentences less; the weights break ties and nudge, they never admit a sentence with no matching term."""
 import math
 import re
+import weakref
 
 from backend.evidence import passage_id, quotable_sentences
 from backend.prerequisites.missing_prerequisite_analyzer import section_role
@@ -36,28 +37,56 @@ def _query(paper, question):
     return query
 
 
+_INDEXES = {}  # id(paper) -> (weak reference to the paper, index); a paper is not hashable, so it is keyed by identity and the entry goes when the paper does
+
+
+def _index(paper):
+    """What BM25 needs from a paper and a question never changes: the quotable sentences, their stemmed terms, the set of terms of each, the average length and how many sentences contain each term. It is built
+    once per paper (kept while the paper object lives and its paragraphs and pages are the same) instead of for every question; the result of a search is identical to rebuilding it each time."""
+    marker = (id(getattr(paper, "paragraphs", None)), len(getattr(paper, "paragraphs", None) or []), id(getattr(paper, "pages", None)), len(getattr(paper, "pages", None) or []))
+    held = _INDEXES.get(id(paper))
+    cached = held[1] if held is not None and held[0]() is paper else None
+    if cached is not None and cached["marker"] == marker:
+        return cached
+    candidates = quotable_sentences(paper)
+    docs = [_tokens(sentence) for _, _, _, _, sentence, _ in candidates]
+    sets = [set(doc) for doc in docs]
+    frequency = {}
+    for terms in sets:
+        for term in terms:
+            frequency[term] = frequency.get(term, 0) + 1
+    built = {"marker": marker, "candidates": candidates, "docs": docs, "sets": sets, "frequency": frequency, "average": (sum(len(d) for d in docs) / len(docs)) if docs else 1.0}
+    built["average"] = built["average"] or 1.0
+    try:
+        _INDEXES[id(paper)] = (weakref.ref(paper), built)
+        weakref.finalize(paper, _INDEXES.pop, id(paper), None)
+    except TypeError:  # an object that cannot be weakly referenced is simply indexed every time
+        _INDEXES.pop(id(paper), None)
+    return built
+
+
 def bm25_search(paper, question, limit=5):
     """Passages ranked by BM25 with role weighting (the same dictionaries as evidence.build_evidence), best first; [] when nothing passes the gate."""
     from backend.tutor.grounding import named_concepts
 
-    candidates, query = quotable_sentences(paper), None
     query = _query(paper, question)
+    index = _index(paper)
+    candidates = index["candidates"]
     if not query or not candidates:
         return []
-    docs = [_tokens(sentence) for _, _, _, _, sentence, _ in candidates]
-    total, average = len(docs), (sum(len(d) for d in docs) / len(docs)) or 1.0
-    frequency = {term: sum(term in set(doc) for doc in docs) for term in query}
+    docs, sets, frequency, total, average = index["docs"], index["sets"], index["frequency"], len(index["docs"]), index["average"]
     scored = []
-    for index, (doc, (_, _, _, section, sentence, number)) in enumerate(zip(docs, candidates)):
-        matched = [term for term in query if term in set(doc)]
-        if not matched or (len(matched) < MIN_TERMS and len(query) >= MIN_TERMS and not (len(matched[0]) >= RARE_MIN_CHARS and frequency[matched[0]] <= RARE_SHARE * total)):
+    for position, (doc, terms, (_, _, _, section, sentence, number)) in enumerate(zip(docs, sets, candidates)):
+        matched = [term for term in query if term in terms]
+        if not matched or (len(matched) < MIN_TERMS and len(query) >= MIN_TERMS and not (len(matched[0]) >= RARE_MIN_CHARS and frequency.get(matched[0], 0) <= RARE_SHARE * total)):
             continue
         score = 0.0
         for term in matched:
-            idf = math.log(1 + (total - frequency[term] + 0.5) / (frequency[term] + 0.5))
+            df = frequency[term]
+            idf = math.log(1 + (total - df + 0.5) / (df + 0.5))
             count = doc.count(term)
             score += idf * count * (K1 + 1) / (count + K1 * (1 - B + B * len(doc) / average))
-        scored.append((-(score * ROLE_WEIGHT[section_role(section)]), index, section, sentence, number))
+        scored.append((-(score * ROLE_WEIGHT[section_role(section)]), position, section, sentence, number))
     if not scored:
         return []
     scored.sort(key=lambda item: item[:2])
