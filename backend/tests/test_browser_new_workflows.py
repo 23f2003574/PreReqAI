@@ -287,3 +287,23 @@ def test_the_profile_table_shows_the_estimate_its_range_the_refresh_state_and_su
     assert "no graded answers yet" in rows["Softmax"] and "range" not in rows["Softmax"]
     assert "not a calibrated probability" in page.locator("#profileBody").inner_text()
     context.close()
+
+
+def test_the_page_asks_for_the_access_token_once_and_then_works_with_it(browser, tmp_path):
+    process, url = _launch(tmp_path / "sessions", PREREQAI_API_TOKEN="browser-token-1")
+    try:
+        context, page = open_page(browser, url)
+        prompts = []
+
+        def answer(dialog):
+            prompts.append(dialog.message)
+            dialog.accept("browser-token-1")
+        page.on("dialog", answer)
+        analyse(page)  # every /api/ call fails once with 401, the page asks, then retries with the token
+        assert len(prompts) == 1 and "PREREQAI_API_TOKEN" in prompts[0]
+        assert page.evaluate("sessionStorage.getItem('prereqaiToken')") == "browser-token-1"
+        assert page.locator("#concepts").inner_text().strip()
+        context.close()
+    finally:
+        process.terminate()
+        process.wait(timeout=10)

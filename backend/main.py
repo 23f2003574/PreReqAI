@@ -3,6 +3,7 @@ from backend.python_version import check_python_version
 check_python_version()  # before the imports below, which fail obscurely on an old interpreter
 
 import logging
+from contextlib import asynccontextmanager
 import os
 
 from fastapi import FastAPI, Request
@@ -53,9 +54,18 @@ _analysis_log = logging.getLogger("prereqai.analysis")
 if not any(isinstance(h, logging.StreamHandler) for h in _analysis_log.handlers):
     _analysis_log.addHandler(logging.StreamHandler())
 
+@asynccontextmanager
+async def _lifespan(_app):
+    from backend.api_auth import warn_if_exposed
+
+    warn_if_exposed()  # a warning when the server listens beyond this computer with no PREREQAI_API_TOKEN
+    yield
+
+
 app = FastAPI(
     title="PreReqAI",
     version=__version__,
+    lifespan=_lifespan,
 )
 
 def cors_origins() -> list[str]:
@@ -68,6 +78,9 @@ if cors_origins():  # off by default: a same-origin or command-line deployment n
 
 from backend.security import LocalSecurityMiddleware  # noqa: E402
 
+from backend.api_auth import ApiTokenMiddleware  # noqa: E402
+
+app.add_middleware(ApiTokenMiddleware)  # PREREQAI_API_TOKEN: bearer token for /api/ (off when unset; see backend/api_auth.py)
 app.add_middleware(LocalSecurityMiddleware)  # added last, so it runs first: Host, Origin and content-type checks and the security headers (see backend/security.py)
 
 app.include_router(

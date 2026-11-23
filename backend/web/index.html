@@ -147,6 +147,36 @@
 </main>
 <script>
 "use strict";
+// When the server sets PREREQAI_API_TOKEN every /api/ call needs it: the page asks once (kept for this browser tab only) and adds it to its own API requests. Without a token configured nothing is asked.
+var accessToken = function () { try { return sessionStorage.getItem("prereqaiToken") || ""; } catch (e) { return ""; } };
+(function () {
+  var nativeFetch = window.fetch.bind(window), asking = null;
+  function isApi(input) { var url = typeof input === "string" ? input : (input && input.url) || ""; return url.indexOf("/api/") === 0 || url.indexOf(location.origin + "/api/") === 0; }
+  function withToken(init, token) { if (!token) return init; var options = Object.assign({}, init || {}), headers = new Headers(options.headers || {}); headers.set("Authorization", "Bearer " + token); options.headers = headers; return options; }
+  window.fetch = async function (input, init) {
+    if (!isApi(input)) return nativeFetch(input, init);
+    var response = await nativeFetch(input, withToken(init, accessToken()));
+    if (response.status !== 401 && response.status !== 403) return response;
+    asking = asking || Promise.resolve().then(function () { return window.prompt("This PreReqAI server needs its access token (PREREQAI_API_TOKEN):"); }).finally(function () { setTimeout(function () { asking = null; }, 0); });
+    var entered = ((await asking) || "").trim();
+    if (!entered) return response;
+    try { sessionStorage.setItem("prereqaiToken", entered); } catch (e) { /* the token is then asked for again on the next failure */ }
+    return nativeFetch(input, withToken(init, entered));
+  };
+})();
+// A plain link cannot send the Authorization header: with a token in use the link's click fetches the file with it and saves the result.
+function authLink(anchor, name) {
+  if (anchor.dataset.authLink) return;
+  anchor.dataset.authLink = "1";
+  anchor.addEventListener("click", async function (event) {
+    if (!accessToken()) return;
+    event.preventDefault();
+    var response = await fetch(anchor.getAttribute("href"));
+    if (!response.ok) return;
+    var link = document.createElement("a");
+    link.href = URL.createObjectURL(await response.blob()); link.download = name; document.body.appendChild(link); link.click(); link.remove();
+  });
+}
 var $ = function (id) { return document.getElementById(id); };
 
 function el(tag, text, className) {
@@ -1154,7 +1184,7 @@ async function planToDeadline() {
     fill("missedBox", note);
     var rows = body.days.map(function (d) { return [d.date + " (" + d.weekday + ")", d.hours + " h", d.items.map(function (i) { return i.concept + " " + i.hours + " h"; }).join("; ")]; });
     fill("calendarBox", rows.length ? table(["Date", "Hours", "Study"], rows) : el("p", "Nothing is left to study.", "msg info"));
-    $("icsLink").href = base + "/calendar.ics" + query; $("icsLink").hidden = !rows.length;
+    $("icsLink").href = base + "/calendar.ics" + query; authLink($("icsLink"), "study-plan.ics"); $("icsLink").hidden = !rows.length;
   } catch (e) { showStatus("error", "Could not reach the PreReqAI server.", "Check that it is running and your connection, then try again.", "calendarMsg"); }
 }
 $("calendarBtn").addEventListener("click", planToDeadline);
@@ -1259,7 +1289,7 @@ function renderProfile(profile) {
   if (profile.mastery.some(function (m) { return typeof m.p_mastery === "number"; })) box.appendChild(el("p", "Estimated mastery is a model's guess from your graded answers (the range is its uncertainty, and it fades with time since your last answer). It is a heuristic, not a calibrated probability.", "meta"));
   box.appendChild(el("p", profile.reviews.due.length + " review(s) due now" + (profile.reviews.upcoming.length ? ", next: " + profile.reviews.upcoming[0].concept + " at " + profile.reviews.upcoming[0].due : "") + ".", "meta"));
   fill("profileBody", box);
-  $("profileExport").href = profileUrl() + "/export"; $("profileExport").hidden = false;
+  $("profileExport").href = profileUrl() + "/export"; authLink($("profileExport"), "profile.prereqai-profile.json"); $("profileExport").hidden = false;
 }
 $("profileBtn").addEventListener("click", function () { profileCall("GET"); });
 $("profileKnown").addEventListener("click", function () { var c = $("profileConcept").value.trim(); if (c) { profileCall("PATCH", { add_known: [c] }); $("profileConcept").value = ""; } });
