@@ -40,4 +40,4 @@ def test_a_retriever_that_returns_nothing_or_the_wrong_sentences_fails_the_floor
 def test_every_floor_is_in_thresholds_and_below_the_measured_numbers_in_the_readme():
     floors = gate.load_thresholds()["retrieval_real"]
     assert set(floors["hybrid_recall_by_paper"]) == {"chain-of-thought", "constitutional-ai", "dpo", "gqa", "mistral-7b", "mixtral"}
-    assert 0 < floors["hybrid_recall_at_k"] < 0.639 and 0 < floors["hybrid_mrr"] < 0.493
+    assert 0 < floors["hybrid_recall_at_k"] < 0.75 and 0 < floors["hybrid_mrr"] < 0.559

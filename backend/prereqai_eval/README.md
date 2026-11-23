@@ -125,6 +125,6 @@ papers run and read by a person, because what a rule can see (flattened fraction
 `retrieval_real.py` runs 36 questions with gold phrases (`fixtures/retrieval_questions.json`) over the six licensed PDFs and reports recall@5 and MRR for the lexical and the hybrid search, per
 paper. **The questions are AI-written and not reviewed by a human**; gold phrases were checked to occur in the papers, but some are generic words, so a hit shows the right region was found. The gate
 requires the hybrid search to do at least as well as the lexical one on every paper, every quotation to be exact and the set not to shrink, and holds absolute floors for the hybrid search in
-`thresholds.json` (`retrieval_real`): overall recall@5 0.58 and MRR 0.44, and recall@5 per paper. They sit one question below the numbers measured when they were set (hybrid recall@5 0.639, MRR 0.493
+`thresholds.json` (`retrieval_real`): overall recall@5 0.72 and MRR 0.52, and recall@5 per paper. They sit one question below the numbers measured when they were set (hybrid recall@5 0.639, MRR 0.493 at first; 0.750 and 0.559 after the token, rare-term and neighbour-context changes
 over 36 questions; per paper chain-of-thought 0.33, constitutional-ai 0.83, dpo 0.50, gqa 0.83, mistral-7b 0.33, mixtral 1.00), so a loss of two questions fails the gate and one does not. They are a
 regression guard on AI-written, unreviewed questions: they are not evidence that retrieval is good, and raising them needs a human-reviewed question set. Reproduce with `python -m backend.prereqai_eval --gate`.

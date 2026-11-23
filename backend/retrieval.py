@@ -15,7 +15,7 @@ from backend.prerequisites.missing_prerequisite_analyzer import section_role
 K1, B = 1.5, 0.75
 ROLE_WEIGHT = {"instructional": 1.15, "other": 1.0, "related": 0.9}
 MIN_TERMS, MIN_RELATIVE, MIN_LEXICAL = 2, 0.5, 2
-RARE_SHARE, RARE_MIN_CHARS = 0.03, 5  # a single matching term is enough when it occurs in at most this share of the paper's sentences (and has at least RARE_MIN_CHARS letters)
+RARE_SHARE, RARE_MIN_CHARS = 0.10, 5  # a single matching term is enough when it occurs in at most this share of the paper's sentences (and has at least RARE_MIN_CHARS letters)
 
 
 _COMPOUND = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)+")
@@ -107,8 +107,32 @@ def bm25_search(paper, question, limit=5):
             for score, _, section, sentence, number in scored[:limit] if -score >= MIN_RELATIVE * best]
 
 
+CONTEXT_TOP = 2  # the best passages whose next sentence is offered as context
+
+
+def _with_context(paper, found, limit):
+    """`found` followed, while there is room under `limit`, by the sentence after each of the first CONTEXT_TOP passages (then the one before): a question's answer often sits in the sentence next to the one that
+    shares its words. They come after every ranked passage, never displace one, and are exact stored sentences with their own page, so quotations stay verbatim."""
+    from backend.tutor.grounding import named_concepts
+
+    candidates = quotable_sentences(paper)
+    position = {passage_id(c[3], c[4]): i for i, c in enumerate(candidates)}
+    names = [c.name for c in getattr(paper, "concepts", []) or []]
+    result, seen = list(found), {p["passage_id"] for p in found}
+    for passage in found[:CONTEXT_TOP]:
+        at = position.get(passage["passage_id"])
+        for neighbour in () if at is None else (at + 1, at - 1):
+            if 0 <= neighbour < len(candidates) and len(result) < limit:
+                _, _, _, section, sentence, number = candidates[neighbour]
+                identifier = passage_id(section, sentence)
+                if identifier not in seen:
+                    seen.add(identifier)
+                    result.append({"passage_id": identifier, "sentence": sentence, "page_number": number, "section": section, "concepts": named_concepts(names, sentence), "context": True})
+    return result
+
+
 def hybrid_search(paper, question, limit=4):
-    """The lexical passages, and BM25 passages added when the lexical search found fewer than MIN_LEXICAL; at most `limit`, none repeated."""
+    """The lexical passages, BM25 passages added when the lexical search found fewer than MIN_LEXICAL, and the neighbouring sentence of the best ones as context while room is left; at most `limit`, none repeated."""
     from backend.tutor.grounding import search_evidence
 
     found = list(search_evidence(paper, question, limit))
@@ -118,4 +142,4 @@ def hybrid_search(paper, question, limit=4):
             if passage["passage_id"] not in seen and len(found) < limit:
                 seen.add(passage["passage_id"])
                 found.append(passage)
-    return found
+    return _with_context(paper, found, limit) if found else found
