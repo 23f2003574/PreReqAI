@@ -33,8 +33,9 @@ _KNOWN = (
     r"Materials and Methods|Methods and Materials|Proposed (?:Method|Approach)|Our Approach|Network Architecture|Evaluation Results))"
 )
 # A numbered, title-cased line such as "3.2 Scaled Dot-Product Attention": at most 8 words, no digits or sentence punctuation.
-_WORD = r"(?:[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"
-_NUMBERED = rf"\d+(?:\.\d+)*\.?[ \t]+[A-Z][A-Za-z\-]*(?:[ \t]+{_WORD}){{0,7}}"
+# A word of a title may carry digits when it is a name that does (a dataset, model or size: "CIFAR-10", "GPT-4", "ImageNet-1k", "7B"); a bare number is still not a title word, so a table row of figures is not a heading.
+_WORD = r"(?:[A-Z][A-Za-z\-]*\d[A-Za-z0-9\-]*|\d+[A-Z][A-Za-z0-9\-]*|[A-Z][A-Za-z\-]*|of|and|the|for|in|to|with|a|an|on|via|by|from|as)"
+_NUMBERED = rf"\d+(?:\.\d+)*\.?[ \t]+[A-Z][A-Za-z0-9\-]*(?:[ \t]+{_WORD}){{0,7}}"
 
 # IEEE-style "II. PROPOSED METHOD": a roman numeral and an all-caps title (all caps keeps an author line like "I. Goodfellow" out of the headings).
 _ROMAN_CAPS = r"[IVX]+\.[ \t]+[A-Z]{3,}(?:[ \t]+[A-Z][A-Z\-]*){0,7}"

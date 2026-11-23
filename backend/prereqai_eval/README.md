@@ -30,8 +30,8 @@ section. The report gives per fixture and in total: heading detection, section-r
 precision/recall, and how many fixtures the pipeline analysed. Annotations were written from the texts' design, never adjusted to a run.
 
 **These PDFs are synthetic, written for this repository. A score on them is not validation on real published papers**, which has still not been done.
-On 2026-11-16 the run exposes two real findings (kept visible, not annotated away): `4 Experiments on CIFAR-10` is not recognised as a heading, so
-its text is filed under Method and Probability is reported covered; and "Graph Neural Network" counts as Neural Networks subject mentions.
+On 2026-11-16 the run exposes two real findings (kept visible, not annotated away): `4 Experiments on CIFAR-10` was not recognised as a heading (fixed on 2026-11-23: a title word may now carry digits, as in CIFAR-10 or GPT-4), so
+its text was filed under Method and Probability was reported covered; and "Graph Neural Network" counts as Neural Networks subject mentions.
 
 ## What it measures (text mode)
 
