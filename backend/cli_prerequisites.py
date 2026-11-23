@@ -165,7 +165,7 @@ def run_prerequisites_profile(args) -> int:
     print(f"known: {', '.join(profile['known']) or '(none)'}")
     print(f"studied: {', '.join(profile['studied']) or '(none)'}")
     for item in learner_profile.mastery(profile["quiz"]):
-        print(f"quiz: {item['concept']}: {item['status']} ({item['knew']} knew, {item['missed']} missed over {item['questions']} question(s))")
+        print(f"quiz: {learner_profile.describe_mastery(item)}")
     return 0
 
 

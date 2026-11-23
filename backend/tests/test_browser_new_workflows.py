@@ -262,3 +262,28 @@ def test_paper_questions_are_answered_checked_against_the_paper_and_recorded(bro
     page.wait_for_function("(old) => { var e = document.querySelector('#pqPrompt'); return e && e.innerText !== old; }", arg=prompt)  # the answered card stays on screen until the next one arrives
     assert page.locator("#pqPrompt").inner_text() != prompt  # the next question is a different one
     context.close()
+
+
+def test_the_profile_table_shows_the_estimate_its_range_the_refresh_state_and_survives_old_entries(browser, rich):
+    from backend import learner_profile, spaced_review
+    url, tmp = rich
+    now = spaced_review.now()
+
+    def entry(concept, days_ago, graded=True):
+        seen = spaced_review.stamp(now - timedelta(days=days_ago))
+        return {"concept": concept, "attempts": 2, "knew": 2, "missed": 0, "streak": 2, "last_outcome": "knew", "first_seen": "2026-10-01T00:00:00Z", "last_seen": seen, "interval_hours": 72.0, "due": seen,
+                **({"graded_attempts": 2, "graded_correct": 2, "graded_streak": 2} if graded else {})}
+    quiz = {"Calculus:1": entry("Calculus", 1), "Calculus:2": entry("Calculus", 1), "Probability:1": entry("Probability", 40), "Probability:2": entry("Probability", 40), "Softmax:1": entry("Softmax", 3, graded=False)}
+    learner_profile.save(tmp / "profiles" / "me.json", [], [], quiz)
+    context, page = open_page(browser, url)
+    page.fill("#profile", "me")
+    analyse(page)
+    page.fill("#profile", "me")
+    page.click("#profileBtn")
+    page.wait_for_selector("#profileBody table")
+    rows = {row.locator("td").first.inner_text(): row.inner_text() for row in page.locator("#profileBody table tr").all() if row.locator("td").count()}
+    assert "mastered" in rows["Calculus"] and re.search(r"\d+% \(range \d+-\d+%\)", rows["Calculus"]) and "1 day(s) ago" in rows["Calculus"]
+    assert "Needs refresh" in rows["Probability"] and "40 days ago" in rows["Probability"] and "answer a few questions again" in rows["Probability"] and "at your last graded answer" in rows["Probability"]
+    assert "no graded answers yet" in rows["Softmax"] and "range" not in rows["Softmax"]
+    assert "not a calibrated probability" in page.locator("#profileBody").inner_text()
+    context.close()

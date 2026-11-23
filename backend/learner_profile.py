@@ -379,6 +379,18 @@ def mastery(quiz, now=None):
     return result
 
 
+def describe_mastery(item):
+    """One line about a mastery() item for the command line: status, counts, the estimate with its range (when there is one), why, and how long ago the last graded answer was; every estimate field is optional."""
+    line = f"{item['concept']}: {item['status'].replace('_', ' ')} ({item['knew']} knew, {item['missed']} missed over {item['questions']} question(s))"
+    if isinstance(item.get("p_mastery"), (int, float)):
+        low, high = item.get("mastery_low", item["p_mastery"]), item.get("mastery_high", item["p_mastery"])
+        line += f"; estimated mastery {item['p_mastery']:.2f} (range {low:.2f}-{high:.2f}; a heuristic, not a calibrated probability)"
+    if isinstance(item.get("days_since_evidence"), (int, float)):
+        line += f"; last graded answer {'today' if item['days_since_evidence'] < 1 else format(item['days_since_evidence'], '.0f') + ' day(s) ago'}"
+    why = item.get("refresh_reason") or item.get("mastery_reason")
+    return line + (f"\n    why: {why}" if why else "")
+
+
 def mastered(quiz, now=None):
     """{concept: {questions, attempts, knew, last_seen}} for the concepts a profile's quiz history rates mastered (see mastery()): the evidence other papers' plans may offer as "you may
     already know this". A concept whose mastery has lapsed (status "needs_refresh") is not offered. It is only ever offered; nothing is removed from a plan because of it."""

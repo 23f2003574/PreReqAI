@@ -167,6 +167,18 @@ function showStatus(kind, text, extra, boxId) {
   box.appendChild(node);
 }
 
+// One row of the profile's mastery table. Every estimate field is optional: a profile from before the uncertainty model has none of them, and then only the counts are shown.
+function masteryCells(m) {
+  var estimate = typeof m.p_mastery === "number"
+    ? Math.round(m.p_mastery * 100) + "% (range " + Math.round((typeof m.mastery_low === "number" ? m.mastery_low : m.p_mastery) * 100) + "-" + Math.round((typeof m.mastery_high === "number" ? m.mastery_high : m.p_mastery) * 100) + "%)"
+    : (m.evidence === "assessed" ? "not enough graded answers" : "no graded answers yet");
+  var status = m.status === "needs_refresh" ? "Needs refresh" : String(m.status || "").replace(/_/g, " ");
+  var why = m.refresh_reason || m.mastery_reason || "";
+  if (m.status === "needs_refresh" && typeof m.p_at_last_answer === "number") why += " (it was " + Math.round(m.p_at_last_answer * 100) + "% at your last graded answer)";
+  var last = typeof m.days_since_evidence === "number" ? (m.days_since_evidence < 1 ? "today" : Math.round(m.days_since_evidence) + " day(s) ago") : (m.last_seen ? String(m.last_seen).slice(0, 10) : "");
+  return [m.concept, status, estimate, why, last, m.knew, m.missed, m.questions];
+}
+
 function table(headers, rows) {
   var wrap = el("div", null, "table-wrap"), t = el("table"), head = el("tr");
   headers.forEach(function (h) { head.appendChild(el("th", h)); });
@@ -1243,7 +1255,8 @@ function renderProfile(profile) {
     });
   });
   box.appendChild(el("h3", "Quiz mastery"));
-  box.appendChild(profile.mastery.length ? table(["Concept", "Status", "Knew", "Missed", "Questions"], profile.mastery.map(function (m) { return [m.concept, m.status, m.knew, m.missed, m.questions]; })) : el("p", "No quiz answers are saved yet.", "meta"));
+  box.appendChild(profile.mastery.length ? table(["Concept", "Status", "Estimated mastery", "Why", "Last graded evidence", "Knew", "Missed", "Questions"], profile.mastery.map(masteryCells)) : el("p", "No quiz answers are saved yet.", "meta"));
+  if (profile.mastery.some(function (m) { return typeof m.p_mastery === "number"; })) box.appendChild(el("p", "Estimated mastery is a model's guess from your graded answers (the range is its uncertainty, and it fades with time since your last answer). It is a heuristic, not a calibrated probability.", "meta"));
   box.appendChild(el("p", profile.reviews.due.length + " review(s) due now" + (profile.reviews.upcoming.length ? ", next: " + profile.reviews.upcoming[0].concept + " at " + profile.reviews.upcoming[0].due : "") + ".", "meta"));
   fill("profileBody", box);
   $("profileExport").href = profileUrl() + "/export"; $("profileExport").hidden = false;
