@@ -1,8 +1,9 @@
 """The analysis cache: a completed analysis of a PDF, found again by the SHA-256 of its bytes.
 
 What is cached is the paper's analysis only (the Paper and its report, before any learner's known or studied concepts, hours per day, profile, quiz
-results or session exist), keyed by the file's hash, PIPELINE_VERSION (raise it whenever ingestion, parsing, detection or reporting output changes) and
-the settings that change the analysis text (PREREQAI_OCR_LANGS). Every request gets its own deep copy, so one learner's changes can never reach
+results or session exist), keyed by the file's hash, PIPELINE_VERSION (raise it for a change the fingerprint cannot see, such as data outside the listed source files) and
+the settings that change the analysis text (PREREQAI_OCR_LANGS), and a fingerprint of the source files that produce an analysis (`source_fingerprint`), so an entry made by earlier code is never served
+after a change to ingestion, parsing, detection, prerequisites or reporting, whether or not anyone remembered to raise PIPELINE_VERSION. Every request gets its own deep copy, so one learner's changes can never reach
 another's, and a changed file or version is simply a different key. Identical files analysed at the same time are analysed once: the others wait for
 the first and take its result, and if the first fails they analyse for themselves. Results with scanned pages left unread by an OCR budget are not
 cached (they are partial). With PREREQAI_ANALYSIS_CACHE_DIR the entries are also kept on disk as JSON in the session format (nothing is unpickled), written to
@@ -13,6 +14,7 @@ import os
 import threading
 from collections import OrderedDict
 from copy import deepcopy
+from functools import lru_cache
 from pathlib import Path
 
 from backend.filelock import locked
@@ -20,6 +22,32 @@ from backend.filelock import locked
 PIPELINE_VERSION = "2026-11-23.1"
 MAX_ENTRIES = 16
 _CHUNK = 1024 * 1024
+
+
+SOURCE_PACKAGES = ("ingestion", "parsing", "concepts", "prerequisites", "pipeline", "models", "reporting", "resources", "platform", "graph", "serialization")
+SOURCE_MODULES = ("evidence.py", "extraction_confidence.py", "math_plan.py", "sentences.py", "custom_concepts.py", "filelock.py")
+_SOURCE_SUFFIXES = (".py", ".json")
+
+
+def source_fingerprint(root=None):
+    """A hash of the files that decide what an analysis contains: every .py and .json file in SOURCE_PACKAGES of `root` (default: the backend package) and the SOURCE_MODULES beside them, by
+    relative path and bytes (caches and tests excluded). A file added, removed or edited changes it; an unrelated package does not. Over-invalidating is safe (one slower analysis), so the list is generous."""
+    base = Path(root) if root is not None else Path(__file__).resolve().parent
+    paths = [base / name for name in SOURCE_MODULES]
+    for package in SOURCE_PACKAGES:
+        paths.extend(p for p in (base / package).rglob("*") if p.suffix in _SOURCE_SUFFIXES and "__pycache__" not in p.parts)
+    digest = hashlib.sha256()
+    for path in sorted(p for p in paths if p.is_file()):
+        digest.update(path.relative_to(base).as_posix().encode() + b"\0")
+        try:
+            digest.update(path.read_bytes())
+        except OSError:
+            digest.update(b"unreadable")
+        digest.update(b"\0")
+    return digest.hexdigest()[:16]
+
+
+_fingerprint = lru_cache(maxsize=1)(source_fingerprint)
 
 
 def file_key(path):
@@ -35,7 +63,7 @@ def file_key(path):
 
     custom = "|".join(sorted(t.lower() for c in custom_load()[0] for t in (c["name"], *c["aliases"])))  # confirming a custom concept must change what is detected in a paper seen before
     settings = os.environ.get("PREREQAI_OCR_LANGS", "").strip().lower() + "|" + custom
-    return f"{digest.hexdigest()}-{hashlib.sha256((PIPELINE_VERSION + '|' + settings).encode()).hexdigest()[:12]}"
+    return f"{digest.hexdigest()}-{hashlib.sha256((PIPELINE_VERSION + '|' + _fingerprint() + '|' + settings).encode()).hexdigest()[:12]}"
 
 
 class AnalysisCache:
