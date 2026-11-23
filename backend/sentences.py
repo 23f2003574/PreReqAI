@@ -17,6 +17,8 @@ def _ends_with_abbreviation(piece):
     word = found.group(1)
     if len(word) == 1 and word.isupper():  # an initial: "J. Smith"
         return True
+    if "." in word:  # a dotted abbreviation of several letters ("w.r.t.", "U.S.", "Ph.D.", "a.k.a."): "relative to w.r.t. Gaussian noise" and "the U.S. Army" are not sentence ends
+        return True
     return word.replace(".", "").lower() in _ABBREVIATIONS
 
 
@@ -31,3 +33,15 @@ def split_sentences(text):
         start = match.end()
     sentences.append(text[start:])
     return sentences
+
+
+_CONTINUATION_OK = ("where ",)  # a lower-case "where ..." after a displayed equation is how mathematical text continues its sentence and reads as one
+
+
+def is_continuation_fragment(sentence):
+    """Whether `sentence` starts in the middle of a sentence or even of a word ("ing instability during fine-tuning,", "et al., 2022); GQA removes..."): its first letter is lower case (text before it, on the
+    previous page, column or line of a block the layout split, is missing). Such a fragment is not a complete sentence and is not quoted as one; "where ..." after an equation is the one common
+    lower-case opening that is a sentence of its own."""
+    text = sentence.lstrip("\"'“‘([{ ")
+    first = next((c for c in text if c.isalpha()), "")
+    return bool(first) and first.islower() and text[:1].isalpha() and not text.lower().startswith(_CONTINUATION_OK)

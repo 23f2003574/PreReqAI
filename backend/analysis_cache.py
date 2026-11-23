@@ -21,7 +21,7 @@ from pathlib import Path
 from backend.filelock import locked
 from backend.observability import log_event
 
-PIPELINE_VERSION = "2026-11-23.1"
+PIPELINE_VERSION = "2026-11-23.2"
 MAX_ENTRIES = 16
 DEFAULT_DISK_ENTRIES = 200
 STALE_TEMP_SECONDS = 3600

@@ -16,7 +16,7 @@ from backend.prerequisites.missing_prerequisite_analyzer import section_role
 MAX_PER_CONCEPT = 3
 MIN_SENTENCE_CHARS, MAX_SENTENCE_CHARS = 30, 400
 MAX_RESIDUE, MIN_LETTERS = 0.35, 25  # a candidate that is more than 35% numeric tokens or symbols, or has under 25 letters, is chart or table residue
-from backend.sentences import split_sentences
+from backend.sentences import split_sentences, is_continuation_fragment
 _ROLE_RANK = {"instructional": 0, "other": 1, "related": 2}
 _TRAILING_PAGE_NUMBER = re.compile(r"(?<=[.!?])\s*\n\s*\d{1,3}\s*$")  # "... in the model.\n6": the page number that follows the last sentence of a page
 _DEFINITION = re.compile(r"\b(?:is|are|was|refers? to|denotes?|defined? as|is defined|called|known as|consists? of|we (?:propose|introduce|use|define|present|apply)|allows?|enables?|instead of)\b", re.I)
@@ -89,6 +89,8 @@ def quotable_sentences(paper):
         for position, sentence in enumerate(split_sentences((paragraph.content or "").strip())):
             sentence = _TRAILING_PAGE_NUMBER.sub("", sentence).strip()  # a prefix of the page text, so still an exact quotation
             if not MIN_SENTENCE_CHARS <= len(sentence) <= MAX_SENTENCE_CHARS or residue_share(sentence) > MAX_RESIDUE or sum(c.isalpha() for c in sentence) < MIN_LETTERS:
+                continue
+            if is_continuation_fragment(sentence):  # it starts mid-sentence (or mid-word): not a complete sentence, so never quoted as one
                 continue
             number = getattr(paragraph, "page_number", None)
             if number is not None and pages:
