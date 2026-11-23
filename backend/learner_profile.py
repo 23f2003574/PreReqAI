@@ -29,11 +29,11 @@ from backend.filelock import locked
 from pathlib import Path
 
 FORMAT = "prereqai-learner-profile"
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 MAX_QUESTIONS = 5000
 _QUESTION_ID = re.compile(r"[^:\x00]{1,200}:\d{1,4}")
 _COUNTS = ("attempts", "knew", "missed", "streak")
-_HISTORY_CODE = re.compile(r"[01][lmh]")
+_HISTORY_CODE = re.compile(r"[01][lmh](@\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ)?")
 MAX_BYTES = 1024 * 1024
 MAX_SUBJECTS = 2000
 MAX_NAME_CHARS = 200
@@ -98,7 +98,7 @@ def _quiz_entries(value):
         graded = {name: entry[name] for name in spaced_review.GRADED_FIELDS if name in entry}  # optional: an entry saved before assessed answers existed has none (read as zero)
         if not all(isinstance(n, int) and not isinstance(n, bool) and 0 <= n <= 10**6 for n in graded.values()) or graded.get("graded_correct", 0) > graded.get("graded_attempts", 0):
             raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
-        if "graded_history" in entry:  # the last graded answers in order (spaced_review.HISTORY_LIMIT at most): "1h" is correct with high confidence, "0l" wrong with low confidence
+        if "graded_history" in entry:  # the last graded answers in order (spaced_review.HISTORY_LIMIT at most): "1h@<UTC time>" is correct with high confidence at that time, "0l" wrong with low confidence (schema 2: no time)
             history = entry["graded_history"]
             if (not isinstance(history, list) or len(history) > spaced_review.HISTORY_LIMIT or len(history) > graded.get("graded_attempts", 0)
                     or not all(isinstance(code, str) and _HISTORY_CODE.fullmatch(code) for code in history)):
@@ -114,7 +114,7 @@ def _quiz_entries(value):
 
 
 def parse_full(raw):
-    """{"known": [...], "studied": [...], "quiz": {...}} from the bytes of a version 1 or 2 profile file, or ProfileError saying why it cannot be used."""
+    """{"known": [...], "studied": [...], "quiz": {...}} from the bytes of a version 1, 2 or 3 profile file (older versions are read without loss and written as version 3), or ProfileError saying why it cannot be used."""
     try:
         data = json.loads(raw.decode("utf-8-sig"), parse_constant=lambda c: (_ for _ in ()).throw(ValueError(f"constant {c}")))
     except (UnicodeDecodeError, ValueError, RecursionError) as error:
@@ -194,10 +194,35 @@ def save(path, known, studied, quiz=None):
                 handle.write(text)
                 handle.flush()
                 os.fsync(handle.fileno())
+            _backup_older_version(target)
             os.replace(temp, target)
     except BaseException:
         temp.unlink(missing_ok=True)
         raise
+
+
+def _backup_older_version(target):
+    """Before an older profile (schema 1 or 2) is first rewritten as schema 3, keep its bytes once as NAME.json.v<N>.bak; an existing backup is never replaced, and a file that cannot be read as an older
+    profile is not copied. A backup that cannot be written stops the save (ProfileError), so the original is never replaced without its copy."""
+    try:
+        if not target.is_file():
+            return
+        raw = target.read_bytes()
+        version = json.loads(raw.decode("utf-8-sig")).get("schema_version")
+    except (OSError, ValueError, AttributeError):
+        return
+    if isinstance(version, bool) or not isinstance(version, int) or not 1 <= version < SCHEMA_VERSION:
+        return
+    backup = target.with_name(f"{target.name}.v{version}.bak")
+    if backup.exists():
+        return
+    temp = backup.with_name(f".{backup.name}.{os.getpid()}.tmp")
+    try:
+        temp.write_bytes(raw)
+        os.replace(temp, backup)
+    except OSError as error:
+        temp.unlink(missing_ok=True)
+        raise ProfileError(f"the older profile could not be backed up ({getattr(error, 'strerror', None) or error}); it was left unchanged") from None
 
 
 def record_quiz(path, question_id, concept, outcome, moment=None, graded=None):

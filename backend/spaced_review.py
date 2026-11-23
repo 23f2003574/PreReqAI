@@ -40,14 +40,14 @@ def interval(streak, knew, missed):
 GRADED_FIELDS = ("graded_attempts", "graded_correct", "graded_streak", "high_confidence_right", "high_confidence_wrong")
 
 
-HISTORY_LIMIT = 8  # the most recent graded answers an entry keeps in order (see mastery_model.sequence_from_counters); older ones survive as counters
+HISTORY_LIMIT = 20  # growth policy: an entry keeps its last 20 graded answers in order, each with the time it was given (profile schema 3; schema 2 kept 8 without times); older ones survive as counters, so a profile's size is bounded by questions x 20 short codes
 _CONFIDENCE_CODE = {"low": "l", "medium": "m", "high": "h"}
 
 
-def _graded(entry, graded):
+def _graded(entry, graded, moment=None):
     """The assessment counters of an entry after one more answer. `graded` is None for a self-reported answer (the counters are then only carried over, and are absent from an entry that
     never had an assessed answer) or {"correct": bool, "confidence": "low"|"medium"|"high"} for an answer the system checked itself. `graded_history` holds the last HISTORY_LIMIT assessed answers
-    in order as two-character codes (correct 1 or 0, then confidence l, m or h): "1h" is a correct answer given with high confidence."""
+    in order as codes: correct 1 or 0, then confidence l, m or h, then "@" and the UTC time the answer was given when it is known ("1h@2026-11-23T13:03:48Z" is a correct answer given with high confidence at that time; a bare "1h" comes from a schema 2 profile and has no known time)."""
     carried = {name: entry[name] for name in GRADED_FIELDS if name in entry}
     history = [code for code in entry.get("graded_history", []) if isinstance(code, str)]
     if graded is None:
@@ -58,7 +58,7 @@ def _graded(entry, graded):
     counters["graded_streak"] = counters["graded_streak"] + 1 if graded["correct"] else 0
     if graded.get("confidence") == "high":
         counters["high_confidence_right" if graded["correct"] else "high_confidence_wrong"] += 1
-    history.append(("1" if graded["correct"] else "0") + _CONFIDENCE_CODE.get(graded.get("confidence"), "m"))
+    history.append(("1" if graded["correct"] else "0") + _CONFIDENCE_CODE.get(graded.get("confidence"), "m") + (f"@{stamp(moment)}" if moment is not None else ""))
     return {**counters, "graded_history": history[-HISTORY_LIMIT:]}
 
 
@@ -85,7 +85,7 @@ def graded_update(entry, concept, grade, moment, difficulty="Medium", graded=Non
     else:
         base_hours = 24.0 if streak == 1 else 72.0 if streak == 2 else max(24.0, entry.get("interval_hours", 24.0)) * ease
         wait = timedelta(hours=min(MAX_INTERVAL_DAYS * 24, max(12.0, base_hours * _GRADE_FACTOR[grade])))
-    return {**_graded(entry, graded), "concept": concept, "attempts": knew + missed, "knew": knew, "missed": missed, "streak": streak, "last_outcome": outcome, "last_grade": grade, "ease": ease,
+    return {**_graded(entry, graded, moment), "concept": concept, "attempts": knew + missed, "knew": knew, "missed": missed, "streak": streak, "last_outcome": outcome, "last_grade": grade, "ease": ease,
             "first_seen": entry.get("first_seen") or stamp(moment), "last_seen": stamp(moment), "interval_hours": round(wait.total_seconds() / 3600, 2), "due": stamp(moment + wait)}
 
 
@@ -122,7 +122,7 @@ def update(entry, concept, outcome, moment, graded=None):
     knew, missed = entry.get("knew", 0) + (outcome == "knew"), entry.get("missed", 0) + (outcome != "knew")
     streak = entry.get("streak", 0) + 1 if outcome == "knew" else 0
     wait = interval(streak, knew, missed)
-    extra = _graded(entry, graded)
+    extra = _graded(entry, graded, moment)
     return {**extra, "concept": concept, "attempts": knew + missed, "knew": knew, "missed": missed, "streak": streak, "last_outcome": outcome,
             "first_seen": entry.get("first_seen") or stamp(moment), "last_seen": stamp(moment), "interval_hours": round(wait.total_seconds() / 3600, 2),
             "due": stamp(moment + wait)}

@@ -114,7 +114,7 @@ def test_a_profile_saved_before_assessed_answers_migrates_without_losing_history
     learner_profile.record_quiz(path, "Softmax:1", "Softmax", "knew", graded={"correct": True, "confidence": "high"})
     saved = json.loads(path.read_text(encoding="utf-8"))
     kept = saved["quiz"]["Softmax:1"]
-    assert saved["schema_version"] == 2 and saved["known"] == ["Calculus"] and kept["attempts"] == 5 and kept["knew"] == 4 and kept["missed"] == 1 and kept["first_seen"] == entry["first_seen"]
+    assert saved["schema_version"] == 3 and saved["known"] == ["Calculus"] and kept["attempts"] == 5 and kept["knew"] == 4 and kept["missed"] == 1 and kept["first_seen"] == entry["first_seen"]
     assert kept["graded_attempts"] == 1 and kept["graded_correct"] == 1 and kept["graded_streak"] == 1 and kept["high_confidence_right"] == 1 and kept["high_confidence_wrong"] == 0
 
 

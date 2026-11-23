@@ -38,7 +38,7 @@ def test_listing_showing_and_changing_a_profile(profiles):
     assert body["status"] == "success" and (body["known"], body["studied"]) == (["Linear Algebra"], ["Probability", "Calculus"]) and body["mastery"] == []
     lp.record_quiz(profiles / "me.json", "Softmax:1", "Softmax", "missed")
     shown = client.get("/api/profiles/me").json()
-    assert shown["mastery"][0]["concept"] == "Softmax" and shown["mastery"][0]["status"] == "needs_practice" and shown["schema_version"] == 2
+    assert shown["mastery"][0]["concept"] == "Softmax" and shown["mastery"][0]["status"] == "needs_practice" and shown["schema_version"] == 3
     assert shown["reviews"]["upcoming"][0]["question_id"] == "Softmax:1"
     listed = client.get("/api/profiles").json()["profiles"]
     assert listed == [{"name": "me", "readable": True, "known": 1, "studied": 2, "questions": 1, "due": 0}]
@@ -89,7 +89,7 @@ def test_export_and_import_round_trip_with_v1_and_replace_protection(profiles):
     patch("me", add_known=["Calculus"])
     lp.record_quiz(profiles / "me.json", "Softmax:1", "Softmax", "knew")
     exported = client.get("/api/profiles/me/export")
-    assert "attachment" in exported.headers["content-disposition"] and exported.json()["schema_version"] == 2 and exported.json()["quiz"]["Softmax:1"]["knew"] == 1
+    assert "attachment" in exported.headers["content-disposition"] and exported.json()["schema_version"] == 3 and exported.json()["quiz"]["Softmax:1"]["knew"] == 1
     imported = client.post("/api/profiles/copy/import", headers=JSON, content=exported.content)
     assert imported.status_code == 200 and imported.json()["known"] == ["Calculus"] and imported.json()["mastery"][0]["concept"] == "Softmax"
     assert client.post("/api/profiles/copy/import", headers=JSON, content=exported.content).status_code == 409  # not overwritten by accident
@@ -97,7 +97,7 @@ def test_export_and_import_round_trip_with_v1_and_replace_protection(profiles):
     v1 = json.dumps({"format": lp.FORMAT, "schema_version": 1, "known": ["Linear Algebra"], "studied": ["Probability"]})
     legacy = client.post("/api/profiles/old/import", headers=JSON, content=v1).json()
     assert (legacy["known"], legacy["studied"], legacy["mastery"]) == (["Linear Algebra"], ["Probability"], [])
-    assert json.loads((profiles / "old.json").read_text())["schema_version"] == 2
+    assert json.loads((profiles / "old.json").read_text())["schema_version"] == 3
     for bad in (b"{nope", json.dumps({"format": "x"}).encode(), json.dumps({"format": lp.FORMAT, "schema_version": 3, "known": [], "studied": []}).encode()):
         assert client.post("/api/profiles/bad/import", headers=JSON, content=bad).status_code == 422
     assert not (profiles / "bad.json").exists()
@@ -132,7 +132,7 @@ def test_the_cli_shows_changes_and_exports_the_same_profile(tmp_path, capsys):
     assert "known: Linear Algebra" in capsys.readouterr().out
     assert cli_main(["prerequisites", "profile", str(path), "--forget", "Linear Algebra", "--json"]) == 0
     document = json.loads(capsys.readouterr().out)
-    assert document["known"] == [] and document["studied"] == ["Probability"] and document["schema_version"] == 2
+    assert document["known"] == [] and document["studied"] == ["Probability"] and document["schema_version"] == 3
     assert cli_main(["prerequisites", "profile", str(path), "--known", "Astrology"]) == 2 and json.loads(path.read_text())["studied"] == ["Probability"]
     path.write_text("{nope", encoding="utf-8")
     assert cli_main(["prerequisites", "profile", str(path), "--known", "Calculus"]) == 1 and path.read_text() == "{nope"
@@ -145,7 +145,7 @@ def test_a_v1_profile_is_read_by_the_api_without_losing_anything(profiles):
     assert json.loads((profiles / "old.json").read_text())["schema_version"] == 1  # reading never rewrites
     patch("old", add_studied=["Statistics"])
     saved = json.loads((profiles / "old.json").read_text())
-    assert saved["schema_version"] == 2 and saved["known"] == ["Calculus"] and saved["studied"] == ["Probability", "Statistics"]
+    assert saved["schema_version"] == 3 and saved["known"] == ["Calculus"] and saved["studied"] == ["Probability", "Statistics"]
 
 
 def test_the_page_can_show_and_edit_the_profile():

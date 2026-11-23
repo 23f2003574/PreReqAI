@@ -27,7 +27,7 @@ def test_a_profile_is_created_and_loaded_with_the_documented_envelope(tmp_path):
     path = tmp_path / "me.json"
     lp.save(path, ["linear-algebra"], ["Probability"])
     data = json.loads(path.read_text())
-    assert data == {"format": "prereqai-learner-profile", "schema_version": 2, "known": ["linear-algebra"], "studied": ["Probability"], "quiz": {}}
+    assert data == {"format": "prereqai-learner-profile", "schema_version": 3, "known": ["linear-algebra"], "studied": ["Probability"], "quiz": {}}
     assert lp.load(path) == (["Linear Algebra"], ["Probability"], "")  # read back in PreReqAI's own spelling
 
 

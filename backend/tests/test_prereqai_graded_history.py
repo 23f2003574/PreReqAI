@@ -23,17 +23,17 @@ def run(answers):
 
 def test_each_assessed_answer_is_kept_in_order_with_its_confidence_up_to_the_limit():
     entry = run([(True, "low"), (False, "high"), (True, "medium")])
-    assert entry["graded_history"] == ["1l", "0h", "1m"] and entry["graded_attempts"] == 3
+    assert [c.split("@")[0] for c in entry["graded_history"]] == ["1l", "0h", "1m"] and all("@" in c for c in entry["graded_history"]) and entry["graded_attempts"] == 3
     long = run([(index % 2 == 0, "medium") for index in range(spaced_review.HISTORY_LIMIT + 5)])
     assert len(long["graded_history"]) == spaced_review.HISTORY_LIMIT and long["graded_attempts"] == spaced_review.HISTORY_LIMIT + 5
     last = spaced_review.HISTORY_LIMIT + 4  # the answers alternate, correct on even positions
-    assert long["graded_history"][-1] == ("1m" if last % 2 == 0 else "0m")
+    assert long["graded_history"][-1].split("@")[0] == ("1m" if last % 2 == 0 else "0m")
 
 
 def test_a_self_reported_answer_carries_the_history_unchanged_and_starts_none():
     entry = run([(True, "high")])
     again = spaced_review.update(entry, "Softmax", "knew", T0.replace(minute=30))
-    assert again["graded_history"] == ["1h"] and again["graded_attempts"] == 1
+    assert [c.split("@")[0] for c in again["graded_history"]] == ["1h"] and again["graded_attempts"] == 1
     assert "graded_history" not in spaced_review.update(None, "Softmax", "knew", T0)
 
 
@@ -66,7 +66,7 @@ def test_the_history_is_saved_loaded_and_validated(tmp_path):
     learner_profile.record_quiz(path, "Softmax:1", "Softmax", "knew", T0, {"correct": True, "confidence": "low"})
     learner_profile.record_quiz(path, "Softmax:1", "Softmax", "missed", T0.replace(minute=5), {"correct": False, "confidence": "high"})
     profile, problem = learner_profile.load_full(path)
-    assert not problem and profile["quiz"]["Softmax:1"]["graded_history"] == ["1l", "0h"]
+    assert not problem and [c.split("@")[0] for c in profile["quiz"]["Softmax:1"]["graded_history"]] == ["1l", "0h"]
     data = json.loads(path.read_text())
     for bad in (["1x"], ["1l"] * (spaced_review.HISTORY_LIMIT + 1), "1l", [1], ["1l", "1l", "1l"]):
         data["quiz"]["Softmax:1"]["graded_history"] = bad

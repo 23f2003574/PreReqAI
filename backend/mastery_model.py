@@ -62,9 +62,22 @@ def estimate(answers):
 _CONFIDENCE_OF_CODE = {"l": "low", "m": "medium", "h": "high"}
 
 
+def decode_timed_history(history):
+    """[(correct, confidence, time or None)] from an entry's `graded_history` codes ("1h@2026-11-23T13:03:48Z": correct, high confidence, given at that UTC time; "0l": wrong with low confidence and no known time),
+    in the order the answers were given; codes that are not valid are skipped."""
+    from backend import spaced_review
+
+    result = []
+    for code in history or []:
+        if not isinstance(code, str) or len(code) < 2 or code[0] not in "01" or code[1] not in _CONFIDENCE_OF_CODE or (len(code) > 2 and code[2] != "@"):
+            continue
+        result.append((code[0] == "1", _CONFIDENCE_OF_CODE[code[1]], spaced_review.parse_time(code[3:]) if len(code) > 3 else None))
+    return result
+
+
 def decode_history(history):
-    """[(correct, confidence)] from an entry's `graded_history` codes ("1h" = correct with high confidence, "0l" = wrong with low confidence), in the order the answers were given; codes that are not valid are skipped."""
-    return [(code[0] == "1", _CONFIDENCE_OF_CODE[code[1]]) for code in history or [] if isinstance(code, str) and len(code) == 2 and code[0] in "01" and code[1] in _CONFIDENCE_OF_CODE]
+    """[(correct, confidence)] from an entry's `graded_history` codes, in the order the answers were given (see decode_timed_history); codes that are not valid are skipped."""
+    return [(ok, confidence) for ok, confidence, _ in decode_timed_history(history)]
 
 
 def _canonical(attempts, correct, streak, sure_right, sure_wrong, question_id):

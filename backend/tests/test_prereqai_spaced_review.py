@@ -73,7 +73,7 @@ def test_a_version_1_profile_migrates_losslessly_and_keeps_its_data_when_quiz_re
     assert json.loads(path.read_text())["schema_version"] == 1  # reading does not rewrite
     learner_profile.record_quiz(path, "Softmax:1", "softmax", "knew", T0)
     saved = json.loads(path.read_text())
-    assert saved["schema_version"] == 2 and saved["known"] == ["Linear Algebra"] and saved["studied"] == ["Probability"]
+    assert saved["schema_version"] == 3 and saved["known"] == ["Linear Algebra"] and saved["studied"] == ["Probability"]
     assert saved["quiz"]["Softmax:1"]["concept"] == "Softmax" and saved["quiz"]["Softmax:1"]["last_outcome"] == "knew"
 
 
@@ -89,7 +89,7 @@ def test_mastery_persists_across_sessions_and_papers_and_a_progress_save_keeps_i
 
 @pytest.mark.parametrize("text", [
     "{not json", json.dumps({"format": "x", "schema_version": 2}),
-    json.dumps({"format": learner_profile.FORMAT, "schema_version": 3, "known": [], "studied": []}),
+    json.dumps({"format": learner_profile.FORMAT, "schema_version": 4, "known": [], "studied": []}),
     json.dumps({"format": learner_profile.FORMAT, "schema_version": 2, "known": [], "studied": [], "quiz": {"Softmax:1": {"concept": "Softmax"}}}),
     json.dumps({"format": learner_profile.FORMAT, "schema_version": 2, "known": [], "studied": [], "quiz": []}),
 ])
