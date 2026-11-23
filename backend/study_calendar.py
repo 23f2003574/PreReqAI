@@ -41,8 +41,9 @@ def parse_weekdays(value):
 
 
 def planned_steps(report):
-    """Every step of the report's plan, studied or not, in plan order (what the original schedule was made of)."""
-    return [SimpleNamespace(concept=step["concept"], estimated_hours=step["estimated_hours"]) for step in report.get("learning_plan", [])]
+    """Every step of the report's plan, studied or not, in plan order (what the original schedule was made of): the plan's own steps, then the paper's mathematical steps, as `plan_inputs` lays
+    them out, and never a step skipped because the learner showed mastery (it takes no time, so it was never on a day)."""
+    return [SimpleNamespace(concept=step["concept"], estimated_hours=step["estimated_hours"]) for step in [*report.get("learning_plan", []), *report.get("math_plan", [])] if not step.get("skipped")]
 
 
 def plan_inputs(report):
