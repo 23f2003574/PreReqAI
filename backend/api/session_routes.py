@@ -593,7 +593,7 @@ def _suggestions(session):
     directory = learner_profile.configured_directory()
     path = learner_profile.profile_path(directory, session.profile) if directory and getattr(session, "profile", None) else None
     if path is not None:
-        profile, problem = learner_profile.load_full(path)
+        profile, problem = learner_profile.load_cached(path)
         mastered = {} if problem else learner_profile.mastered(profile["quiz"])
     return quiz_session.known_suggestions(session, mastered, getattr(session, "dismissed_suggestions", []))
 

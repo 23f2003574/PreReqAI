@@ -139,6 +139,54 @@ def parse_full(raw):
     return {"known": known, "studied": [name for name in _dedupe(lists[1], vocab) if key(name) not in {key(k) for k in known}], "quiz": quiz}
 
 
+_CACHE_LIMIT = 32
+_cache = {}  # resolved path -> (file signature, parsed profile)
+_cache_lock = threading.Lock()
+cache_stats = {"hits": 0, "parses": 0}
+
+
+def _signature(target):
+    info = target.stat()
+    return (info.st_mtime_ns, info.st_size, info.st_ino)
+
+
+def load_cached(path):
+    """Like load_full, for read-only callers that ask again and again (every plan, calendar and curriculum request reads the session's profile): the parsed profile is kept while the file's modification
+    time, size and inode are unchanged, so a save (which replaces the file) or any edit makes the next call parse it again. A file that is missing, unreadable or unusable is never cached. Each call gets
+    its own copy, so a caller that changes it cannot change what the next one reads."""
+    from copy import deepcopy
+
+    target = Path(path)
+    try:
+        signature = _signature(target)
+    except OSError:
+        return load_full(target)
+    name = str(target.resolve())
+    with _cache_lock:
+        held = _cache.get(name)
+        if held is not None and held[0] == signature:
+            cache_stats["hits"] += 1
+            return deepcopy(held[1]), ""
+    profile, problem = load_full(target)
+    cache_stats["parses"] += 1
+    if not problem:
+        try:
+            after = _signature(target)
+        except OSError:
+            return profile, problem
+        if after == signature:  # the file did not change while it was being read
+            with _cache_lock:
+                if len(_cache) >= _CACHE_LIMIT:
+                    _cache.pop(next(iter(_cache)))
+                _cache[name] = (signature, deepcopy(profile))
+    return profile, problem
+
+
+def clear_cache():
+    with _cache_lock:
+        _cache.clear()
+
+
 def load_full(path):
     """(profile, problem): the profile as {"known", "studied", "quiz"} and "" for a readable or missing file, else an empty profile and why it cannot be used."""
     target = Path(path)

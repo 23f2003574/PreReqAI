@@ -64,7 +64,7 @@ def profile_quiz(session):
     if not directory or not name:
         return None
     try:
-        profile, problem = learner_profile.load_full(learner_profile.profile_path(directory, name))
+        profile, problem = learner_profile.load_cached(learner_profile.profile_path(directory, name))
     except (learner_profile.ProfileError, OSError):
         return None
     return None if problem else profile["quiz"]

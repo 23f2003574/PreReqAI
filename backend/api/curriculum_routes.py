@@ -45,7 +45,7 @@ def create_curriculum(body: CurriculumRequest):
         elif path is None:
             return failure_response(422, "curriculum", "Invalid `profile`: a profile name is 1 to 64 letters, digits, hyphens or underscores.", hint="Choose a simple name such as `default`.")
         else:
-            profile, problem = learner_profile.load_full(path)
+            profile, problem = learner_profile.load_cached(path)
             if problem:
                 return failure_response(409, "curriculum", problem, hint="Repair or delete the file by hand; PreReqAI never overwrites a profile it cannot read.")
     try:
