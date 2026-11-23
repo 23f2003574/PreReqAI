@@ -98,7 +98,7 @@ def test_export_and_import_round_trip_with_v1_and_replace_protection(profiles):
     legacy = client.post("/api/profiles/old/import", headers=JSON, content=v1).json()
     assert (legacy["known"], legacy["studied"], legacy["mastery"]) == (["Linear Algebra"], ["Probability"], [])
     assert json.loads((profiles / "old.json").read_text())["schema_version"] == 3
-    for bad in (b"{nope", json.dumps({"format": "x"}).encode(), json.dumps({"format": lp.FORMAT, "schema_version": 3, "known": [], "studied": []}).encode()):
+    for bad in (b"{nope", json.dumps({"format": "x"}).encode(), json.dumps({"format": lp.FORMAT, "schema_version": 4, "known": [], "studied": []}).encode()):
         assert client.post("/api/profiles/bad/import", headers=JSON, content=bad).status_code == 422
     assert not (profiles / "bad.json").exists()
 

@@ -55,6 +55,12 @@ def test_counters_of_an_older_profile_rebuild_the_same_kind_of_sequence():
     assert [c for c, _, _ in sequence] == [True, False, True] and sequence[1][1] == "high" and m.sequence_from_counters({"attempts": 2, "knew": 2}) == []
 
 
+def mastery_on_day_3(quiz_history):
+    """profile mastery one day after the fixtures' last answers (a forgetting model needs a clock)"""
+    from datetime import datetime, timezone
+    return learner_profile.mastery(quiz_history, datetime(2026, 11, 3, tzinfo=timezone.utc))
+
+
 def quiz(*rows):
     return {f"{c}:{n}": {"concept": c, "attempts": a, "knew": k, "missed": a - k, "streak": s, "last_outcome": "knew" if s else "missed", "first_seen": "2026-11-01T00:00:00Z", "last_seen": "2026-11-02T00:00:00Z",
                          **extra} for c, n, a, k, s, extra in rows}
@@ -62,11 +68,11 @@ def quiz(*rows):
 
 def test_profile_mastery_uses_the_estimate_and_old_profiles_load_unchanged():
     graded = {"graded_attempts": 2, "graded_correct": 2, "graded_streak": 2}
-    item = learner_profile.mastery(quiz(("Calculus", 1, 2, 2, 2, graded), ("Calculus", 2, 2, 2, 2, graded)))[0]
+    item = mastery_on_day_3(quiz(("Calculus", 1, 2, 2, 2, graded), ("Calculus", 2, 2, 2, 2, graded)))[0]
     assert item["status"] == "mastered" and item["p_mastery"] >= 0.95 and item["mastery_low"] >= 0.85 and item["mastery_reason"]
-    three = learner_profile.mastery(quiz(("Calculus", 1, 2, 2, 2, graded), ("Calculus", 2, 1, 1, 1, {"graded_attempts": 1, "graded_correct": 1, "graded_streak": 1})))[0]
+    three = mastery_on_day_3(quiz(("Calculus", 1, 2, 2, 2, graded), ("Calculus", 2, 1, 1, 1, {"graded_attempts": 1, "graded_correct": 1, "graded_streak": 1})))[0]
     assert three["status"] == "progressing"
-    legacy = learner_profile.mastery(quiz(("Softmax", 1, 2, 2, 2, {}), ("Softmax", 2, 2, 2, 2, {})))[0]
+    legacy = mastery_on_day_3(quiz(("Softmax", 1, 2, 2, 2, {}), ("Softmax", 2, 2, 2, 2, {})))[0]
     assert legacy["status"] == "self_reported" and "p_mastery" not in legacy
 
 

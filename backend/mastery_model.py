@@ -8,8 +8,11 @@ Self-reported answers never enter. The result carries the probability, a standar
 not a Bayesian credible interval) and the interval p +/- 1.645 SE clamped to [0, 1]. A concept counts as mastered only when p >= MASTERED_P, the lower end of the interval reaches
 MASTERED_LOWER, at least MIN_ANSWERS answers were graded and at least MIN_QUESTIONS different questions were answered correctly and no more than MAX_CONFIDENT_WRONG answers were confidently wrong, so three lucky guesses (p about 0.98, lower end about 0.86) are
 not enough: the answer minimum is what stops them. The parameters are fixed, reasoned values, NOT fitted to real learners: the probabilities are an explainable ranking of evidence, not calibrated predictions.
+Forgetting (`apply_decay`, used by learner_profile.mastery): without new graded evidence the probability falls toward PRIOR; 90% of the distance above the prior is assumed kept after each review interval (the question's own `interval_hours`, at least a day), counted from the latest graded answer (its schema 3 time, else last_seen). A concept mastered at its last answer lapses to "needs_refresh" once the decayed probability is below REFRESH_P (0.80) and returns to mastered when new graded answers arrive. These numbers are a reasoned heuristic, NOT a forgetting curve fitted to learners and not a calibrated probability.
 A profile keeps each question's counters and its most recent graded answers in order (`graded_history`); `sequence_from_counters` uses those as given and rebuilds only the older answers, which survive as counters, in a canonical order (earlier correct answers, then the misses)."""
 from math import sqrt
+
+RETENTION_AT_INTERVAL, MIN_INTERVAL_DAYS, REFRESH_P = 0.90, 1.0, 0.80
 
 PRIOR, LEARN = 0.30, 0.15
 GUESS = {"low": 0.35, "medium": 0.25, "high": 0.15}
@@ -133,3 +136,44 @@ def calibration(attempts):
         level["answers"] += 1
         level["correct"] += bool(a["correct"])
     return {"answers": len(graded), "brier": round(score, 3), "by_confidence": {k: {"answers": v["answers"], "accuracy": round(v["correct"] / v["answers"], 2)} for k, v in sorted(levels.items())}}
+
+
+def retention(days, interval_days):
+    """The share of what was known that is assumed still known `days` after the last evidence: RETENTION_AT_INTERVAL (0.90) when `days` equals the review interval, falling by that factor for each further interval
+    (RETENTION_AT_INTERVAL ** (days / interval)); 1.0 at once and never rising with time. The interval is the question's own review interval, never shorter than MIN_INTERVAL_DAYS."""
+    return RETENTION_AT_INTERVAL ** (max(0.0, days) / max(MIN_INTERVAL_DAYS, interval_days))
+
+
+def decay(p, days, interval_days):
+    """`p` after `days` without new evidence: it falls toward the prior PRIOR (what a learner with no evidence is assumed to know) by the retention factor, so it never rises, never drops below PRIOR and equals `p` at day 0."""
+    return PRIOR + (p - PRIOR) * retention(days, interval_days) if p > PRIOR else p
+
+
+def last_evidence_time(entries):
+    """The latest time a graded answer was given among profile question entries: the newest timestamp in a schema 3 `graded_history`, else (schema 2 answers carry none) the entry's `last_seen`; None when no entry has a graded answer."""
+    from backend import spaced_review
+
+    times = []
+    for entry in entries:
+        if not entry.get("graded_attempts"):
+            continue
+        timed = [t for _, _, t in decode_timed_history(entry.get("graded_history")) if t is not None]
+        seen = spaced_review.parse_time(entry.get("last_seen"))
+        times.append(max(timed) if timed else seen)
+    return max((t for t in times if t is not None), default=None)
+
+
+def apply_decay(result, days, interval_days):
+    """The estimate `result` (from estimate / estimate_entries) after `days` without new graded evidence, with `interval_days` as the review interval. p, low and high decay toward PRIOR (see decay); the
+    estimate at the last answer is kept as `p_at_last_answer`. A concept that was mastered at its last answer stays mastered while its decayed probability is at least REFRESH_P (0.80); below that `lapsed` is True,
+    `mastered` is False and `reason` says how far it fell: it needs a refresh, which new graded answers give (they restart the clock and re-enter the estimate). A reasoned heuristic, NOT a forgetting curve fitted to learners."""
+    if result is None:
+        return None
+    p, low, high = (round(decay(result[name], days, interval_days), 3) for name in ("p", "low", "high"))
+    lapsed = bool(result["mastered"]) and p < REFRESH_P
+    out = {**result, "p": p, "low": min(low, p), "high": max(high, p), "p_at_last_answer": result["p"], "retention": round(retention(days, interval_days), 3), "days_since_evidence": round(max(0.0, days), 1),
+           "interval_days": round(max(MIN_INTERVAL_DAYS, interval_days), 1), "lapsed": lapsed, "mastered": bool(result["mastered"]) and not lapsed}
+    if lapsed:
+        out["reason"] = (f"it was {result['p']:.2f} at the last graded answer {days:.0f} days ago and the model puts it at {p:.2f} now (assumed {int(RETENTION_AT_INTERVAL * 100)}% retained after each {out['interval_days']:.0f}-day "
+                         f"review interval; mastery lapses below {REFRESH_P:.2f}): answer a few questions again to confirm it")
+    return out

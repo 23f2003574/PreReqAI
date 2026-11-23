@@ -288,14 +288,11 @@ def review_queue(path, moment=None, upcoming_limit=10):
     return spaced_review.queue(profile["quiz"], moment or spaced_review.now(), upcoming_limit), problem
 
 
-OVERDUE_GRACE_DAYS = 14  # a mastered concept stays mastered this long after a review of it was due; after that it needs a refresh
-
-
 def mastery(quiz, now=None):
     """[{concept, questions, attempts, knew, missed, status, evidence, graded_attempts, graded_correct, high_confidence_wrong, last_seen}] per concept of a profile's quiz history, by name.
     Mastery needs ASSESSED evidence, answers the system checked itself (see backend/tutor/diagnostic.py); a self-reported "knew" never establishes it.
     status: "needs_practice" when any question was last missed; "mastered" when the uncertainty-aware estimate of backend/mastery_model.py says so (a high probability whose lower end is also high,
-    from enough graded answers on at least two different questions; confident wrong answers weigh heavily); p_mastery, mastery_low, mastery_high and mastery_reason explain it; "needs_refresh" when the estimate says mastered but a review of one of its questions has been overdue for more than OVERDUE_GRACE_DAYS (`refresh_reason` says which; the estimate itself does not decay, so nothing is claimed about how much was forgotten); "self_reported" when the old self-graded rule (two questions, each "knew" with a
+    from enough graded answers on at least two different questions; confident wrong answers weigh heavily); p_mastery, mastery_low, mastery_high and mastery_reason explain it; "needs_refresh" when it was mastered at its last graded answer but the forgetting model of backend/mastery_model.py (a probability that falls toward the prior by 10% of the remainder per review interval, a stated heuristic) puts it below REFRESH_P now; p_mastery is then the decayed probability, p_at_last_answer the earlier one, and `refresh_reason` says how far it fell; "self_reported" when the old self-graded rule (two questions, each "knew" with a
     streak of 2) holds but the assessed evidence does not; otherwise "progressing". evidence: "assessed" when the concept has any assessed answer, else "self_reported"."""
     from backend import spaced_review
 
@@ -311,13 +308,16 @@ def mastery(quiz, now=None):
         from backend import mastery_model
 
         estimate = mastery_model.estimate_entries([(e.get("question_id", str(n)), e) for n, e in enumerate(sorted(entries, key=lambda e: (e.get("first_seen", ""), e.get("last_seen", ""))))])
+        evidence_at = mastery_model.last_evidence_time(entries)
+        if estimate is not None and evidence_at is not None:
+            newest = max((e for e in entries if e.get("graded_attempts")), key=lambda e: e.get("last_seen", ""))
+            estimate = mastery_model.apply_decay(estimate, (moment - evidence_at).total_seconds() / 86400, float(newest.get("interval_hours", 72.0)) / 24)
         if any(e["last_outcome"] == "missed" for e in entries):
             status = "needs_practice"
         elif estimate is not None and estimate["mastered"]:
             status = "mastered"
-            lapsed = sorted(due for due in (spaced_review.parse_time(e.get("due")) for e in entries) if due is not None and (moment - due).days > OVERDUE_GRACE_DAYS)
-            if lapsed:
-                status, refresh_reason = "needs_refresh", f"{len(lapsed)} review{'s' if len(lapsed) != 1 else ''} overdue by more than {OVERDUE_GRACE_DAYS} days (the oldest was due {lapsed[0].date().isoformat()}): answer a few questions again to confirm it"
+        elif estimate is not None and estimate.get("lapsed"):
+            status, refresh_reason = "needs_refresh", estimate["reason"]
         elif not graded and len(entries) >= 2 and all(e["streak"] >= 2 for e in entries):
             status = "self_reported"
         else:
@@ -326,6 +326,7 @@ def mastery(quiz, now=None):
                        "missed": sum(e["missed"] for e in entries), "status": status, "evidence": "assessed" if graded else "self_reported", "graded_attempts": graded,
                        "graded_correct": sum(e.get("graded_correct", 0) for e in entries), "high_confidence_wrong": confident_wrong, "last_seen": max(e["last_seen"] for e in entries),
                        **({"p_mastery": estimate["p"], "mastery_low": estimate["low"], "mastery_high": estimate["high"], "mastery_reason": estimate["reason"]} if estimate else {}),
+                       **({"p_at_last_answer": estimate["p_at_last_answer"], "retention": estimate["retention"], "days_since_evidence": estimate["days_since_evidence"]} if estimate and "p_at_last_answer" in estimate else {}),
                        **({"refresh_reason": refresh_reason} if refresh_reason else {})})
     return result
 
