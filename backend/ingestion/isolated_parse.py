@@ -34,6 +34,18 @@ def settings():
     return pages, pixels, seconds, memory, _setting("PREREQAI_MAX_WORKER_OUTPUT_MB", int) or DEFAULT_OUTPUT_MB
 
 
+PDF_HEADER_WINDOW = 1024  # the PDF specification lets a file begin with up to this many bytes before "%PDF-"
+
+
+def looks_like_pdf(path):
+    """Whether the file starts like a PDF: "%PDF-" within its first 1024 bytes. A file that cannot be opened is left to the worker, which reports it."""
+    try:
+        with open(path, "rb") as handle:
+            return b"%PDF-" in handle.read(PDF_HEADER_WINDOW)
+    except OSError:
+        return True
+
+
 def run_worker(path, ocr_seconds=None, command=None, seconds=None):
     """The PDF worker run, with its lifecycle logged (see backend/observability.py): worker_start with the limits, then worker_end with the duration, or worker_failed with the guard's code
     (timeout, too_many_pages, page_too_large, resource_exhausted, worker_failed) as the reason and an error category. The file's name and path are never logged."""
@@ -41,6 +53,9 @@ def run_worker(path, ocr_seconds=None, command=None, seconds=None):
 
     from backend.observability import categorise, log_event
 
+    if not looks_like_pdf(path):  # the file's own bytes decide, not its name or content type: no worker process is started for text, HTML, an archive or an empty file
+        log_event("worker_refused", level=30, reason="not_a_pdf", error_category="invalid_input")
+        raise PdfGuardError("worker_failed", "this file could not be read as a PDF (it does not start with a PDF header)")
     log_event("worker_start", pages_limit=settings()[0], seconds_limit=seconds or settings()[2], memory_mb_limit=settings()[3])
     started = perf_counter()
     try:

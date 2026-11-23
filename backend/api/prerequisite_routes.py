@@ -317,6 +317,23 @@ async def analyze_prerequisites(
 
         return outcome
 
+    from backend import analysis_slots
+    from backend.api.workflow_result import failure_body
+    from backend.observability import log_event
+
+    if not analysis_slots.try_acquire():  # every slot is taken: refuse now (no queue, nothing copied), so the client can back off
+        log_event("overloaded", level=30, limit=analysis_slots.limit(), active=analysis_slots.active())
+        return JSONResponse(status_code=503, headers={"Retry-After": str(analysis_slots.RETRY_AFTER_SECONDS)},
+                            content=failure_body("analysis", f"The server is already analysing {analysis_slots.limit()} paper(s) and cannot take another right now.",
+                                                 hint=f"Try again in about {analysis_slots.RETRY_AFTER_SECONDS} seconds; nothing was kept."))
+    try:
+        return await _analyse_held(paper, source, known, studied, diagnostics, hours, plan_text, finish)
+    finally:
+        analysis_slots.release()
+
+
+async def _analyse_held(paper, source, known, studied, diagnostics, hours, plan_text, finish):
+    """The analysis of an upload or a source, run while the caller holds one of the server's analysis slots (see backend/analysis_slots.py)."""
     if source is not None:
 
         outcome = await run_in_threadpool(_analyze_source, source, known, studied, diagnostics, hours)
