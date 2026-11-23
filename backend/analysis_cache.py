@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import threading
+import time
 from collections import OrderedDict
 from copy import deepcopy
 from functools import lru_cache
@@ -21,6 +22,8 @@ from backend.filelock import locked
 
 PIPELINE_VERSION = "2026-11-23.1"
 MAX_ENTRIES = 16
+DEFAULT_DISK_ENTRIES = 200
+STALE_TEMP_SECONDS = 3600
 _CHUNK = 1024 * 1024
 
 
@@ -91,6 +94,7 @@ class AnalysisCache:
             from backend.session import session_codec
 
             data = json.loads(target.read_bytes())
+            os.utime(target)  # read: the most recently used entry is the last to be pruned
             return {"paper": session_codec.decode(data["paper"]), "report": data["report"], "timings": data["timings"]}
         except Exception:
             with locked(target):
@@ -113,8 +117,43 @@ class AnalysisCache:
                     os.replace(temp, directory / f"{key}.json")
             finally:
                 temp.unlink(missing_ok=True)
+            self.prune_disk(directory)
         except Exception:
             pass  # a cache that cannot be written is only a missed speed-up
+
+    @staticmethod
+    def disk_limit():
+        """How many entries the disk cache keeps: PREREQAI_ANALYSIS_CACHE_MAX_ENTRIES (a whole number of at least 1), else DEFAULT_DISK_ENTRIES."""
+        try:
+            value = int(os.environ.get("PREREQAI_ANALYSIS_CACHE_MAX_ENTRIES", "").strip() or DEFAULT_DISK_ENTRIES)
+        except ValueError:
+            return DEFAULT_DISK_ENTRIES
+        return value if value >= 1 else DEFAULT_DISK_ENTRIES
+
+    def prune_disk(self, directory=None, limit=None, now=None):
+        """Keep the disk cache within `limit` entries by removing the least recently used ones (an entry's modification time is refreshed when it is read), and remove temporary files that a crashed
+        writer left behind (older than STALE_TEMP_SECONDS). Returns the names removed. The entry just written is the newest, so it is never the one removed."""
+        directory = directory or self.directory()
+        if directory is None or not directory.is_dir():
+            return []
+        limit, moment, removed = limit or self.disk_limit(), now if now is not None else time.time(), []
+        entries = []
+        for path in directory.iterdir():
+            try:
+                age = moment - path.stat().st_mtime
+            except OSError:
+                continue
+            if path.name.startswith(".") and path.name.endswith(".tmp"):
+                if age > STALE_TEMP_SECONDS:
+                    path.unlink(missing_ok=True)
+                    removed.append(path.name)
+            elif path.suffix == ".json":
+                entries.append((path.stat().st_mtime, path.name, path))
+        for _, name, path in sorted(entries)[:max(0, len(entries) - limit)]:
+            with locked(path):
+                path.unlink(missing_ok=True)
+            removed.append(name)
+        return removed
 
     def _get(self, key):
         with self._guard:
@@ -137,25 +176,35 @@ class AnalysisCache:
         if key is None:
             return produce(), False
         with self._guard:
-            lock = self._locks.setdefault(key, threading.Lock())
-        with lock:
-            cached = self._get(key)
-            if cached is not None:
-                if should_cancel is not None and should_cancel():  # a run already cancelled or past its time limit stops here, as it would at its first stage
-                    from backend.pipeline.research_paper_pipeline import PipelineCancelled
-
-                    raise PipelineCancelled("analysis cancelled")
-                with self._guard:
-                    self.hits += 1
-                return cached, True
+            holder = self._locks.setdefault(key, [threading.Lock(), 0])  # [lock, callers using it]: dropped when the last caller leaves, so the table never outgrows the analyses in progress
+            holder[1] += 1
+        try:
+            with holder[0]:
+                return self._fetch_locked(key, produce, should_cancel)
+        finally:
             with self._guard:
-                self.misses += 1
-            entry = produce()
-            if not entry.get("partial"):
-                stored = {name: deepcopy(entry[name]) for name in ("paper", "report", "timings")}
-                self._remember(key, stored)
-                self._write_disk(key, stored)
-            return entry, False
+                holder[1] -= 1
+                if holder[1] == 0 and self._locks.get(key) is holder:
+                    del self._locks[key]
+
+    def _fetch_locked(self, key, produce, should_cancel):
+        cached = self._get(key)
+        if cached is not None:
+            if should_cancel is not None and should_cancel():  # a run already cancelled or past its time limit stops here, as it would at its first stage
+                from backend.pipeline.research_paper_pipeline import PipelineCancelled
+
+                raise PipelineCancelled("analysis cancelled")
+            with self._guard:
+                self.hits += 1
+            return cached, True
+        with self._guard:
+            self.misses += 1
+        entry = produce()
+        if not entry.get("partial"):
+            stored = {name: deepcopy(entry[name]) for name in ("paper", "report", "timings")}
+            self._remember(key, stored)
+            self._write_disk(key, stored)
+        return entry, False
 
 
 analysis_cache = AnalysisCache()
