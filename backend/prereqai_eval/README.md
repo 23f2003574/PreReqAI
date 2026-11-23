@@ -124,6 +124,7 @@ papers run and read by a person, because what a rule can see (flattened fraction
 
 `retrieval_real.py` runs 36 questions with gold phrases (`fixtures/retrieval_questions.json`) over the six licensed PDFs and reports recall@5 and MRR for the lexical and the hybrid search, per
 paper. **The questions are AI-written and not reviewed by a human**; gold phrases were checked to occur in the papers, but some are generic words, so a hit shows the right region was found. The gate
-requires the hybrid search to do at least as well as the lexical one on every paper, every quotation to be exact and the set not to shrink; it holds **no absolute recall floor**, because no real
-measurement existed when it was written (the evaluation could not be run where it was written: no PyMuPDF). Set a floor from the first CI numbers (`--gate` prints them). Improving the most
-consequential measured failure mode is therefore **not done**: there is nothing measured yet to improve against.
+requires the hybrid search to do at least as well as the lexical one on every paper, every quotation to be exact and the set not to shrink, and holds absolute floors for the hybrid search in
+`thresholds.json` (`retrieval_real`): overall recall@5 0.58 and MRR 0.44, and recall@5 per paper. They sit one question below the numbers measured when they were set (hybrid recall@5 0.639, MRR 0.493
+over 36 questions; per paper chain-of-thought 0.33, constitutional-ai 0.83, dpo 0.50, gqa 0.83, mistral-7b 0.33, mixtral 1.00), so a loss of two questions fails the gate and one does not. They are a
+regression guard on AI-written, unreviewed questions: they are not evidence that retrieval is good, and raising them needs a human-reviewed question set. Reproduce with `python -m backend.prereqai_eval --gate`.

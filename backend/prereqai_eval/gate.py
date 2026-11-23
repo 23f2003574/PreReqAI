@@ -102,9 +102,25 @@ def retrieval_checks(checks, manifest=None):
     return report
 
 
-def real_retrieval_checks(checks, floors):
+def absolute_retrieval_checks(checks, report, floors):
+    """Absolute floors for the hybrid search on the real papers, so retrieval cannot get much worse while still being "not below lexical": overall recall@K and MRR, and recall@K per paper (a paper
+    with no floor listed is held only to the overall ones). The floors in thresholds.json sit one question below what was measured (recall) or a little below it (MRR): a regression guard on 36
+    AI-written, unreviewed questions, not evidence that retrieval is good or that the questions are right."""
+    hybrid = report["systems"]["hybrid"]
+    detail = f"{report['questions']} AI-written, unreviewed questions; hybrid recall@{report['k']} {hybrid['recall_at_k']:.3f}, MRR {hybrid['mrr']:.3f}"
+    for metric, value in (("hybrid_recall_at_k", hybrid["recall_at_k"]), ("hybrid_mrr", hybrid["mrr"])):
+        if metric in floors:  # no floor configured, no check: a floor is never invented
+            _check(checks, "retrieval_real", metric, value, floors[metric], detail)
+    for paper_id, floor in sorted((floors.get("hybrid_recall_by_paper") or {}).items()):
+        row = hybrid["by_paper"].get(paper_id)
+        if row is not None:
+            _check(checks, "retrieval_real", f"hybrid_recall:{paper_id}", row["recall_at_k"], floor, f"{paper_id}: {row['questions']} questions, recall@{report['k']} {row['recall_at_k']}, MRR {row['mrr']}; {detail}")
+
+
+def real_retrieval_checks(checks, floors, searches=None):
     """Retrieval on the six real papers (retrieval_real.py): per paper the hybrid search must recall at least as many gold phrases as the lexical one, every returned passage must be an exact quotation,
-    and the question set must not shrink. No absolute recall floor is held: none had been measured when this was written. Returns the measurements, or None when the papers cannot be analysed."""
+    and the question set must not shrink; the hybrid search must also reach the absolute floors of `absolute_retrieval_checks`. `searches` replaces the two searches (a test uses it to prove a degraded retriever fails). Returns
+    the measurements, or None when the papers cannot be analysed."""
     from backend.pipeline import ResearchPaperPipeline
 
     from . import retrieval_real
@@ -116,7 +132,8 @@ def real_retrieval_checks(checks, floors):
     except Exception as error:  # a paper that cannot be analysed is a failed check, never a crash of the gate
         checks.append({"group": "retrieval_real", "metric": "papers", "value": 0.0, "threshold": 1.0, "passed": False, "detail": f"{type(error).__name__}: {error}"})
         return None
-    report = retrieval_real.evaluate(papers, data)
+    report = retrieval_real.evaluate(papers, data, searches=searches)
+    absolute_retrieval_checks(checks, report, floors)
     lexical, hybrid = report["systems"]["lexical"], report["systems"]["hybrid"]
     detail = (f"{report['questions']} questions over {len(report['papers'])} papers, recall@{report['k']} lexical {lexical['recall_at_k']:.3f} hybrid {hybrid['recall_at_k']:.3f}, MRR lexical "
               f"{lexical['mrr']:.3f} hybrid {hybrid['mrr']:.3f}, gold phrase in extracted text {report['gold_in_text']:.3f}")

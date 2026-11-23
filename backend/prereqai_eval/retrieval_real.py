@@ -4,8 +4,8 @@
 A returned passage is a HIT when its quotation contains the gold phrase (comparison ignores case, spaces and punctuation). For the lexical search (backend/tutor/grounding.search_evidence) and the
 hybrid one (backend/retrieval.hybrid_search) the evaluation reports, per paper and overall, recall@K (a hit among the first K passages) and MRR (1 / rank of the first hit, 0 without one), the share of
 questions whose gold phrase occurs in the extracted page text at all (`gold_in_text`: a question whose answer the extraction lost cannot be retrieved), and whether every returned passage is an exact
-quotation of its page. The gate compares the two searches (hybrid must not do worse, every quotation exact, the question set must not shrink); it holds NO absolute recall floor, because none had
-been measured when it was written: the first CI run's numbers (printed by `--gate`) are what a floor should be set from. Offline and deterministic."""
+quotation of its page. The gate compares the two searches (hybrid must not do worse, every quotation exact, the question set must not shrink) and holds absolute floors for the hybrid search (overall recall@K
+and MRR and recall@K per paper, thresholds.json), set from the measured numbers `--gate` prints. Offline and deterministic."""
 import json
 import re
 from pathlib import Path
