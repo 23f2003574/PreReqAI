@@ -14,6 +14,7 @@ from backend.prerequisites.missing_prerequisite_analyzer import section_role
 K1, B = 1.5, 0.75
 ROLE_WEIGHT = {"instructional": 1.15, "other": 1.0, "related": 0.9}
 MIN_TERMS, MIN_RELATIVE, MIN_LEXICAL = 2, 0.5, 2
+RARE_SHARE, RARE_MIN_CHARS = 0.03, 5  # a single matching term is enough when it occurs in at most this share of the paper's sentences (and has at least RARE_MIN_CHARS letters)
 
 
 def _tokens(text):
@@ -49,7 +50,7 @@ def bm25_search(paper, question, limit=5):
     scored = []
     for index, (doc, (_, _, _, section, sentence, number)) in enumerate(zip(docs, candidates)):
         matched = [term for term in query if term in set(doc)]
-        if not matched or (len(matched) < MIN_TERMS and len(query) >= MIN_TERMS):
+        if not matched or (len(matched) < MIN_TERMS and len(query) >= MIN_TERMS and not (len(matched[0]) >= RARE_MIN_CHARS and frequency[matched[0]] <= RARE_SHARE * total)):
             continue
         score = 0.0
         for term in matched:
