@@ -79,8 +79,15 @@ if cors_origins():  # off by default: a same-origin or command-line deployment n
 from backend.security import LocalSecurityMiddleware  # noqa: E402
 
 from backend.api_auth import ApiTokenMiddleware  # noqa: E402
+from backend.observability import EVENT_LOGGER, RequestIdMiddleware  # noqa: E402
+
+_events_log = logging.getLogger(EVENT_LOGGER)
+if not any(isinstance(h, logging.StreamHandler) for h in _events_log.handlers):
+    _events_log.addHandler(logging.StreamHandler())  # one JSON line per event on stderr; PREREQAI_LOG_LEVEL-style control is the logging configuration's job
+    _events_log.setLevel(logging.INFO)
 
 app.add_middleware(ApiTokenMiddleware)  # PREREQAI_API_TOKEN: bearer token for /api/ (off when unset; see backend/api_auth.py)
+app.add_middleware(RequestIdMiddleware)  # outermost but one: every refusal, including a security or token refusal, carries a request id and is logged
 app.add_middleware(LocalSecurityMiddleware)  # added last, so it runs first: Host, Origin and content-type checks and the security headers (see backend/security.py)
 
 app.include_router(

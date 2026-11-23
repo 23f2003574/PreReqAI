@@ -13,6 +13,7 @@ from backend.ingestion.arxiv_resolver import RETRY_COUNTER
 from backend.ingestion.pdf_url_resolver import PdfUrlError
 from backend.parsing.scientific_section_parser import absorbed_heading_candidates
 from backend.analysis_cache import analysis_cache, file_key
+from backend.observability import log_event
 from backend.pipeline.research_paper_pipeline import PipelineResult
 from backend.prerequisites.study_time_estimator import parse_hours_per_day
 
@@ -299,6 +300,24 @@ PROGRESS_REPORT_KEYS = ("study_progress", "readiness", "study_actions", "prerequ
 _UNREADABLE = re.compile(r"\(cid:\d+\)|\ufffd")
 
 
+def _outcome_category(outcome):
+    """The observability error category (backend/observability.py) of a non-successful analysis outcome, from its status, error type and the fixed wording of its message."""
+    status, detail, kind = outcome.get("status"), str(outcome.get("detail", "")).lower(), str((outcome.get("error") or {}).get("type", ""))
+    if status == "cancelled":
+        return "cancelled"
+    if "took longer" in detail or "time limit" in detail or "max_seconds" in detail:
+        return "timeout"
+    if "memory" in detail or "larger than the limit" in detail and kind == "PdfGuardError":
+        return "resource_limit"
+    if "worker" in detail or "damaged" in detail:
+        return "worker_failure"
+    if status == "limit_exceeded" or "too many pages" in detail or "page is too large" in detail:
+        return "input_limit"
+    if kind in ("ValueError", "TypeError", "KeyError"):
+        return "invalid_input"
+    return "internal"
+
+
 class PreReqAIPlatform:
     """
     High-level platform entry point
@@ -335,6 +354,9 @@ class PreReqAIPlatform:
         hours_per_day = parse_hours_per_day(hours_per_day) if hours_per_day is not None else None  # ValueError: the caller names the input
         outcome = self._analyze(file_path, diagnostics, should_cancel, limits, _split_names(known), _split_names(studied), labels, hours_per_day)
         self._log_unsuccessful(outcome, perf_counter() - started)
+        error_type = (outcome.get("error") or {}).get("type")
+        log_event("analysis", level=20 if outcome.get("status") == "success" else 30, status=outcome.get("status"), stage=outcome.get("stage"), duration_ms=(perf_counter() - started) * 1000,
+                  error_type=error_type, error_category=None if outcome.get("status") == "success" else _outcome_category(outcome))
         problems = terminal_violations(outcome)
         if problems:
             outcome = failure_body(
@@ -415,6 +437,9 @@ class PreReqAIPlatform:
                 run = self.analysis.run(file_path, should_cancel=should_cancel,
                                         **({'max_file_bytes': limits.max_file_bytes} if limits is not None and limits.max_file_bytes is not None else {}),
                                         **({'ocr_seconds': limits.max_seconds * OCR_TIME_SHARE} if limits is not None and limits.max_seconds is not None else {}))
+                for stage, seconds in run.timings.items():  # one event per analysis stage with its duration (a cache hit runs no stage)
+                    if isinstance(seconds, (int, float)):
+                        log_event("stage", stage=stage, duration_ms=seconds * 1000)
                 return {"paper": run.paper, "report": run.report, "timings": run.timings,
                         "partial": any(getattr(page, "ocr_stopped", False) for page in (run.paper.pages or []))}
 

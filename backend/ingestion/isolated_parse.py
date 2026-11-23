@@ -35,6 +35,24 @@ def settings():
 
 
 def run_worker(path, ocr_seconds=None, command=None, seconds=None):
+    """The PDF worker run, with its lifecycle logged (see backend/observability.py): worker_start with the limits, then worker_end with the duration, or worker_failed with the guard's code
+    (timeout, too_many_pages, page_too_large, resource_exhausted, worker_failed) as the reason and an error category. The file's name and path are never logged."""
+    from time import perf_counter
+
+    from backend.observability import categorise, log_event
+
+    log_event("worker_start", pages_limit=settings()[0], seconds_limit=seconds or settings()[2], memory_mb_limit=settings()[3])
+    started = perf_counter()
+    try:
+        result = _run_worker(path, ocr_seconds, command, seconds)
+    except PdfGuardError as error:
+        log_event("worker_failed", level=40, reason=error.kind, error_category=categorise(error), duration_ms=(perf_counter() - started) * 1000, killed=error.kind == "timeout")
+        raise
+    log_event("worker_end", outcome="ok", duration_ms=(perf_counter() - started) * 1000, repaired=bool(result.get("repaired")))
+    return result
+
+
+def _run_worker(path, ocr_seconds=None, command=None, seconds=None):
     """The decoded {"document", "figures", "tables", "repaired", "limits_applied"} of the worker; PdfGuardError for a limit or a failure. `command` replaces the worker's arguments (tests)."""
     from backend.session import session_codec
 

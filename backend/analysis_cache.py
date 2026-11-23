@@ -19,6 +19,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from backend.filelock import locked
+from backend.observability import log_event
 
 PIPELINE_VERSION = "2026-11-23.1"
 MAX_ENTRIES = 16
@@ -196,14 +197,19 @@ class AnalysisCache:
                 raise PipelineCancelled("analysis cancelled")
             with self._guard:
                 self.hits += 1
+            log_event("cache", result="hit", key=key[:12])
             return cached, True
         with self._guard:
             self.misses += 1
+        log_event("cache", result="miss", key=key[:12])
         entry = produce()
         if not entry.get("partial"):
             stored = {name: deepcopy(entry[name]) for name in ("paper", "report", "timings")}
             self._remember(key, stored)
             self._write_disk(key, stored)
+            log_event("cache", result="stored", key=key[:12])
+        else:
+            log_event("cache", result="not_stored_partial", key=key[:12])
         return entry, False
 
 
