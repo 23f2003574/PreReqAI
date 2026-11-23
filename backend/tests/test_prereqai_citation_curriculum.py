@@ -92,3 +92,23 @@ def test_citation_cycles_of_any_length_are_found_and_chains_are_not_cycles():
     assert paper_citations.citation_cycles([link("a", "b"), link("b", "a")]) == [["a", "b"]]
     assert paper_citations.citation_cycles([link("a", "b"), link("b", "c"), link("c", "d"), link("d", "a"), link("e", "a")]) == [["a", "b", "c", "d"]]
     assert paper_citations.citation_cycles([link("a", "b"), link("b", "a"), link("c", "d"), link("d", "c")]) == [["a", "b"], ["c", "d"]]
+
+
+def test_the_same_reference_written_two_ways_is_one_shared_reference_and_short_entries_are_counted_once():
+    long_a = "Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J. Attention is all you need. Advances in Neural Information Processing Systems, 2017."
+    long_b = "Vaswani A, Shazeer N, Parmar N, Uszkoreit J. Attention is all you need. NeurIPS 2017, pp. 5998-6008."
+    other = "Hochreiter, S. and Schmidhuber, J. Long short-term memory. Neural Computation, 9(8), 1997."
+    a = session("a", A, [("Calculus", 1.0)], [long_a, "Smith 2020 Notes", other])
+    b = session("b", B, [("Calculus", 1.0)], [long_b, "Smith 2020 Notes"])
+    shared, totals = paper_citations.shared_references([a, b])
+    assert len(shared) == 1 and sorted(shared[0]["papers"]) == ["a", "b"] and "Attention is all you need" in shared[0]["reference"]
+    assert totals == {"total": 5, "unique": 3}  # the attention paper, the short note (once), the LSTM paper
+
+
+def test_different_works_by_the_same_authors_are_not_merged_and_the_same_paper_listing_a_reference_twice_counts_once():
+    one = "Vaswani, A., Shazeer, N., Parmar, N. Attention is all you need. Advances in Neural Information Processing Systems, 2017."
+    two = "Vaswani, A., Shazeer, N., Parmar, N. Tensor2Tensor for neural machine translation. Proceedings of the 13th AMTA Conference, 2018."
+    a = session("a", A, [("Calculus", 1.0)], [one, one])
+    b = session("b", B, [("Calculus", 1.0)], [two, one])
+    shared, totals = paper_citations.shared_references([a, b])
+    assert [item["papers"] for item in shared] == [["a", "b"]] and totals == {"total": 4, "unique": 2}

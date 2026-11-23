@@ -116,16 +116,35 @@ def citation_cycles(links):
     return sorted(list(group) for group in groups)
 
 
-def shared_references(sessions, ignore=()):
-    """References two or more of the papers have in common (the same normalised text of at least 40 characters), each listed once: [{reference, papers: [session ids]}], and the totals
-    {"total": entries across papers, "unique": distinct entries}."""
-    seen, total = {}, 0
+MIN_SHARED_CHARS, MIN_SHARED_TOKENS, SAME_REFERENCE_SHARE = 40, 6, 0.75
+
+
+def _same_reference(plain, tokens, other_plain, other_tokens):
+    """The same bibliography entry written twice: identical normalised text, or (same first word, which is the first author's surname, and at least MIN_SHARED_TOKENS words) at least SAME_REFERENCE_SHARE of the words of the shorter one are in the other,
+    which covers a venue added, an initial spelt out or a trailing page range."""
+    if plain == other_plain:
+        return True
+    if plain.split()[:1] != other_plain.split()[:1]:  # a different first author is a different entry, whatever else they share
+        return False
+    smaller = min(len(tokens), len(other_tokens))
+    return smaller >= MIN_SHARED_TOKENS and len(tokens & other_tokens) / smaller >= SAME_REFERENCE_SHARE and abs(len(tokens) - len(other_tokens)) <= max(3, smaller // 3)
+
+
+def shared_references(sessions):
+    """References two or more of the papers have in common, each listed once: [{reference, papers: [session ids]}], and the totals {"total": entries across papers, "unique": distinct references}.
+    Entries are the same reference when their normalised text is equal or nearly equal (see `_same_reference`); only references of at least MIN_SHARED_CHARS characters are reported as shared
+    (a short entry is too easily a different work), and a short entry is counted once however many papers list it."""
+    clusters, total = [], 0
     for session in sessions:
         for _, plain, raw in _entries(session):
             total += 1
-            if len(plain) >= 40:
-                seen.setdefault(plain, {"reference": " ".join(raw.split())[:240], "papers": []})
-                if session.session_id not in seen[plain]["papers"]:
-                    seen[plain]["papers"].append(session.session_id)
-    shared = sorted((v for v in seen.values() if len(v["papers"]) > 1), key=lambda v: (-len(v["papers"]), v["reference"]))
-    return shared, {"total": total, "unique": len({k for k in seen}) + sum(1 for s in sessions for _, p, _ in _entries(s) if len(p) < 40)}
+            tokens = set(plain.split())
+            for cluster in clusters:
+                if _same_reference(plain, tokens, cluster["plain"], cluster["tokens"]):
+                    if session.session_id not in cluster["papers"]:
+                        cluster["papers"].append(session.session_id)
+                    break
+            else:
+                clusters.append({"plain": plain, "tokens": tokens, "reference": " ".join(raw.split())[:240], "papers": [session.session_id]})
+    shared = sorted(({"reference": c["reference"], "papers": c["papers"]} for c in clusters if len(c["papers"]) > 1 and len(c["plain"]) >= MIN_SHARED_CHARS), key=lambda v: (-len(v["papers"]), v["reference"]))
+    return shared, {"total": total, "unique": len(clusters)}
