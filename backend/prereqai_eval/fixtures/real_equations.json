@@ -1,0 +1,641 @@
+{
+ "format": "prereqai-real-equations",
+ "status": "ai_annotated_provisional_unreviewed",
+ "provenance": "The expressions are the equations PreReqAI's own extraction (EquationExtractor on PyMuPDF text, 2026-11-23, before the extraction filter of this fixture's commit) returned for the licensed real PDFs of DPO, Mixtral, Constitutional AI and GQA (Chain-of-Thought and Mistral 7B yielded none). Which of them is a display equation, and which subtopics a reader needs to read each one, were decided by the AI assistant that built this evaluation from the extracted text alone, NOT reviewed by a human, and the labels are PROVISIONAL: they are a regression guard for the rules and the extraction, not validated ground truth. An equation whose Sigma, product or fraction bar was lost by the text layer is still labelled with what a reader would need, so a miss caused by the extraction is counted as a miss.",
+ "items": [
+  {
+   "id": "constitutional-ai-1",
+   "paper": "constitutional-ai",
+   "expression": "N=16",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "constitutional-ai-2",
+   "paper": "constitutional-ai",
+   "expression": "N=8",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "constitutional-ai-3",
+   "paper": "constitutional-ai",
+   "expression": "N=4",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "constitutional-ai-4",
+   "paper": "constitutional-ai",
+   "expression": "N=2",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "constitutional-ai-5",
+   "paper": "constitutional-ai",
+   "expression": "N=1",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "constitutional-ai-6",
+   "paper": "constitutional-ai",
+   "expression": "N=16",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "constitutional-ai-7",
+   "paper": "constitutional-ai",
+   "expression": "N=8",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "constitutional-ai-8",
+   "paper": "constitutional-ai",
+   "expression": "N=4",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "constitutional-ai-9",
+   "paper": "constitutional-ai",
+   "expression": "N=2",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "constitutional-ai-10",
+   "paper": "constitutional-ai",
+   "expression": "N=1",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "constitutional-ai-11",
+   "paper": "constitutional-ai",
+   "expression": "n + 1): j = min(i, r); while j > 0: C[j] += C[j - 1]; j -= 1; return C[r]",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "dpo-1",
+   "paper": "dpo",
+   "expression": "p∗(y1 ≻y2 | x) = exp (r∗(x, y1)) + exp (r∗(x, y2)). exp (r∗(x, y1))",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Softmax and normalised exponentials",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-2",
+   "paper": "dpo",
+   "expression": "LR(rϕ, D) = −E(x,yw,yl)∼D log σ(rϕ(x, yw) −rϕ(x, yl))",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Cross-entropy and log-likelihood",
+    "Logarithms and exponentials",
+    "Sigmoid and logistic functions"
+   ]
+  },
+  {
+   "id": "dpo-3",
+   "paper": "dpo",
+   "expression": "πr(y | x) = Z(x)πref(y | x) exp 1 ( 1 β r(x, y) )",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-4",
+   "paper": "dpo",
+   "expression": "where Z(x) = P y πref(y | x) exp ( 1 β r(x, y) )",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials",
+    "Summation and product notation"
+   ]
+  },
+  {
+   "id": "dpo-5",
+   "paper": "dpo",
+   "expression": "r(x, y) = β log πr(y | x) πref(y | x) + β log Z(x)",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-6",
+   "paper": "dpo",
+   "expression": "p∗(y1 ≻y2 | x) = 1 + exp ( β log π∗(y2|x) πref(y2|x) −β log π∗(y1|x) 1 πref(y1|x) )",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials",
+    "Sigmoid and logistic functions"
+   ]
+  },
+  {
+   "id": "dpo-7",
+   "paper": "dpo",
+   "expression": "LDPO(πθ; πref) = −E(x,yw,yl)∼D [ log σ ( β log πθ(yw | x) πref(yw | x) −β log πθ(yl | x) πref(yl | x) )]",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Conditional probability",
+    "Cross-entropy and log-likelihood",
+    "Logarithms and exponentials",
+    "Sigmoid and logistic functions"
+   ]
+  },
+  {
+   "id": "dpo-8",
+   "paper": "dpo",
+   "expression": "−βE(x,yw,yl)∼D ∇θLDPO(πθ; πref) = [",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Gradients and partial derivatives"
+   ]
+  },
+  {
+   "id": "dpo-9",
+   "paper": "dpo",
+   "expression": "where ˆrθ(x, y) = β log πθ(y|x) [ increase likelihood of yw ∇θ log π(yw | x) | {z } −∇θ log π(yl | x) decrease likelihood of yl | {z } ]]",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials",
+    "Gradients and partial derivatives"
+   ]
+  },
+  {
+   "id": "dpo-10",
+   "paper": "dpo",
+   "expression": "f(r; πref, β)(x, y) = r(x, y) −β log X y πref(y | x) exp ( 1 β r(x, y) )",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials",
+    "Summation and product notation"
+   ]
+  },
+  {
+   "id": "dpo-11",
+   "paper": "dpo",
+   "expression": "X y πref(y | x) exp | =π(y|x), using Thm. 1 reparam. {z ( 1 β r(x, y) ) } = 1",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials",
+    "Summation and product notation"
+   ]
+  },
+  {
+   "id": "dpo-12",
+   "paper": "dpo",
+   "expression": "where we have partition function: Z(x) = X y πref(y|x) exp ( 1 β r(x, y) )",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials",
+    "Summation and product notation"
+   ]
+  },
+  {
+   "id": "dpo-13",
+   "paper": "dpo",
+   "expression": "π∗(y|x) = Z(x)πref(y|x) exp 1 15 ( 1 β r(x, y) )",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-14",
+   "paper": "dpo",
+   "expression": "min π Ex∼D [ Ey∼π(y|x) [ log π(y|x) π∗(y|x) ] −log Z(x) ] =",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Conditional probability",
+    "Kullback-Leibler divergence",
+    "Logarithms and exponentials",
+    "Optimisation objectives (argmin and argmax)"
+   ]
+  },
+  {
+   "id": "dpo-15",
+   "paper": "dpo",
+   "expression": "π(y|x) = π∗(y|x) = Z(x)πref(y|x) exp 1 ( 1 β r(x, y) )",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-16",
+   "paper": "dpo",
+   "expression": "p∗(y1 ≻y2|x) = exp (r∗(x, y1)) + exp (r∗(x, y2)) exp (r∗(x, y1))",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Softmax and normalised exponentials",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-17",
+   "paper": "dpo",
+   "expression": "r∗(x, y) = β log π∗(y|x) πref(y|x) + β log Z(x)",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-18",
+   "paper": "dpo",
+   "expression": "p∗(τ|y1, . . . , yK, x) = k=1 Y K PK j=k exp(r∗(x, yτ(j))) exp(r∗(x, yτ(k)))",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Softmax and normalised exponentials",
+    "Logarithms and exponentials",
+    "Summation and product notation"
+   ]
+  },
+  {
+   "id": "dpo-19",
+   "paper": "dpo",
+   "expression": "p∗(τ|y1, . . . , yK, x) = Y k=1 K PK j=k exp exp ( β log ( β log πref(yτ(k)|x) π∗(yτ(k)|x) πref(yτ(j)|x) π∗(yτ(j)|x) ) )",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Softmax and normalised exponentials",
+    "Logarithms and exponentials",
+    "Summation and product notation"
+   ]
+  },
+  {
+   "id": "dpo-20",
+   "paper": "dpo",
+   "expression": "LDPO(πθ, πref) = −Eτ,y1,...,yK,x∼D  log k=1 Y K PK j=k exp exp ( β log ( β log πref(yτ(k)|x) πθ(yτ(k)|x) πref(yτ(j)|x) πθ(yτ(j)|x) ) )  ",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Cross-entropy and log-likelihood",
+    "Softmax and normalised exponentials",
+    "Logarithms and exponentials",
+    "Summation and product notation"
+   ]
+  },
+  {
+   "id": "dpo-21",
+   "paper": "dpo",
+   "expression": "∇θLDPO(πθ; πref) = −∇θE(x,yw,yl)∼D [ log σ ( β log πθ(yl|x) πref(yl|x) −β log πθ(yw|x) πref(yw|x) )]",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Conditional probability",
+    "Cross-entropy and log-likelihood",
+    "Logarithms and exponentials",
+    "Sigmoid and logistic functions",
+    "Gradients and partial derivatives"
+   ]
+  },
+  {
+   "id": "dpo-22",
+   "paper": "dpo",
+   "expression": "∇θLDPO(πθ; πref) = −E(x,yw,yl)∼D [σ′ (u) σ (u) ∇θ (u) ]",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Sigmoid and logistic functions",
+    "Gradients and partial derivatives"
+   ]
+  },
+  {
+   "id": "dpo-23",
+   "paper": "dpo",
+   "expression": "where u = β log πθ(yl|x) πref(yl|x) −β log πθ(yw|x) πref(yw|x)",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-24",
+   "paper": "dpo",
+   "expression": "−E(x,yw,yl)∼D ∇θLDPO(πθ; πref) = [ βσ ( β log πθ(yw|x) πref(yw|x) −β log πθ(yl|x) πref(yl|x) ) [ ∇θ log π(yw | x)−∇θ log π(yl | x) ]]",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Conditional probability",
+    "Logarithms and exponentials",
+    "Sigmoid and logistic functions",
+    "Gradients and partial derivatives"
+   ]
+  },
+  {
+   "id": "dpo-25",
+   "paper": "dpo",
+   "expression": "where Z(x) = P y πref(y|x) exp r(x, y) = β log πr(y|x) ( 1 β r(x, y) ) πref(y|x) + β log Z(x)",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials",
+    "Summation and product notation"
+   ]
+  },
+  {
+   "id": "dpo-26",
+   "paper": "dpo",
+   "expression": "r′(x, y) = β log πr(y|x) πref(y|x)",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-27",
+   "paper": "dpo",
+   "expression": "f(r, πref, β)(x, y) = β log πr(y|x) πref(y|x) = β log π′ πref(y|x) = f(r′, πref, β)(x, y) r(y|x)",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-28",
+   "paper": "dpo",
+   "expression": "r′(x, y) = r(x, y) + f(x) = β log π(y|x) πref(y|x) + f(x) = β log π(y|x) exp( 1 πref(y|x) β f(x)) = β log π′(y|x) πref(y|x)",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-29",
+   "paper": "dpo",
+   "expression": "LR(rϕ, D) = -E(x,yw,yl)∼D",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)"
+   ]
+  },
+  {
+   "id": "dpo-30",
+   "paper": "dpo",
+   "expression": "r(x, y) = rϕ(x, y) -β(log πθ(y | x) -log πref(y | x)), and maximize using PPO [39].",
+   "is_equation": true,
+   "expected": [
+    "Conditional probability",
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-31",
+   "paper": "dpo",
+   "expression": "LDPO(πθ; πref) = -E(x,yw,yl)∼D",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)"
+   ]
+  },
+  {
+   "id": "dpo-32",
+   "paper": "dpo",
+   "expression": "D = {x(i), y(i)",
+   "is_equation": true,
+   "expected": []
+  },
+  {
+   "id": "dpo-33",
+   "paper": "dpo",
+   "expression": "r(x, y) = β log",
+   "is_equation": true,
+   "expected": [
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-34",
+   "paper": "dpo",
+   "expression": "f(r; πref, β)(x, y) = r(x, y) -β log",
+   "is_equation": true,
+   "expected": [
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-35",
+   "paper": "dpo",
+   "expression": "DPO (temp = 1.0)",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "dpo-36",
+   "paper": "dpo",
+   "expression": "DPO (temp = 0.7)",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "dpo-37",
+   "paper": "dpo",
+   "expression": "LDPO(πθ, πref) = -Eτ,y1,...,yK,x∼D",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)"
+   ]
+  },
+  {
+   "id": "dpo-38",
+   "paper": "dpo",
+   "expression": "∇θLDPO(πθ; πref) = -∇θE(x,yw,yl)∼D",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Gradients and partial derivatives"
+   ]
+  },
+  {
+   "id": "dpo-39",
+   "paper": "dpo",
+   "expression": "∇θLDPO(πθ; πref) = -E(x,yw,yl)∼D",
+   "is_equation": true,
+   "expected": [
+    "Expectation of a random variable",
+    "Sampling from a distribution (x ~ D)",
+    "Gradients and partial derivatives"
+   ]
+  },
+  {
+   "id": "dpo-40",
+   "paper": "dpo",
+   "expression": "j=k exp(r′(x, yτ(j)))",
+   "is_equation": true,
+   "expected": [
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-41",
+   "paper": "dpo",
+   "expression": "j=k exp(r(x, yτ(j)) + f(x))",
+   "is_equation": true,
+   "expected": [
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-42",
+   "paper": "dpo",
+   "expression": "j=k exp(r(x, yτ(j)))",
+   "is_equation": true,
+   "expected": [
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-43",
+   "paper": "dpo",
+   "expression": "j=k exp(r(x, yτ(j)))",
+   "is_equation": true,
+   "expected": [
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-44",
+   "paper": "dpo",
+   "expression": "r(x, y) = β log",
+   "is_equation": true,
+   "expected": [
+    "Logarithms and exponentials"
+   ]
+  },
+  {
+   "id": "dpo-45",
+   "paper": "dpo",
+   "expression": "pi_yl_logps = pi_logps[yw_idxs],",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "dpo-46",
+   "paper": "dpo",
+   "expression": "ref_yw_logps, ref_yl_logps = ref_logps[yw_idxs], ref_logps[yl_idxs]",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "dpo-47",
+   "paper": "dpo",
+   "expression": "ref_logratios = ref_yw_logps - ref_yl_logps",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "dpo-48",
+   "paper": "dpo",
+   "expression": "losses = -F.logsigmoid(beta * (pi_logratios - ref_logratios))",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "dpo-49",
+   "paper": "dpo",
+   "expression": "rewards = beta * (pi_logps - ref_logps).detach()",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "gqa-1",
+   "paper": "gqa",
+   "expression": "MQA with proportion α = 0.05. ‘Mean’ mean-pools",
+   "is_equation": false,
+   "expected": [],
+   "why_not": "a chart legend, table cell, code line or prose fragment that the extraction reported as an equation"
+  },
+  {
+   "id": "mixtral-1",
+   "paper": "mixtral",
+   "expression": "n−1 X i=0 G(x)i · Ei(x)",
+   "is_equation": true,
+   "expected": [
+    "Summation and product notation"
+   ]
+  },
+  {
+   "id": "mixtral-2",
+   "paper": "mixtral",
+   "expression": "G(x) := Softmax(TopK(x · Wg))",
+   "is_equation": true,
+   "expected": [
+    "Softmax and normalised exponentials",
+    "Matrix multiplication and transpose"
+   ]
+  },
+  {
+   "id": "mixtral-3",
+   "paper": "mixtral",
+   "expression": "y = n−1 X i=0 Softmax(Top2(x · Wg))i · SwiGLUi(x)",
+   "is_equation": true,
+   "expected": [
+    "Softmax and normalised exponentials",
+    "Summation and product notation",
+    "Matrix multiplication and transpose"
+   ]
+  }
+ ]
+}

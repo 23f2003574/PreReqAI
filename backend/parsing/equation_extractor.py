@@ -30,6 +30,19 @@ _CURRENCY = re.compile(r"[$\u20ac\u00a3]\d")  # "$x$" is TeX; "$50.00" is money
 _OPENS_WITH_WORDS = re.compile(r"^[a-z]{2,}\s+[a-z]{2,}\b")
 
 
+# Things a PDF text layer returns that are not display equations: a chart or table label ("N=16", "DPO (temp = 1.0)"), a line of program code (snake_case names, return/while, "x = y[i]"), and a prose
+# fragment that happens to contain "=" (several lower-case ordinary words and a sentence end).
+_LABEL_NUMBER = re.compile(r"^[A-Za-z][A-Za-z0-9]{0,3}\s*=\s*\d+(?:\.\d+)?$")
+_LEGEND = re.compile(r"^[A-Za-z][\w\- ]*\(\s*\w+\s*=\s*[\d.]+\s*\)$")
+_CODE = re.compile(r"\b[a-z]+_[a-z_0-9]+\b|\b(?:return|while|for|def|import|lambda)\b|\b(?:F|torch|np)\.[a-z]|;\s*\w+\s*[-+]?=|^\w+\s*\+?=\s*\w+\[")
+
+
+def looks_like_non_equation(line: str) -> bool:
+    """A chart or table label, a legend, a line of code or a prose fragment: reported by the text layer next to equations but not itself one."""
+    text = " ".join(line.split())
+    return bool(_LABEL_NUMBER.match(text) or _LEGEND.match(text) or _CODE.search(text) or (_word_count(text) >= 3 and _SENTENCE_END.search(text.split("=")[-1].strip()) and not any(c in text for c in "∑∫∇∂∼")))
+
+
 def is_prose_arithmetic(line: str) -> bool:
     text = line.strip()
     return bool(_SENTENCE_BOUNDARY.search(text) or _UNIT_AFTER_RESULT.search(text) or _CURRENCY.search(text) or "%" in text or "\u201c" in text or "\u201d" in text
@@ -80,7 +93,7 @@ class EquationExtractor:
             for group in getattr(page, "equation_groups", None) or []:
                 anchor = group["fragments"][0] if group["fragments"] else ""
                 section = _section_of(paper, page.page_number, anchor)
-                if section is None or section in skipped:
+                if section is None or section in skipped or looks_like_non_equation(group["text"]):
                     continue
                 equations.append(Equation(equation_id=equation_counter, expression=group["text"], section=section, page_number=page.page_number, tag=group["tag"], anchor=anchor))
                 equation_counter += 1
@@ -97,7 +110,7 @@ class EquationExtractor:
 
             for match in matches:
 
-                if looks_like_prose(match) or any(" ".join(line.split()) in pieces for line in match.splitlines()):  # a piece of a display already rebuilt above
+                if looks_like_prose(match) or looks_like_non_equation(match) or any(" ".join(line.split()) in pieces for line in match.splitlines()):  # a piece of a display already rebuilt above
                     continue
 
                 equations.append(

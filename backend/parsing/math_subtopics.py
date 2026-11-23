@@ -8,24 +8,28 @@ import re
 
 # (subtopic, subject, pattern over the equation text, why a reader needs it)
 RULES = [
-    ("Expectation of a random variable", "Probability", r"(?<![A-Za-z0-9])[Eᴼ\U0001d53c]\s*[_\[\(\{]|\U0001d53c|(?<![A-Za-z0-9])E\s*[A-Za-zτθπ](?:,\s*[A-Za-z]+)*\s*[∼~]|\bexpect(?:ed|ation)\b", "E[...] is an average over a distribution"),
+    ("Expectation of a random variable", "Probability", r"(?<![A-Za-z0-9])[Eᴼ\U0001d53c]\s*[_\[\(\{]|\U0001d53c|(?<![A-Za-z0-9])E\s*[A-Za-zτθπ](?:,\s*[A-Za-z]+)*\s*[∼~]|\bexpect(?:ed|ation)\b|(?<![A-Za-z0-9])E\s*[A-Za-zτθπ][\w,.]{0,40}[∼~]", "E[...] is an average over a distribution"),
     ("Sampling from a distribution (x ~ D)", "Probability", r"[∼~]\s*[A-Za-zπθ(ℒ\U0001d49f]", "the symbol ~ says a variable is drawn from a distribution"),
-    ("Conditional probability", "Probability", r"[A-Za-zπθ][A-Za-zθ_0-9]*\s*\(\s*[A-Za-z][\w,\s']*\|\s*[A-Za-z][\w,\s'<]*\)", "p(a|b) is the probability of a given b"),
-    ("Softmax and normalised exponentials", "Probability", r"softmax|\bexp\s*\(.*\)\s*/|\be\^[^/]{1,30}/\s*[∑Σ]", "softmax turns scores into probabilities"),
+    ("Conditional probability", "Probability", r"[A-Za-zπθ][A-Za-zθ_0-9∗′]*\s*\(\s*[A-Za-zτπθ][\w,.\s'≻∗]*\|\s*[A-Za-z][\w,.\s'<]*\)", "p(a|b) is the probability of a given b"),
+    ("Softmax and normalised exponentials", "Probability", r"softmax|\bexp\s*\(.*\)\s*/|\be\^[^/]{1,30}/\s*[∑Σ]|\bexp\b[^=]{0,200}\bexp\b", "softmax turns scores into probabilities"),
     ("Gaussian distribution", "Probability", r"\bN\s*\(\s*[μ0-9x]|\bGaussian\b|ℳ\s*\(", "N(mean, variance) is the normal distribution"),
     ("Variance and covariance", "Statistics", r"\bVar\b|\bCov\b|σ\s*2|σ²|\bvariance\b", "variance measures spread"),
     ("Kullback-Leibler divergence", "Information Theory", r"\bKL\b|\bD\s*_?\s*KL\b|\bDKL\b|\bKullback", "KL measures how one distribution differs from another"),
-    ("Cross-entropy and log-likelihood", "Information Theory", r"[−\-]\s*(?:[E∑Σ]\S*\s*)?\[?\s*log\b|[−\-]\s*[∑Σ][^=]{0,30}\blog\b|\blog\s*p|\bNLL\b|cross[- ]entropy|log[- ]likelihood", "a negative log term is a cross-entropy / log-likelihood loss"),
-    ("Logarithms and exponentials", "Calculus", r"\blog\s*[(\[{_]|\blog\s*[A-Za-zπθσ∑Σ](?![A-Za-z])|\bln\s*[(\[{A-Za-z]\b|\bexp\b|\be\^", "log and exp rules are needed to manipulate the expression"),
-    ("Sigmoid and logistic functions", "Calculus", r"σ\s*\(|sigmoid|logistic", "sigma(x) squashes a value into (0, 1)"),
+    ("Cross-entropy and log-likelihood", "Information Theory", r"[−\-]\s*(?:[E∑Σ]\S*\s*|∇\S?E\S*\s*)?\[?\s*log\b|[−\-]\s*[∑Σ][^=]{0,30}\blog\b|\blog\s*p|\bNLL\b|cross[- ]entropy|log[- ]likelihood", "a negative log term is a cross-entropy / log-likelihood loss"),
+    ("Logarithms and exponentials", "Calculus", r"\blog\s*[(\[{_]|\blog\s*[πθσϕφ∑Σ]|\blog\s*[A-Za-z](?![A-Za-z])|\blog\s*$|\bln\s*[(\[{A-Za-z]\b|\bexp\b|\be\^", "log and exp rules are needed to manipulate the expression"),
+    ("Sigmoid and logistic functions", "Calculus", r"σ\s*\(|sigmoid|logistic|\b1\s*\+\s*exp\s*\(", "sigma(x) squashes a value into (0, 1)"),
     ("Gradients and partial derivatives", "Calculus", r"[∇∂]|\bgrad\b", "the gradient is the vector of partial derivatives"),
     ("Integration", "Calculus", r"∫", "an integral sums a quantity over a continuous range"),
-    ("Summation and product notation", "Calculus", r"[∑Σ∏Π]", "sums and products over an index"),
-    ("Matrix multiplication and transpose", "Linear Algebra", r"QK|[A-Za-z\)\]]\s*⊤|\^\s*[T⊤]\b|\b[A-Za-z]{1,2}T\b\s*[/)]|\bX\s*W\b|\bW[A-Za-z_0-9]*\s*[xhXH]\b", "products and transposes of matrices (for example a query-key dot product)"),
+    ("Summation and product notation", "Calculus", r"[∑Σ∏Π]|(?<![A-Za-z(])[PX]\s+[a-z]\s+(?=[A-Za-zπ])|\bX\s+[a-z]\s*=\s*\d|\bP[A-Z]\s+[a-z]\s*=", "sums and products over an index"),
+    ("Matrix multiplication and transpose", "Linear Algebra", r"QK|\b[xhXH]\s*[·⋅]\s*W\w*|[A-Za-z\)\]]\s*⊤|\^\s*[T⊤]\b|\b[A-Za-z]{1,2}T\b\s*[/)]|\bX\s*W\b|\bW[A-Za-z_0-9]*\s*[xhXH]\b", "products and transposes of matrices (for example a query-key dot product)"),
     ("Vector norms and dot products", "Linear Algebra", r"‖|\|\|[^|]+\|\||\bnorm\b|√\s*d|\bsqrt\b", "norms and dot products measure length and similarity"),
-    ("Optimisation objectives (argmin and argmax)", "Optimization", r"arg\s*(?:max|min)|\b(?:max|min)\s*[_⁡]", "the expression asks for the value that makes an objective largest or smallest"),
+    ("Optimisation objectives (argmin and argmax)", "Optimization", r"arg\s*(?:max|min)|\b(?:max|min)\s*[_⁡]|\b(?:max|min)\s+[πθϕφA-Za-z]\s+[A-Z]", "the expression asks for the value that makes an objective largest or smallest"),
 ]
 _COMPILED = [(topic, subject, re.compile(pattern, re.IGNORECASE if topic.startswith(("Softmax", "Kullback", "Cross", "Variance", "Gaussian")) else 0), why) for topic, subject, pattern, why in RULES]
+
+
+_LOG_DIFFERENCE = re.compile(r"\blog\b[^=]{0,60}?[−\-]\s*log\b")
+_PREPARE = {"Cross-entropy and log-likelihood": lambda text: _LOG_DIFFERENCE.sub("log", text)}  # log a - log b is a log-ratio (a KL penalty, a reward), not a negative log-likelihood
 
 
 def subtopics_of(expression):
@@ -33,7 +37,7 @@ def subtopics_of(expression):
     text = " ".join((expression or "").split())
     found = []
     for topic, subject, pattern, why in _COMPILED:
-        match = pattern.search(text)
+        match = pattern.search(_PREPARE.get(topic, str)(text))
         if match:
             found.append((topic, subject, match.group(0).strip(), why))
     return found

@@ -117,18 +117,51 @@ def absolute_retrieval_checks(checks, report, floors):
             _check(checks, "retrieval_real", f"hybrid_recall:{paper_id}", row["recall_at_k"], floor, f"{paper_id}: {row['questions']} questions, recall@{report['k']} {row['recall_at_k']}, MRR {row['mrr']}; {detail}")
 
 
-def real_retrieval_checks(checks, floors, searches=None):
-    """Retrieval on the six real papers (retrieval_real.py): per paper the hybrid search must recall at least as many gold phrases as the lexical one, every returned passage must be an exact quotation,
-    and the question set must not shrink; the hybrid search must also reach the absolute floors of `absolute_retrieval_checks`. `searches` replaces the two searches (a test uses it to prove a degraded retriever fails). Returns
-    the measurements, or None when the papers cannot be analysed."""
+_PAPERS = {}
+
+
+def _real_papers(paper_ids):
+    """{paper id: analysed Paper} of the real PDFs shipped for `paper_ids`, analysed once per process (the retrieval and mathematics checks share them)."""
     from backend.pipeline import ResearchPaperPipeline
 
     from . import retrieval_real
 
-    data = retrieval_real.load()
-    paths = retrieval_real.pdf_paths({q["paper"] for q in data["questions"]})
+    for paper_id, path in retrieval_real.pdf_paths(paper_ids).items():
+        if paper_id not in _PAPERS:
+            _PAPERS[paper_id] = ResearchPaperPipeline().run(path).paper
+    return {paper_id: _PAPERS[paper_id] for paper_id in retrieval_real.pdf_paths(paper_ids)}
+
+
+def real_math_checks(checks, floors, papers=None):
+    """The mathematical stage on equations extracted from the real PDFs (math_eval.evaluate_real): extraction precision and recall against the annotated items, and the subtopic rules' precision and recall on the
+    annotated equations. The annotations are AI-written, provisional and unreviewed, and the rules were improved against them, so the floors guard against regression and prove nothing about unseen papers."""
+    from . import math_eval
+
     try:
-        papers = {paper_id: ResearchPaperPipeline().run(path).paper for paper_id, path in paths.items()}
+        papers = papers if papers is not None else _real_papers({item["paper"] for item in math_eval.load_real()["items"]})
+    except Exception as error:  # a paper that cannot be analysed is a failed check, never a crash of the gate
+        checks.append({"group": "math_real", "metric": "papers", "value": 0.0, "threshold": 1.0, "passed": False, "detail": f"{type(error).__name__}: {error}"})
+        return None
+    report = math_eval.evaluate_real(papers)
+    detail = (f"{report['annotated_equations']} AI-annotated equations over {len(report['papers'])} real papers (provisional, unreviewed); {report['tp']} true, {report['fp']} false positive, {report['fn']} missed pairs; "
+              f"{len(report['false_extractions'])} non-equations extracted, {len(report['unannotated'])} extracted items unannotated")
+    for metric in ("precision", "recall", "extraction_precision", "extraction_recall"):
+        if metric in floors:  # no floor configured, no check: a floor is never invented
+            _check(checks, "math_real", metric, report[metric], floors[metric], detail)
+    if "annotated_equations" in floors:
+        _check(checks, "math_real", "annotated_equations", float(report["annotated_equations"]), float(floors["annotated_equations"]), "the annotated real-equation set must not shrink")
+    return report
+
+
+def real_retrieval_checks(checks, floors, searches=None):
+    """Retrieval on the six real papers (retrieval_real.py): per paper the hybrid search must recall at least as many gold phrases as the lexical one, every returned passage must be an exact quotation,
+    and the question set must not shrink; the hybrid search must also reach the absolute floors of `absolute_retrieval_checks`. `searches` replaces the two searches (a test uses it to prove a degraded retriever fails). Returns
+    the measurements, or None when the papers cannot be analysed."""
+    from . import retrieval_real
+
+    data = retrieval_real.load()
+    try:
+        papers = _real_papers({q["paper"] for q in data["questions"]})
     except Exception as error:  # a paper that cannot be analysed is a failed check, never a crash of the gate
         checks.append({"group": "retrieval_real", "metric": "papers", "value": 0.0, "threshold": 1.0, "passed": False, "detail": f"{type(error).__name__}: {error}"})
         return None
@@ -210,6 +243,7 @@ def run_gate(thresholds=None, benchmark_manifest=None):
     graph_checks(checks, floors.get("prerequisite_graph", {}))
     math_checks(checks, floors.get("math_subtopics", {}))
     measured = real_retrieval_checks(checks, floors.get("retrieval_real", {}))
+    real_math_checks(checks, floors.get("math_real", {}))
     return {"passed": all(c["passed"] for c in checks), "checks": checks, "retrieval_real": measured, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
             "real_papers": {"status": real["status"], "per_paper": [{"id": r["id"], "review_kind": r.get("review_kind"), "headings_f1": r["headings"]["f1"], "concepts_f1": r["concepts"]["f1"]}
                                                                   for r in real["papers"] if r["ok"]],
