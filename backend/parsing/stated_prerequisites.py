@@ -13,7 +13,7 @@ EXPLICIT = re.compile(r"\b(?:we|authors?)\s+(?:will\s+)?(?:assume|presuppose|req
                       r"|\bbasic\s+(?:knowledge|understanding)\s+of\b|\brequires?\s+(?:an?\s+)?(?:understanding|knowledge)\s+of\b|\bpresuppos\w*\s+(?:knowledge|familiarity|a\s+background|that\s+the\s+reader)\b", re.IGNORECASE)
 REMINDER = re.compile(r"\brecall\s+that\b|\bas\s+a\s+reminder\b|\bit\s+is\s+well[- ]known\s+that\b|\bwe\s+recall\b|\brecall\s+the\b", re.IGNORECASE)
 MIN_CHARS, MAX_CHARS = 25, 450
-_SENTENCES = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\[“\"])")
+from backend.sentences import split_sentences
 _BACK_MATTER = re.compile(r"^\s*(?:\d+\.?\s*)?(?:references|bibliography|acknowledg|appendix)", re.IGNORECASE)
 
 
@@ -56,7 +56,7 @@ def extract(paper):
     for paragraph in getattr(paper, "paragraphs", []):
         if _BACK_MATTER.match(paragraph.section_title or ""):
             continue
-        for position, sentence in enumerate(_SENTENCES.split(" ".join((paragraph.content or "").split()))):
+        for position, sentence in enumerate(split_sentences(" ".join((paragraph.content or "").split()))):
             if not MIN_CHARS <= len(sentence) <= MAX_CHARS:
                 continue
             hit = find_in_sentence(sentence)

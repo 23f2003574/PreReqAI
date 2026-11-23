@@ -66,7 +66,7 @@ def _aliases(concept):
 
 MATH_SUBJECTS = ("Linear Algebra", "Calculus", "Probability", "Statistics", "Information Theory", "Optimization")
 MAX_CLAIMS, MAX_EQUATIONS, MAX_ORDER = 4, 3, 2
-_SENTENCES = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\[\u201c\"])")
+from backend.sentences import split_sentences
 
 
 def _rank(*parts):
@@ -134,7 +134,7 @@ def _ordering(session):
     for paragraph in session.paper.paragraphs:
         if len(made) >= MAX_ORDER or paragraph.page_number is None or section_role(paragraph.section_title or "") != "instructional":
             continue
-        sentences = [" ".join(x.split()) for x in _SENTENCES.split(" ".join((paragraph.content or "").split()))]
+        sentences = [" ".join(x.split()) for x in split_sentences(" ".join((paragraph.content or "").split()))]
         for start in range(len(sentences) - 2):
             trio = sentences[start:start + 3]
             if all(40 <= len(x) <= 260 and sum(c.isdigit() for c in x) < 0.1 * len(x) and not _HYPHEN_RESIDUE.search(x) for x in trio) and all(_on_page(session, x, paragraph.page_number) for x in trio):

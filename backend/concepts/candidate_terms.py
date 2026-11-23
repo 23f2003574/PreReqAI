@@ -12,7 +12,7 @@ _STOP = frozenset("""a an the of and or in on at to for with by from as is are w
 how why not no nor but if then than so such can could may might must shall should will would do does did done have has had having also both each other some any all more most many much one two three first second
 new use used using based given let thus hence per via over under between among into within without across about after before during further however therefore moreover although because since only very""".split())
 _WORD = r"[A-Za-z][A-Za-z\-]{2,}"
-_SENTENCES = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\[“\"])")
+from backend.sentences import split_sentences
 _ABBREVIATED = re.compile(rf"\b((?:{_WORD})(?: {_WORD}){{1,3}}) \(([A-Z][A-Za-z]{{1,7}}s?)\)")
 _NAMED = re.compile(rf"(?:\bso-called |\balso known as |\bknown as |\breferred to as |\b(?:is|are) called )[\"\u201c]?({_WORD}(?: {_WORD}){{0,2}})", re.IGNORECASE)
 _WE_CALL = re.compile(rf"\bwe (?:call|term|define|denote)\b[^.]{{0,25}}?\b(?:as )?(?:the )?[\"\u201c]?({_WORD}(?: {_WORD}){{1,2}})", re.IGNORECASE)  # at least two words: "we call the spread" is not a term
@@ -55,7 +55,7 @@ def find(paper, known=None, limit=MAX_CANDIDATES):
                 entry["sentence"], entry["page_number"], entry["section"] = sentence, paragraph.page_number, paragraph.section_title
 
     for paragraph in paragraphs:
-        for sentence in _SENTENCES.split(" ".join((paragraph.content or "").split())):
+        for sentence in split_sentences(" ".join((paragraph.content or "").split())):
             for match in _ABBREVIATED.finditer(sentence):
                 phrase = " ".join(match.group(1).split())
                 words = phrase.split()
@@ -87,7 +87,7 @@ def find(paper, known=None, limit=MAX_CANDIDATES):
             first = next((p for p, lowered in text if phrase in lowered), None)
             if first is None:
                 continue
-            sentence = next((s for s in _SENTENCES.split(" ".join(first.content.split())) if phrase in s.lower()), "")
+            sentence = next((s for s in split_sentences(" ".join(first.content.split())) if phrase in s.lower()), "")
             if sentence:
                 entry = found.setdefault(phrase, {"term": phrase, "definition": 0, "reasons": [], "sentence": sentence, "page_number": first.page_number, "section": first.section_title})
                 entry["reasons"].append(f"repeated: {count} mentions in {len(spread[phrase])} paragraphs")

@@ -32,7 +32,7 @@ Result: **22 of 27 top passages useful (81%)**.
 | chain-of-thought | Chain-of-Thought | 1 | `p-d6924358a3` | useful | A chain of thought is a series of intermediate natural language reasoning steps that lead  |
 | chain-of-thought | Chain-of-Thought | 2 | `p-48272fd66e` | useful | Although chain of thought is particularly suitable for math word problems, the language-ba |
 | chain-of-thought | Chain-of-Thought | 3 | `p-c324631a95` | not useful | Chain-of-thought reasoning processes are highlighted. 36th Conference on Neural Informatio |
-| chain-of-thought | Large Language Model | 1 | `p-1f7825e705` | not useful | Finetuned GPT-3 and prior best are from Cobbe et al. |
+| chain-of-thought | Large Language Model | 1 | `p-9a494d60a4` | not useful | Finetuned GPT-3 and prior best are from Cobbe et al. |
 | chain-of-thought | Large Language Model | 2 | `p-63ee18ace5` | useful | Chain-of-thought prompting enables large language models to solve challenging math problem |
 | chain-of-thought | Large Language Model | 3 | `p-b9c306e2ee` | useful | Figure 1: Chain-of-thought prompting enables large language models to tackle complex arith |
 | chain-of-thought | Reinforcement Learning | 1 | `p-bcc778cb24` | not useful | As examples, it has been shown that natural language intermediate steps can improve perfor |

@@ -17,7 +17,7 @@ from pathlib import Path
 
 from backend.filelock import locked
 
-PIPELINE_VERSION = "2026-11-20.1+2"
+PIPELINE_VERSION = "2026-11-23.1"
 MAX_ENTRIES = 16
 _CHUNK = 1024 * 1024
 

@@ -10,7 +10,7 @@ MAX_GAP = 40
 CUES = ("builds? (?:up)?on", "(?:is|are) built (?:up)?on", "extends?", "(?:is|are) based on", "relies? on", "requires?", "(?:is|are) defined in terms of", "(?:is|are) an? (?:variant|generali[sz]ation|special case|extension) of",
         "(?:is|are) derived from")
 _CUE = re.compile(r"\b(?:" + "|".join(CUES) + r")\b", re.IGNORECASE)
-_SENTENCES = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\[“\"])")
+from backend.sentences import split_sentences
 _BACK = re.compile(r"^\s*(?:\d+\.?\s*)?(?:references|bibliography|acknowledg|appendix)", re.IGNORECASE)
 
 
@@ -49,7 +49,7 @@ def propose(paper, custom=None, targets=None, confirmed=None):
     for paragraph in getattr(paper, "paragraphs", []):
         if _BACK.match(paragraph.section_title or ""):
             continue
-        for sentence in _SENTENCES.split(" ".join((paragraph.content or "").split())):
+        for sentence in split_sentences(" ".join((paragraph.content or "").split())):
             for cue in _CUE.finditer(sentence):
                 before = [m for m in _mentions(sentence[:cue.start()], own) if cue.start() - m[1] <= MAX_GAP]
                 after = [m for m in _mentions(sentence[cue.end():], targets) if m[0] <= MAX_GAP]

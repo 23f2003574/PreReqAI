@@ -8,7 +8,8 @@ is downloaded here: the list carries a `source` (the arXiv id or DOI) the learne
 import re
 
 from backend.concepts.concept_registry import ConceptRegistry
-from backend.evidence import _SENTENCES, _pattern
+from backend.evidence import _pattern
+from backend.sentences import split_sentences
 from backend.ingestion.research_source_detector import ARXIV_ID_PATTERN, ARXIV_PATTERN, DOI_PATTERN
 from backend.parsing.citation_extractor import CITATION_PATTERN, reference_numbers
 from backend.prerequisites.missing_prerequisite_analyzer import section_role
@@ -52,7 +53,7 @@ def build_reading_list(paper, limit=MAX_ITEMS):
         entry["count"] += 1
         title = (citation.section or "").strip() or "untitled section"
         entry["sections"][title] = entry["sections"].get(title, 0) + 1
-        for sentence in _SENTENCES.split(citation.context or ""):  # the sentences of the citing paragraph that carry this very citation
+        for sentence in split_sentences(citation.context or ""):  # the sentences of the citing paragraph that carry this very citation
             if any(citation.reference_number in reference_numbers(match.group(1)) for match in CITATION_PATTERN.finditer(sentence)):
                 for name in detected:
                     if _pattern(registry[name]).search(sentence):
