@@ -6,7 +6,7 @@ Input: the analysis report's plan (study_calendar.plan_inputs), the session's as
 * remediate: at least 2 assessed answers with accuracy at most REMEDIATE_ACCURACY, or two confidently wrong answers: hours grow by REMEDIATE_FACTOR (at most +50 percent) and the
   questions missed come back as a remediation list (question, correct answer, explanation);
 * otherwise the step is kept as planned (too little evidence is never a reason to change a plan).
-Self-reported answers are not evidence here. A learner's override ("reject") restores a step to its original hours; "restore" brings the adaptation back. Nothing is saved by this module."""
+Evidence also comes from the learner's persistent profile (earlier sessions and papers): a concept the profile rates "mastered" by the assessed-answer estimate (backend/learner_profile.mastery) counts as evidence for a step on that concept when this session has none of its own, so a prerequisite already demonstrated is shortened (or, for a mathematical skill, skipped) in a new paper's plan, with the reason saying the evidence is from the profile. A profile concept that is "needs_refresh" (its reviews are long overdue), "progressing", "needs_practice" or self-reported never changes a plan, and this session's own assessed answers always win over the profile's. Self-reported answers are not evidence here. A learner's override ("reject") restores a step to its original hours; "restore" brings the adaptation back. Nothing is saved by this module."""
 from math import isfinite
 
 MIN_GRADED, MIN_DISTINCT = 3, 2
@@ -41,6 +41,35 @@ def evidence_from_attempts(attempts):
     return found
 
 
+def profile_evidence(quiz, now=None):
+    """{concept: evidence} in the shape of evidence_from_attempts for the concepts a learner profile's quiz history rates "mastered" (assessed answers only, still fresh: see learner_profile.mastery), each marked
+    "source": "profile". Concepts in any other state, and a profile that cannot be used, give nothing."""
+    from backend import learner_profile
+
+    found = {}
+    for item in learner_profile.mastery(quiz or {}, now):
+        if item["status"] != "mastered" or item.get("evidence") != "assessed":
+            continue
+        found[item["concept"]] = {"graded": item["graded_attempts"], "correct": item["graded_correct"], "distinct_correct": min(item["questions"], item["graded_correct"]), "high_confidence_wrong": item["high_confidence_wrong"],
+                                  "missed": [], "p_mastery": item["p_mastery"], "mastery_low": item["mastery_low"], "mastery_high": item["mastery_high"], "mastered": True, "source": "profile"}
+    return found
+
+
+def profile_quiz(session):
+    """The quiz history of the session's learner profile, or None when the session has no profile, the profiles directory is not configured or the file cannot be read."""
+    from backend import learner_profile
+
+    directory = learner_profile.configured_directory()
+    name = getattr(session, "profile", None)
+    if not directory or not name:
+        return None
+    try:
+        profile, problem = learner_profile.load_full(learner_profile.profile_path(directory, name))
+    except (learner_profile.ProfileError, OSError):
+        return None
+    return None if problem else profile["quiz"]
+
+
 def _remediation(question_ids):
     from backend.tutor.quiz_bank import QUIZ_EXPLANATIONS
     from backend.tutor.quiz_session import QuizError, _lookup
@@ -60,7 +89,7 @@ def decide(concept, hours, evidence):
     if not evidence:
         return "keep", 1.0, "No assessed answers yet: the plan is unchanged. Answer a few diagnostic questions to adapt it."
     graded, correct, accuracy = evidence["graded"], evidence["correct"], evidence["correct"] / evidence["graded"]
-    summary = f"{correct} of {graded} assessed answers correct"
+    summary = f"{correct} of {graded} assessed answers correct" + (" in your learner profile (earlier sessions)" if evidence.get("source") == "profile" else "")
     if evidence["high_confidence_wrong"] >= 2 or (graded >= 2 and accuracy <= REMEDIATE_ACCURACY):
         why = f"{summary}" + (f", {evidence['high_confidence_wrong']} of the misses with high confidence" if evidence["high_confidence_wrong"] else "")
         return "remediate", REMEDIATE_FACTOR, f"{why}: more time is planned and the questions you missed are listed to review."
@@ -72,13 +101,15 @@ def decide(concept, hours, evidence):
     return "keep", 1.0, f"{summary}{' (estimated probability of knowing it ' + format(evidence['p_mastery'], '.2f') + ', at least ' + format(evidence['mastery_low'], '.2f') + ')' if 'p_mastery' in evidence else ''}: not yet enough to change the plan (compressing needs {MIN_GRADED} answers on {MIN_DISTINCT} questions at {int(COMPRESS_ACCURACY * 100)}%)."
 
 
-def propose(report, attempts, overrides=None, calendar=None):
-    """{"adjustments": [...], "plan": [...], "remediation": {concept: [...]}, "hours_before", "hours_after", "feasibility"} for the report's unstudied steps. `calendar` is None or a dict
+def propose(report, attempts, overrides=None, calendar=None, profile=None, now=None):
+    """{"adjustments": [...], "plan": [...], "remediation": {concept: [...]}, "hours_before", "hours_after", "feasibility"} for the report's unstudied steps. `profile` is None or the quiz history of the learner's profile (see profile_evidence); `calendar` is None or a dict
     {today: date, deadline, daily_hours, weekdays}; with it the schedule before and after is checked against the deadline."""
     from backend import study_calendar
 
     steps, importance, _ = study_calendar.plan_inputs(report)
     evidence, overrides = evidence_from_attempts(attempts), overrides or {}
+    for concept, found in profile_evidence(profile, now).items():  # this session's own assessed answers win; the profile fills the concepts it has none for
+        evidence.setdefault(concept, found)
     adjustments, plan, remediation = [], [], {}
     for step in steps:
         action, factor, reason = decide(step.concept, step.estimated_hours, evidence.get(step.concept))
@@ -122,12 +153,12 @@ def guarded(report):
     return bool((report.get("confidence_effects") or {}).get("guard_adaptation")) and not report.get("adaptation_confirmed")
 
 
-def adapted_report(report, attempts, overrides=None):
+def adapted_report(report, attempts, overrides=None, profile=None):
     """The report with its learning_plan hours replaced by the adapted ones (steps carry `adapted: True` and `original_hours`; `adapted_concepts` lists them), so the calendar, plan
     text and curriculum all schedule what the learner's assessed answers call for. Without any adaptation the very same report object is returned, so nothing downstream changes."""
     if guarded(report):  # the extraction is unreliable: no plan change on its own until the learner confirms (POST /adaptive-plan/confirm)
         return report
-    changed = {item["concept"]: item["hours"] for item in propose(report, attempts, overrides)["plan"] if item["adapted"]}
+    changed = {item["concept"]: item["hours"] for item in propose(report, attempts, overrides, None, profile)["plan"] if item["adapted"]}
     if not changed:
         return report
     def adapt(step):
@@ -145,4 +176,4 @@ def adapted_report(report, attempts, overrides=None):
 def session_report(session, adapted=True):
     """The session's report as the schedule should see it: adapted to its assessed answers and the learner's overrides unless `adapted` is False."""
     report = session.report
-    return adapted_report(report, getattr(session, "quiz_attempts", []) or [], report.get("adaptive_overrides", {})) if adapted else report
+    return adapted_report(report, getattr(session, "quiz_attempts", []) or [], report.get("adaptive_overrides", {}), profile_quiz(session)) if adapted else report

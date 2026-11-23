@@ -465,7 +465,7 @@ def adaptive_plan_view(session_id: str, deadline: str | None = None, hours_per_d
             day = study_calendar.parse_date(today, "today") if today else datetime.now(timezone.utc).date()
             daily = parse_hours_per_day(hours_per_day if hours_per_day is not None else (session.report.get("study_time") or {}).get("daily_hours"))  # the session's own hours unless told
             calendar = {"today": day, "deadline": study_calendar.parse_date(deadline, "deadline"), "daily_hours": daily}
-        result = adaptive_plan.propose(session.report, session.quiz_attempts, session.report.get("adaptive_overrides", {}), calendar)
+        result = adaptive_plan.propose(session.report, session.quiz_attempts, session.report.get("adaptive_overrides", {}), calendar, adaptive_plan.profile_quiz(session))
     except study_calendar.CalendarError as error:
         return failure_response(422, "adaptive_plan", str(error), hint="Send dates as YYYY-MM-DD and hours per day above 0 and at most 24.")
     return success_body("Adaptive Plan", "adaptive_plan", session_id=session_id, **result)
