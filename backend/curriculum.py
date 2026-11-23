@@ -66,10 +66,10 @@ def build_curriculum(sessions, profile=None, today=None, deadline=None, hours_pe
     from backend import paper_citations
 
     cites = paper_citations.find_links(views, sessions)
-    cycle_pairs = {frozenset(pair) for pair in cites["cycles"]}
-    needs = {}  # a paper after the papers it cites (cycles are not used)
+    circle_of = {paper: index for index, group in enumerate(cites["cycles"]) for paper in group}
+    needs = {}  # a paper after the papers it cites (links inside a circle of papers citing each other are not used)
     for link in cites["links"]:
-        if frozenset((link["citing"], link["cited"])) not in cycle_pairs:
+        if circle_of.get(link["citing"], -1) != circle_of.get(link["cited"], -2):
             needs.setdefault(link["citing"], []).append(link)
     placed = set()
     while pending:

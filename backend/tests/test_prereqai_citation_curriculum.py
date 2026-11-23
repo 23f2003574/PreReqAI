@@ -71,3 +71,24 @@ def test_the_calendar_still_schedules_the_combined_work_in_citation_order():
     assert [p["title"] for p in result["papers"]] == [C, B, A] and result["calendar"]["feasibility"]["status"] == "achievable"
     scheduled = [i["concept"] for d in result["calendar"]["days"] for i in d["items"]]
     assert scheduled.index("Probability") < scheduled.index("Calculus")  # the cited papers' groundwork comes first
+
+
+def test_a_circle_of_three_papers_citing_each_other_is_reported_and_never_used_to_order_them():
+    D = "Scaling Laws for Neural Language Model Training"
+    x = session("x", A, [("Calculus", 2.0)], [f"{B}. 2020."])
+    y = session("y", B, [("Probability", 5.0)], [f"{C}. 2021."])
+    z = session("z", C, [("Statistics", 6.0)], [f"{A}. 2022."])
+    w = session("w", D, [("Linear Algebra", 4.0)], [f"{A}. 2022."])  # cites a paper of the circle but is not in it
+    result = curriculum.build_curriculum([x, y, z, w])
+    assert result["citations"]["cycles"] == [["x", "y", "z"]]
+    assert [item["paper"] for item in result["citations"]["ordering"]] == [D] and [item["after"] for item in result["citations"]["ordering"]] == [A]
+    assert not any("which is placed before it" in paper["reason"] and paper["session_id"] in "xyz" for paper in result["papers"])
+    assert [paper["session_id"] for paper in result["papers"]].index("x") < [paper["session_id"] for paper in result["papers"]].index("w")
+
+
+def test_citation_cycles_of_any_length_are_found_and_chains_are_not_cycles():
+    link = lambda a, b: {"citing": a, "cited": b}
+    assert paper_citations.citation_cycles([link("a", "b"), link("b", "c")]) == []
+    assert paper_citations.citation_cycles([link("a", "b"), link("b", "a")]) == [["a", "b"]]
+    assert paper_citations.citation_cycles([link("a", "b"), link("b", "c"), link("c", "d"), link("d", "a"), link("e", "a")]) == [["a", "b", "c", "d"]]
+    assert paper_citations.citation_cycles([link("a", "b"), link("b", "a"), link("c", "d"), link("d", "c")]) == [["a", "b"], ["c", "d"]]

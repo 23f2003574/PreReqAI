@@ -2,8 +2,8 @@
 
 A paper A cites an uploaded paper B when one of A's bibliography entries contains B's full title: at least MIN_TITLE_WORDS words and MIN_TITLE_CHARS characters once lower-cased and stripped of punctuation,
 so a title like "Attention" can never match. Each link names the reference number and the entry's text. A reference whose text contains the titles of two or more different uploaded papers is
-AMBIGUOUS and is listed, not used; a paper whose title is too short to match safely is listed as unmatchable; a paper citing itself is ignored. Links that form a cycle (A cites B and B cites A,
-which a revised edition can do) are reported and not used for ordering. Nothing is downloaded or guessed.
+AMBIGUOUS and is listed, not used; a paper whose title is too short to match safely is listed as unmatchable; a paper citing itself is ignored. Links that form a cycle of any length (A cites B and B cites A,
+which a revised edition can do, or A cites B, B cites C and C cites A) are reported and not used for ordering. Nothing is downloaded or guessed.
 
 A reference is matched by the first of these that finds exactly one analysed paper (the link says which, as `method`): "doi" (the reference contains the DOI printed in the paper), "arxiv_id" (it
 contains the paper's arXiv identifier, version ignored, as "arXiv:1706.03762", "arxiv.org/abs/1706.03762", "arxiv.org/pdf/1706.03762.pdf" or the DOI form "10.48550/arXiv.1706.03762"), "title" (above) and "author_year_title" (it names the paper's first author's surname, a year within one of the paper's, and at least
@@ -50,7 +50,7 @@ def _entries(session):
 
 
 def find_links(views, sessions):
-    """{"links": [{citing, cited, reference_number, evidence, method}], "ambiguous": [...], "unmatchable": [titles], "cycles": [[a, b]]} over the analysed papers. `views` have session_id and title."""
+    """{"links": [{citing, cited, reference_number, evidence, method}], "ambiguous": [...], "unmatchable": [titles], "cycles": [[a, b, ...]]} over the analysed papers. `views` have session_id and title."""
     titles = {view["session_id"]: normalise(view["title"]) for view in views}
     usable = {sid: t for sid, t in titles.items() if len(t.split()) >= MIN_TITLE_WORDS and len(t) >= MIN_TITLE_CHARS}
     known = {session.session_id: identifiers(session) for session in sessions}
@@ -89,11 +89,31 @@ def find_links(views, sessions):
                     seen.add((citing, hits[0]))
                     links.append({"citing": citing, "cited": hits[0], "reference_number": number, "evidence": " ".join(raw.split())[:240], "method": method})
                 break
-    cycles = sorted({tuple(sorted((a["citing"], a["cited"]))) for a in links for b in links if a["citing"] == b["cited"] and a["cited"] == b["citing"]})
-    result = {"links": links, "ambiguous": ambiguous, "unmatchable": unmatchable, "cycles": [list(pair) for pair in cycles]}
+    result = {"links": links, "ambiguous": ambiguous, "unmatchable": unmatchable, "cycles": citation_cycles(links)}
     for item in result["links"]:
         item["citing_title"], item["cited_title"] = by_id[item["citing"]]["title"], by_id[item["cited"]]["title"]
     return result
+
+
+def citation_cycles(links):
+    """The groups of papers that cite each other in a circle, of any length: [[session ids sorted]] sorted, one group per set of papers that can each reach every other by following links
+    (A cites B and B cites A, but also A cites B, B cites C, C cites A). A paper outside every circle is in no group."""
+    after = {}
+    for link in links:
+        after.setdefault(link["citing"], set()).add(link["cited"])
+
+    def reach(start):
+        seen, pending = set(), [start]
+        while pending:
+            for nxt in after.get(pending.pop(), ()):
+                if nxt not in seen:
+                    seen.add(nxt)
+                    pending.append(nxt)
+        return seen
+
+    reaches = {paper: reach(paper) for paper in after}
+    groups = {tuple(sorted({paper, *(other for other in reaches[paper] if paper in reaches.get(other, ()))})) for paper in reaches if paper in reaches[paper]}
+    return sorted(list(group) for group in groups)
 
 
 def shared_references(sessions, ignore=()):
