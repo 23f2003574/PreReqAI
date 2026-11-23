@@ -263,18 +263,24 @@ def review_queue(path, moment=None, upcoming_limit=10):
     return spaced_review.queue(profile["quiz"], moment or spaced_review.now(), upcoming_limit), problem
 
 
-def mastery(quiz):
+OVERDUE_GRACE_DAYS = 14  # a mastered concept stays mastered this long after a review of it was due; after that it needs a refresh
+
+
+def mastery(quiz, now=None):
     """[{concept, questions, attempts, knew, missed, status, evidence, graded_attempts, graded_correct, high_confidence_wrong, last_seen}] per concept of a profile's quiz history, by name.
     Mastery needs ASSESSED evidence, answers the system checked itself (see backend/tutor/diagnostic.py); a self-reported "knew" never establishes it.
     status: "needs_practice" when any question was last missed; "mastered" when the uncertainty-aware estimate of backend/mastery_model.py says so (a high probability whose lower end is also high,
-    from enough graded answers on at least two different questions; confident wrong answers weigh heavily); p_mastery, mastery_low, mastery_high and mastery_reason explain it; "self_reported" when the old self-graded rule (two questions, each "knew" with a
+    from enough graded answers on at least two different questions; confident wrong answers weigh heavily); p_mastery, mastery_low, mastery_high and mastery_reason explain it; "needs_refresh" when the estimate says mastered but a review of one of its questions has been overdue for more than OVERDUE_GRACE_DAYS (`refresh_reason` says which; the estimate itself does not decay, so nothing is claimed about how much was forgotten); "self_reported" when the old self-graded rule (two questions, each "knew" with a
     streak of 2) holds but the assessed evidence does not; otherwise "progressing". evidence: "assessed" when the concept has any assessed answer, else "self_reported"."""
+    from backend import spaced_review
+
+    moment = now or spaced_review.now()
     by_concept = {}
     for entry in quiz.values():
         by_concept.setdefault(entry["concept"], []).append(entry)
     result = []
     for concept in sorted(by_concept):
-        entries = by_concept[concept]
+        entries, refresh_reason = by_concept[concept], None
         graded = sum(e.get("graded_attempts", 0) for e in entries)
         confident_wrong = sum(e.get("high_confidence_wrong", 0) for e in entries)
         from backend import mastery_model
@@ -284,6 +290,9 @@ def mastery(quiz):
             status = "needs_practice"
         elif estimate is not None and estimate["mastered"]:
             status = "mastered"
+            lapsed = sorted(due for due in (spaced_review.parse_time(e.get("due")) for e in entries) if due is not None and (moment - due).days > OVERDUE_GRACE_DAYS)
+            if lapsed:
+                status, refresh_reason = "needs_refresh", f"{len(lapsed)} review{'s' if len(lapsed) != 1 else ''} overdue by more than {OVERDUE_GRACE_DAYS} days (the oldest was due {lapsed[0].date().isoformat()}): answer a few questions again to confirm it"
         elif not graded and len(entries) >= 2 and all(e["streak"] >= 2 for e in entries):
             status = "self_reported"
         else:
@@ -291,15 +300,16 @@ def mastery(quiz):
         result.append({"concept": concept, "questions": len(entries), "attempts": sum(e["attempts"] for e in entries), "knew": sum(e["knew"] for e in entries),
                        "missed": sum(e["missed"] for e in entries), "status": status, "evidence": "assessed" if graded else "self_reported", "graded_attempts": graded,
                        "graded_correct": sum(e.get("graded_correct", 0) for e in entries), "high_confidence_wrong": confident_wrong, "last_seen": max(e["last_seen"] for e in entries),
-                       **({"p_mastery": estimate["p"], "mastery_low": estimate["low"], "mastery_high": estimate["high"], "mastery_reason": estimate["reason"]} if estimate else {})})
+                       **({"p_mastery": estimate["p"], "mastery_low": estimate["low"], "mastery_high": estimate["high"], "mastery_reason": estimate["reason"]} if estimate else {}),
+                       **({"refresh_reason": refresh_reason} if refresh_reason else {})})
     return result
 
 
-def mastered(quiz):
+def mastered(quiz, now=None):
     """{concept: {questions, attempts, knew, last_seen}} for the concepts a profile's quiz history rates mastered (see mastery()): the evidence other papers' plans may offer as "you may
-    already know this". It is only ever offered; nothing is removed from a plan because of it."""
+    already know this". A concept whose mastery has lapsed (status "needs_refresh") is not offered. It is only ever offered; nothing is removed from a plan because of it."""
     return {item["concept"]: {"questions": item["questions"], "attempts": item["attempts"], "knew": item["knew"], "last_seen": item["last_seen"]}
-            for item in mastery(quiz) if item["status"] == "mastered"}
+            for item in mastery(quiz, now) if item["status"] == "mastered"}
 
 
 def _canonical(names, label, vocab, problems):
