@@ -26,7 +26,10 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: pip install -r requirements-dev.txt
       - name: PreReqAI product tests (the release checks)
-        run: python -m pytest -m prereqai backend/tests -q
+        # One worker process per CPU (pytest-xdist), and every test file stays whole on one worker (--dist loadfile): the module-scoped fixtures that analyse the six real PDFs are built once per file,
+        # not once per worker, and tests of one file that share state never run in two processes. The tests do not share files, ports or environment between files (checked by running the whole
+        # suite in parallel and in series with the same results), so no test is skipped, retried or excluded to make this faster.
+        run: python -m pytest -m prereqai backend/tests -q -n auto --dist loadfile
       - name: API generation and generated-project release checks
         # the release checklist (docs/release-checklist.md, step 3) requires these as well; about 20 seconds, offline
         run: python -m pytest -q backend/tests/test_api_generation_*.py backend/tests/test_generated_project_*.py

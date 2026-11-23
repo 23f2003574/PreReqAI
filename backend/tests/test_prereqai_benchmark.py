@@ -112,11 +112,11 @@ def test_a_reviewed_annotation_runs_through_the_full_pdf_pipeline_with_traceable
     assert report["counts"]["evaluated"] == 1 and report["excluded"] == [] and report["real_papers"] is True
     row = report["papers"][0]
     assert row["ok"] and row["concepts"]["f1"] == 1.0 and row["occurrences"]["exact"] == 1
-    assert row["headings"]["missed"] == ["experiments on cifar-10"]  # the known heading defect, named
-    assert row["coverage"]["spurious"] == ["Probability"] and row["coverage"]["missed"] == []  # a false positive, named
+    assert row["headings"]["missed"] == [] and row["headings"]["f1"] == 1.0  # "4 Experiments on CIFAR-10" is a heading now (it was the named defect before the digit-heading fix)
+    assert row["coverage"]["spurious"] == [] and row["coverage"]["missed"] == []  # the false "Probability" coverage came from the missed heading and went with it
     assert row["roles"]["total"] == 7 and report["roles"]["total"] == 7
     text = bm.render_benchmark(report)
-    assert "REAL-PAPER BENCHMARK" in text and "false positives: ['Probability']" in text and "AGGREGATE" in text
+    assert "REAL-PAPER BENCHMARK" in text and "AGGREGATE" in text and "false positives:" not in text
 
 
 def test_metric_calculations_on_a_scored_paper():
