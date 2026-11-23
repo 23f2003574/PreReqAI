@@ -69,3 +69,24 @@ def test_an_identifier_only_citation_orders_the_programme_and_names_its_method()
     citing = session("a", A, ["Lee. Unrelated words. 10.5555/xyz.1"], steps=(("Calculus", 1.0),))
     result = curriculum.build_curriculum([citing, cited])
     assert [p["title"] for p in result["papers"]] == [B, A] and result["citations"]["ordering"][0]["method"] == "doi" and "matched by doi" in result["papers"][1]["reason"]
+
+
+@pytest.mark.parametrize("reference", [
+    "Vaswani et al. 2017. arXiv preprint arXiv:1706.03762v1.",
+    "Vaswani, A. et al. Attention is all you need. https://arxiv.org/abs/1706.03762",
+    "Vaswani, A. et al. https://arxiv.org/pdf/1706.03762v7.pdf",
+    "Vaswani, A. et al. doi:10.48550/arXiv.1706.03762",
+    "Vaswani, A. et al. arXiv.org, 1706.03762, 2017.",
+    "Vaswani, A. et al. arXiv 1706.03762.",
+])
+def test_every_common_form_of_an_arxiv_reference_links_by_identifier(reference):
+    cited = session("b", "Short", page_text="arXiv:1706.03762v5 [cs.CL] 6 Dec 2017 Attention")
+    citing = session("a", A, [reference])
+    found = paper_citations.find_links(views(citing, cited), [citing, cited])
+    assert link_of(found, "a") is not None and link_of(found, "a")["cited"] == "b" and link_of(found, "a")["method"] in ("arxiv_id", "doi")
+
+
+def test_a_bare_number_or_a_longer_identifier_is_not_an_arxiv_reference():
+    assert paper_citations._arxiv("see 1706.03762 in the table") == set()
+    assert paper_citations._arxiv("arXiv:1706.037621") == set()
+    assert paper_citations._arxiv("arXiv:cs/0112017v2 and arxiv.org/abs/hep-th/9901001") == {"cs/0112017", "hep-th/9901001"}

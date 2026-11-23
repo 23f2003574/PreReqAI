@@ -6,7 +6,7 @@ AMBIGUOUS and is listed, not used; a paper whose title is too short to match saf
 which a revised edition can do) are reported and not used for ordering. Nothing is downloaded or guessed.
 
 A reference is matched by the first of these that finds exactly one analysed paper (the link says which, as `method`): "doi" (the reference contains the DOI printed in the paper), "arxiv_id" (it
-contains the paper's arXiv identifier, version ignored), "title" (above) and "author_year_title" (it names the paper's first author's surname, a year within one of the paper's, and at least
+contains the paper's arXiv identifier, version ignored, as "arXiv:1706.03762", "arxiv.org/abs/1706.03762", "arxiv.org/pdf/1706.03762.pdf" or the DOI form "10.48550/arXiv.1706.03762"), "title" (above) and "author_year_title" (it names the paper's first author's surname, a year within one of the paper's, and at least
 MIN_TITLE_SHARE of the paper's content words of its title, four of them at least: for a reference that abbreviates or rewords the title). A method that finds two or more papers makes the reference
 AMBIGUOUS: it is listed and never used, and no later method is tried. A paper is "unmatchable" only when it has neither a usable title nor an identifier."""
 import re
@@ -14,7 +14,7 @@ import re
 MIN_TITLE_WORDS, MIN_TITLE_CHARS = 3, 15
 MIN_TITLE_SHARE, MIN_CONTENT_WORDS = 0.6, 4
 _DOI = re.compile(r"\b(10\.\d{4,9}/[^\s\"<>]+)", re.IGNORECASE)
-_ARXIV = re.compile(r"arxiv[:\s]*([0-9]{4}\.[0-9]{4,5}|[a-z\-]+(?:\.[a-z]{2})?/[0-9]{7})(?:v[0-9]+)?", re.IGNORECASE)
+_ARXIV = re.compile(r"(?<![a-z])arxiv(?:\.org)?(?:\s*[:/.,]\s*|\s+)(?:(?:abs|pdf|e-print)/)?([0-9]{4}\.[0-9]{4,5}|[a-z\-]+(?:\.[a-z]{2})?/[0-9]{7})(?![0-9])(?:v[0-9]+)?", re.IGNORECASE)
 _STOP = frozenset("a an the of and or in on for to with by from as at is are via using use based into over under towards toward".split())
 
 
