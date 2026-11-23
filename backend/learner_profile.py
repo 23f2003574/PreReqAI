@@ -33,6 +33,7 @@ SCHEMA_VERSION = 2
 MAX_QUESTIONS = 5000
 _QUESTION_ID = re.compile(r"[^:\x00]{1,200}:\d{1,4}")
 _COUNTS = ("attempts", "knew", "missed", "streak")
+_HISTORY_CODE = re.compile(r"[01][lmh]")
 MAX_BYTES = 1024 * 1024
 MAX_SUBJECTS = 2000
 MAX_NAME_CHARS = 200
@@ -97,6 +98,12 @@ def _quiz_entries(value):
         graded = {name: entry[name] for name in spaced_review.GRADED_FIELDS if name in entry}  # optional: an entry saved before assessed answers existed has none (read as zero)
         if not all(isinstance(n, int) and not isinstance(n, bool) and 0 <= n <= 10**6 for n in graded.values()) or graded.get("graded_correct", 0) > graded.get("graded_attempts", 0):
             raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
+        if "graded_history" in entry:  # the last graded answers in order (spaced_review.HISTORY_LIMIT at most): "1h" is correct with high confidence, "0l" wrong with low confidence
+            history = entry["graded_history"]
+            if (not isinstance(history, list) or len(history) > spaced_review.HISTORY_LIMIT or len(history) > graded.get("graded_attempts", 0)
+                    or not all(isinstance(code, str) and _HISTORY_CODE.fullmatch(code) for code in history)):
+                raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
+            graded = {**graded, "graded_history": list(history)}
         if "ease" in entry or "last_grade" in entry:  # present only on entries reviewed with a grade (again, hard, good, easy)
             if (isinstance(entry.get("ease"), bool) or not isinstance(entry.get("ease"), (int, float)) or not 1.3 <= entry["ease"] <= 3.5 or entry.get("last_grade") not in spaced_review.GRADES):
                 raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")

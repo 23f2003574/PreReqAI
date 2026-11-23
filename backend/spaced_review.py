@@ -40,19 +40,26 @@ def interval(streak, knew, missed):
 GRADED_FIELDS = ("graded_attempts", "graded_correct", "graded_streak", "high_confidence_right", "high_confidence_wrong")
 
 
+HISTORY_LIMIT = 8  # the most recent graded answers an entry keeps in order (see mastery_model.sequence_from_counters); older ones survive as counters
+_CONFIDENCE_CODE = {"low": "l", "medium": "m", "high": "h"}
+
+
 def _graded(entry, graded):
     """The assessment counters of an entry after one more answer. `graded` is None for a self-reported answer (the counters are then only carried over, and are absent from an entry that
-    never had an assessed answer) or {"correct": bool, "confidence": "low"|"medium"|"high"} for an answer the system checked itself."""
+    never had an assessed answer) or {"correct": bool, "confidence": "low"|"medium"|"high"} for an answer the system checked itself. `graded_history` holds the last HISTORY_LIMIT assessed answers
+    in order as two-character codes (correct 1 or 0, then confidence l, m or h): "1h" is a correct answer given with high confidence."""
     carried = {name: entry[name] for name in GRADED_FIELDS if name in entry}
+    history = [code for code in entry.get("graded_history", []) if isinstance(code, str)]
     if graded is None:
-        return carried
+        return {**carried, **({"graded_history": history[-HISTORY_LIMIT:]} if history else {})}
     counters = {name: carried.get(name, 0) for name in GRADED_FIELDS}
     counters["graded_attempts"] += 1
     counters["graded_correct"] += bool(graded["correct"])
     counters["graded_streak"] = counters["graded_streak"] + 1 if graded["correct"] else 0
     if graded.get("confidence") == "high":
         counters["high_confidence_right" if graded["correct"] else "high_confidence_wrong"] += 1
-    return counters
+    history.append(("1" if graded["correct"] else "0") + _CONFIDENCE_CODE.get(graded.get("confidence"), "m"))
+    return {**counters, "graded_history": history[-HISTORY_LIMIT:]}
 
 
 GRADES = ("again", "hard", "good", "easy")

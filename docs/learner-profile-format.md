@@ -18,6 +18,7 @@ A learner profile is one JSON file, `<name>.json`, in `PREREQAI_PROFILE_DIR` (or
 
 * `known` and `studied` are concept names in PreReqAI's spelling; a concept is one or the other (known wins). Names PreReqAI does not know are never added by a request.
 * `quiz` is the answer history per question (`<concept>:<number>`), with the next review time (see `backend/spaced_review.py`). Version 1 files have no `quiz` and are read as a version 2 profile with none; they become version 2 the next time they are saved.
+* An entry that has had answers the system graded itself also carries `graded_attempts`, `graded_correct`, `graded_streak`, `high_confidence_right`, `high_confidence_wrong` and `graded_history`: the last 8 graded answers in order as two-character codes (`1` correct or `0` wrong, then confidence `l`, `m` or `h`; `"1h"` is a correct answer given with high confidence). Mastery uses the history as it was given and rebuilds only older answers from the counters, treating them as medium confidence. Files without these fields are read as before; no schema version change.
 * A file is rejected, and never overwritten, when it is not valid JSON, has another `format`, a newer `schema_version`, a malformed entry, more than 2000 names or 5000 questions, or is larger than 1 MiB.
 
 ## Managing a profile

@@ -8,7 +8,7 @@ Self-reported answers never enter. The result carries the probability, a standar
 not a Bayesian credible interval) and the interval p +/- 1.645 SE clamped to [0, 1]. A concept counts as mastered only when p >= MASTERED_P, the lower end of the interval reaches
 MASTERED_LOWER, at least MIN_ANSWERS answers were graded and at least MIN_QUESTIONS different questions were answered correctly and no more than MAX_CONFIDENT_WRONG answers were confidently wrong, so three lucky guesses (p about 0.98, lower end about 0.86) are
 not enough: the answer minimum is what stops them. The parameters are fixed, reasoned values, NOT fitted to real learners: the probabilities are an explainable ranking of evidence, not calibrated predictions.
-A profile stores counters per question, not the answer sequence, so `sequence_from_counters` rebuilds a canonical order from them (earlier correct answers, then the misses, then the final correct streak)."""
+A profile keeps each question's counters and its most recent graded answers in order (`graded_history`); `sequence_from_counters` uses those as given and rebuilds only the older answers, which survive as counters, in a canonical order (earlier correct answers, then the misses)."""
 from math import sqrt
 
 PRIOR, LEARN = 0.30, 0.15
@@ -59,15 +59,40 @@ def estimate(answers):
     return {"p": round(p, 3), "low": round(low, 3), "high": round(high, 3), "answers": n, "questions_correct": questions, "mastered": mastered, "reason": reason}
 
 
-def sequence_from_counters(entry, question_id=""):
-    """[(correct, confidence, question_id)] rebuilt from one profile question entry's graded counters (see the module description); [] for an entry without assessed answers."""
-    attempts, correct, streak = entry.get("graded_attempts", 0), entry.get("graded_correct", 0), min(entry.get("graded_streak", 0), entry.get("graded_correct", 0))
+_CONFIDENCE_OF_CODE = {"l": "low", "m": "medium", "h": "high"}
+
+
+def decode_history(history):
+    """[(correct, confidence)] from an entry's `graded_history` codes ("1h" = correct with high confidence, "0l" = wrong with low confidence), in the order the answers were given; codes that are not valid are skipped."""
+    return [(code[0] == "1", _CONFIDENCE_OF_CODE[code[1]]) for code in history or [] if isinstance(code, str) and len(code) == 2 and code[0] in "01" and code[1] in _CONFIDENCE_OF_CODE]
+
+
+def _canonical(attempts, correct, streak, sure_right, sure_wrong, question_id):
     wrong = max(0, attempts - correct)
-    sure_right, sure_wrong = min(entry.get("high_confidence_right", 0), correct), min(entry.get("high_confidence_wrong", 0), wrong)
+    streak = min(streak, correct)
+    sure_right, sure_wrong = min(sure_right, correct), min(sure_wrong, wrong)
     rights = ["high"] * sure_right + ["medium"] * (correct - sure_right)
     wrongs = ["high"] * sure_wrong + ["medium"] * (wrong - sure_wrong)
     early, late = rights[:max(0, correct - streak)], rights[max(0, correct - streak):]
     return [(True, c, question_id) for c in early] + [(False, c, question_id) for c in wrongs] + [(True, c, question_id) for c in late]
+
+
+def sequence_from_counters(entry, question_id=""):
+    """[(correct, confidence, question_id)] for one profile question entry's assessed answers; [] for an entry without any.
+    The most recent answers are kept as they were given (`graded_history`, at most spaced_review.HISTORY_LIMIT of them, with their real order and their low, medium or high confidence). Answers
+    older than that, or from a profile saved before the history existed, are known only as counters, so they are rebuilt in a canonical order placed BEFORE the history (earlier correct
+    answers, then the misses; every answer without a recorded confidence counts as medium, and a confident one as high): an approximation, and the conservative one (misses after the successes)."""
+    history = decode_history(entry.get("graded_history"))
+    attempts, correct = entry.get("graded_attempts", 0), entry.get("graded_correct", 0)
+    if not history:
+        return _canonical(attempts, correct, entry.get("graded_streak", 0), entry.get("high_confidence_right", 0), entry.get("high_confidence_wrong", 0), question_id)
+    history = history[-attempts:] if attempts else []
+    older = max(0, attempts - len(history))
+    kept_right, kept_wrong = sum(1 for ok, _ in history if ok), sum(1 for ok, _ in history if not ok)
+    sure_right_kept, sure_wrong_kept = sum(1 for ok, c in history if ok and c == "high"), sum(1 for ok, c in history if not ok and c == "high")
+    rebuilt = _canonical(older, min(older, max(0, correct - kept_right)), 0, max(0, entry.get("high_confidence_right", 0) - sure_right_kept),
+                         max(0, entry.get("high_confidence_wrong", 0) - sure_wrong_kept), question_id) if older else []
+    return rebuilt + [(ok, confidence, question_id) for ok, confidence in history]
 
 
 def estimate_entries(entries):
