@@ -3,6 +3,8 @@ import json
 import multiprocessing
 from types import SimpleNamespace
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 
 from backend import learner_profile
@@ -73,8 +75,8 @@ def test_a_question_that_was_not_served_or_is_already_answered_is_refused():
 
 def _master(path, concept, graded):
     for number in (1, 2):
-        for _ in range(2):
-            learner_profile.record_quiz(path, f"{concept}:{number}", concept, "knew", graded={"correct": True, "confidence": "medium"} if graded else None)
+        for day in (2, 0):  # answered on two different days: one sitting is not durable mastery (backend/mastery_model.py)
+            learner_profile.record_quiz(path, f"{concept}:{number}", concept, "knew", moment=datetime.now(timezone.utc) - timedelta(days=day, minutes=-number), graded={"correct": True, "confidence": "medium"} if graded else None)
 
 
 def status(path, concept):

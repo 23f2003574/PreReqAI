@@ -18,6 +18,7 @@ PRIOR, LEARN = 0.30, 0.15
 GUESS = {"low": 0.35, "medium": 0.25, "high": 0.15}
 SLIP = {"low": 0.20, "medium": 0.10, "high": 0.05}
 MASTERED_P, MASTERED_LOWER, MIN_ANSWERS, MIN_QUESTIONS, Z = 0.95, 0.85, 4, 2, 1.645
+SPACING_HOURS, MIN_BLOCKS = 12.0, 2  # answers given within SPACING_HOURS of the first answer of a block are one block of evidence; durable mastery needs MIN_BLOCKS blocks (see `spaced_blocks`)
 MAX_CONFIDENT_WRONG = 1  # a learner who was confidently wrong twice has not shown understanding, whatever they answered since (the rule the streak-based mastery had)
 CONFIDENCE_P = {"low": 0.4, "medium": 0.65, "high": 0.9}  # what each stated confidence claims about being right, for the Brier score
 
@@ -32,8 +33,22 @@ def update(p, correct, confidence="medium"):
     return p * slip / (p * slip + (1 - p) * (1 - guess))
 
 
-def estimate(answers):
-    """{"p", "low", "high", "answers", "questions_correct", "mastered", "reason"} from [(correct, confidence, question_id)] in the order given; None when there are none."""
+def spaced_blocks(times):
+    """How many separate blocks of evidence `times` (datetimes, None for an answer of unknown time) make: a block starts at the first answer at least SPACING_HOURS after the start of the previous block, so a cramming
+    session is one block however many answers it holds. Answers without a time (older profiles) count together as one block of their own; with no known time at all this is 1 when there are answers."""
+    times = list(times)
+    known = sorted(t for t in times if t is not None)
+    blocks, start = (1 if len(known) != len(times) else 0), None
+    for moment in known:
+        if start is None or (moment - start).total_seconds() >= SPACING_HOURS * 3600:
+            blocks, start = blocks + 1, moment
+    return blocks
+
+
+def estimate(answers, times=None):
+    """{"p", "low", "high", "answers", "questions_correct", "mastered", "reason"} from [(correct, confidence, question_id)] in the order given; None when there are none.
+    `times` (one datetime or None per answer, optional) adds the spacing rule: when any answer has a known time, mastery also needs MIN_BLOCKS blocks of evidence (`spaced_blocks`), so answers given in one sitting
+    never establish durable mastery however well they went; the result then carries `spaced_blocks`. With no times given (or none known, as in profiles saved before schema 3) the rule is not applied."""
     answers = list(answers)
     if not answers:
         return None
@@ -45,7 +60,10 @@ def estimate(answers):
     low, high = max(0.0, p - Z * se), min(1.0, p + Z * se)
     questions = len({q for correct, _, q in answers if correct})
     confident_wrong = sum(1 for correct, confidence, _ in answers if not correct and confidence == "high")
-    mastered = p >= MASTERED_P and low >= MASTERED_LOWER and n >= MIN_ANSWERS and questions >= MIN_QUESTIONS and confident_wrong <= MAX_CONFIDENT_WRONG
+    timed = times is not None and any(t is not None for t in times)
+    blocks = spaced_blocks(times) if timed else None
+    spaced = not timed or blocks >= MIN_BLOCKS
+    mastered = p >= MASTERED_P and low >= MASTERED_LOWER and n >= MIN_ANSWERS and questions >= MIN_QUESTIONS and confident_wrong <= MAX_CONFIDENT_WRONG and spaced
     if mastered:
         reason = f"{p:.2f} probability of knowing it (at least {low:.2f} with some confidence) from {n} graded answers on {questions} different questions"
     else:
@@ -58,8 +76,10 @@ def estimate(answers):
             need.append(f"{confident_wrong} confidently wrong answers (mastery allows at most {MAX_CONFIDENT_WRONG})")
         if questions < MIN_QUESTIONS:
             need.append(f"only {questions} question{'s' if questions != 1 else ''} answered correctly (at least {MIN_QUESTIONS} different ones needed)")
+        if not spaced:
+            need.append(f"all answers fall in {blocks} block of evidence (answers at least {SPACING_HOURS:.0f} hours apart start a new block); durable mastery needs {MIN_BLOCKS}: answer again on another day")
         reason = "; ".join(need)
-    return {"p": round(p, 3), "low": round(low, 3), "high": round(high, 3), "answers": n, "questions_correct": questions, "mastered": mastered, "reason": reason}
+    return {"p": round(p, 3), "low": round(low, 3), "high": round(high, 3), "answers": n, "questions_correct": questions, "mastered": mastered, "reason": reason, **({"spaced_blocks": blocks} if timed else {})}
 
 
 _CONFIDENCE_OF_CODE = {"l": "low", "m": "medium", "h": "high"}
@@ -93,6 +113,14 @@ def _canonical(attempts, correct, streak, sure_right, sure_wrong, question_id):
     return [(True, c, question_id) for c in early] + [(False, c, question_id) for c in wrongs] + [(True, c, question_id) for c in late]
 
 
+def timed_sequence_from_counters(entry, question_id=""):
+    """(sequence_from_counters(...), times): the same answers and, for each, the datetime it was given (None for an answer rebuilt from counters or recorded without a time)."""
+    sequence = sequence_from_counters(entry, question_id)
+    recent = decode_timed_history(entry.get("graded_history"))
+    recent = recent[-len(sequence):] if sequence else []
+    return sequence, [None] * (len(sequence) - len(recent)) + [t for _, _, t in recent]
+
+
 def sequence_from_counters(entry, question_id=""):
     """[(correct, confidence, question_id)] for one profile question entry's assessed answers; [] for an entry without any.
     The most recent answers are kept as they were given (`graded_history`, at most spaced_review.HISTORY_LIMIT of them, with their real order and their low, medium or high confidence). Answers
@@ -113,8 +141,12 @@ def sequence_from_counters(entry, question_id=""):
 
 def estimate_entries(entries):
     """The estimate for a concept's profile question entries ([(question_id, entry)] in a fixed order); None when none has an assessed answer."""
-    answers = [item for question_id, entry in entries for item in sequence_from_counters(entry, question_id)]
-    return estimate(answers)
+    answers, times = [], []
+    for question_id, entry in entries:
+        sequence, moments = timed_sequence_from_counters(entry, question_id)
+        answers.extend(sequence)
+        times.extend(moments)
+    return estimate(answers, times)
 
 
 def estimate_attempts(attempts):

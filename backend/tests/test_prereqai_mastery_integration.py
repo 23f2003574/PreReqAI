@@ -2,6 +2,8 @@
 from types import SimpleNamespace
 from pathlib import Path
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -34,8 +36,8 @@ def master(env, concept="Probability"):
     """Two different questions answered correctly twice each, checked by the system (assessed), saved in the profile the way the diagnostic saves them."""
     path = env / "profiles" / "me.json"
     for number in (1, 2):
-        for _ in range(2):
-            learner_profile.record_quiz(path, f"{concept}:{number}", concept, "knew", graded={"correct": True, "confidence": "medium"})
+        for day in (2, 0):  # answered on two different days: one sitting is not durable mastery (backend/mastery_model.py)
+            learner_profile.record_quiz(path, f"{concept}:{number}", concept, "knew", moment=datetime.now(timezone.utc) - timedelta(days=day, minutes=-number), graded={"correct": True, "confidence": "medium"})
     assert concept in learner_profile.mastered(learner_profile.load_full(path)[0]["quiz"])
 
 
