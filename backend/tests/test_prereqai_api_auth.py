@@ -19,7 +19,9 @@ def secured(monkeypatch, tmp_path):
     monkeypatch.setenv("PREREQAI_SESSION_DIR", str(tmp_path / "sessions"))
     monkeypatch.setenv(api_auth.TOKEN_ENV, TOKEN)
     session_manager.sessions.clear()
+    api_auth._failures.clear()
     yield
+    api_auth._failures.clear()
     session_manager.sessions.clear()
 
 
