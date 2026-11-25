@@ -33,6 +33,20 @@ def _number(name, default, whole=False):
     return int(value) if whole and value >= 1 else (value if value > 0 and not whole else default)
 
 
+PROXY_ENV = "PREREQAI_TRUSTED_PROXY"
+
+
+def client_address(scope):
+    """The address wrong tokens are counted against. Normally the connection's peer. Behind one reverse proxy every connection comes from the proxy, so one attacker would lock out every learner: with PREREQAI_TRUSTED_PROXY=1
+    the LAST entry of X-Forwarded-For (the one the trusted proxy itself appended, which a client cannot forge) is used instead, falling back to the peer when the header is absent or empty. Leave it unset when the server is reachable directly: the header is then client-written."""
+    peer = (scope.get("client") or ("unknown",))[0]
+    if (os.environ.get(PROXY_ENV) or "").strip().lower() not in ("1", "true", "yes", "on"):
+        return peer
+    forwarded = next((value.decode("latin-1") for key, value in scope.get("headers", []) if key.lower() == b"x-forwarded-for"), "")
+    last = forwarded.split(",")[-1].strip()
+    return last[:64] if last else peer
+
+
 def retry_after(client):
     """Seconds (at least 1) until `client` may try again when it has failed PREREQAI_AUTH_MAX_FAILURES (default 10) times within PREREQAI_AUTH_LOCKOUT_SECONDS (default 60); 0 when it may try now.
     The counters live in this process, so with several server workers each one counts for itself; they hold at most MAX_CLIENTS addresses (expired ones go first, then the oldest)."""
@@ -100,7 +114,7 @@ class ApiTokenMiddleware:
         token = configured_token()
         if scope["type"] != "http" or token is None or not scope["path"].startswith(PROTECTED_PREFIX) or scope["method"] == "OPTIONS":
             return await self.app(scope, receive, send)
-        client = (scope.get("client") or ("unknown",))[0]
+        client = client_address(scope)
         wait = retry_after(client)
         if wait:  # too many wrong tokens from this address: refuse without comparing anything
             _log.warning("API token attempts from one client are throttled (%d s left)", wait)
