@@ -33,6 +33,14 @@ def limit():
     return wanted if wanted >= 1 else max(1, min(4, os.cpu_count() or 1))
 
 
+def misconfiguration():
+    """A warning when PREREQAI_MAX_CONCURRENT_ANALYSES is set to something unusable (the default limit then applies silently); None when it is unset, blank or a whole number of at least 1."""
+    value = (os.environ.get(SLOTS_ENV) or "").strip()
+    if value and not (value.isdigit() and int(value) >= 1):
+        return f"{SLOTS_ENV}={value!r} is not a whole number of at least 1, so the default limit of {limit()} concurrent analyses applies."
+    return None
+
+
 def _directory():
     configured = (os.environ.get(DIR_ENV) or "").strip()
     owner = os.getuid() if hasattr(os, "getuid") else os.environ.get("USERNAME", "user")

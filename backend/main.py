@@ -126,14 +126,17 @@ app.include_router(
 @app.get("/health", tags=["Service"])
 def health():
     """Liveness probe for deployments and uptime checks: the server is up, which release it is, and how many of its analysis slots (see backend/analysis_slots.py, shared by every worker on this computer) are in use,
-    so an operator can see saturation before clients start getting 503."""
+    so an operator can see saturation before clients start getting 503. `warnings` appears only when a limit or throttle setting is set to something unusable and its default is being used instead."""
     from backend import analysis_slots
 
     try:
         analysis = {"limit": analysis_slots.limit(), "active": analysis_slots.active()}
     except OSError:  # the slot folder is unusable: the server is still up
         analysis = {"limit": analysis_slots.limit(), "active": None}
-    return {"status": "ok", "service": "PreReqAI", "version": __version__, "analysis": analysis}
+    from backend import api_auth
+
+    warnings = [message for message in (analysis_slots.misconfiguration(), *api_auth.misconfiguration()) if message]
+    return {"status": "ok", "service": "PreReqAI", "version": __version__, "analysis": analysis, **({"warnings": warnings} if warnings else {})}
 
 
 def _field(location) -> str:

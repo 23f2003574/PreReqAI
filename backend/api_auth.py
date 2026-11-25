@@ -54,6 +54,16 @@ def client_address(scope):
     return last[:64] if last else peer
 
 
+def misconfiguration():
+    """Warnings for throttle settings that are set but unusable (the defaults then apply silently, which would hide a typo from whoever tightened them): a list, empty when all is well."""
+    found = []
+    for name, whole, default in ((MAX_FAILURES_ENV, True, DEFAULT_MAX_FAILURES), (WINDOW_ENV, False, DEFAULT_WINDOW)):
+        value = (os.environ.get(name) or "").strip()
+        if value and _number(name, None, whole) is None:
+            found.append(f"{name}={value!r} is not a positive {'whole number' if whole else 'number of seconds'}, so the default {default:g} applies.")
+    return found
+
+
 def retry_after(client):
     """Seconds (at least 1) until `client` may try again when it has failed PREREQAI_AUTH_MAX_FAILURES (default 10) times within PREREQAI_AUTH_LOCKOUT_SECONDS (default 60); 0 when it may try now.
     The counters live in this process, so with several server workers each one counts for itself; they hold at most MAX_CLIENTS addresses (expired ones go first, then the oldest)."""
