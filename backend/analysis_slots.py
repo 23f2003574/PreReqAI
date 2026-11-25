@@ -42,14 +42,27 @@ def _directory():
 
 
 def _take(number):
-    """The open slot file `number` with its exclusive lock held, or None when another analysis (in any process) holds it."""
-    handle = open(_directory() / f"slot-{number}.lock", "a+b")
+    """The open slot file `number` with its exclusive lock held and the holder's process id written in it, or None when another analysis (in any process) holds it."""
+    handle = os.fdopen(os.open(_directory() / f"slot-{number}.lock", os.O_RDWR | os.O_CREAT, 0o600), "r+b")
     try:
         fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError:
         handle.close()
         return None
+    handle.truncate(0)
+    handle.write(str(os.getpid()).encode())
+    handle.flush()
     return handle
+
+
+def _alive(pid):
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except OSError:  # no permission to signal it: it exists
+        return True
+    return True
 
 
 def try_acquire():
@@ -75,19 +88,22 @@ def release():
         if fcntl is None:
             _active = max(0, _active - 1)
         elif _held:
-            _held.pop().close()  # closing the file releases its lock
+            handle = _held.pop()
+            handle.truncate(0)  # no holder named any more
+            handle.close()  # closing the file releases its lock
 
 
 def active():
-    """How many slots are in use right now, by any process."""
+    """How many slots are in use right now, by any process. It only reads the process id each holder writes in its slot file (and checks that process is alive, so a crashed holder's leftover id counts for nothing); it
+    never takes a lock, so asking can never make another process's `try_acquire` fail."""
     with _lock:
         if fcntl is None:
             return _active
-        busy = 0
+        busy, folder = 0, _directory()  # an unusable folder raises OSError here, so the caller can tell "unknown" from "none"
         for number in range(max(limit(), len(_held))):
-            handle = _take(number)
-            if handle is None:
-                busy += 1
-            else:
-                handle.close()
+            try:
+                pid = int((folder / f"slot-{number}.lock").read_text().strip() or 0)
+            except (OSError, ValueError):
+                continue
+            busy += pid > 0 and _alive(pid)
         return busy

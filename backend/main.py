@@ -125,8 +125,15 @@ app.include_router(
 
 @app.get("/health", tags=["Service"])
 def health():
-    """Liveness probe for deployments and uptime checks: the server is up, and which release it is."""
-    return {"status": "ok", "service": "PreReqAI", "version": __version__}
+    """Liveness probe for deployments and uptime checks: the server is up, which release it is, and how many of its analysis slots (see backend/analysis_slots.py, shared by every worker on this computer) are in use,
+    so an operator can see saturation before clients start getting 503."""
+    from backend import analysis_slots
+
+    try:
+        analysis = {"limit": analysis_slots.limit(), "active": analysis_slots.active()}
+    except OSError:  # the slot folder is unusable: the server is still up
+        analysis = {"limit": analysis_slots.limit(), "active": None}
+    return {"status": "ok", "service": "PreReqAI", "version": __version__, "analysis": analysis}
 
 
 def _field(location) -> str:
