@@ -6,13 +6,14 @@ Input: the analysis report's plan (study_calendar.plan_inputs), the session's as
 * remediate: at least 2 assessed answers with accuracy at most REMEDIATE_ACCURACY, or two confidently wrong answers: hours grow by REMEDIATE_FACTOR (at most +50 percent) and the
   questions missed come back as a remediation list (question, correct answer, explanation);
 * otherwise the step is kept as planned (too little evidence is never a reason to change a plan).
-Evidence also comes from the learner's persistent profile (earlier sessions and papers): a concept the profile rates "mastered" by the assessed-answer estimate (backend/learner_profile.mastery) counts as evidence for a step on that concept when this session has none of its own, so a prerequisite already demonstrated is shortened (or, for a mathematical skill, skipped) in a new paper's plan, with the reason saying the evidence is from the profile. A profile concept that is "needs_refresh" (its reviews are long overdue), "progressing", "needs_practice" or self-reported never changes a plan, and this session's own assessed answers always win over the profile's. Self-reported answers are not evidence here. A learner's override ("reject") restores a step to its original hours; "restore" brings the adaptation back. Nothing is saved by this module."""
+Evidence also comes from the learner's persistent profile (earlier sessions and papers): a concept the profile rates "mastered" by the assessed-answer estimate (backend/learner_profile.mastery) counts as evidence for a step on that concept when this session has none of its own, so a prerequisite already demonstrated is shortened (or, for a mathematical skill, skipped) in a new paper's plan, with the reason saying the evidence is from the profile. A profile concept that is "needs_refresh" (its reviews are long overdue), "progressing", "needs_practice" or self-reported never changes a plan, and this session's own assessed answers always win over the profile's. Self-reported answers are not evidence here. A concept the profile rates "needs_refresh" (mastered once, then lapsed under the forgetting model of backend/mastery_model.py) gets a "refresh" step: REFRESH_FACTOR of the original hours (never below MIN_HOURS or above the original), with the reason naming the probability at the last answer, the days since and the decayed probability, so lapsed knowledge is revisited briefly instead of studied from scratch or ignored; this session's own assessed answers win over it, and a "reject" override restores the full hours. A learner's override ("reject") restores a step to its original hours; "restore" brings the adaptation back. Nothing is saved by this module."""
 from math import isfinite
 
 MIN_GRADED, MIN_DISTINCT = 3, 2
 COMPRESS_LOWER = 0.80  # the lower end of the mastery estimate (backend/mastery_model.py) must reach this before a step is compressed
 COMPRESS_ACCURACY, COMPRESS_FACTOR, MIN_HOURS = 0.85, 0.3, 0.5
 REMEDIATE_ACCURACY, REMEDIATE_FACTOR = 0.5, 1.5
+REFRESH_FACTOR = 0.5  # a lapsed concept was once demonstrated, so a refresh takes half the original study time (a stated heuristic)
 
 
 def evidence_from_attempts(attempts):
@@ -55,6 +56,15 @@ def profile_evidence(quiz, now=None):
     return found
 
 
+def lapsed_evidence(quiz, now=None):
+    """{concept: {"lapsed": True, ...}} for the concepts a learner profile's quiz history rates "needs_refresh": assessed mastery that the forgetting model has let lapse (see learner_profile.mastery). Marked "source": "profile"."""
+    from backend import learner_profile
+
+    return {item["concept"]: {"lapsed": True, "source": "profile", "p_mastery": item["p_mastery"], "p_at_last_answer": item.get("p_at_last_answer"), "days_since_evidence": item.get("days_since_evidence"),
+                              "graded": item["graded_attempts"], "correct": item["graded_correct"], "high_confidence_wrong": item["high_confidence_wrong"], "missed": []}
+            for item in learner_profile.mastery(quiz or {}, now) if item["status"] == "needs_refresh" and item.get("evidence") == "assessed"}
+
+
 def profile_quiz(session):
     """The quiz history of the session's learner profile, or None when the session has no profile, the profiles directory is not configured or the file cannot be read."""
     from backend import learner_profile
@@ -86,6 +96,11 @@ def _remediation(question_ids):
 
 def decide(concept, hours, evidence):
     """(action, factor, reason) for one step from its assessed evidence."""
+    if evidence and evidence.get("lapsed"):
+        days, earlier = evidence.get("days_since_evidence"), evidence.get("p_at_last_answer")
+        was = (f"estimated {earlier:.2f} at the last graded answer" if earlier is not None else "mastery shown") + (f", {days:.0f} days ago" if isinstance(days, (int, float)) else "")
+        return "refresh", REFRESH_FACTOR, (f"you showed mastery in your learner profile ({was}), and the forgetting model now puts it at {evidence['p_mastery']:.2f}: "
+                                           "a short refresh is planned instead of the full study time; answering a few questions again will confirm it.")
     if not evidence:
         return "keep", 1.0, "No assessed answers yet: the plan is unchanged. Answer a few diagnostic questions to adapt it."
     graded, correct, accuracy = evidence["graded"], evidence["correct"], evidence["correct"] / evidence["graded"]
@@ -110,12 +125,16 @@ def propose(report, attempts, overrides=None, calendar=None, profile=None, now=N
     evidence, overrides = evidence_from_attempts(attempts), overrides or {}
     for concept, found in profile_evidence(profile, now).items():  # this session's own assessed answers win; the profile fills the concepts it has none for
         evidence.setdefault(concept, found)
+    for concept, found in lapsed_evidence(profile, now).items():  # lapsed mastery: a short refresh, unless this session has assessed answers of its own
+        evidence.setdefault(concept, found)
     adjustments, plan, remediation = [], [], {}
     for step in steps:
         action, factor, reason = decide(step.concept, step.estimated_hours, evidence.get(step.concept))
         original = step.estimated_hours
         adjusted = original
         if action == "compress":
+            adjusted = round(min(original, max(MIN_HOURS, original * factor)), 2)
+        elif action == "refresh":
             adjusted = round(min(original, max(MIN_HOURS, original * factor)), 2)
         elif action == "remediate":
             adjusted = round(original * factor, 2)

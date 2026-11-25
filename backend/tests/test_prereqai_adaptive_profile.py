@@ -38,10 +38,34 @@ def test_a_mathematical_skill_demonstrated_in_the_profile_is_skipped():
     assert adjustment(result, "Math: Entropy")["action"] == "skip" and adjustment(result, "Math: Entropy")["adjusted_hours"] == 0.0
 
 
-@pytest.mark.parametrize("quiz", [entries("Calculus", seen_days_ago=60), entries("Calculus", graded=False), entries("Calculus", last_outcome="missed"), {}, None])
+@pytest.mark.parametrize("quiz", [entries("Calculus", graded=False), entries("Calculus", last_outcome="missed"), {}, None])
 def test_stale_self_reported_missed_or_absent_profile_evidence_never_changes_the_plan(quiz):
     result = adaptive_plan.propose(report(), [], None, None, quiz)
     assert adjustment(result, "Calculus") is None and result["hours_after"] == result["hours_before"]
+
+
+def test_a_lapsed_prerequisite_gets_a_shorter_refresh_step_with_the_reason():
+    result = adaptive_plan.propose(report(), [], None, None, entries("Calculus", seen_days_ago=60))
+    change = adjustment(result, "Calculus")
+    assert change["action"] == "refresh" and change["adjusted_hours"] == 2.0 and change["original_hours"] == 4.0 and change["can_override"]
+    assert "forgetting model" in change["reason"] and "60 days ago" in change["reason"] and "short refresh" in change["reason"]
+    assert [p["hours"] for p in result["plan"]][:2] == [2.0, 3.0] and adjustment(result, "Probability") is None
+
+
+def test_a_concept_that_is_still_current_gets_no_refresh_and_a_refresh_never_exceeds_the_original_hours():
+    assert adjustment(adaptive_plan.propose(report(), [], None, None, entries("Calculus", seen_days_ago=5)), "Calculus")["action"] == "compress"
+    short = {"learning_plan": [{"concept": "Calculus", "estimated_hours": 0.5}], "math_plan": [], "study_progress": [], "missing_prerequisites": []}
+    assert adjustment(adaptive_plan.propose(short, [], None, None, entries("Calculus", seen_days_ago=60)), "Calculus")["adjusted_hours"] == 0.5
+
+
+def test_a_refresh_reaches_the_schedule_and_can_be_rejected_and_this_sessions_answers_win():
+    quiz = entries("Calculus", seen_days_ago=60)
+    adapted = adaptive_plan.adapted_report(report(), [], None, quiz)
+    assert adapted["adapted_concepts"] == ["Calculus"] and adapted["learning_plan"][0]["estimated_hours"] == 2.0 and adapted["learning_plan"][0]["original_hours"] == 4.0
+    rejected = adaptive_plan.propose(report(), [], {"Calculus": "reject"}, None, quiz)
+    assert adjustment(rejected, "Calculus")["overridden"] and adjustment(rejected, "Calculus")["adjusted_hours"] == 4.0
+    own = [{"concept": "Calculus", "graded": True, "correct": False, "question_id": "Calculus:1", "confidence": "medium"}] * 2
+    assert adjustment(adaptive_plan.propose(report(), own, None, None, quiz), "Calculus")["action"] == "remediate"
 
 
 def test_this_sessions_own_answers_win_over_the_profile_and_the_user_can_reverse_the_change():
