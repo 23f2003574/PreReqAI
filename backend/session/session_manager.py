@@ -113,6 +113,8 @@ class SessionManager:
 
         self._summaries = {}  # saved-only session path -> ((mtime_ns, size), summary), so a listing re-reads only changed files
 
+        self._signatures = {}  # session_id -> (mtime_ns, size, inode) of its file as this worker last read or wrote it, to notice another worker's save
+
         self._last_used = {}  # session_id -> time of the latest create/get, so eviction drops the idlest session
 
     @staticmethod
@@ -276,6 +278,8 @@ class SessionManager:
 
                 self._bases[session.session_id] = session_merge.facts(session)
 
+                self._signatures[session.session_id] = self._signature(path)
+
         except BaseException as exc:  # an interrupt (Ctrl-C, SystemExit) must not leave its temp file behind either
 
             try:  # a half-written temp file (disk full) must not keep eating the space the next attempt needs
@@ -406,9 +410,15 @@ class SessionManager:
 
                 self._bases[session_id] = session_merge.facts(session)
 
+                self._signatures[session_id] = self._signature(path)
+
             if legacy:
 
                 self._rewrite_as_json(session)
+
+        elif session is not None:
+
+            self._refresh_from_disk(session)
 
         if session is not None:
 
@@ -419,6 +429,38 @@ class SessionManager:
             self._evict_oldest()  # restoring saved sessions one by one must not grow memory past the cap either
 
         return session
+
+    @staticmethod
+    def _signature(path: Path):
+        try:
+            info = path.stat()
+        except OSError:
+            return None
+        return (info.st_mtime_ns, info.st_size, info.st_ino)
+
+    def _refresh_from_disk(self, session: LearningSession) -> None:
+        """A session held in memory is served as it is unless its file changed since this worker last read or wrote it, which means another worker saved it: that worker's changes are then merged into the
+        held object (the same three-way merge a save uses, so this worker's own unsaved changes are kept) and the file's version is adopted, so a reader sees the other worker's progress without having to save first.
+        Costs one `stat` per read; a file that is missing, unreadable or older than this worker's copy changes nothing."""
+        path = self._path(session.session_id)
+        if path is None:
+            return
+        signature = self._signature(path)
+        if signature is None or signature == self._signatures.get(session.session_id):
+            return
+        saved, _ = self._read_file(path)
+        if saved is None:  # being replaced or unreadable: try again on the next read
+            return
+        with self._lock:
+            base = self._bases.get(session.session_id)
+            if base is not None and saved.version > session.version:
+                conflicts = session_merge.merge(session, saved, base)
+                if conflicts:
+                    self.last_conflicts = conflicts
+                    _log.warning("session %s: conflicting changes from two workers: %s", session.session_id, "; ".join(conflicts))
+                session.version = saved.version
+                self._bases[session.session_id] = session_merge.facts(session)
+            self._signatures[session.session_id] = signature
 
     def _rewrite_as_json(self, session: LearningSession) -> None:
         """Replace an older pickle file by the JSON one, but only after the JSON is shown to hold the same session (it is read back and written out
