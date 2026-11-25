@@ -10,6 +10,7 @@ MASTERED_LOWER, at least MIN_ANSWERS answers were graded and at least MIN_QUESTI
 not enough: the answer minimum is what stops them. The parameters are fixed, reasoned values, NOT fitted to real learners: the probabilities are an explainable ranking of evidence, not calibrated predictions.
 Forgetting (`apply_decay`, used by learner_profile.mastery): without new graded evidence the probability falls toward PRIOR; 90% of the distance above the prior is assumed kept after each review interval (the question's own `interval_hours`, at least a day), counted from the latest graded answer (its schema 3 time, else last_seen). A concept mastered at its last answer lapses to "needs_refresh" once the decayed probability is below REFRESH_P (0.80) and returns to mastered when new graded answers arrive. These numbers are a reasoned heuristic, NOT a forgetting curve fitted to learners and not a calibrated probability.
 A profile keeps each question's counters and its most recent graded answers in order (`graded_history`); `sequence_from_counters` uses those as given and rebuilds only the older answers, which survive as counters, in a canonical order (earlier correct answers, then the misses)."""
+from datetime import timedelta
 from math import sqrt
 
 RETENTION_AT_INTERVAL, MIN_INTERVAL_DAYS, REFRESH_P = 0.90, 1.0, 0.80
@@ -45,6 +46,15 @@ def spaced_blocks(times):
     return blocks
 
 
+def last_block_start(times):
+    """The start time of the newest block of evidence in `times` (see spaced_blocks), or None when no time is known."""
+    start = None
+    for moment in sorted(t for t in times if t is not None):
+        if start is None or (moment - start).total_seconds() >= SPACING_HOURS * 3600:
+            start = moment
+    return start
+
+
 def estimate(answers, times=None):
     """{"p", "low", "high", "answers", "questions_correct", "mastered", "reason"} from [(correct, confidence, question_id)] in the order given; None when there are none.
     `times` (one datetime or None per answer, optional) adds the spacing rule: when any answer has a known time, mastery also needs MIN_BLOCKS blocks of evidence (`spaced_blocks`), so answers given in one sitting
@@ -62,6 +72,7 @@ def estimate(answers, times=None):
     confident_wrong = sum(1 for correct, confidence, _ in answers if not correct and confidence == "high")
     timed = times is not None and any(t is not None for t in times)
     blocks = spaced_blocks(times) if timed else None
+    ready_at = last_block_start(times) + timedelta(hours=SPACING_HOURS) if timed else None
     spaced = not timed or blocks >= MIN_BLOCKS
     mastered = p >= MASTERED_P and low >= MASTERED_LOWER and n >= MIN_ANSWERS and questions >= MIN_QUESTIONS and confident_wrong <= MAX_CONFIDENT_WRONG and spaced
     if mastered:
@@ -77,9 +88,9 @@ def estimate(answers, times=None):
         if questions < MIN_QUESTIONS:
             need.append(f"only {questions} question{'s' if questions != 1 else ''} answered correctly (at least {MIN_QUESTIONS} different ones needed)")
         if not spaced:
-            need.append(f"all answers fall in {blocks} block of evidence (answers at least {SPACING_HOURS:.0f} hours apart start a new block); durable mastery needs {MIN_BLOCKS}: answer again on another day")
+            need.append(f"all answers fall in {blocks} block of evidence (answers at least {SPACING_HOURS:.0f} hours apart start a new block); durable mastery needs {MIN_BLOCKS}: answer again on another day (from {ready_at.strftime('%Y-%m-%d %H:%M')} UTC)")
         reason = "; ".join(need)
-    return {"p": round(p, 3), "low": round(low, 3), "high": round(high, 3), "answers": n, "questions_correct": questions, "mastered": mastered, "reason": reason, **({"spaced_blocks": blocks} if timed else {})}
+    return {"p": round(p, 3), "low": round(low, 3), "high": round(high, 3), "answers": n, "questions_correct": questions, "mastered": mastered, "reason": reason, **({"spaced_blocks": blocks, **({"spacing_ready_at": ready_at.strftime("%Y-%m-%dT%H:%M:%SZ")} if not spaced else {})} if timed else {})}
 
 
 _CONFIDENCE_OF_CODE = {"l": "low", "m": "medium", "h": "high"}

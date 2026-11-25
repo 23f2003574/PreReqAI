@@ -374,6 +374,8 @@ def mastery(quiz, now=None):
                        "missed": sum(e["missed"] for e in entries), "status": status, "evidence": "assessed" if graded else "self_reported", "graded_attempts": graded,
                        "graded_correct": sum(e.get("graded_correct", 0) for e in entries), "high_confidence_wrong": confident_wrong, "last_seen": max(e["last_seen"] for e in entries),
                        **({"p_mastery": estimate["p"], "mastery_low": estimate["low"], "mastery_high": estimate["high"], "mastery_reason": estimate["reason"]} if estimate else {}),
+                       **({"spaced_blocks": estimate["spaced_blocks"]} if estimate and "spaced_blocks" in estimate else {}),
+                       **({"spacing_ready_at": estimate["spacing_ready_at"]} if estimate and "spacing_ready_at" in estimate else {}),
                        **({"p_at_last_answer": estimate["p_at_last_answer"], "retention": estimate["retention"], "days_since_evidence": estimate["days_since_evidence"]} if estimate and "p_at_last_answer" in estimate else {}),
                        **({"refresh_reason": refresh_reason} if refresh_reason else {})})
     return result

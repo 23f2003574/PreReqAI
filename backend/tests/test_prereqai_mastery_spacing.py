@@ -57,3 +57,22 @@ def test_a_profile_with_same_session_history_is_not_mastered_but_a_spaced_one_is
     spaced = [("q1", entry("q1", ["1h@2026-11-20T09:00:00Z", "1h@2026-11-22T09:05:00Z"])), ("q2", entry("q2", ["1h@2026-11-20T09:10:00Z", "1h@2026-11-22T09:15:00Z"]))]
     assert mastery_model.estimate_entries(cram)["mastered"] is False
     assert mastery_model.estimate_entries(spaced)["mastered"] is True
+
+
+def test_a_concept_held_back_only_by_spacing_says_when_another_answer_will_count():
+    result = mastery_model.estimate(ANSWERS, at(0, 1, 2, 3))
+    assert result["mastered"] is False and result["spacing_ready_at"] == "2026-11-20T21:00:00Z"
+    assert "from 2026-11-20 21:00 UTC" in result["reason"]
+    assert "spacing_ready_at" not in mastery_model.estimate(ANSWERS, at(0, 0, 30, 30)) and mastery_model.estimate(ANSWERS)["mastered"]
+
+
+def test_the_profile_mastery_item_and_the_command_line_show_the_spacing(tmp_path):
+    from backend import learner_profile
+
+    path = tmp_path / "p.json"
+    for question in ("Calculus:1", "Calculus:2"):
+        for minutes in (0, 5):
+            learner_profile.record_quiz(path, question, "Calculus", "knew", moment=T0 + timedelta(minutes=minutes), graded={"correct": True, "confidence": "high"})
+    item = learner_profile.mastery(learner_profile.load_full(path)[0]["quiz"], now=T0 + timedelta(hours=2))[0]
+    assert item["status"] == "progressing" and item["spaced_blocks"] == 1 and item["spacing_ready_at"] == "2026-11-20T21:00:00Z"
+    assert "another day" in learner_profile.describe_mastery(item) and "21:00 UTC" in learner_profile.describe_mastery(item)
