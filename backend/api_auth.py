@@ -36,6 +36,13 @@ def _number(name, default, whole=False):
 PROXY_ENV = "PREREQAI_TRUSTED_PROXY"
 
 
+def _event(name, **fields):
+    """A structured event (backend/observability.py) so wrong-token traffic can be counted and alerted on; it never carries the token, the address or the header."""
+    from backend.observability import log_event
+
+    log_event(name, **fields)
+
+
 def client_address(scope):
     """The address wrong tokens are counted against. Normally the connection's peer. Behind one reverse proxy every connection comes from the proxy, so one attacker would lock out every learner: with PREREQAI_TRUSTED_PROXY=1
     the LAST entry of X-Forwarded-For (the one the trusted proxy itself appended, which a client cannot forge) is used instead, falling back to the peer when the header is absent or empty. Leave it unset when the server is reachable directly: the header is then client-written."""
@@ -129,6 +136,7 @@ class ApiTokenMiddleware:
         wait = retry_after(client)
         if wait:  # too many wrong tokens from this address: refuse without comparing anything
             _log.warning("API token attempts from one client are throttled (%d s left)", wait)
+            _event("auth_throttled", level=logging.WARNING, retry_after_seconds=wait)
             return await self._refuse(send, 429, "Too many invalid access tokens from this address; wait before trying again.", wait)
         authorization = next((value.decode("latin-1") for key, value in scope["headers"] if key.lower() == b"authorization"), "")
         refusal = check(authorization, token)
@@ -136,6 +144,7 @@ class ApiTokenMiddleware:
             record_success(client)
             return await self.app(scope, receive, send)
         status, message = refusal
+        _event("auth_refused", level=logging.WARNING, status=status, credential_sent=bool(authorization))
         if authorization:  # a request that sent no credential at all is not a guess at the token
             record_failure(client)
         body = json.dumps({"status": "failure", "stage": "authentication", "detail": message, "hint": f"Set the {TOKEN_ENV} value of the server as a bearer token."}).encode()
