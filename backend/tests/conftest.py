@@ -22,6 +22,12 @@ def _parse_in_process_by_default(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _own_analysis_slots(monkeypatch, tmp_path_factory):
+    """The analysis slots are shared by every process on the computer (backend/analysis_slots.py); parallel test workers must not take each other's slots."""
+    monkeypatch.setenv("PREREQAI_SLOTS_DIR", str(tmp_path_factory.mktemp("slots")))
+
+
+@pytest.fixture(autouse=True)
 def _empty_analysis_cache(monkeypatch):
     """The analysis cache is a process-wide singleton: an earlier test's analysis of the bundled paper must not stand in for the pipeline run a
     later test (stage cancellation, time limits, patched stages) is about. The cache's own tests fill it on purpose."""
