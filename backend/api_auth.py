@@ -81,9 +81,18 @@ def record_success(client):
         _failures.pop(client, None)
 
 
+NEXT_TOKEN_ENV = "PREREQAI_API_TOKEN_NEXT"
+
+
 def configured_token():
     """The configured token, or None when the variable is unset or blank."""
     return (os.environ.get(TOKEN_ENV) or "").strip() or None
+
+
+def configured_tokens():
+    """Every token the server accepts: PREREQAI_API_TOKEN and, while a token is being rotated, PREREQAI_API_TOKEN_NEXT (blank ones are ignored). Rotation without downtime: set the new token as _NEXT and restart, move clients to it,
+    then make it PREREQAI_API_TOKEN and drop _NEXT. An empty list means authentication is off."""
+    return [value for value in ((os.environ.get(name) or "").strip() for name in (TOKEN_ENV, NEXT_TOKEN_ENV)) if value]
 
 
 def check(authorization, token):
@@ -93,13 +102,15 @@ def check(authorization, token):
     scheme, _, credential = authorization.partition(" ")
     if scheme.lower() != "bearer" or not credential.strip():
         return 403, "The credential is not a bearer token."
-    if not hmac.compare_digest(credential.strip().encode("utf-8"), token.encode("utf-8")):
+    accepted = [token] if isinstance(token, str) else list(token)
+    matches = [hmac.compare_digest(credential.strip().encode("utf-8"), candidate.encode("utf-8")) for candidate in accepted]  # every candidate is compared, so the time does not say which one was close
+    if not any(matches):
         return 403, "The access token is not valid."
     return None
 
 
 class ApiTokenMiddleware:
-    """A pure ASGI middleware: when PREREQAI_API_TOKEN is set, requests under /api/ must present it (the variable is read per request, so it can be set or rotated without rebuilding the app)."""
+    """A pure ASGI middleware: when PREREQAI_API_TOKEN is set, requests under /api/ must present it (the variables are read per request, so it can be set or rotated without rebuilding the app)."""
 
     def __init__(self, app):
         self.app = app
@@ -111,7 +122,7 @@ class ApiTokenMiddleware:
         await send({"type": "http.response.body", "body": body})
 
     async def __call__(self, scope, receive, send):
-        token = configured_token()
+        token = configured_tokens() or None
         if scope["type"] != "http" or token is None or not scope["path"].startswith(PROTECTED_PREFIX) or scope["method"] == "OPTIONS":
             return await self.app(scope, receive, send)
         client = client_address(scope)
@@ -146,7 +157,7 @@ def bind_host(argv=None, environ=None):
     return environ.get("UVICORN_HOST") or None
 
 
-def exposure_warning(host, token_set):
+def exposure_warning(host, token_set):  # token_set: whether any token is configured
     """A warning text when the server listens beyond this computer without a token, else None."""
     if token_set or not host or host.strip().lower() in LOOPBACK:
         return None
@@ -155,7 +166,7 @@ def exposure_warning(host, token_set):
 
 
 def warn_if_exposed(argv=None, environ=None):
-    message = exposure_warning(bind_host(argv, environ), configured_token() is not None)
+    message = exposure_warning(bind_host(argv, environ), bool(configured_tokens()))
     if message:
         _log.warning(message)
     return message
