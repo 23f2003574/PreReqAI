@@ -98,12 +98,12 @@ def test_a_profile_change_reaches_the_next_plan_without_a_restart(tmp_path, monk
     assert adaptive_plan.session_report(session)["learning_plan"][0]["estimated_hours"] == 4.0
 
 
-def test_stale_mastery_does_not_shorten_a_new_papers_plan_and_fresh_mastery_does(tmp_path, monkeypatch):
+def test_stale_mastery_only_earns_a_refresh_and_fresh_mastery_compresses_a_new_papers_plan(tmp_path, monkeypatch):
     path = tmp_path / "me.json"
     session = session_for(tmp_path, monkeypatch)
     write(path, entries("Calculus", seen_days_ago=60))
-    assert adaptive_plan.session_report(session)["learning_plan"][0]["estimated_hours"] == 4.0
-    assert adjustment(adaptive_plan.propose(report(), [], None, None, learner_profile.load_cached(path)[0]["quiz"]), "Calculus") is None
+    assert adaptive_plan.session_report(session)["learning_plan"][0]["estimated_hours"] == 2.0  # lapsed mastery: a half-length refresh, not the compressed 1.2 hours of fresh mastery
+    assert adjustment(adaptive_plan.propose(report(), [], None, None, learner_profile.load_cached(path)[0]["quiz"]), "Calculus")["action"] == "refresh"
     write(path, entries("Calculus", seen_days_ago=1))
     assert adaptive_plan.session_report(session)["learning_plan"][0]["estimated_hours"] == 1.2
 
