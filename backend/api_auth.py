@@ -5,13 +5,22 @@ reachable by others sets PREREQAI_API_TOKEN: every path under /api/ then needs `
 wrong token or another scheme gets 403, and the token is compared in constant time. Not protected: /health (a liveness probe), the page itself at / (it holds no data and asks the learner for the
 token), and the interactive documentation. With no token set nothing changes, so local use needs no setup; the server then logs a warning when it is asked to listen on a non-loopback address
 (`--host 0.0.0.0` or UVICORN_HOST), because that exposes every session unauthenticated. The token is never logged, echoed in a response or placed in an error message."""
+import contextlib
+import hashlib
 import hmac
 import json
 import logging
 import os
 import sys
+import tempfile
 import threading
 import time
+from pathlib import Path
+
+try:
+    import fcntl
+except ImportError:  # no POSIX file locks: count within this process only
+    fcntl = None
 
 TOKEN_ENV = "PREREQAI_API_TOKEN"
 PROTECTED_PREFIX = "/api/"
@@ -20,9 +29,10 @@ _log = logging.getLogger("prereqai.security")
 
 MAX_FAILURES_ENV, WINDOW_ENV = "PREREQAI_AUTH_MAX_FAILURES", "PREREQAI_AUTH_LOCKOUT_SECONDS"
 DEFAULT_MAX_FAILURES, DEFAULT_WINDOW, MAX_CLIENTS = 10, 60.0, 1024
-_failures = {}  # client address -> (failures in the current window, when the window started); bounded to MAX_CLIENTS entries
+DIR_ENV = "PREREQAI_AUTH_DIR"  # where the failure counters shared by the worker processes are kept (default: a per-user prereqai-auth-* folder of the temporary directory)
+_failures = {}  # the counters of this process, used only when the shared file cannot be: key -> (failures in the current window, when the window started)
 _failures_lock = threading.Lock()
-_clock = time.monotonic  # replaced in tests
+_clock = time.time  # wall-clock seconds: the window must mean the same in every process (replaced in tests)
 
 
 def _number(name, default, whole=False):
@@ -64,38 +74,80 @@ def misconfiguration():
     return found
 
 
+def _key(client):
+    """The key a client address is counted under: a hash, so the shared file never holds an address."""
+    return hashlib.sha256(str(client).encode("utf-8", "replace")).hexdigest()[:24]
+
+
+def _store_file():
+    configured = (os.environ.get(DIR_ENV) or "").strip()
+    owner = os.getuid() if hasattr(os, "getuid") else os.environ.get("USERNAME", "user")
+    folder = Path(configured) if configured else Path(tempfile.gettempdir()) / f"prereqai-auth-{owner}"
+    folder.mkdir(mode=0o700, parents=True, exist_ok=True)
+    return folder / "auth-failures.json"
+
+
+@contextlib.contextmanager
+def _state(window):
+    """The failure counters {key: [failures in the window, when it started]} for one read-modify-write, shared by every server worker process on this computer through a small file held under an exclusive
+    operating-system lock (so concurrent failures are counted exactly once each, whichever worker sees them). Records whose window has ended are dropped on every use and at most MAX_CLIENTS are kept (the oldest go
+    first), so the file stays small. Without file locks (Windows) or when the folder cannot be used the counters of this process are used instead (`_failures`). The file holds hashed addresses, never a token."""
+    with _failures_lock:
+        handle = None
+        if fcntl is not None:
+            try:
+                handle = os.fdopen(os.open(_store_file(), os.O_RDWR | os.O_CREAT, 0o600), "r+b")
+                fcntl.flock(handle, fcntl.LOCK_EX)
+            except OSError:
+                handle = None
+        try:
+            if handle is None:
+                data = _failures
+            else:
+                try:
+                    loaded = json.loads(handle.read() or b"{}")
+                except ValueError:
+                    loaded = {}
+                data = {k: (v[0], v[1]) for k, v in loaded.items() if isinstance(k, str) and isinstance(v, list) and len(v) == 2 and all(isinstance(x, (int, float)) for x in v)} if isinstance(loaded, dict) else {}
+            now = _clock()
+            for stale in [k for k, (_, started) in data.items() if now - started >= window]:
+                del data[stale]
+            yield data
+            while len(data) > MAX_CLIENTS:
+                del data[min(data, key=lambda k: data[k][1])]
+            if handle is not None:
+                handle.seek(0)
+                handle.truncate(0)
+                handle.write(json.dumps({k: list(v) for k, v in data.items()}).encode())
+                handle.flush()
+        finally:
+            if handle is not None:
+                handle.close()  # closing releases the lock
+
+
 def retry_after(client):
     """Seconds (at least 1) until `client` may try again when it has failed PREREQAI_AUTH_MAX_FAILURES (default 10) times within PREREQAI_AUTH_LOCKOUT_SECONDS (default 60); 0 when it may try now.
-    The counters live in this process, so with several server workers each one counts for itself; they hold at most MAX_CLIENTS addresses (expired ones go first, then the oldest)."""
+    The counters are shared by every server worker process on this computer (see `_state`), so `--workers N` does not multiply the limit; they hold at most MAX_CLIENTS addresses (expired ones go first, then the oldest)."""
     window, limit = _number(WINDOW_ENV, DEFAULT_WINDOW), _number(MAX_FAILURES_ENV, DEFAULT_MAX_FAILURES, whole=True)
-    with _failures_lock:
-        held = _failures.get(client)
+    with _state(window) as data:
+        held = data.get(_key(client))
         if held is None:
             return 0
         count, started = held
-        if _clock() - started >= window:
-            del _failures[client]
-            return 0
         return max(1, int(window - (_clock() - started) + 0.999)) if count >= limit else 0
 
 
 def record_failure(client):
     window = _number(WINDOW_ENV, DEFAULT_WINDOW)
     now = _clock()
-    with _failures_lock:
-        held = _failures.get(client)
-        if held is None or now - held[1] >= window:
-            if len(_failures) >= MAX_CLIENTS:
-                for stale in [key for key, (_, started) in _failures.items() if now - started >= window] or [next(iter(_failures))]:
-                    del _failures[stale]
-            _failures[client] = (1, now)
-        else:
-            _failures[client] = (held[0] + 1, held[1])
+    with _state(window) as data:
+        held = data.get(_key(client))
+        data[_key(client)] = (1, now) if held is None else (held[0] + 1, held[1])
 
 
 def record_success(client):
-    with _failures_lock:
-        _failures.pop(client, None)
+    with _state(_number(WINDOW_ENV, DEFAULT_WINDOW)) as data:
+        data.pop(_key(client), None)
 
 
 NEXT_TOKEN_ENV = "PREREQAI_API_TOKEN_NEXT"

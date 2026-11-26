@@ -28,6 +28,12 @@ def _own_analysis_slots(monkeypatch, tmp_path_factory):
 
 
 @pytest.fixture(autouse=True)
+def _own_auth_failures(monkeypatch, tmp_path_factory):
+    """Wrong-token counters are shared by every process on the computer (backend/api_auth.py); a test must start with none and parallel test workers must not count each other's."""
+    monkeypatch.setenv("PREREQAI_AUTH_DIR", str(tmp_path_factory.mktemp("auth")))
+
+
+@pytest.fixture(autouse=True)
 def _empty_analysis_cache(monkeypatch):
     """The analysis cache is a process-wide singleton: an earlier test's analysis of the bundled paper must not stand in for the pipeline run a
     later test (stage cancellation, time limits, patched stages) is about. The cache's own tests fill it on purpose."""
