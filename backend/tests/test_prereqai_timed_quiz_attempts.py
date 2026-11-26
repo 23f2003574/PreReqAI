@@ -49,3 +49,32 @@ def test_a_math_step_is_not_skipped_on_one_sitting_or_on_untimed_evidence_but_is
         action = adaptive_plan.decide("Math: Linear Algebra", 4.0, evidence)[0]
         assert (action == "skip") is skipped, (attempts[0].get("at"), action)
     assert adaptive_plan.decide("Math: Linear Algebra", 4.0, adaptive_plan.evidence_from_attempts(SITTING)["Math: Linear Algebra"])[0] in ("compress", "keep")
+
+
+def _answers(flags, concept="Softmax"):
+    return [{"question_id": f"{concept}:{n % 2 + 1}", "concept": concept, "outcome": "knew" if ok else "missed", "revealed": False, "graded": True, "correct": ok, "confidence": "medium",
+             "at": spaced_review.stamp(T0 + timedelta(hours=n * 20))} for n, ok in enumerate(flags)]
+
+
+def _action(flags):
+    return adaptive_plan.decide("Softmax", 4.0, adaptive_plan.evidence_from_attempts(_answers(flags))["Softmax"])
+
+
+def test_a_learner_who_missed_five_and_then_got_five_right_is_not_given_extra_time():
+    action, factor, reason = _action([False] * 5 + [True] * 5)  # lifetime accuracy is exactly 50 percent, but the estimate is 0.6 and rising
+    assert action == "keep" and factor == 1.0
+
+
+def test_a_learner_who_is_still_struggling_is_still_given_extra_time_and_two_confident_misses_still_count():
+    assert _action([False, False, True, False])[0] == "remediate"
+    assert _action([False, False, True])[0] == "remediate"
+    sure = [{**a, "confidence": "high"} for a in _answers([False, False, True, True, True, True])]
+    assert adaptive_plan.decide("Softmax", 4.0, adaptive_plan.evidence_from_attempts(sure)["Softmax"])[0] == "remediate"
+
+
+def test_the_recovered_learner_gets_no_remediation_in_the_proposed_plan():
+    attempts = _answers([False] * 5 + [True] * 5, concept="Calculus")
+    from backend.tests.test_prereqai_math_plan import report
+
+    result = adaptive_plan.propose(report(), attempts)
+    assert next((a for a in result["adjustments"] if a["concept"] == "Calculus"), {"action": "keep"})["action"] != "remediate"

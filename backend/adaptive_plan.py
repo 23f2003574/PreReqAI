@@ -13,6 +13,7 @@ MIN_GRADED, MIN_DISTINCT = 3, 2
 COMPRESS_LOWER = 0.80  # the lower end of the mastery estimate (backend/mastery_model.py) must reach this before a step is compressed
 COMPRESS_ACCURACY, COMPRESS_FACTOR, MIN_HOURS = 0.85, 0.3, 0.5
 REMEDIATE_ACCURACY, REMEDIATE_FACTOR = 0.5, 1.5
+REMEDIATE_P = 0.5  # low lifetime accuracy asks for more time only while the mastery estimate (which weighs the order of the answers) is also below this: a learner who has since recovered is not given the extra hours
 REFRESH_FACTOR = 0.5  # a lapsed concept was once demonstrated, so a refresh takes half the original study time (a stated heuristic)
 
 
@@ -105,7 +106,7 @@ def decide(concept, hours, evidence):
         return "keep", 1.0, "No assessed answers yet: the plan is unchanged. Answer a few diagnostic questions to adapt it."
     graded, correct, accuracy = evidence["graded"], evidence["correct"], evidence["correct"] / evidence["graded"]
     summary = f"{correct} of {graded} assessed answers correct" + (" in your learner profile (earlier sessions)" if evidence.get("source") == "profile" else "")
-    if evidence["high_confidence_wrong"] >= 2 or (graded >= 2 and accuracy <= REMEDIATE_ACCURACY):
+    if evidence["high_confidence_wrong"] >= 2 or (graded >= 2 and accuracy <= REMEDIATE_ACCURACY and evidence.get("p_mastery", 0.0) < REMEDIATE_P):
         why = f"{summary}" + (f", {evidence['high_confidence_wrong']} of the misses with high confidence" if evidence["high_confidence_wrong"] else "")
         return "remediate", REMEDIATE_FACTOR, f"{why}: more time is planned and the questions you missed are listed to review."
     if str(concept).startswith("Math: ") and evidence.get("mastered") and evidence.get("spaced"):  # a mathematical skill the learner has demonstrated (see math_plan.py): the step can be skipped
