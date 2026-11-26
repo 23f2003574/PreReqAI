@@ -46,14 +46,14 @@ def evidence_from_attempts(attempts):
 def profile_evidence(quiz, now=None):
     """{concept: evidence} in the shape of evidence_from_attempts for the concepts a learner profile's quiz history rates "mastered" (assessed answers only, still fresh: see learner_profile.mastery), each marked
     "source": "profile". Concepts in any other state, and a profile that cannot be used, give nothing."""
-    from backend import learner_profile
+    from backend import learner_profile, mastery_model
 
     found = {}
     for item in learner_profile.mastery(quiz or {}, now):
         if item["status"] != "mastered" or item.get("evidence") != "assessed":
             continue
         found[item["concept"]] = {"graded": item["graded_attempts"], "correct": item["graded_correct"], "distinct_correct": min(item["questions"], item["graded_correct"]), "high_confidence_wrong": item["high_confidence_wrong"],
-                                  "missed": [], "p_mastery": item["p_mastery"], "mastery_low": item["mastery_low"], "mastery_high": item["mastery_high"], "mastered": True, "spaced": True, "source": "profile"}
+                                  "missed": [], "p_mastery": item["p_mastery"], "mastery_low": item["mastery_low"], "mastery_high": item["mastery_high"], "mastered": True, "spaced": item.get("spaced_blocks", 0) >= mastery_model.MIN_BLOCKS, "source": "profile"}
     return found
 
 

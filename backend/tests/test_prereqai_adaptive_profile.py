@@ -33,9 +33,22 @@ def test_fresh_assessed_mastery_in_the_profile_shortens_the_step_and_names_the_p
     assert result["hours_after"] < result["hours_before"] and adjustment(result, "Probability") is None
 
 
-def test_a_mathematical_skill_demonstrated_in_the_profile_is_skipped():
-    result = adaptive_plan.propose(report(), [], None, None, entries("Math: Entropy"))
+def spaced_entries(concept):
+    """Entries whose three graded answers each were given in two sittings two days apart (the profile records when)."""
+    codes = [f"1m@{spaced_review.stamp(NOW - timedelta(days=days))}" for days in (3, 3, 1)]
+    return {key: {**entry, "graded_history": codes} for key, entry in entries(concept, seen_days_ago=1).items()}
+
+
+def test_a_mathematical_skill_demonstrated_in_the_profile_over_more_than_one_sitting_is_skipped():
+    result = adaptive_plan.propose(report(), [], None, None, spaced_entries("Math: Entropy"))
     assert adjustment(result, "Math: Entropy")["action"] == "skip" and adjustment(result, "Math: Entropy")["adjusted_hours"] == 0.0
+
+
+def test_a_profile_without_answer_times_or_from_one_sitting_never_skips_a_mathematical_skill():
+    legacy = adaptive_plan.propose(report(), [], None, None, entries("Math: Entropy"))  # schema 2: no times, so no spacing can be shown
+    assert (adjustment(legacy, "Math: Entropy") or {}).get("action") != "skip"
+    one_sitting = {key: {**entry, "graded_history": [f"1m@{spaced_review.stamp(NOW - timedelta(days=1))}"] * 3} for key, entry in entries("Math: Entropy").items()}
+    assert (adjustment(adaptive_plan.propose(report(), [], None, None, one_sitting), "Math: Entropy") or {}).get("action") != "skip"
 
 
 @pytest.mark.parametrize("quiz", [entries("Calculus", graded=False), entries("Calculus", last_outcome="missed"), {}, None])
