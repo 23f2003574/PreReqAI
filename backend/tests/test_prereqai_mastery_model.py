@@ -33,7 +33,7 @@ def test_recovery_after_confident_misses_needs_more_evidence_than_a_clean_run():
 
 
 def test_two_confident_misses_block_mastery_even_after_a_long_recovery():
-    run = [(False, "high", "a"), (True, "medium", "a"), (True, "medium", "b"), (True, "medium", "a"), (False, "high", "b")] + [(True, "medium", "ab"[n % 2]) for n in range(8)]
+    run = [(False, "high", "a"), (True, "medium", "a"), (True, "medium", "b"), (True, "medium", "a"), (False, "high", "b")] + [(True, "medium", f"r{n}") for n in range(8)]  # eight different questions: repeats of one question would count for less
     estimate = m.estimate(run)
     assert estimate["p"] > 0.95 and estimate["mastered"] is False and "confidently wrong" in estimate["reason"]
 

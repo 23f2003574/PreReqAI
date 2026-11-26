@@ -18,7 +18,7 @@ def report(**extra):
 
 def entries(concept, due_in_days=30, graded=True, last_outcome="knew", seen_days_ago=1):
     base = {"concept": concept, "attempts": 2, "knew": 2, "missed": 0, "streak": 2, "last_outcome": last_outcome, "first_seen": "2026-10-01T00:00:00Z", "last_seen": spaced_review.stamp(NOW - timedelta(days=seen_days_ago)),
-            "interval_hours": 72.0, "due": spaced_review.stamp(NOW + timedelta(days=due_in_days)), **({"graded_attempts": 2, "graded_correct": 2, "graded_streak": 2} if graded else {})}
+            "interval_hours": 72.0, "due": spaced_review.stamp(NOW + timedelta(days=due_in_days)), **({"graded_attempts": 3, "graded_correct": 3, "graded_streak": 3} if graded else {})}
     return {f"{concept}:1": dict(base), f"{concept}:2": dict(base)}
 
 
