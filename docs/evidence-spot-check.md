@@ -1,17 +1,17 @@
-# Evidence passage spot-check (2026-11-20, rows re-judged 2026-11-21 after the heading and paragraph changes moved them)
+# Evidence passage spot-check (2026-11-20, rows re-judged 2026-11-21 after the heading and paragraph changes moved them, and again 2026-11-26 after the sentence-boundary change moved three)
 
 How the top evidence passages of ten concepts were judged on the three benchmark papers (`python -m backend.prereqai_eval --benchmark` papers; `backend/evidence.py`). A passage is
 **useful** when it says what the concept is, does or is used for, and **not useful** when it is an incidental mention, a citation list or a table remark. The judgements are the
 AI assistant's own reading of the quoted sentence, made once; a person should re-judge them. `tests/test_prereqai_evidence_quality.py` recomputes the passage ids, so this table
 fails the test suite if the ranking changes and the table is not redone.
 
-Result: **22 of 27 top passages useful (81%)**.
+Result: **23 of 27 top passages useful (85%)**.
 
 | paper | concept | rank | passage id | judgement | passage (start) |
 |---|---|---|---|---|---|
 | dpo | Direct Preference Optimization | 1 | `p-5d944ae8ed` | useful | Our main contribution is Direct Preference Optimization (DPO), a simple RL-free algorithm  |
-| dpo | Direct Preference Optimization | 2 | `p-f9d98fc5f5` | not useful | In this section, we give further interpretation of the DPO method, provide theoretical bac |
-| dpo | Direct Preference Optimization | 3 | `p-c8fa5f8515` | useful | DPO is able to bypass both fitting an explicit reward and performing RL to learn the polic |
+| dpo | Direct Preference Optimization | 2 | `p-c8fa5f8515` | useful | DPO is able to bypass both fitting an explicit reward and performing RL to learn the polic |
+| dpo | Direct Preference Optimization | 3 | `p-1bee189671` | useful | Our experiments show that DPO is at least as effective as existing methods, including PPO-ba |
 | dpo | Proximal Policy Optimization | 1 | `p-b094741518` | useful | We also consider PPO [39] using a reward function learned from the preference data and PPO |
 | dpo | Proximal Policy Optimization | 2 | `p-2512695858` | useful | In our sentiment experiments, we use two implementations of PPO-GT, one of-the-shelf versi |
 | dpo | Proximal Policy Optimization | 3 | `p-1bee189671` | useful | Our experiments show that DPO is at least as effective as existing methods, including PPO- |
@@ -31,7 +31,7 @@ Result: **22 of 27 top passages useful (81%)**.
 | mixtral | Supervised Fine-Tuning | 2 | `p-0cfe165753` | useful | We also present Mixtral 8x7B - Instruct, a chat model fine-tuned to follow instructions us |
 | chain-of-thought | Chain-of-Thought | 1 | `p-d6924358a3` | useful | A chain of thought is a series of intermediate natural language reasoning steps that lead  |
 | chain-of-thought | Chain-of-Thought | 2 | `p-48272fd66e` | useful | Although chain of thought is particularly suitable for math word problems, the language-ba |
-| chain-of-thought | Chain-of-Thought | 3 | `p-c324631a95` | not useful | Chain-of-thought reasoning processes are highlighted. 36th Conference on Neural Informatio |
+| chain-of-thought | Chain-of-Thought | 3 | `p-a40dfc7600` | not useful | Therefore, we test an alternative configura-tion where the chain of thought prompt is only  |
 | chain-of-thought | Large Language Model | 1 | `p-9a494d60a4` | not useful | Finetuned GPT-3 and prior best are from Cobbe et al. |
 | chain-of-thought | Large Language Model | 2 | `p-63ee18ace5` | useful | Chain-of-thought prompting enables large language models to solve challenging math problem |
 | chain-of-thought | Large Language Model | 3 | `p-b9c306e2ee` | useful | Figure 1: Chain-of-thought prompting enables large language models to tackle complex arith |
