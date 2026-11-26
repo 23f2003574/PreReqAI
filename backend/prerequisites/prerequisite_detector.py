@@ -20,6 +20,21 @@ class PrerequisiteDetector:
     rules derived from the detected concepts.
     """
 
+    @staticmethod
+    def _cited_only(paper):
+        """The names of the detected concepts whose every mention is in a related-work section (see missing_prerequisite_analyzer.section_roles); empty for a paper without sections or paragraphs."""
+        if not paper.concepts or not getattr(paper, "paragraphs", None):
+            return set()
+        from backend.concepts.rule_based_concept_detector import section_mentions
+        from backend.prerequisites.missing_prerequisite_analyzer import section_role, section_roles
+
+        roles = section_roles([section.title for section in getattr(paper, "sections", [])])
+        places = {}
+        for title, found in section_mentions(paper).items():
+            for name in found["concepts"]:
+                places.setdefault(name, []).append(roles.get(title) or section_role(title))
+        return {name for name, found in places.items() if found and all(role == "related" for role in found)}
+
     PREREQUISITE_RULES = prerequisite_graph.rules()  # versioned data with per-edge provenance: prerequisite_graph.json and the modern ML concepts (see prerequisite_graph.py)
 
     def detect(
@@ -47,8 +62,13 @@ class PrerequisiteDetector:
         # A prerequisite needed by several concepts is listed once, and its reason names every concept that
         # needs it (not only the first one found), so the learner sees how much of the paper depends on it.
         needed_by = {}
+        cited_only = self._cited_only(paper)  # concepts that appear only where the paper discusses other work: they are named, not used, so they do not make anything a prerequisite
 
         for concept in paper.concepts:
+
+            if concept.name in cited_only:
+
+                continue
 
             for prerequisite in rules.get(
                 concept.name,
@@ -82,7 +102,7 @@ class PrerequisiteDetector:
         for concept in paper.concepts:  # a missing or non-positive count is "unknown", never an invented zero
             count = getattr(concept, "occurrences", None)
             occurrences[concept.name] = count if isinstance(count, int) and count > 0 else None
-        total = sum(1 for concept in paper.concepts if rules.get(concept.name))
+        total = sum(1 for concept in paper.concepts if rules.get(concept.name) and concept.name not in cited_only)
 
         # Where each dependent concept is discussed: its sections, and the instructional ones among them (from the paper's own paragraphs).
         where = {}

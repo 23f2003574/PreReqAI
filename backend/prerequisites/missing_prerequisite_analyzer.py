@@ -75,6 +75,25 @@ def section_roles(titles):
             else:
                 previous = None
         roles[title] = role
+    return _inherit_related(roles)
+
+
+_LABELLED = re.compile(r"^([A-Z]|\d+|[IVX]+)(?:\.\d+)*\.?\s")
+
+
+def _inherit_related(roles):
+    """A numbered subsection of a related-work section is related work too: "C.4 Numeric and logical reasoning" under "C Additional Related Work" mentions other papers' methods, so its roles is "related" although its own title says nothing."""
+    parents = {}
+    for title, role in roles.items():
+        found = re.match(r"^([A-Z]|\d+|[IVX]+)\.?\s", (title or "").strip())
+        if found and role == "related":
+            parents[found.group(1)] = True
+    if not parents:
+        return roles
+    for title, role in list(roles.items()):
+        found = re.match(r"^([A-Z]|\d+|[IVX]+)\.\d", (title or "").strip())
+        if found and found.group(1) in parents and role != "related":
+            roles[title] = "related"
     return roles
 
 
