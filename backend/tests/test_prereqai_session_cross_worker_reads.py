@@ -64,10 +64,45 @@ def test_an_unchanged_file_is_not_read_again(workers, monkeypatch):
     assert len(reads) == 1
 
 
-def test_a_deleted_or_unreadable_file_leaves_the_held_session_alone(workers):
+def test_an_unreadable_file_leaves_the_held_session_alone_but_a_missing_one_means_it_was_deleted(workers):
     sid, first, second, a, b = workers
     path = second._path(sid)
     path.write_bytes(b"not a session")
     assert second.get(sid) is b
-    path.unlink()
-    assert second.get(sid) is b
+    path.unlink()  # a file that vanished after this worker saw it was deleted by another worker (see the tests below)
+    assert second.get(sid) is None
+
+
+def test_a_session_another_worker_deleted_is_not_served_any_more(workers):
+    sid, first, second, a, b = workers
+    assert first.delete(sid) is True
+    assert second.get(sid) is None and sid not in second.sessions
+    assert second.get(sid) is None
+
+
+def test_a_stale_worker_cannot_bring_a_deleted_session_back_by_saving(workers, tmp_path):
+    sid, first, second, a, b = workers
+    first.delete(sid)
+    _study(b, "Linear Algebra")  # worker two still holds the object and changes it
+    assert second.save(b) is False
+    assert not (tmp_path / f"{sid}.session").exists() and sid not in second.sessions
+    assert first.get(sid) is None
+
+
+def test_deletion_wins_over_this_workers_unsaved_change_but_a_session_never_saved_is_unaffected(workers, tmp_path):
+    sid, first, second, a, b = workers
+    first.delete(sid)
+    _study(b, "Calculus")
+    assert second.get(sid) is None  # the unsaved change is dropped with the session: deletion is explicit, a changed copy is not a reason to undo it
+    fresh = SessionManager().create("Never saved elsewhere")
+    assert SessionManager.save(second, fresh) is True and (tmp_path / f"{fresh.session_id}.session").exists()
+
+
+def test_a_session_this_worker_deleted_itself_can_be_created_again_and_ordinary_reads_still_work(workers, tmp_path):
+    sid, first, second, a, b = workers
+    assert first.get(sid) is a and second.get(sid) is b
+    _study(a, "Probability")
+    assert first.save(a) is True
+    assert "Probability" in _studied(second.get(sid))
+    second.delete(sid)
+    assert first.get(sid) is None and not (tmp_path / f"{sid}.session").exists()

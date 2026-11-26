@@ -252,6 +252,14 @@ class SessionManager:
 
             with save_lock, locked(path):  # one writer at a time across threads and processes
 
+                if self._deleted_elsewhere(session.session_id, path):  # another worker deleted it after this worker last read or wrote it: deletion wins, the save must not bring it back
+
+                    self._forget(session.session_id)
+
+                    self.last_save_ok = False
+
+                    return False
+
                 path.parent.mkdir(parents=True, exist_ok=True)
 
                 session.schema_version = self.SCHEMA_VERSION
@@ -418,7 +426,9 @@ class SessionManager:
 
         elif session is not None:
 
-            self._refresh_from_disk(session)
+            if not self._refresh_from_disk(session):  # another worker deleted it
+
+                return None
 
         if session is not None:
 
@@ -438,19 +448,33 @@ class SessionManager:
             return None
         return (info.st_mtime_ns, info.st_size, info.st_ino)
 
-    def _refresh_from_disk(self, session: LearningSession) -> None:
+    def _deleted_elsewhere(self, session_id: str, path: Path) -> bool:
+        """Whether this worker last saw the session's file and it is gone now: another worker deleted it (or it expired). A session this worker never saved has no recorded signature and is not affected."""
+        return self._signatures.get(session_id) is not None and not path.exists()
+
+    def _forget(self, session_id: str) -> None:
+        with self._lock:
+            for table in (self.sessions, self._save_locks, self._bases, self._last_used, self._signatures):
+                table.pop(session_id, None)
+            self._unsaved.discard(session_id)
+
+    def _refresh_from_disk(self, session: LearningSession) -> bool:
         """A session held in memory is served as it is unless its file changed since this worker last read or wrote it, which means another worker saved it: that worker's changes are then merged into the
         held object (the same three-way merge a save uses, so this worker's own unsaved changes are kept) and the file's version is adopted, so a reader sees the other worker's progress without having to save first.
-        Costs one `stat` per read; a file that is missing, unreadable or older than this worker's copy changes nothing."""
+        Costs one `stat` per read; a file that is unreadable or older than this worker's copy changes nothing. A file that this worker had seen and is now missing was deleted by another worker: the session is forgotten
+        here too (deletion wins over this worker's unsaved changes) and False is returned; True otherwise."""
         path = self._path(session.session_id)
         if path is None:
-            return
+            return True
         signature = self._signature(path)
+        if signature is None and self._signatures.get(session.session_id) is not None:
+            self._forget(session.session_id)
+            return False
         if signature is None or signature == self._signatures.get(session.session_id):
-            return
+            return True
         saved, _ = self._read_file(path)
         if saved is None:  # being replaced or unreadable: try again on the next read
-            return
+            return True
         with self._lock:
             base = self._bases.get(session.session_id)
             if base is not None and saved.version > session.version:
@@ -461,6 +485,7 @@ class SessionManager:
                 session.version = saved.version
                 self._bases[session.session_id] = session_merge.facts(session)
             self._signatures[session.session_id] = signature
+        return True
 
     def _rewrite_as_json(self, session: LearningSession) -> None:
         """Replace an older pickle file by the JSON one, but only after the JSON is shown to hold the same session (it is read back and written out
@@ -622,6 +647,8 @@ class SessionManager:
             self._unsaved.discard(session_id)
 
             self._bases.pop(session_id, None)
+
+            self._signatures.pop(session_id, None)
 
             self._last_used.pop(session_id, None)  # a deleted session must not leave bookkeeping behind in a long-lived server
 
