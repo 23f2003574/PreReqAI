@@ -104,6 +104,10 @@ def _quiz_entries(value):
                     or not all(isinstance(code, str) and _HISTORY_CODE.fullmatch(code) for code in history)):
                 raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
             graded = {**graded, "graded_history": list(history)}
+        if "graded_first_at" in entry:  # when the first timed answer was given; it dates the answers that rolled out of graded_history (an optional field added in schema 3, so no version bump)
+            if spaced_review.parse_time(entry["graded_first_at"]) is None:
+                raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
+            graded = {**graded, "graded_first_at": entry["graded_first_at"]}
         if "ease" in entry or "last_grade" in entry:  # present only on entries reviewed with a grade (again, hard, good, easy)
             if (isinstance(entry.get("ease"), bool) or not isinstance(entry.get("ease"), (int, float)) or not 1.3 <= entry["ease"] <= 3.5 or entry.get("last_grade") not in spaced_review.GRADES):
                 raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")

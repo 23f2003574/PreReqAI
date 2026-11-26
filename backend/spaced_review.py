@@ -47,11 +47,12 @@ _CONFIDENCE_CODE = {"low": "l", "medium": "m", "high": "h"}
 def _graded(entry, graded, moment=None):
     """The assessment counters of an entry after one more answer. `graded` is None for a self-reported answer (the counters are then only carried over, and are absent from an entry that
     never had an assessed answer) or {"correct": bool, "confidence": "low"|"medium"|"high"} for an answer the system checked itself. `graded_history` holds the last HISTORY_LIMIT assessed answers
-    in order as codes: correct 1 or 0, then confidence l, m or h, then "@" and the UTC time the answer was given when it is known ("1h@2026-11-23T13:03:48Z" is a correct answer given with high confidence at that time; a bare "1h" comes from a schema 2 profile and has no known time)."""
+    in order as codes (`graded_first_at` keeps the time of the first timed answer, see backend/mastery_model.py): correct 1 or 0, then confidence l, m or h, then "@" and the UTC time the answer was given when it is known ("1h@2026-11-23T13:03:48Z" is a correct answer given with high confidence at that time; a bare "1h" comes from a schema 2 profile and has no known time)."""
     carried = {name: entry[name] for name in GRADED_FIELDS if name in entry}
     history = [code for code in entry.get("graded_history", []) if isinstance(code, str)]
+    first_at = entry.get("graded_first_at") if parse_time(entry.get("graded_first_at")) is not None else None
     if graded is None:
-        return {**carried, **({"graded_history": history[-HISTORY_LIMIT:]} if history else {})}
+        return {**carried, **({"graded_history": history[-HISTORY_LIMIT:]} if history else {}), **({"graded_first_at": first_at} if first_at else {})}
     counters = {name: carried.get(name, 0) for name in GRADED_FIELDS}
     counters["graded_attempts"] += 1
     counters["graded_correct"] += bool(graded["correct"])
@@ -59,7 +60,9 @@ def _graded(entry, graded, moment=None):
     if graded.get("confidence") == "high":
         counters["high_confidence_right" if graded["correct"] else "high_confidence_wrong"] += 1
     history.append(("1" if graded["correct"] else "0") + _CONFIDENCE_CODE.get(graded.get("confidence"), "m") + (f"@{stamp(moment)}" if moment is not None else ""))
-    return {**counters, "graded_history": history[-HISTORY_LIMIT:]}
+    if first_at is None:  # the time of the first timed answer survives when that answer rolls out of the kept history, so what the history forgot is not mistaken for a separate sitting
+        first_at = next((code[3:] for code in history if len(code) > 3 and code[2] == "@"), None)
+    return {**counters, "graded_history": history[-HISTORY_LIMIT:], **({"graded_first_at": first_at} if first_at else {})}
 
 
 GRADES = ("again", "hard", "good", "easy")

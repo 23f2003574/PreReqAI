@@ -36,14 +36,15 @@ def update(p, correct, confidence="medium"):
 
 def spaced_blocks(times):
     """How many separate blocks of evidence `times` (datetimes, None for an answer of unknown time) make: a block starts at the first answer at least SPACING_HOURS after the start of the previous block, so a cramming
-    session is one block however many answers it holds. Answers without a time (older profiles) count together as one block of their own; with no known time at all this is 1 when there are answers."""
+    session is one block however many answers it holds. An answer of unknown time (a profile saved before schema 3, or an answer that rolled out of the kept history) never makes a block of its own: it is
+    assumed to share the block of the earliest known answer, the conservative reading, so old untimed answers plus one sitting are still one block. With no known time at all this is 1 when there are answers."""
     times = list(times)
     known = sorted(t for t in times if t is not None)
-    blocks, start = (1 if len(known) != len(times) else 0), None
+    blocks, start = 0, None
     for moment in known:
         if start is None or (moment - start).total_seconds() >= SPACING_HOURS * 3600:
             blocks, start = blocks + 1, moment
-    return blocks
+    return blocks if known else (1 if times else 0)
 
 
 def last_block_start(times):
@@ -125,11 +126,16 @@ def _canonical(attempts, correct, streak, sure_right, sure_wrong, question_id):
 
 
 def timed_sequence_from_counters(entry, question_id=""):
-    """(sequence_from_counters(...), times): the same answers and, for each, the datetime it was given (None for an answer rebuilt from counters or recorded without a time)."""
+    """(sequence_from_counters(...), times): the same answers and, for each, the datetime it was given. An answer rebuilt from counters (it rolled out of the kept history) is dated by the entry's
+    `graded_first_at`, the time of its first timed answer, so what the history forgot is still known to have happened no later than the answers that replaced it; without that field (profiles saved before
+    it existed) or for an answer recorded without a time the time is None (see spaced_blocks)."""
+    from backend import spaced_review
+
     sequence = sequence_from_counters(entry, question_id)
     recent = decode_timed_history(entry.get("graded_history"))
     recent = recent[-len(sequence):] if sequence else []
-    return sequence, [None] * (len(sequence) - len(recent)) + [t for _, _, t in recent]
+    first = spaced_review.parse_time(entry.get("graded_first_at"))
+    return sequence, [first] * (len(sequence) - len(recent)) + [t for _, _, t in recent]
 
 
 def sequence_from_counters(entry, question_id=""):
