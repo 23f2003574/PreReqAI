@@ -69,6 +69,24 @@ def options_for(identifier):
     return sorted([correct, *chosen], key=lambda text: _rank("order|" + identifier, text))  # a different hash from the one that picked the distractors, or the answer would tend to come last
 
 
+def order_for_attempt(identifier, attempt):
+    """The options of a question in the order for its `attempt`-th serving (0 for the first, which is the fixed order of options_for): the same four texts, ordered by a hash that includes the attempt number, and never in
+    the order of the serving before it, so a learner who sees a question again cannot answer it by where the right option stood."""
+    base = options_for(identifier)
+    if attempt <= 0:
+        return base
+
+    def arranged(number):
+        return base if number <= 0 else sorted(base, key=lambda text: _rank(f"order|{identifier}|{number}", text))
+
+    order, before = arranged(attempt), arranged(attempt - 1)
+    return order if order != before else [*order[1:], order[0]]
+
+
+def _times_served(session, identifier):
+    return sum(1 for attempt in session.quiz_attempts if attempt.get("question_id") == identifier)
+
+
 def weak_distractors(identifier):
     """True when fewer than three related distractors exist for the question, so the learner can rule some options out without knowing the concept."""
     related, _, _ = distractor_pool(identifier)
@@ -90,7 +108,10 @@ def distractor_report():
 def serve(session, concept=None):
     """The next question (as quiz_session.next_question picks it) with its options and no answer."""
     question = quiz_session.next_question(session, concept)
-    return {**question, "options": options_for(question["question_id"]), "weak_distractors": weak_distractors(question["question_id"]), "confidence_levels": list(CONFIDENCE), "graded": True}
+    pending = session.quiz_pending[question["question_id"]]
+    if not pending.get("options"):  # a question that is served again before it is answered (a reload, a retry) keeps the order it was first shown in
+        pending["options"] = order_for_attempt(question["question_id"], _times_served(session, question["question_id"]))
+    return {**question, "options": list(pending["options"]), "weak_distractors": weak_distractors(question["question_id"]), "confidence_levels": list(CONFIDENCE), "graded": True}
 
 
 def grade(session, identifier, choice, confidence):
@@ -98,7 +119,8 @@ def grade(session, identifier, choice, confidence):
     QuizError for an unknown question, a question that was not served, a choice outside the options or an unknown confidence."""
     concept, number, item = quiz_session._lookup(identifier)
     identifier = question_id(concept, number)
-    options = options_for(identifier)
+    served = (session.quiz_pending.get(identifier) or {}).get("options")
+    options = list(served) if served else options_for(identifier)  # the order the learner was shown (a pending question of an older session has none: the fixed order)
     if confidence not in CONFIDENCE:
         raise QuizError("outcome", f"confidence must be one of {', '.join(CONFIDENCE)}, not {confidence!r}.", "Send the learner's confidence: low, medium or high.")
     if isinstance(choice, bool) or not isinstance(choice, int) or not 0 <= choice < len(options):

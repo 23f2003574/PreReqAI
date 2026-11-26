@@ -182,3 +182,81 @@ def test_a_miss_long_ago_does_not_count_as_recent_and_the_order_is_the_time_orde
     times[-1] = times[0] - timedelta(days=1)  # the miss happened first, though it is listed last
     result = mastery_model.estimate(answers, times)
     assert result["recent_miss"] is False
+
+
+def _fresh_session():
+    from backend.session import session_manager
+
+    return session_manager.create("Option order")
+
+
+def _serve_and_answer(session, concept, pick):
+    """Serve the next question of `concept`, answer by `pick(options, answer)`; (served, verdict)."""
+    served = diagnostic.serve(session, concept)
+    _, _, item = quiz_session._lookup(served["question_id"])
+    verdict = diagnostic.grade(session, served["question_id"], pick(served["options"], item["answer"]), "medium")
+    return served, verdict, item["answer"]
+
+
+def test_a_question_served_again_shows_the_same_four_options_in_a_different_order_and_grades_by_text():
+    session, concept = _fresh_session(), "Softmax"
+    orders = []
+    for _ in range(4):  # the concept has two or three questions, so the same question comes back
+        served, verdict, answer = _serve_and_answer(session, concept, lambda options, answer: options.index(answer))
+        orders.append((served["question_id"], tuple(served["options"])))
+        assert verdict["correct"] is True and sorted(served["options"]) == sorted(diagnostic.options_for(served["question_id"]))
+    by_question = {}
+    for question, order in orders:
+        by_question.setdefault(question, []).append(order)
+    repeated = [seen for seen in by_question.values() if len(seen) > 1]
+    assert repeated and all(seen[i] != seen[i + 1] for seen in repeated for i in range(len(seen) - 1))
+    assert all(seen[0] == tuple(diagnostic.options_for(question)) for question, seen in by_question.items())  # the first serving is the fixed order
+
+
+def test_a_wrong_choice_is_judged_by_the_text_shown_in_the_stored_order_not_the_regenerated_one():
+    session, concept = _fresh_session(), "Softmax"
+    _serve_and_answer(session, concept, lambda options, answer: options.index(answer))
+    served = diagnostic.serve(session, concept)
+    shown = list(served["options"])
+    stored = session.quiz_pending[served["question_id"]]["options"]
+    assert stored == shown
+    _, _, item = quiz_session._lookup(served["question_id"])
+    wrong = next(i for i, text in enumerate(shown) if text != item["answer"])
+    assert diagnostic.grade(session, served["question_id"], wrong, "medium")["correct"] is False
+    assert session.quiz_attempts[-1]["chosen"] == shown[wrong]
+
+
+def test_reloading_a_pending_question_keeps_its_order_and_a_pending_question_of_an_older_session_uses_the_fixed_order():
+    session, concept = _fresh_session(), "Softmax"
+    _serve_and_answer(session, concept, lambda options, answer: options.index(answer))
+    first = diagnostic.serve(session, concept)
+    assert diagnostic.serve(session, concept)["options"] == first["options"]  # served again before it is answered
+    session.quiz_pending[first["question_id"]] = {"revealed": False}  # an older session: no stored order
+    _, _, item = quiz_session._lookup(first["question_id"])
+    fixed = diagnostic.options_for(first["question_id"])
+    assert diagnostic.grade(session, first["question_id"], fixed.index(item["answer"]), "high")["correct"] is True
+
+
+def test_the_stored_order_survives_saving_and_reading_the_session(tmp_path, monkeypatch):
+    from backend.session.session_manager import SessionManager
+
+    monkeypatch.setenv("PREREQAI_SESSION_DIR", str(tmp_path))
+    manager = SessionManager()
+    session = manager.create("Persisted order")
+    _serve_and_answer(session, "Softmax", lambda options, answer: options.index(answer))
+    served = diagnostic.serve(session, "Softmax")
+    assert manager.save(session) is True
+    reread = SessionManager().get(session.session_id)
+    assert reread.quiz_pending[served["question_id"]]["options"] == served["options"]
+    _, _, item = quiz_session._lookup(served["question_id"])
+    assert diagnostic.grade(reread, served["question_id"], served["options"].index(item["answer"]), "medium")["correct"] is True
+
+
+def test_correctness_does_not_depend_on_where_the_right_option_stands():
+    for concept in ("Softmax", "Calculus"):
+        for attempt in range(6):
+            for question_id in (quiz_session.question_id(concept, 1), quiz_session.question_id(concept, 2)):
+                order = diagnostic.order_for_attempt(question_id, attempt)
+                assert sorted(order) == sorted(diagnostic.options_for(question_id)) and len(set(order)) == len(order) == diagnostic.OPTIONS
+                if attempt:
+                    assert order != diagnostic.order_for_attempt(question_id, attempt - 1)
