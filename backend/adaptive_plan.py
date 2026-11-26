@@ -38,7 +38,7 @@ def evidence_from_attempts(attempts):
 
     for concept, entry in found.items():  # the same estimate the profile uses, over this session's answers in the order they were given
         estimate = mastery_model.estimate_attempts(per_concept[concept])
-        entry.update({"p_mastery": estimate["p"], "mastery_low": estimate["low"], "mastery_high": estimate["high"], "mastered": estimate["mastered"]})
+        entry.update({"p_mastery": estimate["p"], "mastery_low": estimate["low"], "mastery_high": estimate["high"], "mastered": estimate["mastered"], "spaced": estimate["timed"] and estimate["spaced_blocks"] >= mastery_model.MIN_BLOCKS})
     return found
 
 
@@ -52,7 +52,7 @@ def profile_evidence(quiz, now=None):
         if item["status"] != "mastered" or item.get("evidence") != "assessed":
             continue
         found[item["concept"]] = {"graded": item["graded_attempts"], "correct": item["graded_correct"], "distinct_correct": min(item["questions"], item["graded_correct"]), "high_confidence_wrong": item["high_confidence_wrong"],
-                                  "missed": [], "p_mastery": item["p_mastery"], "mastery_low": item["mastery_low"], "mastery_high": item["mastery_high"], "mastered": True, "source": "profile"}
+                                  "missed": [], "p_mastery": item["p_mastery"], "mastery_low": item["mastery_low"], "mastery_high": item["mastery_high"], "mastered": True, "spaced": True, "source": "profile"}
     return found
 
 
@@ -108,7 +108,7 @@ def decide(concept, hours, evidence):
     if evidence["high_confidence_wrong"] >= 2 or (graded >= 2 and accuracy <= REMEDIATE_ACCURACY):
         why = f"{summary}" + (f", {evidence['high_confidence_wrong']} of the misses with high confidence" if evidence["high_confidence_wrong"] else "")
         return "remediate", REMEDIATE_FACTOR, f"{why}: more time is planned and the questions you missed are listed to review."
-    if str(concept).startswith("Math: ") and evidence.get("mastered"):  # a mathematical skill the learner has demonstrated (see math_plan.py): the step can be skipped
+    if str(concept).startswith("Math: ") and evidence.get("mastered") and evidence.get("spaced"):  # a mathematical skill the learner has demonstrated (see math_plan.py): the step can be skipped
         return "skip", 0.0, f"{summary}, estimated {evidence['p_mastery']:.2f} probability of knowing it: mastery is demonstrated, so this step can be skipped (reject to study it anyway)."
     if graded >= MIN_GRADED and evidence["distinct_correct"] >= MIN_DISTINCT and accuracy >= COMPRESS_ACCURACY and not evidence["high_confidence_wrong"] \
             and evidence.get("mastery_low", 1.0) >= COMPRESS_LOWER:

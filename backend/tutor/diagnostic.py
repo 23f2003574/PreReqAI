@@ -7,6 +7,7 @@ with high confidence is counted (an overconfident learner is not rated mastered,
 Self-grading stays available (quiz/outcome) as a supplementary signal; it never establishes mastery."""
 import hashlib
 
+from backend import spaced_review
 from . import quiz_session
 from .quiz_session import ASKABLE, QuizError, question_id
 
@@ -107,7 +108,7 @@ def grade(session, identifier, choice, confidence):
     session.quiz_pending.pop(identifier)
     correct = options[choice] == item["answer"]
     session.quiz_attempts.append({"question_id": identifier, "concept": concept, "outcome": "knew" if correct else "missed", "revealed": False, "graded": True, "correct": correct,
-                                  "confidence": confidence, "chosen": options[choice]})
+                                  "confidence": confidence, "chosen": options[choice], "at": spaced_review.stamp(spaced_review.now())})  # the time the answer was given: the spacing rule needs it (an attempt of an older session has none)
     from .quiz_bank import QUIZ_EXPLANATIONS
 
     verdict = {"question_id": identifier, "correct": correct, "confidence": confidence, "answer": item["answer"], "calibration": calibration_note(correct, confidence)}

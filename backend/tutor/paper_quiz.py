@@ -66,6 +66,7 @@ def _aliases(concept):
 
 MATH_SUBJECTS = ("Linear Algebra", "Calculus", "Probability", "Statistics", "Information Theory", "Optimization")
 MAX_CLAIMS, MAX_EQUATIONS, MAX_ORDER = 4, 3, 2
+from backend import spaced_review
 from backend.sentences import split_sentences
 
 
@@ -233,6 +234,6 @@ def grade(session, identifier, attempt, confidence):
         raise QuizError("state", f"The answer to {identifier!r} was already shown, so it can no longer be assessed.", "Answer a question before revealing it; try another question.")
     correct = check(question, attempt)
     session.quiz_attempts.append({"question_id": identifier, "concept": question["concept"], "outcome": "knew" if correct else "missed", "revealed": False, "graded": True, "correct": correct,
-                                  "confidence": confidence, "chosen": str(attempt).strip()[:200], "kind": "paper"})
+                                  "confidence": confidence, "chosen": str(attempt).strip()[:200], "kind": "paper", "at": spaced_review.stamp(spaced_review.now())})
     return {"question_id": identifier, "concept": question["concept"], "correct": correct, "confidence": confidence, "answer": question["answer"], "quotation": question["quotation"],
             "page_number": question["page_number"], "section": question["section"]}

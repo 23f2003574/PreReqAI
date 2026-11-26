@@ -57,6 +57,11 @@ def graded(concept, flags):
 def test_demonstrated_mastery_makes_a_math_step_skippable_and_a_rejection_restores_it():
     name = "Math: Softmax and normalised exponentials"
     r, attempts = report(), graded(name, [True] * 4)
+    for number, attempt in enumerate(attempts):  # two sittings 30 hours apart: durable mastery needs spaced evidence (one sitting, or answers without a time, never skips a step)
+        attempt["at"] = f"2026-11-20T{9 + 0:02d}:0{number}:00Z" if number < 2 else f"2026-11-21T15:0{number}:00Z"
+    one_sitting = [{**a, "at": f"2026-11-20T09:0{n}:00Z"} for n, a in enumerate(attempts)]
+    assert next(a for a in adaptive_plan.propose(r, one_sitting)["adjustments"] if a["concept"] == name)["action"] != "skip"
+    assert next(a for a in adaptive_plan.propose(r, graded(name, [True] * 4))["adjustments"] if a["concept"] == name)["action"] != "skip"
     proposal = adaptive_plan.propose(r, attempts)
     skip = next(a for a in proposal["adjustments"] if a["concept"] == name)
     assert skip["action"] == "skip" and skip["adjusted_hours"] == 0.0 and skip["can_override"] and "skipped" in skip["reason"] and proposal["hours_after"] == proposal["hours_before"] - skip["original_hours"]

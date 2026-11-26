@@ -167,8 +167,17 @@ def estimate_entries(entries):
 
 
 def estimate_attempts(attempts):
-    """The estimate from a session's attempt dicts of one concept, in the order they were made; only graded attempts count."""
-    return estimate([(bool(a["correct"]), a.get("confidence", "medium"), a["question_id"]) for a in attempts if a.get("graded")])
+    """The estimate from a session's attempt dicts of one concept, in the order they were made; only graded attempts count. An attempt carries `at`, the UTC time it was given, from the day attempts were
+    timestamped: with any time known the spacing rule applies exactly as for a profile (answers of one sitting are one block and never durable mastery); a session whose attempts have no time at all keeps
+    the earlier behaviour (no spacing rule), and the result then says so with `timed: False`."""
+    from backend import spaced_review
+
+    graded = [a for a in attempts if a.get("graded")]
+    times = [spaced_review.parse_time(a.get("at")) for a in graded]
+    result = estimate([(bool(a["correct"]), a.get("confidence", "medium"), a["question_id"]) for a in graded], times)
+    if result is not None:
+        result["timed"] = any(t is not None for t in times)
+    return result
 
 
 def calibration(attempts):
