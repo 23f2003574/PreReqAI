@@ -98,6 +98,8 @@ def _run_worker(path, ocr_seconds=None, command=None, seconds=None):
         raise PdfGuardError("resource_exhausted", f"reading this PDF needed more than {memory} MB of memory and was stopped")
     if error == "output_too_large":
         raise PdfGuardError("resource_exhausted", "the text and structure of this PDF are larger than the limit and it was stopped")
+    if error == "password_protected":
+        raise PdfGuardError("worker_failed", "this PDF is password-protected, so it cannot be read (remove the password, for example by printing it to a new PDF, and upload that)")
     if error == "unreadable":
         raise PdfGuardError("worker_failed", f"this file could not be read as a PDF ({result.get('detail', 'unreadable')})")
     detail = f"exit status {process.returncode}" if process.returncode >= 0 else f"killed by signal {-process.returncode}"
@@ -159,6 +161,8 @@ def _worker(path, max_pages, max_pixels, memory_mb, seconds, out_mb, ocr_seconds
 
         pymupdf.TOOLS.mupdf_display_errors(False)
         with pymupdf.open(path) as pdf:
+            if pdf.needs_pass:  # encrypted with a password it cannot know: say so instead of failing later with a bare exception name
+                return _fail("password_protected", 4)
             if pdf.page_count > max_pages:
                 return _fail("too_many_pages", 0, message=f"this PDF has {pdf.page_count} pages; the limit is {max_pages}")
             for number, page in enumerate(pdf, start=1):
