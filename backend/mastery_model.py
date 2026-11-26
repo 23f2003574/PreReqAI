@@ -22,6 +22,7 @@ MASTERED_P, MASTERED_LOWER, MIN_ANSWERS, MIN_QUESTIONS, Z = 0.95, 0.85, 4, 2, 1.
 SPACING_HOURS, MIN_BLOCKS = 12.0, 2  # answers given within SPACING_HOURS of the first answer of a block are one block of evidence; durable mastery needs MIN_BLOCKS blocks (see `spaced_blocks`)
 REPEAT_WEIGHT, QUESTION_CAP = 0.7, 1.5  # the nth answer to the same question moves the estimate REPEAT_WEIGHT ** (n - 1) as far as a first answer (a repeated question is partly remembered, not fresh evidence), and one question is worth at most QUESTION_CAP independent answers however often it is repeated
 MIN_EFFECTIVE = 3.0  # durable mastery needs at least this many independent answers' worth of evidence once repeats are discounted and capped: four answers on two questions (1.5 + 1.5) reach it, one question asked three or five times plus one other (1.5 + 1) does not
+RECENT_ANSWERS = 2  # durable mastery needs the latest RECENT_ANSWERS answers (in time order) to be correct: a recent miss is evidence the earlier successes may no longer hold
 MAX_CONFIDENT_WRONG = 1  # a learner who was confidently wrong twice has not shown understanding, whatever they answered since (the rule the streak-based mastery had)
 CONFIDENCE_P = {"low": 0.4, "medium": 0.65, "high": 0.9}  # what each stated confidence claims about being right, for the Brier score
 
@@ -80,7 +81,9 @@ def estimate(answers, times=None):
     blocks = spaced_blocks(times) if timed else None
     ready_at = last_block_start(times) + timedelta(hours=SPACING_HOURS) if timed else None
     spaced = not timed or blocks >= MIN_BLOCKS
-    mastered = p >= MASTERED_P and low >= MASTERED_LOWER and n >= MIN_ANSWERS and questions >= MIN_QUESTIONS and confident_wrong <= MAX_CONFIDENT_WRONG and spaced and weight_total >= MIN_EFFECTIVE - 1e-9
+    order = sorted(range(n), key=lambda i: (0,) if not timed or times[i] is None else (1, times[i]))  # time order; answers of unknown time are the oldest
+    recent_miss = any(not answers[i][0] for i in order[-RECENT_ANSWERS:])
+    mastered = p >= MASTERED_P and low >= MASTERED_LOWER and n >= MIN_ANSWERS and questions >= MIN_QUESTIONS and confident_wrong <= MAX_CONFIDENT_WRONG and spaced and not recent_miss and weight_total >= MIN_EFFECTIVE - 1e-9
     if mastered:
         reason = f"{p:.2f} probability of knowing it (at least {low:.2f} with some confidence) from {n} graded answers on {questions} different questions"
     else:
@@ -95,10 +98,12 @@ def estimate(answers, times=None):
             need.append(f"only {questions} question{'s' if questions != 1 else ''} answered correctly (at least {MIN_QUESTIONS} different ones needed)")
         if weight_total < MIN_EFFECTIVE - 1e-9 and n >= MIN_ANSWERS:
             need.append(f"the answers are only worth {weight_total:.2f} independent answers because questions were repeated (at least {MIN_EFFECTIVE:g} needed): answer other questions")
+        if recent_miss and n >= MIN_ANSWERS:
+            need.append(f"one of the last {RECENT_ANSWERS} answers was wrong (recent_miss): answer correctly {RECENT_ANSWERS} times in a row to show the earlier success still holds")
         if not spaced:
             need.append(f"all answers fall in {blocks} block of evidence (answers at least {SPACING_HOURS:.0f} hours apart start a new block); durable mastery needs {MIN_BLOCKS}: answer again on another day (from {ready_at.strftime('%Y-%m-%d %H:%M')} UTC)")
         reason = "; ".join(need)
-    return {"p": round(p, 3), "low": round(low, 3), "high": round(high, 3), "answers": n, "questions_correct": questions, "mastered": mastered, "effective_answers": round(weight_total, 2), "reason": reason, **({"spaced_blocks": blocks, **({"spacing_ready_at": ready_at.strftime("%Y-%m-%dT%H:%M:%SZ")} if not spaced else {})} if timed else {})}
+    return {"p": round(p, 3), "low": round(low, 3), "high": round(high, 3), "answers": n, "questions_correct": questions, "mastered": mastered, "recent_miss": recent_miss, "effective_answers": round(weight_total, 2), "reason": reason, **({"spaced_blocks": blocks, **({"spacing_ready_at": ready_at.strftime("%Y-%m-%dT%H:%M:%SZ")} if not spaced else {})} if timed else {})}
 
 
 _CONFIDENCE_OF_CODE = {"l": "low", "m": "medium", "h": "high"}

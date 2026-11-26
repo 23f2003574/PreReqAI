@@ -141,3 +141,44 @@ def test_four_processes_recording_assessed_answers_lose_none(tmp_path):
         pool.map(_record, [(path, number) for number in (1, 1, 2, 2)])
     quiz = learner_profile.load_full(path)[0]["quiz"]
     assert sum(e["graded_attempts"] for e in quiz.values()) == 20 and sum(e["attempts"] for e in quiz.values()) == 20
+
+
+def _days(sequence):
+    from datetime import datetime, timedelta, timezone
+
+    start = datetime(2026, 11, 1, 9, tzinfo=timezone.utc)
+    return [start + timedelta(days=i) for i in range(len(sequence))]
+
+
+def _run(*flags, confidence="high"):
+    from backend import mastery_model
+
+    answers = [(flag, confidence, f"q{i}") for i, flag in enumerate(flags)]
+    return mastery_model.estimate(answers, _days(answers))
+
+
+def test_a_recent_miss_blocks_durable_mastery_even_when_the_probability_stays_high():
+    for flags in ((True,) * 5 + (False,), (True,) * 5 + (False, False), (True,) * 4 + (False, True)):
+        for confidence in ("medium", "high"):
+            result = _run(*flags, confidence=confidence)
+            assert result["recent_miss"] is True and result["mastered"] is False and "recent_miss" in result["reason"], (flags, confidence)
+    assert _run(*((True,) * 5 + (False,)))["p"] > 0.9  # the probability alone would have said mastered
+
+
+def test_two_correct_answers_after_a_miss_restore_mastery_without_discarding_the_earlier_evidence():
+    recovered = _run(*((True,) * 5 + (False, True, True)), confidence="medium")
+    assert recovered["recent_miss"] is False and recovered["mastered"] is True and recovered["answers"] == 8
+    assert _run(*((True,) * 5 + (False, True)), confidence="medium")["mastered"] is False  # one correct answer is not yet two in a row
+
+
+def test_a_miss_long_ago_does_not_count_as_recent_and_the_order_is_the_time_order_not_the_list_order():
+    from datetime import timedelta
+
+    from backend import mastery_model
+
+    assert _run(False, True, True, True, True, True)["recent_miss"] is False
+    answers = [(True, "high", f"q{i}") for i in range(5)] + [(False, "high", "q9")]
+    times = _days(answers)
+    times[-1] = times[0] - timedelta(days=1)  # the miss happened first, though it is listed last
+    result = mastery_model.estimate(answers, times)
+    assert result["recent_miss"] is False
