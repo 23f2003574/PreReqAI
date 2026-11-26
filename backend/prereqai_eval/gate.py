@@ -201,6 +201,17 @@ def graph_checks(checks, floors):
     _check(checks, "prerequisite_graph", "rule_coverage", covered["ratio"], floors.get("rule_coverage", 0.98), f"{covered['with_rules']} of {covered['concepts']} registry concepts have a rule; without: {covered['without_rules']}")
 
 
+def mastery_sim_checks(checks, floors):
+    """The mastery estimate on simulated learners (mastery_sim.py): the share of guessers, partial knowers and one-sitting crammers it does NOT declare mastered, and the share of real knowers it does. Simulated, not real learners."""
+    from . import mastery_sim
+
+    report = mastery_sim.evaluate()
+    for metric, value in (("no_false_mastery_guesser", 1.0 - report["false_mastery_guesser"]), ("no_false_mastery_partial", 1.0 - report["false_mastery_partial"]),
+                          ("no_false_mastery_crammer", 1.0 - report["false_mastery_crammer"]), ("true_mastery_knower", report["true_mastery_knower"])):
+        _check(checks, "mastery_simulation", metric, value, floors.get(metric, 1.0), f"{report['learners']} simulated learners of each kind over {report['days']} days")
+    return report
+
+
 def run_gate(thresholds=None, benchmark_manifest=None):
     """{"passed", "checks": [...], "real_papers": {...}} for the thresholds (default: thresholds.json). Never raises for a failed score: a failure is a failed check."""
     from . import benchmark
@@ -241,6 +252,7 @@ def run_gate(thresholds=None, benchmark_manifest=None):
     held = heldout_checks(checks, floors.get("heldout_invariants", {}))
     retrieval_checks(checks)
     graph_checks(checks, floors.get("prerequisite_graph", {}))
+    mastery_sim_checks(checks, floors.get("mastery_simulation", {}))
     math_checks(checks, floors.get("math_subtopics", {}))
     measured = real_retrieval_checks(checks, floors.get("retrieval_real", {}))
     real_math_checks(checks, floors.get("math_real", {}))
