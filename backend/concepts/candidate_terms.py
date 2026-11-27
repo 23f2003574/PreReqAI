@@ -11,6 +11,15 @@ MIN_MENTIONS, MIN_PARAGRAPHS, MAX_CANDIDATES = 3, 2, 20
 _STOP = frozenset("""a an the of and or in on at to for with by from as is are was were be been being this that these those it its we our us they their there here which who whom whose what when where while
 how why not no nor but if then than so such can could may might must shall should will would do does did done have has had having also both each other some any all more most many much one two three first second
 new use used using based given let thus hence per via over under between among into within without across about after before during further however therefore moreover although because since only very""".split())
+_CONJUNCTIONS = frozenset("and or but vs versus nor than".split())
+# A phrase with a finite verb is a clause fragment ("outperforms llama", "gqa achieves"), never a term; academic filler is no term either ("prior work", "inter alia").
+_VERBS = frozenset("""outperforms outperform achieves achieve improves improve shows show shown propose proposes proposed demonstrate demonstrates enables enable uses yields obtains obtain exhibits requires require reduces
+reduce provides provide allows allow leads lead makes make gives give consists contains includes matches match beats beat surpasses surpass advise advises rewrite rewrites think thinks outperformed achieved
+improved started flipped loaded""".split())
+_FILLER = frozenset({"prior work", "related work", "future work", "previous work", "recent work", "inter alia", "et al", "state of the art", "this paper", "these results", "our results", "our method", "our approach", "our model", "united states",
+                     "ground truth", "natural language", "existing methods", "superior performance", "higher quality", "faster inference", "less bias", "last layers", "every token", "same expert", "google research", "human study",
+                     "multiple choice", "intermediate steps", "final answer", "appendix table", "answer choices"})
+_FILLER_WORDS = frozenset("our their this these those such same other previous prior recent superior better worse higher lower best last every less faster slower".split())
 _WORD = r"[A-Za-z][A-Za-z\-]{2,}"
 from backend.sentences import split_sentences
 _ABBREVIATED = re.compile(rf"\b((?:{_WORD})(?: {_WORD}){{1,3}}) \(([A-Z][A-Za-z]{{1,7}}s?)\)")
@@ -20,20 +29,45 @@ _DEFINED = re.compile(rf"\b({_WORD}(?: {_WORD}){{0,2}}) (?:is|are) defined as\b"
 _BACK = re.compile(r"^\s*(?:\d+\.?\s*)?(?:references|bibliography|acknowledg|appendix)", re.IGNORECASE)
 
 
+def _singular(word):
+    return word[:-3] + "y" if word.endswith("ies") and len(word) > 5 else word[:-1] if word.endswith("s") and not word.endswith("ss") and len(word) > 3 else word
+
+
+def _norm(term):
+    """A term with hyphens and case ignored and each word reduced to its singular, so "language models" meets "language model" and "Chain-of-Thought" meets "chain of thought"."""
+    return " ".join(_singular(w) for w in re.split(r"[\s\-]+", term.lower()) if w)
+
+
+def _is_fragment(words, term):
+    """Whether a phrase is a clause fragment, a conjunction of two things or academic filler rather than one term."""
+    if any(w in _VERBS for w in words) or any(w in _CONJUNCTIONS for w in words) or " ".join(words) in _FILLER:
+        return True
+    return words[0] in _FILLER_WORDS or any(w.endswith("-") for w in words)  # a word cut at a line end ("atten- tion")
+
+
 def _usable(term):
     words = term.lower().split()
+    if len(words) > 1 and _is_fragment(words, term):
+        return False
     return 4 <= len(term) <= 50 and not any(char.isdigit() for char in term) and words[0] not in _STOP and words[-1] not in _STOP and not all(w in _STOP for w in words)
 
 
 def _known_terms():
     from backend.concepts.concept_registry import ConceptRegistry
 
-    return {term.lower() for concept in ConceptRegistry().all() for term in (concept.name, *concept.aliases)}
+    terms = {term.lower() for concept in ConceptRegistry().all() for term in (concept.name, *concept.aliases)}
+    return terms | {_norm(term) for term in terms}  # the plural or hyphen-free spelling of a known term is the known term
 
 
 def _initials_match(phrase, acronym):
     initials = "".join(word[0] for word in re.split(r"[ -]", phrase.lower()) if word).upper()
     return acronym.rstrip("s").upper() in initials or initials.endswith(acronym.rstrip("s").upper()[-2:])
+
+
+def accepts(term, known=None):
+    """Whether `term` would be proposed as a candidate on its wording alone: usable (no clause fragment, conjunction or filler) and not a registry concept in any plural or hyphen spelling."""
+    known = _known_terms() if known is None else known
+    return _usable(term) and term.lower() not in known and _norm(term) not in known
 
 
 def find(paper, known=None, limit=MAX_CANDIDATES):
@@ -45,7 +79,7 @@ def find(paper, known=None, limit=MAX_CANDIDATES):
     def add(term, reason, weight, sentence, paragraph, acronym=None):
         term = " ".join(term.split())
         key = term.lower()
-        if not _usable(term) or key in known or (acronym and acronym.lower() in known):
+        if not _usable(term) or key in known or _norm(term) in known or (acronym and acronym.lower() in known):
             return
         entry = found.setdefault(key, {"term": term, "definition": 0, "reasons": [], "sentence": sentence, "page_number": paragraph.page_number, "section": paragraph.section_title})
         if weight and reason not in entry["reasons"]:
@@ -83,7 +117,7 @@ def find(paper, known=None, limit=MAX_CANDIDATES):
                     counts[phrase] = counts.get(phrase, 0) + 1
                     spread.setdefault(phrase, set()).add(position)
     for phrase, count in counts.items():
-        if count >= MIN_MENTIONS and len(spread[phrase]) >= MIN_PARAGRAPHS and phrase not in known and _usable(phrase):
+        if count >= MIN_MENTIONS and len(spread[phrase]) >= MIN_PARAGRAPHS and phrase not in known and _norm(phrase) not in known and _usable(phrase):
             first = next((p for p, lowered in text if phrase in lowered), None)
             if first is None:
                 continue
