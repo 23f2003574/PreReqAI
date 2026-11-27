@@ -21,9 +21,9 @@ REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
 class PdfUrlError(ValueError):
     """A direct PDF link that cannot be used. `kind`: invalid_url | blocked | timeout | too_large | failed | not_pdf; `hint` says what to do."""
 
-    def __init__(self, kind, message, hint=""):
+    def __init__(self, kind, message, hint="", transient=False):
         super().__init__(message)
-        self.kind, self.hint = kind, hint
+        self.kind, self.hint, self.transient = kind, hint, transient  # transient: a dropped connection or a busy server (429, 5xx), worth another attempt
 
 
 def _positive(name, default):
@@ -130,7 +130,7 @@ class PdfUrlResolver(ArxivResolver):
                     url = urljoin(url, location)  # checked as the next hop's own URL: scheme, host, addresses
                     continue
                 if status != 200:
-                    raise PdfUrlError("failed", f"The server refused to provide the PDF (HTTP {status}).", "Check the link, or download the PDF and pass its path.")
+                    raise PdfUrlError("failed", f"The server refused to provide the PDF (HTTP {status}).", "Check the link, or download the PDF and pass its path.", transient=status in (429, 500, 502, 503, 504))
                 declared = headers.get("Content-Length", "")
                 if declared.isdigit() and int(declared) > self.max_bytes:
                     raise self._too_large()
@@ -160,7 +160,7 @@ class PdfUrlResolver(ArxivResolver):
         name = type(error).__name__
         if isinstance(error, TimeoutError) or "Timeout" in name:
             raise PdfUrlError("timeout", f"The download timed out: {error}", "Try again, or download the PDF and pass its path.") from error
-        raise PdfUrlError("failed", f"The PDF could not be downloaded ({name}).", "Check the link and your connection, or pass the PDF's path.") from error
+        raise PdfUrlError("failed", f"The PDF could not be downloaded ({name}).", "Check the link and your connection, or pass the PDF's path.", transient=True) from error
 
     @classmethod
     def _validate(cls, content):

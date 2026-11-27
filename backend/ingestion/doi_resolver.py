@@ -1,6 +1,7 @@
 import ipaddress
 import re
 import socket
+import time
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
@@ -99,41 +100,35 @@ class DoiResolver(ArxivResolver):
 
         return str(self._store(pdf_path, content))
 
-    # Publisher links usually redirect (to a CDN, to a login-less copy); each hop is checked, not only the first.
+    # Publisher links usually redirect (to a CDN, to a login-less copy). The download is the pinned one of pdf_url_resolver: every hop is vetted (https, public addresses only) and
+    # fetched from the very addresses that were vetted, so a second DNS lookup can never lead somewhere else; the body is streamed under a size limit and one deadline.
     MAX_REDIRECTS = 5
 
     def _download_public(self, url: str) -> bytes:
+        from .pdf_url_resolver import PdfUrlError, PdfUrlResolver
 
-        for _ in range(self.MAX_REDIRECTS + 1):
+        resolver = PdfUrlResolver(getaddrinfo=lambda *args, **kwargs: socket.getaddrinfo(*args, **kwargs), fetch=lambda *args: self._fetch(*args))
+        delays = iter(self.RETRY_DELAYS)
+        while True:
+            try:
+                return resolver._download(url)
+            except PdfUrlError as error:  # a dropped connection or a busy server is retried like the other DOI requests; anything else surfaces at once
+                delay = next(delays, None) if error.transient else None
+                if delay is not None:
+                    time.sleep(delay)
+                    continue
+                if error.kind in ("blocked", "invalid_url"):
+                    raise ValueError(
+                        "The PDF link listed for this DOI does not point to a public https address; "
+                        "download the paper and give its .pdf path instead"
+                    ) from error
+                raise ValueError(f"The PDF for this DOI could not be downloaded: {error}") from error
 
-            if not is_public_https_url(url):
+    @staticmethod
+    def _fetch(scheme, address, port, host, target, timeout):
+        from .pdf_url_resolver import pinned_fetch
 
-                raise ValueError(
-                    "The PDF link listed for this DOI does not point to a public https address; "
-                    "download the paper and give its .pdf path instead"
-                )
-
-            def fetch(url=url):
-
-                response = requests.get(url, timeout=60, allow_redirects=False)
-
-                if not response.is_redirect:
-
-                    response.raise_for_status()
-
-                return response
-
-            response = self._with_retries(fetch)
-
-            if response.is_redirect:
-
-                url = urljoin(url, response.headers.get("Location", ""))
-
-                continue
-
-            return response.content
-
-        raise ValueError("Too many redirects while downloading the PDF for this DOI")
+        return pinned_fetch(scheme, address, port, host, target, timeout)
 
     def _find_pdf_url(self, doi: str) -> str:
 

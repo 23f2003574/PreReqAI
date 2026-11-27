@@ -34,18 +34,25 @@ def _network(monkeypatch, tmp_path, script):
     """`script` maps 'crossref' / 'pdf' to a list of outcomes (an exception or a Reply) consumed in order."""
     monkeypatch.setattr(DoiResolver, "CACHE_DIRECTORY", tmp_path / "doi")
     monkeypatch.setattr(DoiResolver, "RETRY_DELAYS", (0, 0))
-    monkeypatch.setattr("backend.ingestion.doi_resolver.is_public_https_url", lambda url: True)
+    monkeypatch.setattr("backend.ingestion.doi_resolver.socket.getaddrinfo", lambda host, port, type=None: [(2, 1, 6, "", ("93.184.216.34", port))])
     calls = {"crossref": 0, "pdf": 0}
 
-    def get(url, **kwargs):
-        kind = "pdf" if url == PDF_URL else "crossref"
+    def outcome_of(kind):
         outcome = script[kind][min(calls[kind], len(script[kind]) - 1)]
         calls[kind] += 1
         if isinstance(outcome, Exception):
             raise outcome
         return outcome
 
+    def get(url, **kwargs):  # the Crossref lookup
+        return outcome_of("crossref")
+
+    def fetch(scheme, address, port, host, target, timeout):  # the pinned PDF download
+        reply = outcome_of("pdf")
+        return reply.status, {}, iter([reply.content]), lambda: None
+
     monkeypatch.setattr(requests, "get", get)
+    monkeypatch.setattr(DoiResolver, "_fetch", staticmethod(fetch))
     return calls
 
 
@@ -72,6 +79,6 @@ def test_a_permanent_error_is_not_retried(monkeypatch, tmp_path):
 
 def test_a_persistent_outage_still_surfaces_after_the_retries(monkeypatch, tmp_path):
     calls = _network(monkeypatch, tmp_path, {"crossref": [GOOD_LINKS], "pdf": [Reply(503)]})
-    with pytest.raises(requests.exceptions.HTTPError):
+    with pytest.raises(ValueError, match="503"):
         DoiResolver().resolve(SOURCE)
     assert calls["pdf"] == 3
