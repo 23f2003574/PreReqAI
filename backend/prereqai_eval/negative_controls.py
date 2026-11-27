@@ -19,16 +19,17 @@ CONTROLS = {
 
 
 def _pdf(lines):
-    from reportlab.lib.pagesizes import letter
-    from reportlab.pdfgen import canvas
+    import pymupdf  # a runtime requirement, unlike reportlab
 
     handle, path = tempfile.mkstemp(suffix=".pdf")
     os.close(handle)
-    pdf, y = canvas.Canvas(path, pagesize=letter), 740
+    document = pymupdf.open()
+    page, y = document.new_page(), 52
     for line in lines:
-        pdf.drawString(50, y, line)
-        y -= 16
-    pdf.save()
+        page.insert_text((50, y), line, fontsize=11)
+        y += 16
+    document.save(path)
+    document.close()
     return path
 
 
