@@ -190,6 +190,28 @@ def math_checks(checks, floors):
     _check(checks, "math_subtopics", "equations", float(report["equations"]), float(floors.get("equations", 30)), "the labelled equation set must not shrink")
 
 
+def real_prerequisite_checks(checks, floors, papers=None):
+    """Precision and recall of the prerequisites recommended for the six real papers against AI-written, provisional annotations (prerequisite_eval.py). The floors were set after the first measurement and guard
+    against regression; the false positives and negatives are named in the detail."""
+    from . import prerequisite_eval
+
+    data = prerequisite_eval.load()
+    try:
+        papers = papers if papers is not None else _real_papers(set(data["papers"]))
+    except Exception as error:  # a paper that cannot be analysed is a failed check, never a crash of the gate
+        checks.append({"group": "prerequisites_real", "metric": "papers", "value": 0.0, "threshold": 1.0, "passed": False, "detail": f"{type(error).__name__}: {error}"})
+        return None
+    report = prerequisite_eval.evaluate(papers, data)
+    detail = (f"{len(report['papers'])} real papers, provisional AI annotations: {report['tp']} true, {report['fp']} false positive, {report['fn']} missed; "
+              + "; ".join(f"{pid}: +{row['false_positives']} -{row['false_negatives']}" for pid, row in report["papers"].items()))
+    for metric in ("precision", "recall"):
+        if metric in floors:  # no floor configured, no check: a floor is never invented
+            _check(checks, "prerequisites_real", metric, report[metric], floors[metric], detail)
+    if "papers" in floors:
+        _check(checks, "prerequisites_real", "papers", float(len(report["papers"])), float(floors["papers"]), "the annotated paper set must not shrink")
+    return report
+
+
 def negative_control_checks(checks, floors):
     """Non-machine-learning documents that reuse words the registry knows must yield no concept and no prerequisite (negative_controls.py); a control that does is named in the detail."""
     from . import negative_controls
@@ -267,7 +289,8 @@ def run_gate(thresholds=None, benchmark_manifest=None):
     math_checks(checks, floors.get("math_subtopics", {}))
     measured = real_retrieval_checks(checks, floors.get("retrieval_real", {}))
     real_math_checks(checks, floors.get("math_real", {}))
-    return {"passed": all(c["passed"] for c in checks), "checks": checks, "retrieval_real": measured, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
+    prerequisites = real_prerequisite_checks(checks, floors.get("prerequisites_real", {}))
+    return {"passed": all(c["passed"] for c in checks), "checks": checks, "retrieval_real": measured, "prerequisites_real": prerequisites, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
             "real_papers": {"status": real["status"], "per_paper": [{"id": r["id"], "review_kind": r.get("review_kind"), "headings_f1": r["headings"]["f1"], "concepts_f1": r["concepts"]["f1"]}
                                                                   for r in real["papers"] if r["ok"]],
                             "aggregate": {key: real.get(key) for key in ("headings", "concepts", "coverage", "roles")},

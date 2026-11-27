@@ -1,0 +1,14 @@
+{
+  "format": "prereqai-prerequisite-annotations",
+  "schema_version": 1,
+  "status": "provisional",
+  "provenance": "Written by an AI assistant from its reading of each paper's content (what a reader needs to know to follow it), BEFORE looking at PreReqAI's prerequisites for these papers; not reviewed by a person. Names are registry concepts or prerequisite subjects. The six papers are the three annotated benchmark papers and the three held-out papers.",
+  "papers": {
+    "dpo": ["Reinforcement Learning", "Reinforcement Learning from Human Feedback", "Bradley-Terry Model", "Probability", "Information Theory", "Optimization", "Neural Networks", "Calculus"],
+    "mixtral": ["Transformer", "Attention", "Mixture of Experts", "Neural Networks", "Linear Algebra", "Softmax"],
+    "chain-of-thought": ["Large Language Model", "Neural Networks", "Transformer", "Fine-Tuning"],
+    "gqa": ["Transformer", "Attention", "Multi-Head Attention", "Fine-Tuning", "Neural Networks", "Linear Algebra"],
+    "mistral-7b": ["Transformer", "Attention", "Grouped-Query Attention", "Large Language Model", "Neural Networks", "Linear Algebra"],
+    "constitutional-ai": ["Reinforcement Learning from Human Feedback", "Reinforcement Learning", "Large Language Model", "Reward Model", "Supervised Fine-Tuning", "Chain-of-Thought", "Neural Networks"]
+  }
+}

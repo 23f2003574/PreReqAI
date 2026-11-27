@@ -61,3 +61,10 @@ every real-paper number here is provisional until a person re-checks the annotat
 exact quotations, no chart residue, concept mentioned, page known) and the provisional real-paper floors, each against `thresholds.json`. Exit code 1 and a report naming the failed metric and the
 false positives and negatives when a floor is missed. Prerequisite coverage is scored for a paper whose annotation lists `prerequisites` (`[{"concept": ..., "covered": true|false}]`) and reported as
 not annotated otherwise. Adding papers: `--register` (above) records the licence evidence, the SHA-256 and the pending annotation; a human annotates and approves it.
+
+
+## Prerequisite precision and recall on the six real papers
+`prerequisite_annotations.json` (one level up) lists, for the three benchmark papers and the three held-out papers, the subjects and concepts a reader needs to follow each one, written by an AI assistant from the paper's content before PreReqAI's
+output for it was looked at, and **not reviewed by a person** (provisional). `--gate` scores `paper.prerequisites` against it (`prerequisites_real`): the first measurement was precision 0.436 and recall 0.459 (17 true, 22 false positive, 20 missed
+over six papers); the floors (0.40 and 0.42) sit just below it and guard against regression only. The misses are mostly concepts the paper itself uses and the table does not list as prerequisites (Reinforcement Learning, Large Language
+Model, Fine-Tuning); the false positives are mostly subject-level (Calculus, Probability, Linear Algebra) that the annotator did not consider necessary for following the paper.
