@@ -25,6 +25,9 @@ ERROR_CATEGORIES = ("timeout", "input_limit", "resource_limit", "worker_failure"
 _BY_CODE = {"timeout": "timeout", "too_many_pages": "input_limit", "page_too_large": "input_limit", "resource_exhausted": "resource_limit", "worker_failed": "worker_failure"}
 
 
+_UNREADABLE_FILE_ERRORS = frozenset({"FileDataError", "EmptyFileError", "PDFSyntaxError", "PDFSyntaxWarning", "PdfReadError", "PdfStreamError"})
+
+
 def new_request_id():
     return secrets.token_hex(8)
 
@@ -43,6 +46,9 @@ def categorise(error):
     isolated PDF worker crashed or could not read the file), invalid_input (a value the caller got wrong), cancelled, dependency (a missing package, an unreachable service), internal (anything else)."""
     if isinstance(error, str):
         return _BY_CODE.get(error, "internal")
+    declared = getattr(error, "category", None)  # a failure that says its own category (a PDF guard failure for a file that is not a readable PDF)
+    if declared in ERROR_CATEGORIES:
+        return declared
     kind = getattr(error, "kind", None)  # a PDF guard failure names its kind
     if kind in _BY_CODE:
         return _BY_CODE[kind]
@@ -53,6 +59,8 @@ def categorise(error):
         return "timeout"
     if isinstance(error, MemoryError):
         return "resource_limit"
+    if name in _UNREADABLE_FILE_ERRORS:  # the PDF libraries' own errors for a file that is empty, not a PDF or damaged: the upload is wrong, not the service
+        return "invalid_input"
     if isinstance(error, (ImportError, ConnectionError)):
         return "dependency"
     if isinstance(error, (ValueError, TypeError, KeyError)) and not name.startswith("Pipeline"):

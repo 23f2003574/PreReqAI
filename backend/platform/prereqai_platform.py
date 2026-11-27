@@ -302,12 +302,16 @@ _UNREADABLE = re.compile(r"\(cid:\d+\)|\ufffd")
 
 def _outcome_category(outcome):
     """The observability error category (backend/observability.py) of a non-successful analysis outcome, from its status, error type and the fixed wording of its message."""
+    from backend.observability import ERROR_CATEGORIES
+
     status, detail, kind = outcome.get("status"), str(outcome.get("detail", "")).lower(), str((outcome.get("error") or {}).get("type", ""))
     if status == "cancelled":
         return "cancelled"
-    if "took longer" in detail or "time limit" in detail or "max_seconds" in detail:
+    if getattr(outcome, "category", None) in ERROR_CATEGORIES:  # carried from the exception or guard outcome: no guessing from wording
+        return outcome.category
+    if "took longer" in detail or "time limit" in detail or "max_seconds" in detail:  # outcomes that carry no category (older bodies)
         return "timeout"
-    if "memory" in detail or "larger than the limit" in detail and kind == "PdfGuardError":
+    if "memory" in detail or ("larger than the limit" in detail and kind == "PdfGuardError"):
         return "resource_limit"
     if "worker" in detail or "damaged" in detail:
         return "worker_failure"

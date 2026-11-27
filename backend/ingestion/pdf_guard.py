@@ -21,9 +21,10 @@ EXIT_MEMORY = 3
 
 
 class PdfGuardError(Exception):
-    def __init__(self, kind, message):
+    def __init__(self, kind, message, category=None):
         super().__init__(message)
         self.kind, self.message = kind, message
+        self.category = category  # the observability category when `kind` alone does not say it (a file that is not a readable PDF is invalid_input, not a worker failure)
 
 
 def _setting(name, cast):

@@ -83,12 +83,29 @@ def success_body(feature: str, stage: str, warnings=(), **output) -> dict:
 def failure_body(stage: str, message: str, error=None, hint: str = None) -> dict:
     """A failure in the public envelope. `stage` is the stage that failed;
     `error` is the underlying exception, if there is one."""
-    return {
+    return Outcome({
         "status": FAILURE, "stage": stage, "detail": message,
         "error": {"type": type(error).__name__ if error is not None else None,
                   "message": str(error) if error is not None else message},
         "hint": hint, "warnings": [],
-    }
+    }, _category(error) if error is not None else None)
+
+
+class Outcome(dict):
+    """A failure envelope (the same keys and JSON as a plain dict) that also carries `category`, the observability category its exception declared, so no consumer has to guess it from the message."""
+
+    category = None
+
+    def __init__(self, body, category=None):
+        super().__init__(body)
+        self.category = category
+
+
+def _category(error):
+    """The observability category of the exception behind a failure, carried in the outcome so nothing has to guess it from the message wording."""
+    from backend.observability import categorise
+
+    return categorise(error)
 
 
 def cancelled_body(stage: str, message: str, hint: str = None) -> dict:
@@ -106,12 +123,12 @@ def limit_exceeded_body(stage: str, message: str, hint: str = None) -> dict:
 
 def timeout_body(stage: str, message: str, error=None, hint: str = None) -> dict:
     """The envelope of a run stopped because an operation timed out."""
-    return {
+    return Outcome({
         "status": TIMEOUT, "stage": stage, "detail": message,
         "error": {"type": type(error).__name__ if error is not None else "TimeoutError",
                   "message": str(error) if error is not None else message},
         "hint": hint, "warnings": [],
-    }
+    }, "timeout")
 
 
 def failure_response(status_code: int, stage: str, message: str, error=None, hint: str = None) -> JSONResponse:

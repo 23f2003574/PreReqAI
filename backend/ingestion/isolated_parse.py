@@ -55,7 +55,7 @@ def run_worker(path, ocr_seconds=None, command=None, seconds=None):
 
     if not looks_like_pdf(path):  # the file's own bytes decide, not its name or content type: no worker process is started for text, HTML, an archive or an empty file
         log_event("worker_refused", level=30, reason="not_a_pdf", error_category="invalid_input")
-        raise PdfGuardError("worker_failed", "this file could not be read as a PDF (it does not start with a PDF header)")
+        raise PdfGuardError("worker_failed", "this file could not be read as a PDF (it does not start with a PDF header)", category="invalid_input")
     log_event("worker_start", pages_limit=settings()[0], seconds_limit=seconds or settings()[2], memory_mb_limit=settings()[3])
     started = perf_counter()
     try:
@@ -99,9 +99,9 @@ def _run_worker(path, ocr_seconds=None, command=None, seconds=None):
     if error == "output_too_large":
         raise PdfGuardError("resource_exhausted", "the text and structure of this PDF are larger than the limit and it was stopped")
     if error == "password_protected":
-        raise PdfGuardError("worker_failed", "this PDF is password-protected, so it cannot be read (remove the password, for example by printing it to a new PDF, and upload that)")
+        raise PdfGuardError("worker_failed", "this PDF is password-protected, so it cannot be read (remove the password, for example by printing it to a new PDF, and upload that)", category="invalid_input")
     if error == "unreadable":
-        raise PdfGuardError("worker_failed", f"this file could not be read as a PDF ({result.get('detail', 'unreadable')})")
+        raise PdfGuardError("worker_failed", f"this file could not be read as a PDF ({result.get('detail', 'unreadable')})", category="invalid_input")
     detail = f"exit status {process.returncode}" if process.returncode >= 0 else f"killed by signal {-process.returncode}"
     raise PdfGuardError("worker_failed", f"the PDF worker stopped unexpectedly ({detail}); the file may be damaged or hostile")
 
