@@ -17,6 +17,9 @@ NEGATED = re.compile(r"\bnot\s+(?:be\s+)?(?:required|needed|necessary|assumed|ex
                      r"|\bwithout\s+(?:any\s+)?(?:prior\s+|previous\s+)?(?:knowledge|background|familiarity)\b|\b(?:neither|never)\s+(?:assume|require)s?\b|\bhelpful\s+but\b", re.IGNORECASE)
 REMINDER = re.compile(r"\brecall\s+that\b|\bas\s+a\s+reminder\b|\bit\s+is\s+well[- ]known\s+that\b|\bwe\s+recall\b|\brecall\s+the\b", re.IGNORECASE)
 MIN_CHARS, MAX_CHARS = 25, 450
+# Subjects whose bare name is too common in running text to count as a mention anywhere (the concept detector ignores a lone "probability"), but that name the subject in a sentence with an explicit cue ("we assume familiarity with probability and statistics").
+_STATED_BARE_SUBJECTS = {"Probability": re.compile(r"(?<![a-z])probabilit(?:y|ies)\b"), "Statistics": re.compile(r"(?<![a-z])statistics\b"), "Optimization": re.compile(r"(?<![a-z])optimi[sz]ation\b"),
+                         "Calculus": re.compile(r"(?<![a-z])(?:derivatives|differentiation)\b"), "Linear Algebra": re.compile(r"(?<![a-z])(?:matrices|matrix algebra|linear maps)\b")}
 from backend.sentences import split_sentences
 _BACK_MATTER = re.compile(r"^\s*(?:\d+\.?\s*)?(?:references|bibliography|acknowledg|appendix)", re.IGNORECASE)
 
@@ -49,6 +52,8 @@ def find_in_sentence(sentence):
     if cue is None:
         return {"cue": None, "subjects": [], "concepts": []}
     subjects = [s for s, pattern in _SUBJECT_PATTERNS.items() if pattern.search(text)]
+    if cue == "explicit":  # in a sentence that says what the reader must know, the bare words the detector leaves out as everyday language ("probability", "statistics") name the subject
+        subjects += [s for s, pattern in _STATED_BARE_SUBJECTS.items() if s not in subjects and pattern.search(text)]
     concepts = [name for name, pattern in _concept_patterns().items() if pattern.search(text)]
     named = [*subjects, *concepts]  # "Attention" inside "Self-Attention" is the longer term's mention, not a second prerequisite
     subjects = [n for n in subjects if not any(n != m and n.lower() in m.lower() for m in named)]
