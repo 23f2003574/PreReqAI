@@ -10,7 +10,11 @@ import re
 EXPLICIT = re.compile(r"\b(?:we|authors?)\s+(?:will\s+)?(?:assume|presuppose|require|expect)s?\b|\bassum(?:es|ing)\s+(?:the\s+reader|readers|familiarity|knowledge|that\s+the\s+reader)\b"
                       r"|\b(?:reader|readers)\s+(?:is|are)\s+(?:expected|assumed)\s+to\b|\b(?:reader|readers)\s+(?:should|must|needs?\s+to)\s+(?:be\s+familiar|know|understand|have)\b"
                       r"|\bfamiliar(?:ity)?\s+with\b|\bfamiliarity\s+with\b|\bbackground\s+in\b|\bprior\s+(?:knowledge|exposure)\s+(?:of|to|in)\b|\bpreliminary\s+knowledge\s+of\b"
-                      r"|\bbasic\s+(?:knowledge|understanding)\s+of\b|\brequires?\s+(?:an?\s+)?(?:understanding|knowledge)\s+of\b|\bpresuppos\w*\s+(?:knowledge|familiarity|a\s+background|that\s+the\s+reader)\b", re.IGNORECASE)
+                      r"|\bbasic\s+(?:knowledge|understanding)\s+of\b|\brequires?\s+(?:an?\s+)?(?:understanding|knowledge)\s+of\b|\bpresuppos\w*\s+(?:knowledge|familiarity|a\s+background|that\s+the\s+reader)\b|\bcomfortable\s+with\b|\b(?:reader|readers)\s+should\s+be\s+able\s+to\b", re.IGNORECASE)
+# A sentence that says a subject is NOT needed ("not required", "no prior knowledge of", "we do not assume", "helpful but not ...") states no prerequisite: it never makes or raises one.
+NEGATED = re.compile(r"\bnot\s+(?:be\s+)?(?:required|needed|necessary|assumed|expected|essential|mandatory)\b|\bno\s+(?:prior\s+|previous\s+|special\s+|particular\s+|specific\s+|formal\s+)?(?:knowledge|background|familiarity|understanding|experience|exposure)\b"
+                     r"|\b(?:do|does|did|will|would|need|needs)\s*(?:not|n't)\s+(?:to\s+)?(?:assume|require|presuppose|expect|need|know|be\s+familiar)\w*|\b(?:don|doesn|didn|won)['\u2019]t\s+(?:assume|require|presuppose|expect|need)\b"
+                     r"|\bwithout\s+(?:any\s+)?(?:prior\s+|previous\s+)?(?:knowledge|background|familiarity)\b|\b(?:neither|never)\s+(?:assume|require)s?\b|\bhelpful\s+but\b", re.IGNORECASE)
 REMINDER = re.compile(r"\brecall\s+that\b|\bas\s+a\s+reminder\b|\bit\s+is\s+well[- ]known\s+that\b|\bwe\s+recall\b|\brecall\s+the\b", re.IGNORECASE)
 MIN_CHARS, MAX_CHARS = 25, 450
 from backend.sentences import split_sentences
@@ -39,6 +43,8 @@ def find_in_sentence(sentence):
     from backend.concepts.rule_based_concept_detector import _SUBJECT_PATTERNS, normalise_text
 
     text = normalise_text(sentence)
+    if NEGATED.search(sentence):
+        return {"cue": None, "subjects": [], "concepts": []}
     cue = "explicit" if EXPLICIT.search(sentence) else "reminder" if REMINDER.search(sentence) else None
     if cue is None:
         return {"cue": None, "subjects": [], "concepts": []}
