@@ -190,6 +190,16 @@ def math_checks(checks, floors):
     _check(checks, "math_subtopics", "equations", float(report["equations"]), float(floors.get("equations", 30)), "the labelled equation set must not shrink")
 
 
+def negative_control_checks(checks, floors):
+    """Non-machine-learning documents that reuse words the registry knows must yield no concept and no prerequisite (negative_controls.py); a control that does is named in the detail."""
+    from . import negative_controls
+
+    report = negative_controls.evaluate()
+    leaked = "; ".join(f"{name}: {row['concepts']} {row['prerequisites']}" for name, row in report["controls"].items() if row["concepts"] or row["prerequisites"])
+    _check(checks, "negative_controls", "clean_share", report["clean"], floors.get("clean_share", 1.0), leaked or f"{len(report['controls'])} controls, all clean")
+    return report
+
+
 def graph_checks(checks, floors):
     """The prerequisite graph: it must validate (no unknown target, cycle, duplicate or target without study hours) and the share of registry concepts with a rule must reach its floor; the concepts
     without a rule are named, because their prerequisites are unknown, not absent."""
@@ -251,6 +261,7 @@ def run_gate(thresholds=None, benchmark_manifest=None):
         _check(checks, "real_papers_provisional", "roles_accuracy", real["roles"]["accuracy"], group["roles_accuracy"], "wrong roles: " + worst("roles", "wrong"))
     held = heldout_checks(checks, floors.get("heldout_invariants", {}))
     retrieval_checks(checks)
+    negative_control_checks(checks, floors.get("negative_controls", {}))
     graph_checks(checks, floors.get("prerequisite_graph", {}))
     mastery_sim_checks(checks, floors.get("mastery_simulation", {}))
     math_checks(checks, floors.get("math_subtopics", {}))

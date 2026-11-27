@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from .ml_expansion import ALIAS_CONTEXT, AMBIGUOUS, EXPANSION
 
@@ -138,6 +138,9 @@ class ConceptRegistry:
             Concept("Self-Supervised Learning", "deep_learning", aliases=('self supervised learning', 'self-supervised', 'self supervised')),
             Concept("Transfer Learning", "deep_learning"),
         ]
+
+        # The core concepts that are also everyday or other-domain words (see ml_expansion.AMBIGUOUS) count only in technical text.
+        self._concepts = [replace(c, ambiguous=True, technical=AMBIGUOUS[c.name][0], context=AMBIGUOUS[c.name][1]) if c.name in AMBIGUOUS and not c.ambiguous else c for c in self._concepts]
 
         # Modern vision, self-supervised, reinforcement-learning, alignment, retrieval and sparse-model concepts (see ml_expansion).
         for name, domain, aliases, *_ in EXPANSION:

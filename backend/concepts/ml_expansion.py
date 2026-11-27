@@ -220,6 +220,12 @@ EXPANSION = [
 
 # Concepts that are also everyday words: a bare mention counts only where the text is technical (see Concept in concept_registry).
 AMBIGUOUS = {
+    # "transformer" is also the electrical device and "regularization" a legal and administrative word: either counts only in a technical phrase or in a paper with machine-learning evidence of its own.
+    "Transformer": ((r"transformer (?:model|network|architecture|layer|block|encoder|decoder|language model|based)s?", r"transformer-based", r"vision transformers?", r"transformers? (?:are|is) (?:a|an|the) (?:neural|deep|sequence|attention)",
+                     r"(?:pre-?trained|decoder-only|encoder-only|encoder-decoder|original|standard|vanilla) transformers?", r"the transformer \(vaswani", r"transformers? with (?:self-)?attention"),
+                    (r"self-attention", r"multi-head attention", r"attention mechanism", r"\battention\b(?! (?:to|from|of|deficit|span|paid))", r"\btokens?\b", r"encoder-decoder", r"\bbert\b", r"\bgpt", r"neural net", r"language models?", r"deep learning", r"machine learning")),
+    "Regularization": ((r"l[12][- ]regulari[sz]ation", r"regulari[sz]ation (?:term|strength|coefficient|parameter|loss|penalty)", r"weight decay", r"l[12] penalty", r"(?:dropout|label smoothing|early stopping) (?:as|is) (?:a )?regulari[sz]"),
+                       (r"loss", r"overfit", r"generali[sz]ation", r"training (?:set|data)", r"parameters?", r"model")),
     # "CLIP" alone is not an alias of Contrastive Language-Image Pretraining: PPO papers "clip the ratio" and many papers "clip the gradient".
     "AI Alignment": ((r"ai alignment", r"alignment (?:problem|research|tax)", r"value alignment", r"aligned with human (?:values|intent)"),
                      (r"language models?", r"human feedback", r"reward", r"safety", r"preferences?")),

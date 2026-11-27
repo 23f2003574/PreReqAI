@@ -9,6 +9,7 @@
   "math_subtopics": {"precision": 0.97, "recall": 0.97, "equations": 30},
   "math_real": {"precision": 0.95, "recall": 0.95, "extraction_precision": 0.95, "extraction_recall": 0.93, "annotated_equations": 40},
   "mastery_simulation": {"no_false_mastery_guesser": 0.98, "no_false_mastery_partial": 0.60, "no_false_mastery_crammer": 1.0, "true_mastery_knower": 0.95},
+  "negative_controls": {"clean_share": 1.0},
   "prerequisite_graph": {"graph_valid": 1.0, "rule_coverage": 0.98},
   "heldout_invariants": {"references_extracted": 1.0, "no_duplicate_headings": 1.0, "no_short_headings": 1.0, "no_bibliography_only_concepts": 1.0, "evidence_quotations_verified": 1.0}
 }

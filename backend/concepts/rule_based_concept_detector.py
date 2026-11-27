@@ -114,7 +114,7 @@ def _shadowing_terms(concepts):
 # Shared vocabulary that shows the text is about machine learning; an ambiguous concept's own `context` patterns add to it. It names no
 # ambiguous concept (attention, dropout, embedding, overfitting), so two everyday words cannot vouch for each other.
 _ML_CONTEXT = (
-    r"neural net(?:work)?s?", r"deep learning", r"machine learning", r"transformers?", r"gradient", r"backprop", r"classifiers?",
+    r"neural net(?:work)?s?", r"deep learning", r"machine learning", r"transformer (?:model|network|architecture|layer|block|encoder|decoder)s?", r"transformer-based", r"gradient", r"backprop", r"classifiers?",
     r"softmax", r"loss function", r"fine-?tun", r"language models?", r"convolution", r"recurrent", r"stochastic",
 )
 
@@ -127,7 +127,8 @@ def _technical_pattern(concept):
 
 @lru_cache(maxsize=None)
 def _context_pattern(concept):
-    return re.compile(rf"(?<![a-z0-9])(?:{'|'.join((*_ML_CONTEXT, *concept.context))})")
+    shared = [cue for cue in _ML_CONTEXT if not re.fullmatch(cue, concept.name.lower())]  # a concept's own name never vouches for itself ("transformers?" for Transformer)
+    return re.compile(rf"(?<![a-z0-9])(?:{'|'.join((*shared, *concept.context))})")
 
 
 @lru_cache(maxsize=None)
