@@ -42,7 +42,7 @@ def platform(tmp_path, monkeypatch):
 def _replies(monkeypatch, *replies):
     queue = list(replies)
 
-    def get(url, timeout=None):
+    def get(url, timeout=None, **kw):
         reply = queue.pop(0)
         if isinstance(reply, BaseException):
             raise reply

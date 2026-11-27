@@ -28,7 +28,7 @@ def downloads(tmp_path, monkeypatch):
     monkeypatch.setattr(DoiResolver, "CACHE_DIRECTORY", blocker / "doi")
     monkeypatch.setattr("tempfile.gettempdir", lambda: str(tmp_path / "tmp"))
     calls = []
-    monkeypatch.setattr(requests, "get", lambda url, timeout: calls.append(url) or _Reply())
+    monkeypatch.setattr(requests, "get", lambda url, timeout, **kw: calls.append(url) or _Reply())
     return calls
 
 
@@ -43,7 +43,7 @@ def test_an_unwritable_cache_falls_back_to_the_temp_directory_and_is_reused(down
 
 def test_a_writable_cache_is_still_used_first(tmp_path, monkeypatch):
     monkeypatch.setattr(ArxivResolver, "CACHE_DIRECTORY", tmp_path / "cache" / "arxiv")
-    monkeypatch.setattr(requests, "get", lambda url, timeout: _Reply())
+    monkeypatch.setattr(requests, "get", lambda url, timeout, **kw: _Reply())
     source = ResearchSource(source_type="arxiv", identifier="1706.03762", original_input="arXiv:1706.03762")
 
     assert ArxivResolver().resolve(source) == str(tmp_path / "cache" / "arxiv" / "1706.03762.pdf")
