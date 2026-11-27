@@ -175,7 +175,9 @@ def estimate_entries(entries):
         sequence, moments = timed_sequence_from_counters(entry, question_id)
         answers.extend(sequence)
         times.extend(moments)
-    return estimate(answers, times)
+    # The questions' histories are concatenated above, which is not the order the answers were given in: put them in time order (untimed answers, the oldest, keep their place first; ties keep entry order)
+    order = sorted(range(len(answers)), key=lambda i: (0,) if times[i] is None else (1, times[i]))
+    return estimate([answers[i] for i in order], [times[i] for i in order])
 
 
 def estimate_attempts(attempts):
