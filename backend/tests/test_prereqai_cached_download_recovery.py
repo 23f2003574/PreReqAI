@@ -24,7 +24,7 @@ def resolver(tmp_path, monkeypatch):
     monkeypatch.setattr(ArxivResolver, "CACHE_DIRECTORY", tmp_path / "arxiv")
     monkeypatch.setattr(ArxivResolver, "RETRY_DELAYS", ())
     calls = []
-    monkeypatch.setattr(requests, "get", lambda url, timeout: calls.append(url) or _Reply())
+    monkeypatch.setattr(requests, "get", lambda url, timeout, **kw: calls.append(url) or _Reply())
     return ArxivResolver(), calls
 
 

@@ -21,7 +21,7 @@ def test_arxiv_download(tmp_path, monkeypatch):
 
     requested = []
     monkeypatch.setattr(ArxivResolver, "CACHE_DIRECTORY", tmp_path / "arxiv")
-    monkeypatch.setattr(requests, "get", lambda url, timeout: requested.append(url) or _Reply())
+    monkeypatch.setattr(requests, "get", lambda url, timeout, **kw: requested.append(url) or _Reply())
 
     pdf = ArxivResolver().resolve(
 

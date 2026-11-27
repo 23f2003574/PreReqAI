@@ -28,7 +28,7 @@ def resolver(tmp_path, monkeypatch):
 def _script(monkeypatch, *steps):
     calls = []
 
-    def fake_get(url, timeout):
+    def fake_get(url, timeout, **kw):
         calls.append(url)
         step = steps[min(len(calls), len(steps)) - 1]
         if isinstance(step, Exception):

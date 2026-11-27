@@ -52,7 +52,7 @@ def _times_out(*args, **kwargs):
 def test_a_download_that_completes_within_its_timeout_is_a_normal_success(platform_with_cache, monkeypatch):
     platform, cache = platform_with_cache
     calls = []
-    _download(monkeypatch, lambda url, timeout=None: calls.append(timeout) or _Response(_pdf_bytes()))
+    _download(monkeypatch, lambda url, timeout=None, **kw: calls.append(timeout) or _Response(_pdf_bytes()))
 
     outcome = platform.analyze(ARXIV)
 
@@ -110,7 +110,7 @@ def test_the_next_run_after_a_timeout_is_clean(platform_with_cache, tmp_path, mo
     _download(monkeypatch, _times_out)
     assert platform.analyze(ARXIV)["status"] == "timeout"
 
-    _download(monkeypatch, lambda url, timeout=None: _Response(_pdf_bytes()))
+    _download(monkeypatch, lambda url, timeout=None, **kw: _Response(_pdf_bytes()))
     recovered = platform.analyze(ARXIV)
     paper = tmp_path / "paper.pdf"
     paper.write_bytes(_pdf_bytes())

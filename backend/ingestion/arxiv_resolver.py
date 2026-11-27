@@ -208,6 +208,9 @@ class ArxivResolver(BaseSourceResolver):
 
         return pdf_path
 
+    MAX_DOWNLOAD_BYTES = 50 * 1024 * 1024  # far above a paper; it only stops a download from filling the memory or the disk
+    DOWNLOAD_SECONDS = 120.0  # the whole download, not each network read
+
     def _download(self, url: str) -> bytes:
 
         def fetch():
@@ -215,13 +218,39 @@ class ArxivResolver(BaseSourceResolver):
             response = requests.get(
                 url,
                 timeout=60,
+                stream=True,
             )
 
             response.raise_for_status()
 
-            return response.content
+            return self._read_bounded(response)
 
         return self._with_retries(fetch)
+
+    def _read_bounded(self, response) -> bytes:
+        """The body of `response`, read in chunks: ValueError past MAX_DOWNLOAD_BYTES (also when Content-Length already says so) and TimeoutError past DOWNLOAD_SECONDS."""
+        too_large = ValueError(f"The download is larger than the limit of {self.MAX_DOWNLOAD_BYTES} bytes")
+        declared = str((getattr(response, "headers", None) or {}).get("Content-Length", ""))
+        if declared.isdigit() and int(declared) > self.MAX_DOWNLOAD_BYTES:
+            raise too_large
+        if not hasattr(response, "iter_content"):  # a reply that is already fully read
+            if len(response.content) > self.MAX_DOWNLOAD_BYTES:
+                raise too_large
+            return response.content
+        deadline = time.monotonic() + self.DOWNLOAD_SECONDS
+        body = bytearray()
+        try:
+            for chunk in response.iter_content(64 * 1024):
+                body += chunk
+                if len(body) > self.MAX_DOWNLOAD_BYTES:
+                    raise too_large
+                if time.monotonic() > deadline:
+                    raise TimeoutError("the download took too long")
+        finally:
+            close = getattr(response, "close", None)
+            if close:
+                close()
+        return bytes(body)
 
     def _with_retries(self, fetch):
         """Run `fetch`, retrying after RETRY_DELAYS when it fails with a transient request error; the last (or a

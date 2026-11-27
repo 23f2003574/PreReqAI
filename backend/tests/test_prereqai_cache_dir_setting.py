@@ -45,7 +45,7 @@ def test_a_new_download_is_stored_under_the_configured_cache(tmp_path, monkeypat
         def raise_for_status(self):
             pass
 
-    monkeypatch.setattr(requests, "get", lambda url, timeout: Reply())
+    monkeypatch.setattr(requests, "get", lambda url, timeout, **kw: Reply())
     monkeypatch.setenv("PREREQAI_CACHE_DIR", str(tmp_path / "shared"))
     monkeypatch.chdir(tmp_path)
 

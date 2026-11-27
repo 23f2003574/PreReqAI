@@ -33,7 +33,7 @@ def _platform(tmp_path, monkeypatch, *replies):
     (tmp_path / "cache").mkdir()
     queue = list(replies)
 
-    def get(url, timeout=None):
+    def get(url, timeout=None, **kw):
         reply = queue.pop(0)
         if isinstance(reply, BaseException):
             raise reply
