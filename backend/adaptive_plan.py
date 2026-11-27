@@ -150,6 +150,19 @@ def propose(report, attempts, overrides=None, calendar=None, profile=None, now=N
             adjustments.append({"concept": step.concept, "action": action, "original_hours": original, "adjusted_hours": adjusted, "reason": reason, "overridden": overridden,
                                 "evidence": {k: v for k, v in evidence.get(step.concept, {}).items()}, "can_override": action != "keep"})
         plan.append({"concept": step.concept, "hours": adjusted, "original_hours": original, "adapted": adjusted != original, "importance": importance.get(step.concept)})
+    for concept in claimed_known(report):  # a subject the learner called known, whose assessed answers say otherwise, comes back as a step (the stored known list is left alone)
+        if concept in {s.concept for s in steps} or concept not in evidence or evidence[concept].get("source") == "profile":
+            continue
+        action, _, reason = decide(concept, 0.0, evidence[concept])
+        if action != "remediate":
+            continue
+        hours = _known_hours(concept)
+        overridden = overrides.get(concept) == "reject"
+        adjusted = 0.0 if overridden else hours
+        remediation[concept] = [] if overridden else _remediation(evidence[concept]["missed"])
+        adjustments.append({"concept": concept, "action": "reinstate", "original_hours": 0.0, "adjusted_hours": adjusted, "reason": f"you said you know this, but {reason}".replace("more time is planned", "it is planned again"),
+                            "overridden": overridden, "evidence": dict(evidence[concept]), "can_override": True})
+        plan.append({"concept": concept, "hours": adjusted, "original_hours": 0.0, "adapted": adjusted != 0.0, "importance": None, "reinstated": True})
     result = {"guarded": guarded(report), "adjustments": adjustments, "plan": plan, "remediation": remediation, "hours_before": round(sum(s.estimated_hours for s in steps), 2), "hours_after": round(sum(p["hours"] for p in plan), 2)}
     if calendar:
         from types import SimpleNamespace
@@ -162,6 +175,19 @@ def propose(report, attempts, overrides=None, calendar=None, profile=None, now=N
         paid = {p["concept"]: p["hours"] for p in plan}
         result["feasibility"] = {"before": schedule(lambda s: s.estimated_hours), "after": schedule(lambda s: paid[s.concept])}
     return result
+
+
+def claimed_known(report):
+    """The subjects the learner reported as already known for this paper (the analysis's missing_prerequisites entries that say so), in report order."""
+    from backend.prerequisites.prerequisite_paths import KNOWN_REASON
+
+    return [item["concept"] for item in report.get("missing_prerequisites", []) if item.get("reason") == KNOWN_REASON]
+
+
+def _known_hours(concept):
+    from backend.prerequisites.prerequisite_learning_planner import PrerequisiteLearningPlanner
+
+    return float(PrerequisiteLearningPlanner.STUDY_TIME.get(concept, MIN_HOURS * 2))
 
 
 def clean_hours(value):
@@ -178,7 +204,9 @@ def adapted_report(report, attempts, overrides=None, profile=None):
     text and curriculum all schedule what the learner's assessed answers call for. Without any adaptation the very same report object is returned, so nothing downstream changes."""
     if guarded(report):  # the extraction is unreliable: no plan change on its own until the learner confirms (POST /adaptive-plan/confirm)
         return report
-    changed = {item["concept"]: item["hours"] for item in propose(report, attempts, overrides, None, profile)["plan"] if item["adapted"]}
+    proposal = propose(report, attempts, overrides, None, profile)
+    changed = {item["concept"]: item["hours"] for item in proposal["plan"] if item["adapted"]}
+    reinstated = {item["concept"]: item["hours"] for item in proposal["plan"] if item.get("reinstated") and item["adapted"]}
     if not changed:
         return report
     def adapt(step):
@@ -187,7 +215,9 @@ def adapted_report(report, attempts, overrides=None, profile=None):
         hours = changed[step["concept"]]
         return {**step, "estimated_hours": hours, "original_hours": step["estimated_hours"], "adapted": True, **({"skipped": True} if hours <= 0 else {})}
 
-    found = {**report, "learning_plan": [adapt(step) for step in report.get("learning_plan", [])], "adapted_concepts": sorted(changed)}
+    steps = [adapt(step) for step in report.get("learning_plan", [])]
+    steps += [{"concept": name, "estimated_hours": hours, "original_hours": 0.0, "adapted": True, "reinstated": True} for name, hours in reinstated.items() if name not in {s["concept"] for s in steps}]
+    found = {**report, "learning_plan": steps, "adapted_concepts": sorted(changed)}
     if report.get("math_plan"):
         found["math_plan"] = [adapt(step) for step in report["math_plan"]]
     return found
