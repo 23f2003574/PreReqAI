@@ -31,7 +31,7 @@ def test_the_added_questions_are_real_ones_with_substantive_answers_and_explanat
     for concept, question, answer, explanation, difficulty in ROWS:
         assert question.endswith("?") and len(question.split()) >= 6 and not any(g in question.lower() for g in GENERIC), question
         assert len(answer.split()) >= 8 and len(explanation.split()) >= 8 and difficulty in {"Easy", "Medium", "Hard"} and answer != explanation
-        assert QUIZ_BANK[concept][-1]["question"] == question and QUIZ_EXPLANATIONS[(concept, question)] == explanation
+        assert [i["question"] for i in QUIZ_BANK[concept]].count(question) == 1 and QUIZ_EXPLANATIONS[(concept, question)] == explanation
         assert len(QUIZ_BANK[concept]) >= 2 and QUIZ_BANK[concept][0]["question"] != question  # appended after the original, whose identifier does not change
 
 

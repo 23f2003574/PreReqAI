@@ -1008,9 +1008,9 @@ for _name, _items in _MORE_QUESTIONS.items():
 
 QUIZ_BANK.update(_EXPANSION_QUIZ)  # the modern ML concepts, each with two questions and an explanation (concepts/ml_expansion.py)
 
-from .quiz_bank_depth import ROWS as _DEPTH_ROWS  # noqa: E402  (a second question for each concept that had only one)
+from .quiz_bank_depth import ROWS as _DEPTH_ROWS, THIRD_ROWS as _THIRD_ROWS  # noqa: E402  (a second question for each concept that had only one; a third for the concepts of the real papers)
 
-for _concept, _question, _answer, _explanation, _difficulty in _DEPTH_ROWS:
+for _concept, _question, _answer, _explanation, _difficulty in [*_DEPTH_ROWS, *_THIRD_ROWS]:
     QUIZ_BANK[_concept].append({"question": _question, "answer": _answer, "difficulty": _difficulty})  # appended: the first question keeps its identifier
     QUIZ_EXPLANATIONS[(_concept, _question)] = _explanation
 
