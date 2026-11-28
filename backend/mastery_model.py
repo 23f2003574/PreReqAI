@@ -24,6 +24,8 @@ REPEAT_WEIGHT, QUESTION_CAP = 0.7, 1.5  # the nth answer to the same question mo
 MIN_EFFECTIVE = 3.0  # durable mastery needs at least this many independent answers' worth of evidence once repeats are discounted and capped: four answers on two questions (1.5 + 1.5) reach it, one question asked three or five times plus one other (1.5 + 1) does not
 RECENT_ANSWERS = 2  # durable mastery needs the latest RECENT_ANSWERS answers (in time order) to be correct: a recent miss is evidence the earlier successes may no longer hold
 MAX_CONFIDENT_WRONG = 1  # a learner who was confidently wrong twice has not shown understanding, whatever they answered since (the rule the streak-based mastery had)
+ACCURACY_LOWER, ACCURACY_Z = 0.70, 1.645  # sustained accuracy: the one-sided (95%) Wilson lower bound of the share of graded answers that were correct must reach ACCURACY_LOWER. A learner who is right 60 percent of the time
+# passes the probability test by luck of the draw at some point in thirty answers (33 percent of simulated ones did); a history that contains misses must show it (a 95 percent knower with a slip needs a longer run). A history with no miss is judged as before: four right answers still count, which leaves a 60 percent learner a 0.6**4 chance of a lucky opening run.
 CONFIDENCE_P = {"low": 0.4, "medium": 0.65, "high": 0.9}  # what each stated confidence claims about being right, for the Brier score
 
 
@@ -35,6 +37,14 @@ def update(p, correct, confidence="medium"):
     if correct:
         return p * (1 - slip) / (p * (1 - slip) + (1 - p) * guess)
     return p * slip / (p * slip + (1 - p) * (1 - guess))
+
+
+def wilson_lower(correct, total, z=ACCURACY_Z):
+    """The Wilson score lower bound (one-sided at z=1.645, 95%) of a proportion `correct` / `total`; 0.0 without answers."""
+    if total <= 0:
+        return 0.0
+    share, z2 = correct / total, z * z
+    return max(0.0, (share + z2 / (2 * total) - z * sqrt(share * (1 - share) / total + z2 / (4 * total * total))) / (1 + z2 / total))
 
 
 def spaced_blocks(times):
@@ -83,7 +93,10 @@ def estimate(answers, times=None):
     spaced = not timed or blocks >= MIN_BLOCKS
     order = sorted(range(n), key=lambda i: (0,) if not timed or times[i] is None else (1, times[i]))  # time order; answers of unknown time are the oldest
     recent_miss = any(not answers[i][0] for i in order[-RECENT_ANSWERS:])
-    mastered = p >= MASTERED_P and low >= MASTERED_LOWER and n >= MIN_ANSWERS and questions >= MIN_QUESTIONS and confident_wrong <= MAX_CONFIDENT_WRONG and spaced and not recent_miss and weight_total >= MIN_EFFECTIVE - 1e-9
+    accuracy_low = wilson_lower(sum(1 for correct, _, _ in answers if correct), n)
+    right = sum(1 for correct, _, _ in answers if correct)
+    accurate = right == n or accuracy_low >= ACCURACY_LOWER  # a history with no miss is judged by the probability and answer-count rules as before; one with misses must also show sustained accuracy
+    mastered = accurate and p >= MASTERED_P and low >= MASTERED_LOWER and n >= MIN_ANSWERS and questions >= MIN_QUESTIONS and confident_wrong <= MAX_CONFIDENT_WRONG and spaced and not recent_miss and weight_total >= MIN_EFFECTIVE - 1e-9
     if mastered:
         reason = f"{p:.2f} probability of knowing it (at least {low:.2f} with some confidence) from {n} graded answers on {questions} different questions"
     else:
@@ -96,6 +109,8 @@ def estimate(answers, times=None):
             need.append(f"{confident_wrong} confidently wrong answers (mastery allows at most {MAX_CONFIDENT_WRONG})")
         if questions < MIN_QUESTIONS:
             need.append(f"only {questions} question{'s' if questions != 1 else ''} answered correctly (at least {MIN_QUESTIONS} different ones needed)")
+        if not accurate and n >= MIN_ANSWERS:
+            need.append(f"accuracy is not yet shown to be sustained: the lower bound of the share of correct answers is {accuracy_low:.2f} ({sum(1 for correct, _, _ in answers if correct)} of {n}); mastery needs {ACCURACY_LOWER:.2f}")
         if weight_total < MIN_EFFECTIVE - 1e-9 and n >= MIN_ANSWERS:
             need.append(f"the answers are only worth {weight_total:.2f} independent answers because questions were repeated (at least {MIN_EFFECTIVE:g} needed): answer other questions")
         if recent_miss and n >= MIN_ANSWERS:
@@ -103,7 +118,7 @@ def estimate(answers, times=None):
         if not spaced:
             need.append(f"all answers fall in {blocks} block of evidence (answers at least {SPACING_HOURS:.0f} hours apart start a new block); durable mastery needs {MIN_BLOCKS}: answer again on another day (from {ready_at.strftime('%Y-%m-%d %H:%M')} UTC)")
         reason = "; ".join(need)
-    return {"p": round(p, 3), "low": round(low, 3), "high": round(high, 3), "answers": n, "questions_correct": questions, "mastered": mastered, "recent_miss": recent_miss, "effective_answers": round(weight_total, 2), "reason": reason, **({"spaced_blocks": blocks, **({"spacing_ready_at": ready_at.strftime("%Y-%m-%dT%H:%M:%SZ")} if not spaced else {})} if timed else {})}
+    return {"p": round(p, 3), "low": round(low, 3), "high": round(high, 3), "answers": n, "questions_correct": questions, "mastered": mastered, "recent_miss": recent_miss, "effective_answers": round(weight_total, 2), "accuracy_low": round(accuracy_low, 3), "reason": reason, **({"spaced_blocks": blocks, **({"spacing_ready_at": ready_at.strftime("%Y-%m-%dT%H:%M:%SZ")} if not spaced else {})} if timed else {})}
 
 
 _CONFIDENCE_OF_CODE = {"l": "low", "m": "medium", "h": "high"}

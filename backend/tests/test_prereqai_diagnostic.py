@@ -166,8 +166,10 @@ def test_a_recent_miss_blocks_durable_mastery_even_when_the_probability_stays_hi
 
 
 def test_two_correct_answers_after_a_miss_restore_mastery_without_discarding_the_earlier_evidence():
-    recovered = _run(*((True,) * 5 + (False, True, True)), confidence="medium")
-    assert recovered["recent_miss"] is False and recovered["mastered"] is True and recovered["answers"] == 8
+    recovered = _run(*((True,) * 8 + (False, True, True)), confidence="medium")  # a history with a miss must also show sustained accuracy (Wilson lower bound 0.70): 10 of 11 does, 7 of 8 does not
+    assert recovered["recent_miss"] is False and recovered["mastered"] is False and "sustained" in recovered["reason"]
+    recovered = _run(*((True,) * 11 + (False, True, True)), confidence="medium")
+    assert recovered["recent_miss"] is False and recovered["mastered"] is True and recovered["answers"] == 14
     assert _run(*((True,) * 5 + (False, True)), confidence="medium")["mastered"] is False  # one correct answer is not yet two in a row
 
 

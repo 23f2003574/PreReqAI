@@ -8,7 +8,7 @@
   "retrieval_real": {"questions": 30, "hybrid_recall_at_k": 0.72, "hybrid_mrr": 0.52, "hybrid_recall_by_paper": {"chain-of-thought": 0.30, "constitutional-ai": 0.80, "dpo": 0.45, "gqa": 0.83, "mistral-7b": 0.80, "mixtral": 0.83}},
   "math_subtopics": {"precision": 0.97, "recall": 0.97, "equations": 30},
   "math_real": {"precision": 0.95, "recall": 0.95, "extraction_precision": 0.95, "extraction_recall": 0.93, "annotated_equations": 40},
-  "mastery_simulation": {"no_false_mastery_guesser": 0.98, "no_false_mastery_partial": 0.60, "no_false_mastery_crammer": 1.0, "true_mastery_knower": 0.95},
+  "mastery_simulation": {"no_false_mastery_guesser": 0.98, "no_false_mastery_partial": 0.83, "no_false_mastery_crammer": 1.0, "true_mastery_knower": 0.95},
   "prerequisites_real": {"papers": 6, "precision": 0.40, "recall": 0.42},
   "negative_controls": {"clean_share": 1.0},
   "prerequisite_graph": {"graph_valid": 1.0, "rule_coverage": 0.98},
