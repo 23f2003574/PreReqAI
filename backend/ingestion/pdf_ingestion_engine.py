@@ -360,19 +360,98 @@ _DELIMITERS = {"\x10": "(", "\x11": ")", "\x12": "(", "\x13": ")", "\x14": "[", 
 _MATH_SIGNS = re.compile(r"[=\u2248\u221d\u225c\u2254]|:=")
 _MATHY = re.compile(r"[\u0370-\u03ff\u2200-\u22ff\u2190-\u21ff\u2211\u220f\u2207\u00b7\u00d7\u2212]|\b(?:log|exp|softmax|argmax|argmin|max|min|sin|cos|lim)\b|\([a-zA-Z]+\|")
 _FORMULA_WORDS = frozenset("log exp sum prod max min argmax argmin softmax sigmoid sin cos tan det for all and where otherwise".split())
+_OPERATOR_FORM = re.compile(r"\b(?:max|min|argmax|argmin|sup|inf|lim)\b|[\u2264\u2265\u2211\u220f\u222b\u03a3\u03a0]")  # a numbered display without an equals sign: an optimisation objective, an inequality, a sum
 _TAG_LINE = re.compile(r"^\(\d{1,3}(?:\.\d+)?\)$")
 _TAG = re.compile(r"\s*\((\d{1,3}(?:\.\d+)?)\)\s*$")
 
 
-def equation_groups(blocks):
+_BIG_OPERATORS = {"P": "\u03a3", "X": "\u03a3", "Q": "\u03a0", "Y": "\u03a0", "R": "\u222b", "Z": "\u222b"}  # the letters a TeX math-extension font (CMEX) uses for the large operators: P is a sum, not the letter
+
+
+def _span_text(span):
+    text = span.get("text", "")
+    if "cmex" in str(span.get("font", "")).lower():  # the large sum, product and integral signs are letters of the extension font
+        return "".join(_BIG_OPERATORS.get(ch, ch) for ch in text)
+    return text
+
+
+def fraction_bars(drawings):
+    """The horizontal rules of a page that can be fraction bars: [(x0, x1, y)] for strokes or thin filled rectangles at least 2.5 points wide and at most 1.6 points tall. `drawings` is page.get_drawings()."""
+    bars = []
+    for drawing in drawings or []:
+        try:
+            rect = drawing["rect"]
+            if rect.width >= 2.5 and rect.height <= 1.6:
+                bars.append((rect.x0, rect.x1, (rect.y0 + rect.y1) / 2))
+        except (KeyError, AttributeError, TypeError):
+            continue
+    return bars
+
+
+class _Span(str):
+    """The text of one span of a line that a fraction bar ran through (it is glued back to its neighbours on the same baseline, without spaces)."""
+
+
+def _glue_spans(run):
+    ordered = sorted(run, key=lambda item: (round((item[0][1] + item[0][3]) / 2 / 6), item[0][0]))
+    glued = []
+    for box, text in sorted(run, key=lambda item: item[0][0]):
+        previous = glued[-1] if glued else None
+        if isinstance(text, _Span) and previous and isinstance(previous[1], _Span) and -1 <= box[0] - previous[0][2] <= 1.2 and abs((box[1] + box[3]) / 2 - (previous[0][1] + previous[0][3]) / 2) <= 6:
+            glued[-1] = ([previous[0][0], min(previous[0][1], box[1]), box[2], max(previous[0][3], box[3])], _Span(str(previous[1]) + str(text)))
+        else:
+            glued.append((list(box), text))
+    return glued
+
+
+def _with_fractions(run, bars, spans_of=None):
+    """`run` ([(bbox, text)]) with each fraction rebuilt: the pieces centred above a bar that lie inside its span are the numerator, those below it the denominator, and all of them become one piece
+    "(numerator)/(denominator)" at the bar's position; nothing changes for a run with no bar under or over any piece."""
+    run = list(run)
+    top, bottom = min(box[1] for box, _ in run), max(box[3] for box, _ in run)
+    for x0, x1, y in sorted((bar for bar in bars if top - 2 <= bar[2] <= bottom + 2), key=lambda bar: bar[0]):  # a line that a bar runs through holds the fraction and its neighbours: split it into its spans
+        exploded = []
+        for box, text in run:
+            parts = (spans_of or {}).get((tuple(box), text))
+            if parts and len(parts) > 1 and box[1] + 1 < y < box[3] - 1 and box[0] < x1 and box[2] > x0:
+                exploded.extend((tuple(span_box), _Span(span_text)) for span_box, span_text in parts)
+            else:
+                exploded.append((box, text))
+        run = exploded
+    for x0, x1, y in sorted((bar for bar in bars if top - 2 <= bar[2] <= bottom + 2), key=lambda bar: -(bar[1] - bar[0])):
+        inside = [(box, text) for box, text in run if x0 - 3 <= (box[0] + box[2]) / 2 <= x1 + 3]
+        above = sorted(((box, text) for box, text in inside if (box[1] + box[3]) / 2 < y), key=lambda item: (round(item[0][1]), item[0][0]))
+        below = sorted(((box, text) for box, text in inside if (box[1] + box[3]) / 2 >= y), key=lambda item: (round(item[0][1]), item[0][0]))
+        if not above or not below or len(above) + len(below) != len(inside):
+            continue
+        def read(parts):
+            rows = {}
+            for box, text in parts:
+                rows.setdefault(round(box[1] / 4), []).append((box[0], text))
+            return " ".join(text for _, row in sorted(rows.items()) for _, text in sorted(row))
+        numerator, denominator = read(above), read(below)
+        boxes = [box for box, _ in inside]
+        merged = ([min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes)], f"({numerator})/({denominator})")
+        run = [item for item in run if item not in inside] + [merged]
+    return _glue_spans(run) if any(isinstance(text, _Span) for _, text in run) else run
+
+
+def equation_groups(blocks, drawings=None):
     """The display equations of a page, rebuilt from the layout: [{"text", "tag", "bbox", "fragments"}]. A TeX display reaches the text layer as many small blocks (a fraction's
     numerator and denominator, a big bracket, the equation number). A run of consecutive non-prose blocks that holds an equals sign and mathematical content (symbols, Greek letters,
     log/exp...) is one equation, its pieces read left to right; a table or a figure's labels (percentages, many bare numbers, no maths) is not. [] when the page has no such run."""
     groups, run = [], []
+    bars, spans_of = [], {}
 
     def flush():
+        nonlocal bars
         if run:
-            found = _equation_from(run)
+            if drawings is not None and len(run) >= 2 and not bars:  # the page's rules are read once, only when a run of lines could be an equation
+                try:
+                    bars = fraction_bars(drawings() if callable(drawings) else drawings) or [()]
+                except Exception:
+                    bars = [()]
+            found = _equation_from(run, [bar for bar in bars if bar], spans_of)
             if found:
                 groups.append(found)
         run.clear()
@@ -381,7 +460,9 @@ def equation_groups(blocks):
         for block in blocks or []:
             if block.get("type") != 0:
                 continue
-            lines = [(line["bbox"], "".join(span["text"] for span in line["spans"]).strip()) for line in block["lines"]]
+            lines = [(line["bbox"], "".join(_span_text(span) for span in line["spans"]).strip()) for line in block["lines"]]
+            for line in block["lines"]:
+                spans_of[(tuple(line["bbox"]), "".join(_span_text(span) for span in line["spans"]).strip())] = [(span["bbox"], _span_text(span).strip()) for span in line["spans"] if _span_text(span).strip()]
             lines = [(box, text) for box, text in lines if text]
             if not lines:
                 continue
@@ -411,19 +492,21 @@ def _is_wordy(text):
     return len(lowercase) >= 3 or (bool(tokens) and len(plain) == len(tokens))
 
 
-def _equation_from(run):
-    if not 1 <= len(run) <= 24:
+def _equation_from(run, bars=(), spans_of=None):
+    if not 1 <= len(run) <= 40:
         return None
+    if bars:
+        run = _with_fractions(run, bars, spans_of or {})
     top, bottom = min(box[1] for box, _ in run), max(box[3] for box, _ in run)
     if bottom - top > 130:
         return None
-    pieces = [(box, text) for box, text in sorted(run, key=lambda item: (round(item[0][0]), item[0][1]))]
+    pieces = [(box, text) for box, text in sorted(run, key=lambda item: (round(item[0][0]), item[0][1]))]  # the fractions are single pieces now, so left to right is the reading order
     joined = " ".join("".join(_DELIMITERS.get(ch, "" if ord(ch) < 32 else ch) for ch in text) for _, text in pieces)
     joined = " ".join(joined.split())
     tag = _TAG.search(joined)
     body = _TAG.sub("", joined).strip(" .,") if tag else joined.strip(" .,")
     tokens = body.split()
-    if not _MATH_SIGNS.search(body) or not _MATHY.search(body) or "%" in body or len(body) > 400 or len(tokens) < 3:
+    if (not _MATH_SIGNS.search(body) and not (tag and _OPERATOR_FORM.search(body))) or not _MATHY.search(body) or "%" in body or len(body) > 400 or len(tokens) < 3:
         return None
     if sum(token.replace(".", "", 1).isdigit() for token in tokens) > len(tokens) / 2:
         return None  # a row of numbers: a table
@@ -579,7 +662,7 @@ def read_page(page, page_number, ocr, stop=None, region_ocr=None, rotated_ocr=No
     if not needs_ocr(page, text):
         if region_ocr is not None and (mixed := _read_regions(page, page_number, text, region_ocr, stop, rotated_ocr)) is not None:
             return mixed
-        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page, blocks), paragraph_starts=paragraph_starts(blocks), equation_groups=equation_groups(blocks))
+        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page, blocks), paragraph_starts=paragraph_starts(blocks), equation_groups=equation_groups(blocks, drawings=page.get_drawings))
     reason = stop() if stop is not None else ""
     if reason:
         return RawPage(page_number=page_number, text=text, ocr_error=reason, ocr_stopped=True)

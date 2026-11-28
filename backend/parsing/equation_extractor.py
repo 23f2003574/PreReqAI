@@ -69,6 +69,9 @@ def looks_like_prose(line: str) -> bool:
     return words >= 3 or (words >= 2 and _SENTENCE_END.search(line.strip()) is not None) or is_prose_arithmetic(line)
 
 
+_CONTINUATION = re.compile(r"^(?:where|with|and|such that|if|for|otherwise)\b", re.IGNORECASE)
+
+
 class EquationExtractor:
     """
     Extracts display-style mathematical equations
@@ -94,6 +97,9 @@ class EquationExtractor:
                 anchor = group["fragments"][0] if group["fragments"] else ""
                 section = _section_of(paper, page.page_number, anchor)
                 if section is None or section in skipped or looks_like_non_equation(group["text"]):
+                    continue
+                if equations and not group["tag"] and _CONTINUATION.match(group["text"]) and equations[-1].page_number == page.page_number and equations[-1].section == section:
+                    equations[-1].expression += " " + group["text"]  # "where Z(x) = ..." defines a symbol of the display above it: part of that equation, not another one
                     continue
                 equations.append(Equation(equation_id=equation_counter, expression=group["text"], section=section, page_number=page.page_number, tag=group["tag"], anchor=anchor))
                 equation_counter += 1

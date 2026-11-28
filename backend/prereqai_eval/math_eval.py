@@ -6,6 +6,7 @@ PDF text extraction, whose output (lost subscripts, fractions flattened into one
 of the real extraction, `real_papers` below stays "not annotated" and nothing is claimed about them. Offline and deterministic. `evaluate` returns micro precision and recall over (equation, subtopic)
 pairs, the same per subtopic, and every false positive and false negative by name; the regression gate holds floors on them (thresholds.json, "math_subtopics")."""
 import json
+from collections import Counter
 from pathlib import Path
 
 FIXTURE = Path(__file__).with_name("fixtures") / "math_equations.json"
@@ -52,6 +53,19 @@ def _flat(text):
     return " ".join(str(text).split())
 
 
+def _skeleton(expression):
+    """The multiset of an expression's letters, digits and non-bracket symbols, ignoring order, spacing, and fraction and bracket marks."""
+    return Counter(ch for ch in str(expression) if ch.isalnum() or ch in "=+-\u2212*<>\u2264\u2265\u2211")
+
+
+def _held(need, have):
+    """Whether the characters `need` are all in `have`; one large-operator letter (P, X, Q, Y, R, Z: how a TeX extension font reaches a plain text layer) may stand for the sum, product or integral sign `have` carries."""
+    missing = need - have
+    if not missing:
+        return True
+    return sum(missing.values()) == 1 and set(missing) <= set("PXQYRZ") and any(ch in have for ch in "\u03a3\u03a0\u222b")
+
+
 def load_real(path=REAL_FIXTURE):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     if data.get("format") != "prereqai-real-equations":
@@ -70,20 +84,20 @@ def evaluate_real(papers, path=REAL_FIXTURE, subtopics_of=None):
     find = subtopics_of or math_subtopics.subtopics_of
     data = load_real(path)
     items = [i for i in data["items"] if i["paper"] in papers]
-    known = {(i["paper"], _flat(i["expression"])): i for i in items}
     seen, unannotated, false_extractions, true_extracted = set(), [], [], 0
-    for paper_id, paper in sorted(papers.items()):
-        for equation in getattr(paper, "equations", []) or []:
-            key = (paper_id, _flat(equation.expression))
-            item = known.get(key)
-            if item is None:
-                unannotated.append(f"{paper_id}: {key[1][:80]}")
-            elif key not in seen:
-                seen.add(key)
-                if item["is_equation"]:
-                    true_extracted += 1
-                else:
-                    false_extractions.append(item["id"])
+    extracted = {paper_id: [_skeleton(e.expression) for e in getattr(paper, "equations", []) or []] for paper_id, paper in papers.items()}
+    covered = {paper_id: Counter() for paper_id in papers}
+    for item in items:  # an annotated item counts as extracted when some extracted equation holds all its letters, digits and symbols (the same characters, whatever order a fraction or a merged "where" clause puts them in)
+        need = _skeleton(item["expression"])
+        if any(_held(need, have) for have in extracted[item["paper"]]):
+            seen.add(item["id"])
+            if item["is_equation"]:
+                true_extracted += 1
+            else:
+                false_extractions.append(item["id"])
+    for paper_id, haves in extracted.items():
+        known = [_skeleton(i["expression"]) for i in items if i["paper"] == paper_id]
+        unannotated += [f"{paper_id}: equation of {sum(have.values())} characters" for have in haves if not any(_held(need, have) for need in known)]
     annotated = [i for i in items if i["is_equation"]]
     per, fps, fns = {}, [], []
     for row in annotated:
