@@ -181,6 +181,21 @@ def _locally_technical(concept, text, occurrences):
     return min(occurrences, max(technical, bare))
 
 
+# Phrases that belong to machine learning and almost nowhere else. A document with no unambiguous registry concept needs several distinct ones before its everyday-word concepts
+# (attention, embedding, fine-tuning...) count at all: otherwise a neuroscience or linguistics paper is reported as a machine-learning paper.
+_ML_CUES = re.compile(
+    r"\b(?:neural networks?|deep learning|machine learning|gradient descent|backpropagation|back-propagation|training (?:set|data|loss|examples?)|test set|validation set|loss function|cross-entropy|"
+    r"hyper-?parameters?|overfitting|pre-?train(?:ed|ing)|mini-?batch|learning rate|stochastic gradient|softmax|word embeddings?|large language models?|"
+    r"reinforcement learning|reward model|supervised learning|classifier|transformer (?:model|architecture|layers?)|self-attention|attention (?:mechanism|heads?|layers?))\b")
+MIN_ML_CUES = 2
+MIN_WORDS_FOR_GATE = 40  # a snippet shorter than this holds too little text to judge the field of
+
+
+def ml_cues(text):
+    """The different machine-learning-only phrases `text` (lower-cased) contains, hyphens read as spaces."""
+    return {re.sub(r"s$", "", match.group().replace("-", " ")) for match in _ML_CUES.finditer(text)}
+
+
 def _corroborated(concept, evidence):
     """Whether `evidence` (lower-cased paper text) is technical enough for a bare mention of an ambiguous concept to count."""
     return _context_pattern(concept).search(evidence) is not None
@@ -298,6 +313,15 @@ class RuleBasedConceptDetector:
 
         # An unambiguous concept found in the same text (Self-Attention, Transformer...) is also technical evidence for a bare mention.
         anchored = any(not concept.ambiguous for concept, _ in found)
+        paper.domain_abstained = False
+        names = {c.name.lower().replace("-", " ") for c, _ in found if not c.ambiguous}
+        cues = ml_cues(full_text)
+        if len(full_text.split()) >= MIN_WORDS_FOR_GATE and len(cues) + len({n for n in names if not any(cue in n or n in cue for cue in cues)}) < MIN_ML_CUES:
+            # document-level gate: too few machine-learning-only phrases or distinct unambiguous concepts, so it is not a machine-learning paper. Only a confirmed custom concept or an
+            # unambiguous term the document leans on (three or more mentions) stays; the everyday-word concepts and single stray mentions are abstained from.
+            kept = [(c, o) for c, o in found if c.domain == "custom" or (not c.ambiguous and o >= 3)]
+            paper.domain_abstained = len(kept) < len(found) + len(pending)
+            found, pending = kept, []
         for concept, occurrences in pending:
             if not anchored:
                 occurrences = min(occurrences, len(_technical_pattern(concept).findall(full_text)))
