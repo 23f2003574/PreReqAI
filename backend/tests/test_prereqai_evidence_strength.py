@@ -105,8 +105,10 @@ def test_strong_is_not_the_default_on_real_papers():
 
     from backend.pipeline import ResearchPaperPipeline
 
-    grades = Counter()
+    grades, weak_reported = Counter(), 0
     for paper_id in ("dpo", "mixtral", "chain-of-thought"):
         paper = ResearchPaperPipeline().run(f"backend/prereqai_eval/benchmark/pdfs/{paper_id}.pdf").paper
         grades.update(item.evidence_strength for item in paper.prerequisites)
-    assert grades["strong"] / sum(grades.values()) <= 0.70 and grades["moderate"] and grades["weak"]
+        weak_reported += len(paper.weak_prerequisites)
+    # Strong is not the default and moderate is common; what one mention alone would imply is no longer recommended as a "weak" prerequisite, it is reported in paper.weak_prerequisites instead
+    assert grades["strong"] / sum(grades.values()) <= 0.70 and grades["moderate"] and not grades["weak"] and weak_reported >= 1

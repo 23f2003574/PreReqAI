@@ -678,7 +678,7 @@ def read_page(page, page_number, ocr, stop=None, region_ocr=None, rotated_ocr=No
     if not needs_ocr(page, text):
         if region_ocr is not None and (mixed := _read_regions(page, page_number, text, region_ocr, stop, rotated_ocr)) is not None:
             return mixed
-        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page, blocks), paragraph_starts=paragraph_starts(blocks), equation_groups=equation_groups(blocks, drawings=page.get_drawings))
+        return RawPage(page_number=page_number, text=text, layout=_layout_lines(page, blocks), paragraph_starts=paragraph_starts(blocks), equation_groups=equation_groups(blocks, drawings=getattr(page, "get_drawings", None)))
     reason = stop() if stop is not None else ""
     if reason:
         return RawPage(page_number=page_number, text=text, ocr_error=reason, ocr_stopped=True)
