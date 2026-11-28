@@ -237,6 +237,8 @@ class LearningReportGenerator:
 
             "equations": self._equations(paper),
             "symbol_glossary": getattr(paper, "symbol_glossary", []),
+            "concept_relationships": [{"source": e.source.replace("concept:", "", 1), "target": e.target.replace("concept:", "", 1), "relationship": e.relationship, "evidence": e.evidence}
+                                      for e in getattr(getattr(paper, "knowledge_graph", None), "edges", []) if getattr(e, "evidence", None)],
 
             "math_subtopics": self._math_subtopics(paper),
             "math_plan": math_plan.build(self._math_subtopics(paper)),  # the same skills as study steps with hours and diagnostics (backend/math_plan.py)

@@ -20,6 +20,10 @@ class GraphEdge:
 
     relationship: str
 
+    # The paper's own sentence that states a typed relationship (builds_on, variant_of, uses, contrasts_with): [{sentence, page_number, section, cue}]. Empty for the structural
+    # edges (depends_on from the registry, co_occurs_with, which is explicitly weak).
+    evidence: list = field(default_factory=list)
+
 
 @dataclass
 class KnowledgeGraph:

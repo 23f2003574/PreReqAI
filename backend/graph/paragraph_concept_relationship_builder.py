@@ -75,4 +75,9 @@ class ParagraphConceptRelationshipBuilder:
 
                 existing_edges.add(edge)
 
+        from .typed_relationships import find
+
+        for source, target, relationship, passage in find(paper):  # relationships a sentence of the paper states, each carrying that sentence
+            paper.knowledge_graph.add_edge(GraphEdge(source=f"concept:{source}", target=f"concept:{target}", relationship=relationship, evidence=[passage]))
+
         return paper
