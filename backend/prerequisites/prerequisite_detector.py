@@ -11,6 +11,9 @@ from backend.models import (
 logger = logging.getLogger("prereqai.prerequisites")
 
 
+MAX_WEAK_MENTIONS = 1  # a concept mentioned at most this often in a full paper gives its prerequisites only weak support
+
+
 class PrerequisiteDetector:
     """
     Identifies prerequisite concepts required
@@ -67,6 +70,8 @@ class PrerequisiteDetector:
         role_map = concept_roles.classify(paper)
         paper.concept_roles = role_map
         cited_only = set(cited_only) | {name for name, info in role_map.items() if info["role"] == "incidental"}  # named in passing (at most two mentions, none taught): not a dependent either
+        weak = {name for name, info in role_map.items() if info["role"] != "contribution" and info["mentions"] <= MAX_WEAK_MENTIONS} if concept_roles.is_full_paper(paper) else set()
+        cited_only = cited_only | weak  # one mention, even in a Preliminaries section, is a name, not use: it cannot make a prerequisite of its own, nor, through the prerequisite's own prerequisites, a chain of them
 
         for concept in paper.concepts:
 
@@ -81,6 +86,12 @@ class PrerequisiteDetector:
 
                 needed_by.setdefault(prerequisite, []).append(concept.name)
 
+        paper.weak_prerequisites = []  # prerequisites only a weakly supported concept (at most one mention) implies: reported as weak support, not recommended
+        for concept in paper.concepts:
+            if concept.name in weak:
+                for prerequisite in rules.get(concept.name, []):
+                    if prerequisite not in needed_by and not any(w["concept"] == prerequisite for w in paper.weak_prerequisites):
+                        paper.weak_prerequisites.append({"concept": prerequisite, "reason": f"implied only by {concept.name}, which the paper mentions {role_map[concept.name]['mentions']} time(s): too little support to recommend it"})
         # A prerequisite the paper does not discuss may itself need others (a graph attention paper needs Attention,
         # which needs Probability): the learner must study those too, or the plan would send them to a course that
         # assumes knowledge the plan never covers. Only prerequisites not already listed are added this way.

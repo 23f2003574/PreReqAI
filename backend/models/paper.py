@@ -261,6 +261,7 @@ class Paper:
     # Diagnostic only: detected concepts with no entry at all in the prerequisite rules. That means "unsupported", not
     # "needs nothing" (a rule with an empty list is the explicit way to say the latter).
     concepts_without_rules: list[str] = field(default_factory=list)
+    weak_prerequisites: list = field(default_factory=list)  # [{concept, reason}]: prerequisites only a weakly supported concept (one mention) would imply; not recommended
     concept_roles: dict = field(default_factory=dict)  # {concept: {role: contribution|background|incidental, mentions, sections, evidence}} (see prerequisites/concept_roles.py)
 
     missing_prerequisites: list[

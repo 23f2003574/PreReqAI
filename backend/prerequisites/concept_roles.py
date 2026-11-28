@@ -32,6 +32,11 @@ def _is_object_of_cue(sentence, pattern):
     return False
 
 
+def is_full_paper(paper):
+    """Whether the paper has at least MIN_WORDS words of body text: only then is a single mention 'in passing' (a note or an abstract names what it discusses)."""
+    return sum(len((p.content or "").split()) for p in getattr(paper, "paragraphs", []) or []) >= MIN_WORDS
+
+
 def classify(paper):
     """{concept name: {"role", "mentions", "evidence": [{sentence, page_number, section, why}]}} for the paper's detected concepts."""
     from backend.concepts.concept_registry import ConceptRegistry
@@ -46,7 +51,7 @@ def classify(paper):
     for section, found in (section_mentions(paper) if getattr(paper, "paragraphs", None) else {}).items():
         for name, count in found["concepts"].items():
             where.setdefault(name, []).append((section, roles.get(section) or section_role(section), count))
-    long_enough = sum(len((p.content or "").split()) for p in getattr(paper, "paragraphs", []) or []) >= MIN_WORDS
+    long_enough = is_full_paper(paper)
     result = {}
     for concept in getattr(paper, "concepts", []):
         pattern = _pattern(registry[concept.name]) if concept.name in registry else None
