@@ -1030,9 +1030,10 @@ async function adShowPlan() {
   if (!response.ok) { fill("adPlan", el("p", body.detail || "The adapted plan is not available.", "msg error")); return; }
   box.appendChild(el("h3", "Your plan: " + body.hours_before + " h planned, " + body.hours_after + " h after adapting"));
   if (!body.adjustments.length) box.appendChild(el("p", "Nothing has changed yet: answer some questions above.", "msg info"));
+  (body.confusions || []).forEach(function (c) { box.appendChild(el("p", c.advice + " (" + c.count + " wrong answers)", "msg info")); });
   body.adjustments.forEach(function (a) {
     var card = el("div", null, "card");
-    card.appendChild(el("p", a.concept + ": " + a.original_hours + " h to " + a.adjusted_hours + " h (" + a.action + (a.overridden ? ", changed back by you" : "") + "). " + a.reason));
+    card.appendChild(el("p", a.concept + ": " + a.original_hours + " h to " + a.adjusted_hours + " h (" + a.action + (a.overridden ? ", changed back by you" : "") + (a.before ? ", studied before " + a.before : "") + "). " + a.reason));
     (body.remediation[a.concept] || []).forEach(function (item) { card.appendChild(el("p", "Review: " + item.question + " " + item.answer + (item.explanation ? " " + item.explanation : ""), "meta")); });
     if (a.can_override) {
       var undo = el("button", a.overridden ? "Adapt this step again" : "Keep my original hours", "small"); undo.type = "button";

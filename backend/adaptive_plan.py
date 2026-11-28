@@ -163,6 +163,23 @@ def propose(report, attempts, overrides=None, calendar=None, profile=None, now=N
         adjustments.append({"concept": concept, "action": "reinstate", "original_hours": 0.0, "adjusted_hours": adjusted, "reason": f"you said you know this, but {reason}".replace("more time is planned", "it is planned again"),
                             "overridden": overridden, "evidence": dict(evidence[concept]), "can_override": True})
         plan.append({"concept": concept, "hours": adjusted, "original_hours": 0.0, "adapted": adjusted != 0.0, "importance": None, "reinstated": True})
+    reinstated = {item["concept"] for item in plan if item.get("reinstated")}
+    failing = [a["concept"] for a in adjustments if a["action"] == "remediate" and not a["overridden"]] + [a["concept"] for a in adjustments if a["action"] == "reinstate" and not a["overridden"]]
+    for dependent in failing:  # root cause: a subject the learner called known (so it was skipped), that the failing concept needs and that no assessed answers back up
+        for subject in _upstream(dependent):
+            if subject in reinstated or subject not in claimed_known(report) or subject in {s.concept for s in steps}:
+                continue
+            found = evidence.get(subject)
+            if found and (found.get("mastered") or (found["graded"] >= MIN_GRADED and found["correct"] / found["graded"] >= COMPRESS_ACCURACY)):
+                continue  # sufficiently demonstrated: not the cause
+            overridden = overrides.get(subject) == "reject"
+            hours = 0.0 if overridden else _known_hours(subject)
+            reinstated.add(subject)
+            entry = {"concept": subject, "hours": hours, "original_hours": 0.0, "adapted": hours != 0.0, "importance": None, "reinstated": True, "before": dependent}
+            index = next((i for i, item in enumerate(plan) if item["concept"] == dependent), len(plan))
+            plan.insert(index, entry)  # studied before the concept that depends on it
+            adjustments.append({"concept": subject, "action": "reinstate", "original_hours": 0.0, "adjusted_hours": hours, "overridden": overridden, "can_override": True, "evidence": dict(found or {}), "before": dependent,
+                                "reason": f"you said you know {subject}, but you are struggling with {dependent}, which needs it, and no assessed answers show {subject}: it is planned again before {dependent} (a quick check will confirm it)."})
     from backend import learner_profile
 
     pairs = {}
@@ -183,6 +200,25 @@ def propose(report, attempts, overrides=None, calendar=None, profile=None, now=N
         paid = {p["concept"]: p["hours"] for p in plan}
         result["feasibility"] = {"before": schedule(lambda s: s.estimated_hours), "after": schedule(lambda s: paid[s.concept])}
     return result
+
+
+SUBJECT_NEEDS = {  # what the prerequisite subjects themselves build on (they have no rule of their own): curated, matching the planner's study order
+    "Neural Networks": ("Linear Algebra", "Calculus", "Optimization"), "Attention": ("Linear Algebra", "Probability"), "Statistics": ("Probability",), "Information Theory": ("Probability",),
+    "Stochastic Processes": ("Probability",), "Markov Decision Process": ("Probability",), "Graphs": ("Linear Algebra",),
+}
+
+
+def _upstream(concept):
+    """Every subject `concept` needs, directly or through other prerequisites, from the prerequisite rules."""
+    from backend.prerequisites.prerequisite_detector import PrerequisiteDetector
+
+    rules, found, pending = PrerequisiteDetector.PREREQUISITE_RULES, [], list(PrerequisiteDetector.PREREQUISITE_RULES.get(concept) or SUBJECT_NEEDS.get(concept, ()))
+    while pending:
+        name = pending.pop(0)
+        if name not in found:
+            found.append(name)
+            pending.extend(rules.get(name) or SUBJECT_NEEDS.get(name, ()))
+    return found
 
 
 def claimed_known(report):
@@ -224,7 +260,13 @@ def adapted_report(report, attempts, overrides=None, profile=None):
         return {**step, "estimated_hours": hours, "original_hours": step["estimated_hours"], "adapted": True, **({"skipped": True} if hours <= 0 else {})}
 
     steps = [adapt(step) for step in report.get("learning_plan", [])]
-    steps += [{"concept": name, "estimated_hours": hours, "original_hours": 0.0, "adapted": True, "reinstated": True} for name, hours in reinstated.items() if name not in {s["concept"] for s in steps}]
+    before = {item["concept"]: item.get("before") for item in proposal["plan"] if item.get("reinstated")}
+    for name, hours in reinstated.items():
+        if name in {s["concept"] for s in steps}:
+            continue
+        step = {"concept": name, "estimated_hours": hours, "original_hours": 0.0, "adapted": True, "reinstated": True}
+        at = next((i for i, s in enumerate(steps) if s["concept"] == before.get(name)), None)  # a root-cause step goes right before the concept that needs it; a plain reinstatement goes last
+        steps.insert(len(steps) if at is None else at, step)
     found = {**report, "learning_plan": steps, "adapted_concepts": sorted(changed)}
     if report.get("math_plan"):
         found["math_plan"] = [adapt(step) for step in report["math_plan"]]
