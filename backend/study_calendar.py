@@ -171,12 +171,36 @@ def review_hours(review_schedule, minutes_per_review=1.5):
     return {day["date"]: day["count"] * minutes_per_review / 60 for day in review_schedule["days"]}
 
 
+REFRESH_MINUTES = 5.0  # a concept refresh (a few questions on a concept that was mastered and is fading)
+
+
+def _first_day(calendar):
+    from datetime import date as _date
+
+    return _date.fromisoformat(calendar["days"][0]["date"]) if calendar.get("days") else _date.today()
+
+
 def add_reviews(calendar, review_schedule, minutes_per_review=1.5):
     """Put spaced reviews into a built calendar: `calendar["reviews"]` is [{date, count, minutes, concepts}] for each review day of the schedule (see spaced_review.schedule) within the
     calendar's span or beyond it, and `deferred_reviews` the count the cap and horizon left out. Study items are not changed."""
     days = []
     for day in review_schedule["days"]:
         days.append({"date": day["date"], "count": day["count"], "minutes": round(day["count"] * minutes_per_review, 1), "concepts": sorted({i["concept"] for i in day["items"] if i.get("concept")})})
+    from datetime import datetime as _datetime
+
+    by_date = {day["date"]: day for day in days}
+    refreshes = []
+    for refresh in review_schedule.get("refreshes", []):  # a concept the forgetting model says is due for a refresh: on the day it lapses (today when it already has), five minutes each
+        due = _datetime.strptime(refresh["due"], "%Y-%m-%dT%H:%M:%SZ").date()
+        day = max(due, _first_day(calendar))
+        entry = by_date.setdefault(day.isoformat(), {"date": day.isoformat(), "count": 0, "minutes": 0.0, "concepts": []})
+        if entry not in days:
+            days.append(entry)
+        entry["concepts"] = sorted({*entry["concepts"], refresh["concept"]})
+        entry["minutes"] = round(entry["minutes"] + REFRESH_MINUTES, 1)
+        refreshes.append({**refresh, "date": day.isoformat(), "minutes": REFRESH_MINUTES})
+    days.sort(key=lambda item: item["date"])
+    calendar["refreshes"] = refreshes
     calendar["reviews"], calendar["deferred_reviews"], calendar["review_cap"] = days, len(review_schedule["deferred"]), review_schedule["cap"]
     calendar["minutes_per_review"] = minutes_per_review
     study = {day["date"]: day["hours"] for day in calendar["days"]}

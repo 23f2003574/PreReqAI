@@ -19,6 +19,7 @@ Rules. Names are compared like everywhere else in PreReqAI (case, spaces, hyphen
 PreReqAI's own subjects; a name PreReqAI does not know is never added from a request, and one already in a file is kept untouched and not used
 for anything. A subject is either known or studied: known wins. Explicit values given with a request add to the profile and never remove from
 it; to forget a subject, edit the file. A profile subject that is not in a paper's study plan is simply not needed there (no warning)."""
+from datetime import timedelta
 import json
 import math
 import os
@@ -335,7 +336,9 @@ def review_schedule(path, today=None, cap=10, horizon_days=30):
         return {"days": [], "deferred": [], "cap": cap, "backlog_days": 0}, problem
     moment = spaced_review.now()
     queue = spaced_review.queue(profile["quiz"], moment, upcoming_limit=len(profile["quiz"]))
-    return spaced_review.schedule([*queue["due"], *queue["upcoming"]], today or moment.date(), cap, horizon_days), ""
+    schedule = spaced_review.schedule([*queue["due"], *queue["upcoming"]], today or moment.date(), cap, horizon_days)
+    schedule["refreshes"] = refresh_forecast(profile["quiz"], moment, horizon_days)  # concept refreshes the forgetting model asks for: a lapsed concept is due now, a mastered one on the day it will lapse
+    return schedule, ""
 
 
 def review_queue(path, moment=None, upcoming_limit=10):
@@ -387,8 +390,27 @@ def mastery(quiz, now=None):
                        **({"spaced_blocks": estimate["spaced_blocks"]} if estimate and "spaced_blocks" in estimate else {}),
                        **({"spacing_ready_at": estimate["spacing_ready_at"]} if estimate and "spacing_ready_at" in estimate else {}),
                        **({"p_at_last_answer": estimate["p_at_last_answer"], "retention": estimate["retention"], "days_since_evidence": estimate["days_since_evidence"]} if estimate and "p_at_last_answer" in estimate else {}),
-                       **({"refresh_reason": refresh_reason} if refresh_reason else {})})
+                       **({"refresh_reason": refresh_reason} if refresh_reason else {}),
+                       **({"refresh_due_at": spaced_review.stamp(evidence_at + timedelta(days=mastery_model.days_until_lapse(estimate["p_at_last_answer"], estimate["interval_days"])))}
+                          if estimate and estimate.get("p_at_last_answer") is not None and (estimate["mastered"] or estimate.get("lapsed")) and evidence_at is not None else {})})
     return result
+
+
+def refresh_forecast(quiz, now=None, horizon_days=30):
+    """[{concept, due, lapsed, p_now, p_at_last_answer, days_overdue}] for the concepts whose assessed mastery the forgetting model (mastery_model.apply_decay) lets lapse: those that already have, and
+    those that will within `horizon_days`, earliest first. `due` is the moment the decayed probability crosses the lapse threshold. A concept that was never rated mastered, or has no timed graded
+    answer, has no forecast (too little evidence to say when it fades)."""
+    from backend import spaced_review
+
+    moment = now or spaced_review.now()
+    found = []
+    for item in mastery(quiz, moment):
+        due = spaced_review.parse_time(item.get("refresh_due_at"))
+        if due is None or item["status"] not in ("mastered", "needs_refresh") or due > moment + timedelta(days=horizon_days):
+            continue
+        found.append({"concept": item["concept"], "due": item["refresh_due_at"], "lapsed": item["status"] == "needs_refresh", "p_now": item.get("p_mastery"),
+                      "p_at_last_answer": item.get("p_at_last_answer"), "days_overdue": round(max(0.0, (moment - due).total_seconds() / 86400), 1)})
+    return sorted(found, key=lambda row: (row["due"], row["concept"]))
 
 
 def describe_mastery(item):

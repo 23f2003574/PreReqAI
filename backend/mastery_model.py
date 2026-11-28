@@ -11,7 +11,7 @@ not enough: the answer minimum is what stops them. The parameters are fixed, rea
 Forgetting (`apply_decay`, used by learner_profile.mastery): without new graded evidence the probability falls toward PRIOR; 90% of the distance above the prior is assumed kept after each review interval (the question's own `interval_hours`, at least a day), counted from the latest graded answer (its schema 3 time, else last_seen). A concept mastered at its last answer lapses to "needs_refresh" once the decayed probability is below REFRESH_P (0.80) and returns to mastered when new graded answers arrive. These numbers are a reasoned heuristic, NOT a forgetting curve fitted to learners and not a calibrated probability.
 A profile keeps each question's counters and its most recent graded answers in order (`graded_history`); `sequence_from_counters` uses those as given and rebuilds only the older answers, which survive as counters, in a canonical order (earlier correct answers, then the misses)."""
 from datetime import timedelta
-from math import sqrt
+from math import log, sqrt
 
 RETENTION_AT_INTERVAL, MIN_INTERVAL_DAYS, REFRESH_P = 0.90, 1.0, 0.80
 
@@ -248,6 +248,15 @@ def last_evidence_time(entries):
         seen = spaced_review.parse_time(entry.get("last_seen"))
         times.append(max(timed) if timed else seen)
     return max((t for t in times if t is not None), default=None)
+
+
+def days_until_lapse(p, interval_days):
+    """Days after the last graded answer at which a concept whose estimate was `p` then falls below REFRESH_P under `decay` (the exact solution of PRIOR + (p - PRIOR) * retention(days) = REFRESH_P); 0.0
+    when `p` is already at or below it. The same model apply_decay uses, so a forecast date and a lapse agree by construction."""
+    if p <= REFRESH_P:
+        return 0.0
+    interval = max(MIN_INTERVAL_DAYS, interval_days)
+    return interval * log((REFRESH_P - PRIOR) / (p - PRIOR)) / log(RETENTION_AT_INTERVAL)
 
 
 def apply_decay(result, days, interval_days):
