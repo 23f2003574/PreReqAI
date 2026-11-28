@@ -14,8 +14,9 @@ from backend.prerequisites.missing_prerequisite_analyzer import section_role
 
 K1, B = 1.5, 0.75
 ROLE_WEIGHT = {"instructional": 1.15, "other": 1.0, "related": 0.9}
-MIN_TERMS, MIN_RELATIVE, MIN_LEXICAL = 2, 0.5, 2
-RARE_SHARE, RARE_MIN_CHARS = 0.10, 5  # a single matching term is enough when it occurs in at most this share of the paper's sentences (and has at least RARE_MIN_CHARS letters)
+MIN_TERMS, MIN_RELATIVE, MIN_LEXICAL = 2, 0.4, 2
+RARE_SHARE, RARE_MIN_CHARS = 0.10, 4
+RRF_K, POOL, BM25_WEIGHT = 60, 3, 1.0  # reciprocal-rank fusion constant, and how many times `limit` passages each search contributes to the fusion  # a single matching term is enough when it occurs in at most this share of the paper's sentences (and has at least RARE_MIN_CHARS letters)
 
 
 _COMPOUND = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)+")
@@ -132,14 +133,19 @@ def _with_context(paper, found, limit):
 
 
 def hybrid_search(paper, question, limit=4):
-    """The lexical passages, BM25 passages added when the lexical search found fewer than MIN_LEXICAL, and the neighbouring sentence of the best ones as context while room is left; at most `limit`, none repeated."""
+    """Lexical and BM25 passages fused by reciprocal rank (score 1 / (RRF_K + rank) summed over the lists a passage is in; the lexical list is the paper's own evidence search, BM25 the weighted statistical one), best
+    first, none repeated, then the neighbouring sentence of the best ones as context while room is left; at most `limit`. Both searches always run: a passage that both find rises above one only a single search finds, and a
+    question the lexical search answers badly (a single decisive rare term such as "beta") is no longer left to it. Every passage is still an exact quotation of the page it cites."""
     from backend.tutor.grounding import search_evidence
 
-    found = list(search_evidence(paper, question, limit))
-    if len(found) < MIN_LEXICAL:
-        seen = {p["passage_id"] for p in found}
-        for passage in bm25_search(paper, question, limit):
-            if passage["passage_id"] not in seen and len(found) < limit:
-                seen.add(passage["passage_id"])
-                found.append(passage)
+    lexical = list(search_evidence(paper, question, limit * POOL))
+    statistical = bm25_search(paper, question, limit * POOL)
+    scores, passages = {}, {}
+    for weight, ranking in ((1.0, lexical), (BM25_WEIGHT, statistical)):
+        for rank, passage in enumerate(ranking, start=1):
+            identifier = passage["passage_id"]
+            scores[identifier] = scores.get(identifier, 0.0) + weight / (RRF_K + rank)
+            passages.setdefault(identifier, passage)
+    order = sorted(scores, key=lambda identifier: -scores[identifier])  # stable: ties keep the lexical-first insertion order
+    found = [passages[identifier] for identifier in order[:limit]]
     return _with_context(paper, found, limit) if found else found

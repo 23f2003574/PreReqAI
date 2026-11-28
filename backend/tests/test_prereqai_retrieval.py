@@ -53,11 +53,12 @@ def test_section_role_weighting_prefers_a_method_sentence_over_a_related_work_on
     assert [p["section"] for p in found[:2]] == ["3 Method", "2 Related Work"]  # equal matches: the instructional section ranks first
 
 
-def test_hybrid_keeps_lexical_results_and_adds_bm25_only_when_lexical_finds_too_little(monkeypatch):
+def test_hybrid_fuses_lexical_results_with_bm25_passages_by_reciprocal_rank(monkeypatch):
     paper = synthetic()
     lexical = [{"passage_id": "L1", "sentence": "x", "page_number": 1, "section": "s", "concepts": []}, {"passage_id": "L2", "sentence": "y", "page_number": 1, "section": "s", "concepts": []}]
     monkeypatch.setattr(grounding, "search_evidence", lambda paper, question, limit=4: list(lexical))
-    assert retrieval.hybrid_search(paper, "stellar spectra seismic", 4) == lexical  # two lexical passages: nothing is added
+    fused = retrieval.hybrid_search(paper, "stellar spectra seismic", 4)
+    assert [p["passage_id"] for p in fused][:1] == ["L1"] and {"L1", "L2"} <= {p["passage_id"] for p in fused}  # the lexical passages stay; BM25 passages are fused in as well
     monkeypatch.setattr(grounding, "search_evidence", lambda paper, question, limit=4: [])
     added = retrieval.hybrid_search(paper, "stellar spectra seismic tomography", 4)
     assert added and len(added) <= 4 and len({p["passage_id"] for p in added}) == len(added)

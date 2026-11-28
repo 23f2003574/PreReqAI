@@ -40,7 +40,7 @@ def test_a_question_matching_only_a_common_term_still_finds_nothing():
 
 
 def test_short_terms_and_tiny_papers_never_qualify_as_rare():
-    assert retrieval.RARE_MIN_CHARS >= 5
+    assert retrieval.RARE_MIN_CHARS >= 4  # "gpu" never; a four-letter rare term such as "beta" may
     paper = long_paper(["The gpu runs it."])
     assert retrieval.bm25_search(paper, "Why does the gpu matter nowadays in practice?", 5) == []
     tiny = long_paper([RARE])
