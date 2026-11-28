@@ -263,6 +263,7 @@ class LearningReportGenerator:
             },
 
             "stated_prerequisites": getattr(paper, "stated_prerequisites", []),
+            "concept_roles": getattr(paper, "concept_roles", {}),
             "unmatched_prerequisite_cues": getattr(paper, "unmatched_prerequisite_cues", []),
             "prerequisites": [
 

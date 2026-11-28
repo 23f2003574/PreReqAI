@@ -64,6 +64,12 @@ def _initials_match(phrase, acronym):
     return acronym.rstrip("s").upper() in initials or initials.endswith(acronym.rstrip("s").upper()[-2:])
 
 
+def _part_of_known(phrase, known):
+    """Whether `phrase` is a strict word-for-word part of a term the registry already knows (\"large language\" in \"large language model\"): a fragment of a known term, not a new one."""
+    padded = f" {_norm(phrase)} "
+    return any(padded in f" {term} " and term != _norm(phrase) for term in known if " " in term)
+
+
 def accepts(term, known=None):
     """Whether `term` would be proposed as a candidate on its wording alone: usable (no clause fragment, conjunction or filler) and not a registry concept in any plural or hyphen spelling."""
     known = _known_terms() if known is None else known
@@ -117,7 +123,7 @@ def find(paper, known=None, limit=MAX_CANDIDATES):
                     counts[phrase] = counts.get(phrase, 0) + 1
                     spread.setdefault(phrase, set()).add(position)
     for phrase, count in counts.items():
-        if count >= MIN_MENTIONS and len(spread[phrase]) >= MIN_PARAGRAPHS and phrase not in known and _norm(phrase) not in known and _usable(phrase):
+        if count >= MIN_MENTIONS and len(spread[phrase]) >= MIN_PARAGRAPHS and phrase not in known and _norm(phrase) not in known and _usable(phrase) and not _part_of_known(phrase, known):
             first = next((p for p, lowered in text if phrase in lowered), None)
             if first is None:
                 continue

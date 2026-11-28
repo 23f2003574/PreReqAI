@@ -10,6 +10,7 @@ from backend.models import Paper, Paragraph
 
 pytestmark = pytest.mark.prereqai
 FILLER = "x " * 120
+FIELD = "The stochastic gradient of the loss function is computed. "  # two machine-learning-only phrases: the document-level domain gate needs a document that reads as machine learning
 
 
 def _paper(*texts):
@@ -33,18 +34,18 @@ def test_cnn_with_its_context_still_counts_and_the_full_name_always_does():
     assert _names("A CNN applies convolution filters over the image and pools the feature maps.")["Convolutional Neural Network"] == 1
     assert _names("CNNs with residual connections dominate image classification on ImageNet.")["Convolutional Neural Network"] == 1
     assert _names("A convolutional neural network is used. " + FILLER)["Convolutional Neural Network"] == 1
-    mixed = _names("We use CNN/Daily Mail. " + FILLER + " Separately a CNN with 3x3 convolution kernels is trained.")
+    mixed = _names(FIELD + "We use CNN/Daily Mail. " + FILLER + " Separately a CNN with 3x3 convolution kernels is trained.")
     assert mixed["Convolutional Neural Network"] == 1  # the dataset is excluded once, the real mention counts once
 
 
 def test_chunk_size_needs_a_retrieval_context():
     assert "Document Chunking" not in _names("If the prompt is very large, we can chunk it into smaller pieces and pre-fill the cache. We select the window size as our chunk size.")
     assert "Document Chunking" in _names("For retrieval we split each document into passages; the chunk size trades recall against embedding cost.")
-    assert "Document Chunking" in _names("We study chunking strategies. " + FILLER)  # the other aliases are not guarded
+    assert "Document Chunking" in _names(FIELD + "We study chunking strategies. " + FILLER)  # the other aliases are not guarded
 
 
 def test_evidence_names_the_matched_alias_and_its_context():
-    paper = _paper("A CNN applies convolution filters over the image. " + FILLER)
+    paper = _paper(FIELD + "A CNN applies convolution filters over the image. " + FILLER)
     RuleBasedConceptDetector().detect(paper)
     from backend.ingestion import RawPage
 

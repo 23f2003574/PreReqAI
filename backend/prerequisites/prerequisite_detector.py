@@ -63,6 +63,10 @@ class PrerequisiteDetector:
         # needs it (not only the first one found), so the learner sees how much of the paper depends on it.
         needed_by = {}
         cited_only = self._cited_only(paper)  # concepts that appear only where the paper discusses other work: they are named, not used, so they do not make anything a prerequisite
+        from backend.prerequisites import concept_roles
+        role_map = concept_roles.classify(paper)
+        paper.concept_roles = role_map
+        cited_only = set(cited_only) | {name for name, info in role_map.items() if info["role"] == "incidental"}  # named in passing (at most two mentions, none taught): not a dependent either
 
         for concept in paper.concepts:
 
@@ -176,6 +180,16 @@ class PrerequisiteDetector:
                 )
             )
 
+        listed = {p.concept for p in paper.prerequisites}
+        for name in concept_roles.background_prerequisites(paper, role_map):  # concepts the paper builds on without defining them: the reader must already know them
+            if name not in listed:
+                info = role_map[name]
+                paper.prerequisites.append(Prerequisite(
+                    concept=name, reason=f"Background the paper uses ({info['mentions']} mentions in {info['sections']} sections) without defining it", confidence=0.0, importance="supporting",
+                    importance_reason="Used repeatedly across the paper but never defined in it: expected knowledge, not part of the paper's own contribution.",
+                    dependent_mentions=info["mentions"], evidence=[{"concept": name, "relation": "direct", "occurrences": info["mentions"]}], evidence_strength="moderate",
+                    strength_reasons=[f"{name}: {info['mentions']} mentions across {info['sections']} sections, not defined by the paper"],
+                    evidence_note="Inferred from how the paper uses the concept (repeated, spread over sections, never defined), not from PreReqAI's prerequisite table.", provenance="background"))
         from backend.parsing.stated_prerequisites import apply as apply_stated
 
         return apply_stated(paper)  # what the paper itself says it needs: provenance, one grade up for explicit cues

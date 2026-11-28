@@ -314,9 +314,9 @@ class RuleBasedConceptDetector:
         # An unambiguous concept found in the same text (Self-Attention, Transformer...) is also technical evidence for a bare mention.
         anchored = any(not concept.ambiguous for concept, _ in found)
         paper.domain_abstained = False
-        names = {c.name.lower().replace("-", " ") for c, _ in found if not c.ambiguous}
+        names = {c.name.lower().replace("-", " ") for c, _ in found if not c.ambiguous or c.alias_context}  # an alias-guarded concept (CNN...) is not an everyday word
         cues = ml_cues(full_text)
-        if len(full_text.split()) >= MIN_WORDS_FOR_GATE and len(cues) + len({n for n in names if not any(cue in n or n in cue for cue in cues)}) < MIN_ML_CUES:
+        if len(full_text.split()) >= MIN_WORDS_FOR_GATE and len(cues) + len(names - cues) < MIN_ML_CUES:
             # document-level gate: too few machine-learning-only phrases or distinct unambiguous concepts, so it is not a machine-learning paper. Only a confirmed custom concept or an
             # unambiguous term the document leans on (three or more mentions) stays; the everyday-word concepts and single stray mentions are abstained from.
             kept = [(c, o) for c, o in found if c.domain == "custom" or (not c.ambiguous and o >= 3)]
