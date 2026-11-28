@@ -163,7 +163,15 @@ def propose(report, attempts, overrides=None, calendar=None, profile=None, now=N
         adjustments.append({"concept": concept, "action": "reinstate", "original_hours": 0.0, "adjusted_hours": adjusted, "reason": f"you said you know this, but {reason}".replace("more time is planned", "it is planned again"),
                             "overridden": overridden, "evidence": dict(evidence[concept]), "can_override": True})
         plan.append({"concept": concept, "hours": adjusted, "original_hours": 0.0, "adapted": adjusted != 0.0, "importance": None, "reinstated": True})
-    result = {"guarded": guarded(report), "adjustments": adjustments, "plan": plan, "remediation": remediation, "hours_before": round(sum(s.estimated_hours for s in steps), 2), "hours_after": round(sum(p["hours"] for p in plan), 2)}
+    from backend import learner_profile
+
+    pairs = {}
+    for attempt in attempts:  # this session's wrong graded answers that picked another concept's answer
+        if attempt.get("graded") and not attempt.get("correct") and attempt.get("confused_with"):
+            pairs[(attempt["concept"], attempt["confused_with"])] = pairs.get((attempt["concept"], attempt["confused_with"]), 0) + 1
+    confusions = [{"concept": a, "confused_with": b, "count": n, "advice": f"You keep taking {a} for {b}: study how they differ before the next quiz."} for (a, b), n in sorted(pairs.items(), key=lambda item: (-item[1], item[0]))
+                  if n >= learner_profile.RECURRING_CONFUSION]
+    result = {"guarded": guarded(report), "confusions": confusions, "adjustments": adjustments, "plan": plan, "remediation": remediation, "hours_before": round(sum(s.estimated_hours for s in steps), 2), "hours_after": round(sum(p["hours"] for p in plan), 2)}
     if calendar:
         from types import SimpleNamespace
 

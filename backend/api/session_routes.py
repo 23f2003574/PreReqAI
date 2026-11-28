@@ -634,7 +634,7 @@ def _remember_outcome(session):
         return None
     attempt = session.quiz_attempts[-1]
     try:
-        graded = {"correct": attempt["correct"], "confidence": attempt["confidence"]} if attempt.get("graded") else None
+        graded = {"correct": attempt["correct"], "confidence": attempt["confidence"], **({"confused_with": attempt["confused_with"]} if attempt.get("confused_with") else {})} if attempt.get("graded") else None
         entry = learner_profile.record_quiz(path, attempt["question_id"], attempt["concept"], attempt["outcome"], graded=graded)
     except (learner_profile.ProfileError, OSError) as error:
         return {"saved": False, "warning": f"this answer was not saved to your learner profile: {error}"}

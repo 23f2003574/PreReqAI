@@ -108,6 +108,12 @@ def _quiz_entries(value):
             if spaced_review.parse_time(entry["graded_first_at"]) is None:
                 raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
             graded = {**graded, "graded_first_at": entry["graded_first_at"]}
+        if "confusions" in entry:  # {other concept: times its answer was picked for this question}, an optional field (no version bump)
+            found = entry["confusions"]
+            if (not isinstance(found, dict) or len(found) > spaced_review.MAX_CONFUSIONS
+                    or not all(isinstance(k, str) and 0 < len(k) <= MAX_NAME_CHARS and isinstance(v, int) and not isinstance(v, bool) and 0 < v <= 10**6 for k, v in found.items())):
+                raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
+            graded = {**graded, "confusions": dict(found)}
         if "ease" in entry or "last_grade" in entry:  # present only on entries reviewed with a grade (again, hard, good, easy)
             if (isinstance(entry.get("ease"), bool) or not isinstance(entry.get("ease"), (int, float)) or not 1.3 <= entry["ease"] <= 3.5 or entry.get("last_grade") not in spaced_review.GRADES):
                 raise ProfileError(f"'quiz' has an invalid entry for {identifier!r}")
@@ -531,3 +537,18 @@ class ProfileRun:
         self._personalise(outcome)
         outcome["profile"] = {"path": str(self.path), "known": known, "studied": [n for n in studied if key(n) not in {key(k) for k in known}]}
         return outcome
+
+
+RECURRING_CONFUSION = 2  # a pair counts as a recurring confusion from this many wrong answers: one slip is not a misconception
+
+
+def confusion_pairs(quiz, minimum=RECURRING_CONFUSION):
+    """[{concept, confused_with, count, questions}] the concept pairs the learner keeps mixing up: over a profile's quiz entries, the number of wrong answers of `concept` questions that picked the answer of
+    `confused_with`, for pairs with at least `minimum` of them, most frequent first. A single wrong answer never changes a mastery estimate; this only reports the pattern."""
+    pairs = {}
+    for identifier, entry in (quiz or {}).items():
+        for other, count in (entry.get("confusions") or {}).items():
+            row = pairs.setdefault((entry.get("concept"), other), {"concept": entry.get("concept"), "confused_with": other, "count": 0, "questions": []})
+            row["count"] += count
+            row["questions"].append(identifier)
+    return sorted((row for row in pairs.values() if row["count"] >= minimum), key=lambda row: (-row["count"], row["concept"], row["confused_with"]))

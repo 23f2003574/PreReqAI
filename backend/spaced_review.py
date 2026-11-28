@@ -37,6 +37,7 @@ def interval(streak, knew, missed):
     return timedelta(days=days)
 
 
+MAX_CONFUSIONS = 8  # the other concepts one question's wrong answers are most often taken for
 GRADED_FIELDS = ("graded_attempts", "graded_correct", "graded_streak", "high_confidence_right", "high_confidence_wrong")
 
 
@@ -44,7 +45,21 @@ HISTORY_LIMIT = 20  # growth policy: an entry keeps its last 20 graded answers i
 _CONFIDENCE_CODE = {"low": "l", "medium": "m", "high": "h"}
 
 
+def _confusions(entry, graded):
+    """{concept: times} the learner has picked another concept's answer for this question: the entry's earlier counts plus this answer's `confused_with` when it was wrong. Empty when there is none."""
+    found = {k: v for k, v in (entry.get("confusions") or {}).items() if isinstance(k, str) and isinstance(v, int) and v > 0}
+    if graded and not graded.get("correct") and graded.get("confused_with"):
+        found[graded["confused_with"]] = found.get(graded["confused_with"], 0) + 1
+    return dict(sorted(found.items(), key=lambda item: (-item[1], item[0]))[:MAX_CONFUSIONS])
+
+
 def _graded(entry, graded, moment=None):
+    result = _graded_counters(entry, graded, moment)
+    confusions = _confusions(entry, graded)
+    return {**result, **({"confusions": confusions} if confusions else {})}
+
+
+def _graded_counters(entry, graded, moment=None):
     """The assessment counters of an entry after one more answer. `graded` is None for a self-reported answer (the counters are then only carried over, and are absent from an entry that
     never had an assessed answer) or {"correct": bool, "confidence": "low"|"medium"|"high"} for an answer the system checked itself. `graded_history` holds the last HISTORY_LIMIT assessed answers
     in order as codes (`graded_first_at` keeps the time of the first timed answer, see backend/mastery_model.py): correct 1 or 0, then confidence l, m or h, then "@" and the UTC time the answer was given when it is known ("1h@2026-11-23T13:03:48Z" is a correct answer given with high confidence at that time; a bare "1h" comes from a schema 2 profile and has no known time)."""

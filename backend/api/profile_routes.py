@@ -47,7 +47,7 @@ def _detail(path):
         return None, failure_response(409, "profiles", problem, hint="Repair or delete the file by hand; PreReqAI never overwrites a profile it cannot read.")
     queue = spaced_review.queue(profile["quiz"], spaced_review.now())
     return {"name": path.stem, "format": learner_profile.FORMAT, "schema_version": learner_profile.SCHEMA_VERSION, "known": profile["known"], "studied": profile["studied"],
-            "mastery": learner_profile.mastery(profile["quiz"]), "reviews": {"due": queue["due"], "upcoming": queue["upcoming"]}}, None
+            "mastery": learner_profile.mastery(profile["quiz"]), "confusions": learner_profile.confusion_pairs(profile["quiz"]), "reviews": {"due": queue["due"], "upcoming": queue["upcoming"]}}, None
 
 
 @router.get("")

@@ -114,6 +114,21 @@ def serve(session, concept=None):
     return {**question, "options": list(pending["options"]), "weak_distractors": weak_distractors(question["question_id"]), "confidence_levels": list(CONFIDENCE), "graded": True}
 
 
+def option_origin(text, concept):
+    """The concept a wrong answer text belongs to: the concept whose own question has it as its answer, or whose known misconception it is; None for the concept's own answers and for text of no known concept.
+    A learner who picks the answer of concept B for a question of concept A has confused A with B."""
+    wanted = _norm(text)
+    from .misconception_registry import COMMON_MISCONCEPTIONS
+
+    for name, items in ASKABLE.items():
+        if name != concept and not name.startswith("Math: ") and any(_norm(q["answer"]) == wanted for q in items):
+            return name
+    for name, texts in COMMON_MISCONCEPTIONS.items():
+        if name != concept and any(_norm(t) == wanted for t in texts):
+            return name
+    return None
+
+
 def grade(session, identifier, choice, confidence):
     """Check `choice` (the index into the question's options) against the answer, record the attempt, and return the verdict with the correct answer and the explanation.
     QuizError for an unknown question, a question that was not served, a choice outside the options or an unknown confidence."""
@@ -130,7 +145,8 @@ def grade(session, identifier, choice, confidence):
     session.quiz_pending.pop(identifier)
     correct = options[choice] == item["answer"]
     session.quiz_attempts.append({"question_id": identifier, "concept": concept, "outcome": "knew" if correct else "missed", "revealed": False, "graded": True, "correct": correct,
-                                  "confidence": confidence, "chosen": options[choice], "at": spaced_review.stamp(spaced_review.now())})  # the time the answer was given: the spacing rule needs it (an attempt of an older session has none)
+                                  "confidence": confidence, "chosen": options[choice], "at": spaced_review.stamp(spaced_review.now()),
+                                  **({"confused_with": origin} if not correct and (origin := option_origin(options[choice], concept)) else {})})  # the time the answer was given: the spacing rule needs it (an attempt of an older session has none)
     from .quiz_bank import QUIZ_EXPLANATIONS
 
     verdict = {"question_id": identifier, "correct": correct, "confidence": confidence, "answer": item["answer"], "calibration": calibration_note(correct, confidence)}
