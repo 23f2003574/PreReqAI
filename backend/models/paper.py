@@ -262,6 +262,7 @@ class Paper:
     # "needs nothing" (a rule with an empty list is the explicit way to say the latter).
     concepts_without_rules: list[str] = field(default_factory=list)
     weak_prerequisites: list = field(default_factory=list)  # [{concept, reason}]: prerequisites only a weakly supported concept (one mention) would imply; not recommended
+    symbol_glossary: list = field(default_factory=list)  # [{symbol, meaning, sentence, page_number, section, equations}] from 'where X denotes ...' sentences (see parsing/equation_links.py)
     concept_roles: dict = field(default_factory=dict)  # {concept: {role: contribution|background|incidental, mentions, sections, evidence}} (see prerequisites/concept_roles.py)
 
     missing_prerequisites: list[

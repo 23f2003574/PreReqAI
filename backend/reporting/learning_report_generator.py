@@ -152,6 +152,18 @@ class LearningReportGenerator:
             for concept in paper.concepts
         }
 
+        from backend.parsing import equation_links
+
+        links = equation_links.link(paper)
+        paper.symbol_glossary = equation_links.glossary(links)
+
+        def concepts_of(equation):
+            found = [name for name, names in terms.items() if any(re.search(rf"\b{re.escape(term)}s?\b", context(equation)) for term in names)]
+            linked = links.get(equation.equation_id, {})
+            for item in [*linked.get("references", []), linked.get("introduction") or {}]:  # the paper's own sentences about the equation name its concepts too
+                found += [name for name in item.get("concepts", []) if name not in found]
+            return found
+
         return [
             {
                 "id": equation.equation_id,
@@ -159,10 +171,10 @@ class LearningReportGenerator:
                 "section": equation.section,
                 "page_number": getattr(equation, "page_number", None),
                 "tag": getattr(equation, "tag", ""),
-                "concepts": [
-                    name for name, names in terms.items()
-                    if any(re.search(rf"\b{re.escape(term)}s?\b", context(equation)) for term in names)
-                ],
+                "concepts": concepts_of(equation),
+                "references": links.get(equation.equation_id, {}).get("references", []),
+                "introduction": links.get(equation.equation_id, {}).get("introduction"),
+                "symbols": links.get(equation.equation_id, {}).get("symbols", []),
             }
             for equation in paper.equations
         ]
@@ -224,6 +236,7 @@ class LearningReportGenerator:
             "concepts_without_prerequisite_rules": list(paper.concepts_without_rules),  # their prerequisites are unknown, not absent
 
             "equations": self._equations(paper),
+            "symbol_glossary": getattr(paper, "symbol_glossary", []),
 
             "math_subtopics": self._math_subtopics(paper),
             "math_plan": math_plan.build(self._math_subtopics(paper)),  # the same skills as study steps with hours and diagnostics (backend/math_plan.py)

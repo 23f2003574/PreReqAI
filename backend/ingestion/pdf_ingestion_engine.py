@@ -388,6 +388,15 @@ def fraction_bars(drawings):
     return bars
 
 
+def _join_gaps(row):
+    """The texts of (x0, x1, text) pieces of one baseline, no space between pieces that touch (a subscript against its letter), one space otherwise."""
+    out, end = "", None
+    for x0, x1, text in row:
+        out += ("" if end is None or x0 - end <= 1.5 or out.endswith(" ") or text.startswith(" ") else " ") + text
+        end = max(x1, end) if end is not None else x1
+    return out
+
+
 class _Span(str):
     """The text of one span of a line that a fraction bar ran through (it is glued back to its neighbours on the same baseline, without spaces)."""
 
@@ -425,10 +434,17 @@ def _with_fractions(run, bars, spans_of=None):
         if not above or not below or len(above) + len(below) != len(inside):
             continue
         def read(parts):
-            rows = {}
-            for box, text in parts:
-                rows.setdefault(round(box[1] / 4), []).append((box[0], text))
-            return " ".join(text for _, row in sorted(rows.items()) for _, text in sorted(row))
+            rows = []  # pieces on one baseline (a subscript sits a few points off it) read left to right; a piece 8 or more points from every row starts another
+            for box, text in sorted(parts, key=lambda item: item[0][0]):
+                centre = (box[1] + box[3]) / 2
+                for row in rows:
+                    if abs(row[0] - centre) < 8:
+                        row[1].append((box[0], box[2], str(text)))
+                        break
+                else:
+                    rows.append([centre, [(box[0], box[2], str(text))]])
+            return " ".join(_join_gaps(sorted(row)) for _, row in sorted(rows, key=lambda row: row[0]))
+
         numerator, denominator = read(above), read(below)
         boxes = [box for box, _ in inside]
         merged = ([min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes)], f"({numerator})/({denominator})")
@@ -462,7 +478,7 @@ def equation_groups(blocks, drawings=None):
                 continue
             lines = [(line["bbox"], "".join(_span_text(span) for span in line["spans"]).strip()) for line in block["lines"]]
             for line in block["lines"]:
-                spans_of[(tuple(line["bbox"]), "".join(_span_text(span) for span in line["spans"]).strip())] = [(span["bbox"], _span_text(span).strip()) for span in line["spans"] if _span_text(span).strip()]
+                spans_of[(tuple(line["bbox"]), "".join(_span_text(span) for span in line["spans"]).strip())] = [(span["bbox"], _span_text(span)) for span in line["spans"] if _span_text(span).strip()]
             lines = [(box, text) for box, text in lines if text]
             if not lines:
                 continue
