@@ -190,6 +190,26 @@ def math_checks(checks, floors):
     _check(checks, "math_subtopics", "equations", float(report["equations"]), float(floors.get("equations", 30)), "the labelled equation set must not shrink")
 
 
+def answer_grounding_checks(checks, floors):
+    """The real-paper questions through the tutor's whole answer path (answer_grounding.py): how many answers show the gold phrase, how many are built-in text with no quotation, and that every quotation is exact."""
+    from . import answer_grounding, retrieval_real
+    from backend.platform import platform
+
+    data = retrieval_real.load()
+    try:
+        sessions = {paper_id: platform.analyze(path)["session_id"] for paper_id, path in retrieval_real.pdf_paths({q["paper"] for q in data["questions"]}).items()}
+        report = answer_grounding.evaluate(sessions, data)
+    except Exception as error:
+        checks.append({"group": "answer_grounding", "metric": "answers", "value": 0.0, "threshold": 1.0, "passed": False, "detail": f"{type(error).__name__}: {error}"})
+        return None
+    detail = (f"{report['questions']} questions ({report['status']}): {report['contains_gold']} contain the gold phrase, {report['abstained']} abstained, {report['quoted_without_gold']} quote without it, "
+              f"{report['off_target']} off target; {report['citations']} quotations")
+    _check(checks, "answer_grounding", "contains_gold", float(report["contains_gold"]), float(floors.get("contains_gold", 0)), detail)
+    _check(checks, "answer_grounding", "citations_verified", report["citations_verified"], float(floors.get("citations_verified", 1.0)), detail)
+    _check(checks, "answer_grounding", "no_off_target", float(-report["off_target"]), float(-floors.get("max_off_target", 36)), detail)
+    return report
+
+
 def real_prerequisite_checks(checks, floors, papers=None):
     """Precision and recall of the prerequisites recommended for the six real papers against AI-written, provisional annotations (prerequisite_eval.py). The floors were set after the first measurement and guard
     against regression; the false positives and negatives are named in the detail."""
@@ -288,9 +308,10 @@ def run_gate(thresholds=None, benchmark_manifest=None):
     mastery_sim_checks(checks, floors.get("mastery_simulation", {}))
     math_checks(checks, floors.get("math_subtopics", {}))
     measured = real_retrieval_checks(checks, floors.get("retrieval_real", {}))
+    answers = answer_grounding_checks(checks, floors.get("answer_grounding", {}))
     real_math_checks(checks, floors.get("math_real", {}))
     prerequisites = real_prerequisite_checks(checks, floors.get("prerequisites_real", {}))
-    return {"passed": all(c["passed"] for c in checks), "checks": checks, "retrieval_real": measured, "prerequisites_real": prerequisites, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
+    return {"passed": all(c["passed"] for c in checks), "checks": checks, "retrieval_real": measured, "answer_grounding": answers, "prerequisites_real": prerequisites, "heldout": held and {"papers": [{k: row[k] for k in ("id", "arxiv_id", "licence", "licence_checked_by", "sha256", "ok")} for row in held["papers"]]},
             "real_papers": {"status": real["status"], "per_paper": [{"id": r["id"], "review_kind": r.get("review_kind"), "headings_f1": r["headings"]["f1"], "concepts_f1": r["concepts"]["f1"]}
                                                                   for r in real["papers"] if r["ok"]],
                             "aggregate": {key: real.get(key) for key in ("headings", "concepts", "coverage", "roles")},

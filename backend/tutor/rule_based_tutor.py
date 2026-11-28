@@ -130,27 +130,46 @@ class RuleBasedTutor(BaseTutor):
 
             question = question[:pointer.start()] + topic + question[pointer.end():]
 
-        answer = (
-            self._quiz_answer(paper, session, question)
-            or self._concept_time_answer(paper, question)
-            or self._resources_answer(paper, question)
-            or self._concept_prerequisites_answer(paper, question)
-            or self._built_in_answer(paper, context, question)
-            or self._overview_answer(paper, question)
-            or self._study_plan_answer(paper, question)
-            or (self._name_a_concept_answer(paper) if pointer and not topic else "")
-        )
+        source, answer = "", ""
+        for source, produce in (
+            ("quiz", lambda: self._quiz_answer(paper, session, question)),
+            ("time", lambda: self._concept_time_answer(paper, question)),
+            ("resources", lambda: self._resources_answer(paper, question)),
+            ("prerequisites", lambda: self._concept_prerequisites_answer(paper, question)),
+            ("built_in", lambda: self._built_in_answer(paper, context, question)),
+            ("overview", lambda: self._overview_answer(paper, question)),
+            ("plan", lambda: self._study_plan_answer(paper, question)),
+            ("pointer", lambda: self._name_a_concept_answer(paper) if pointer and not topic else ""),
+        ):
+            answer = produce()
+            if answer:
+                break
+        else:
+            source = ""
+        from .grounding import verified_passages
 
-        passages = [] if answer else list(getattr(context, "passages", None) or [])
-        extractive = self._extractive_answer(passages) if passages else ""
+        grounded = verified_passages(paper, question) if source not in ("quiz", "time", "resources", "plan", "pointer", "prerequisites") else []  # the paper's own sentences that match the question, each verified against its page
+        # A built-in definition or overview is the tutor's own text: when the paper also has sentences that match a question that is not just "what is X", they are quoted after it (a plan, time, resource,
+        # prerequisite or quiz answer is never mixed with quotations). With no built-in answer the matching sentences are the answer; the paragraph-level retrieval is the fallback, and with neither the tutor abstains.
+        if answer and source in ("built_in", "overview") and grounded and not _PURE_DEFINITION.match(_normalise(question)):
+            answer = answer + "\n\n" + self._grounded_quotations(grounded)
+            passages, extractive = grounded, answer
+        elif answer:
+            passages, extractive = [], ""
+        elif grounded:
+            passages, extractive = grounded, self._grounded_quotations(grounded)
+        else:
+            passages = list(getattr(context, "passages", None) or [])
+            extractive = self._extractive_answer(passages) if passages else ""
         unsupported = "" if answer or extractive else self._unsupported_concept_answer(question)
+
         sections = list(context.sections)
         if extractive:  # the sections the quoted passages come from, after any the retriever already named
             sections += [p["section"] for p in passages if p["section"] and p["section"] not in sections]
 
         return TutorResponse(
             answer=answer or extractive or unsupported or NO_EVIDENCE_ANSWER,
-            confidence=0.5 if answer else (round(min(0.6, 0.3 + 0.3 * passages[0]["coverage"]), 2) if extractive else 0.0),
+            confidence=0.5 if answer else (round(min(0.6, 0.3 + 0.3 * passages[0].get("coverage", 0.5)), 2) if extractive else 0.0),
             supporting_concepts=context.concepts,
 
             supporting_sections=sections,
@@ -164,6 +183,16 @@ class RuleBasedTutor(BaseTutor):
                 "Summarize this paper",
             ],
         )
+
+    @staticmethod
+    def _grounded_quotations(passages):
+        """The verified sentences quoted word for word with their section and page; only the framing line and the labels are the tutor's own words."""
+        lines = [EXTRACTIVE_PREFIX + ", so here is what the paper itself says that matches your question. The quotations are the paper's own words, not an explanation by the tutor; check them in context."]
+        for number, passage in enumerate(passages, start=1):
+            where = f"section \"{passage['section']}\"" if passage["section"] else "an untitled section"
+            page = f", page {passage['page_number']}" if passage.get("page_number") else ""
+            lines.append(f"{number}. From {where}{page}: \u201c{' '.join(passage['sentence'].split())}\u201d")
+        return "\n".join(lines)
 
     @staticmethod
     def _extractive_answer(passages):
@@ -322,7 +351,7 @@ class RuleBasedTutor(BaseTutor):
 
         text = _normalise(question)
 
-        if not re.search(r"\b(prerequisites?|prereqs?|depends?|requires?|builds? on|does .* needs?|needs? to (know|understand))\b", text):
+        if not re.search(r"\b(prerequisites?|prereqs?|depends?|requires?|builds? on|does (?:(?!not\b|n\'t).)* needs?\b(?!\s+(?:an?|the)\b)|needs? to (know|understand))\b", text):
             return ""
 
         rules = PrerequisiteDetector.PREREQUISITE_RULES
@@ -553,6 +582,8 @@ NO_CONCEPTS_ANSWER = ("No concepts this release knows were detected in this pape
 EXTRACTIVE_PREFIX = "I could not answer this with a prepared explanation"
 
 # No prepared answer and no paragraph of the paper holds evidence for the question. The closing sentence is kept because clients recognise it.
+_PURE_DEFINITION = re.compile(r"^(?:what(?:'s| is| are)|define|explain|tell me about|describe)\b[\w\- ]{0,60}\??$")  # 'What is softmax?': the definition alone answers it
+
 NO_EVIDENCE_ANSWER = ("I could not find a passage in this paper that answers that question, so I will not guess. "
                       "A tutoring model has not yet been configured, so I can only answer from the paper's text.")
 

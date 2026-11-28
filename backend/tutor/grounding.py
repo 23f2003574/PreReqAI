@@ -92,10 +92,10 @@ def select_evidence(paper, concept_names, question=None):
                 seen.add(passage["passage_id"])
                 chosen.append(passage)
 
+    if question:  # the passages that match the question's own words come first, even when the question names a concept: the concept's first sentences answer "what is X", not "why does X work"
+        add(hybrid_search(paper, question, MAX_SEARCH) if os.environ.get("PREREQAI_RETRIEVAL", "hybrid") != "lexical" else search_evidence(paper, question))
     for name in dict.fromkeys(concept_names):
         add(found.get(name, []))
-    if question and len(chosen) < 2:
-        add(hybrid_search(paper, question, MAX_SEARCH) if os.environ.get("PREREQAI_RETRIEVAL", "hybrid") != "lexical" else search_evidence(paper, question))
     return chosen
 
 
@@ -129,3 +129,24 @@ def verify(raw, answer, evidence, known_text=""):
         if not re.search(rf"(?<![\w.]){re.escape(number)}(?![\w]|[.,]\d)", support):
             raise ProviderError("ungrounded", f"the answer states {number}, which no cited passage supports.")
     return verified[:MAX_CITATIONS]
+
+
+def verified_passages(paper, question, limit=4):
+    """The passages of the hybrid search for `question` whose quotation is verified against the paper: the sentence is an exact part of the text of the page it cites (a passage without a page, from a
+    session saved before pages were recorded, is kept). [] when the search finds nothing: the caller then abstains instead of guessing."""
+    from backend import retrieval
+
+    if not getattr(paper, "pages", None):  # no page text to verify a quotation against (a session saved before pages were recorded): the paragraph-level retrieval answers instead
+        return []
+    query, frequency = retrieval._query(paper, question), retrieval._index(paper)["frequency"]
+    unknown = [term for term in query if not frequency.get(term)]
+    if len(unknown) >= 2 and len(unknown) * 2 > len(query):  # most of what the question is about never occurs in the paper: sentences that share only its filler words are not an answer
+        return []
+    found = hybrid_search(paper, question, limit)
+    pages = {page.page_number: _norm(page.text) for page in getattr(paper, "pages", []) or []}
+    checked = []
+    for passage in found:
+        number = passage.get("page_number")
+        if number is not None and number in pages and _norm(passage["sentence"]) in pages[number]:
+            checked.append(passage)
+    return checked
