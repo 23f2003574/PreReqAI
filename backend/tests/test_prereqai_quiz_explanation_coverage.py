@@ -12,7 +12,7 @@ SAMPLE = "examples/prerequisites/sample-paper.pdf"
 
 def test_every_question_in_both_banks_has_an_explanation():
     assert unexplained_questions() == []
-    assert sum(len(v) for v in QUIZ_BANK.values()) == 270 and sum(len(v) for v in SUBJECT_QUIZ_BANK.values()) == 27
+    assert sum(len(v) for v in QUIZ_BANK.values()) == 348 and sum(len(v) for v in SUBJECT_QUIZ_BANK.values()) == 27
 
 
 def test_explanations_explain_and_do_not_repeat_the_answer():

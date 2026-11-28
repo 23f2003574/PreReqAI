@@ -56,8 +56,8 @@ def test_a_concept_that_had_one_question_can_now_be_mastered_through_the_quiz(si
         revealed = client.post(f"/api/session/{sid}/quiz/reveal", json={"question_id": asked["question_id"]}).json()
         assert revealed["answer"]
         body = client.post(f"/api/session/{sid}/quiz/outcome", json={"question_id": asked["question_id"], "outcome": "knew"}).json()
-    assert len(set(seen)) == 2  # both questions are served
-    assert body["progress"]["concepts"][0]["status"] == "mastered"  # four correct answers over two different questions
+    assert len(set(seen)) == 3  # the three questions of the concept are served in turn
+    assert body["progress"]["concepts"][0]["status"] == "mastered"  # four correct answers over different questions
 
 
 def test_reveal_returns_the_explanation_of_an_added_question(sid):
